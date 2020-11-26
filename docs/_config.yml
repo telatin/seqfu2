@@ -24,3 +24,5 @@ scss: |
   .markdown-body a:hover { color: #54536C}
   .toctree>ul>.toc:not(.current)>a:active  {background: #6c1b7a}
   a { color: #34334C}
+  .toasts.note .title { background: #caaaf2 }
+  .toasts.note { background: #ddd }
