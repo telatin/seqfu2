@@ -19,4 +19,6 @@ commonmark:
   extensions: ['table']
 
 scss: |
-  $theme-blue: #44435C;
+  .header { background: #44435C}
+  .markdown-body a { color: #44435C}
+  .markdown-body a:hover { color: #54536C}
