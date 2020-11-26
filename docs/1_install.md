@@ -6,7 +6,7 @@ permalink: /installation
 # Installation
 
 ```note
-this page is a stub
+This page is a stub
 ```
 
 ## Pre-compiled binaries
