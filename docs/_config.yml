@@ -1,7 +1,7 @@
-title: QAX
-repository: telatin/qax
+title: seqfu2
+repository: telatin/seqfu2
 lang: en
-description: Qiime Artifacts eXtractor Documentation
+description: seqfu2: fastx sequence utilities
 
 readme_index:
   with_frontmatter: true

@@ -1,0 +1,11 @@
+# FASTA/FASTQ Dereplication
+
+![Commit](https://img.shields.io/github/last-commit/telatin/nim-stuff)
+![Version {{ VERSION }}](https://img.shields.io/badge/version-{{ VERSION }}-blue)
+
+Manipulation of FASTA/FASTQ files
+
+```
+{{ SPLASH }}
+```
+
