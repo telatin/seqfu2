@@ -17,3 +17,6 @@ markdown: CommonMarkGhPages
 commonmark:
   options: ['SMART']
   extensions: ['table']
+
+scss: |
+  $theme-blue: #44435C;
