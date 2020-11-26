@@ -1,0 +1,19 @@
+title: QAX
+repository: telatin/qax
+lang: en
+description: Qiime Artifacts eXtractor Documentation
+
+readme_index:
+  with_frontmatter: true
+
+theme: null
+
+remote_theme: rundocs/jekyll-rtd-theme
+
+plugins:
+  - jekyll-remote-theme
+
+markdown: CommonMarkGhPages
+commonmark:
+  options: ['SMART']
+  extensions: ['table']
