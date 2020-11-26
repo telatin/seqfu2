@@ -1,7 +1,7 @@
 title: seqfu2
 repository: telatin/seqfu2
 lang: en
-description: seqfu2: fastx sequence utilities
+description: "seqfu2: fastx sequence utilities"
 
 readme_index:
   with_frontmatter: true
