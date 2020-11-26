@@ -22,3 +22,4 @@ scss: |
   .header { background: #44435C}
   .markdown-body a { color: #44435C}
   .markdown-body a:hover { color: #54536C}
+  .toctree>ul>.toc:not(.current)>a:active  {color: #44435C}
