@@ -25,4 +25,4 @@ scss: |
   .toctree>ul>.toc:not(.current)>a:active  {background: #6c1b7a}
   a { color: #34334C}
   .toasts.note .title { background: #caaaf2 }
-  .toasts.note { background: #ddd }
+  .toasts.note { background: #eee }
