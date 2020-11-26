@@ -1,2 +1,4 @@
 # seqfu2
-:dna: seqfu - Sequece Fastx Utilities
+:rocket: **seqfu2** - Sequence Fastx Utilities
+
+[Website](https://telatin.github.io/seqfu2)
