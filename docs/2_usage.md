@@ -2,7 +2,7 @@
 sort: 2
 permalink: /usage
 ---
-# Usage
+# Short guide
 
 ```note
 This page is a stub
