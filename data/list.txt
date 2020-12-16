@@ -1,0 +1,5 @@
+# Header of the list file
+# To be ignored
+SEQ1_BamHI-EcoRI	A sequence with long name	Number=1
+Seq2	Complete:"Seq2 with comm"	Number=2
+Seq6	Just a sequence	Number=3
