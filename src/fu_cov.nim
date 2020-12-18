@@ -5,7 +5,7 @@ import strutils
 import stats
 import strformat
 from os import fileExists
-import algorithm 
+import algorithm
 
 const prog = "fu-cov"
 const version = "0.3.1"
@@ -13,7 +13,7 @@ const version = "0.3.1"
 #[
    extract contigs by coverage
 
-  0.3.1 Bug fixes, improved statistics   
+  0.3.1 Bug fixes, improved statistics
   0.3   Added in memory sorting
   0.2   Added statistics
 ]#
@@ -36,7 +36,7 @@ var
 proc rev[T](xs: openarray[T]): seq[T] =
   result = newSeq[T](xs.len)
   for i, x in xs:
-    #result[^i-1] = x # or: 
+    #result[^i-1] = x # or:
     result[xs.high-i] = x
 
 proc verbose(msg: string, print: bool) =
@@ -59,15 +59,15 @@ var p = newParser(prog):
   help("Extract contig by sequence length and coverage, if provided in the sequence name.")
   flag("-v", "--verbose", help="Print verbose messages")
   flag("-s", "--sort", help="Store contigs in memory, and sort them by descending coverage")
-  option("-c", "--min-cov", help="Minimum coverage", default="0.0")
-  option("-l", "--min-len", help = "Minimum length", default = "0")
-  option("-x", "--max-cov", help = "Maximum coverage", default = "0.0")
-  option("-y", "--max-len", help = "Maximum length", default = "0")
-  option("-t", "--top", help = "Print the first TOP sequences (passing filters) when using --sort", default="10")
+  option("-c", "--min-cov", help="Minimum coverage", default=some("0.0"))
+  option("-l", "--min-len", help = "Minimum length", default =some("0"))
+  option("-x", "--max-cov", help = "Maximum coverage", default =some("0.0"))
+  option("-y", "--max-len", help = "Maximum length", default =some("0"))
+  option("-t", "--top", help = "Print the first TOP sequences (passing filters) when using --sort", default=some("10") )
   arg("inputfile",  nargs = -1)
- 
+
 proc getNumberAfterPos(s: string, pos: int): float =
-  var ans = ""  
+  var ans = ""
   for i in pos .. s.high:
     if s[i] notin nums:
       break
@@ -89,25 +89,26 @@ proc main(args: seq[string]) =
 
   try:
     var
-      opts = p.parse(commandLineParams()) 
+      opts = p.parse(commandLineParams())
       skip_hi_cov = 0
       skip_lo_cov = 0
       skip_short  = 0
       skip_long   = 0
       covTable    = newSeq[ContigInfo]()
 
- 
+
+
     if opts.inputfile.len() == 0:
-      echo "Missing arguments."
-      if not opts.help:
-        echo "Type --help for more info."
+      echo "Missing argument: input file (type -h for more info)"
+      #if not opts.help == true:
+      #  echo "Type --help for more info."
       quit(0)
 
     var
       c  = 0      # total count of sequences
-      pf = 0      # passing filters 
-      ff = 0      # parsed files 
-    for filename in opts.inputfile:      
+      pf = 0      # passing filters
+      ff = 0      # parsed files
+    for filename in opts.inputfile:
       if not existsFile(filename):
         echo "FATAL ERROR: File ", filename, " not found."
         quit(1)
@@ -143,15 +144,15 @@ proc main(args: seq[string]) =
         if opts.max_len != "0" and len(r.seq) > parseInt(opts.max_len):
           skip_long += 1
           continue
-        
-        
+
+
         pf += 1
 
         if opts.sort == false:
           echo ">", r.name, " ", r.comment, "\n", r.seq;
         else:
           covTable.add((name: r.name, comment: r.comment, cov: cov, length: len(r.seq), sequence: r.seq))
-      
+
     stderr.writeLine(pf, "/", lenStats.n, " sequences printed (", covStats.n ," with coverage info) from ", ff , " files.")
     stderr.writeLine(fmt"Skipped:          {skip_short} too short, {skip_long} too long, then {skip_lo_cov} low coverage, {skip_hi_cov} high coverage, .")
     stderr.writeLine(fmt"Average length:   {lenStats.mean():.2f} bp, [{lenStats.min} - {lenStats.max}]")
@@ -163,17 +164,17 @@ proc main(args: seq[string]) =
         top = 0
       for i in rev(covTable.sortedByIt(it.cov)):
         top += 1
-        
+
         if top > parseInt(opts.top):
           break
-        
+
         echo ">", i.name, " ", i.comment, "\n", i.sequence
-      
+
   except:
     echo p.help
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
     quit(0)
-  
+
 
 when isMainModule:
   main(commandLineParams())
