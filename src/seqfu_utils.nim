@@ -2,6 +2,7 @@ import klib
 
 import  strutils, os
 #[ Versions
+BETA: 0.8.{{VERSION}}
 - 2.0.0   Moved to 'seqfu2', to keep seqfu for perl utilities
 - 0.4.0   Added 'tail'
 - 0.3.0   Added 'stats'
@@ -15,8 +16,8 @@ import  strutils, os
 ]#
 
 proc version*(): string =
-  return "2.0.0"
-  
+  return "0.8.2"
+
 
 
 
@@ -33,15 +34,15 @@ var
    stripComments*:  bool    # strip comments in output sequence
    forceFasta*:     bool
    forceFastq*:     bool
-   defaultQual*     = 33   
+   defaultQual*     = 33
    lineWidth*       = 0
 
 
 
 
-proc getBasename*(filename: string): string = 
+proc getBasename*(filename: string): string =
   let  fileParse = splitFile(filename)
-  
+
   if fileParse[2] == ".gz":
     let  gunzippedParse = splitFile(fileParse[1])
     return gunzippedParse[1]
@@ -58,15 +59,15 @@ proc extractTag*(filename: string, patternFor: string, patternRev: string): (str
         return (basename[0], "R1")
       basename = split(filename, "_R1_")
       if len(basename) > 1:
-        return (basename[0], "R1") 
+        return (basename[0], "R1")
       basename = split(filename, "_1.")
       if len(basename) > 1:
-        return (basename[0], "R1") 
+        return (basename[0], "R1")
     else:
       var basename = split(filename, patternFor)
       if len(basename) > 1:
         return (basename[0], "R1")
- 
+
     if patternFor == "auto":
       # automatic guess
       var basename = split(filename, "_R2.")
@@ -74,17 +75,17 @@ proc extractTag*(filename: string, patternFor: string, patternRev: string): (str
         return (basename[0], "R2")
       basename = split(filename, "_R2_")
       if len(basename) > 1:
-        return (basename[0], "R2") 
+        return (basename[0], "R2")
       basename = split(filename, "_2.")
       if len(basename) > 1:
-        return (basename[0], "R2") 
+        return (basename[0], "R2")
     else:
       var basename = split(filename, patternFor)
       if len(basename) > 1:
         return (basename[0], "R2")
-    
+
     return (filename, "SE")
- 
+
 proc format_dna*(seq: string, format_width: int): string =
   if format_width == 0:
     return seq
@@ -102,7 +103,7 @@ proc qualToChar*(q: int): char =
   (q+33).char
 
 proc print_seq*(record: FastxRecord, outputFile: File) =
-  var 
+  var
     name = record.name
     seqstring : string
 
@@ -111,20 +112,19 @@ proc print_seq*(record: FastxRecord, outputFile: File) =
 
   if len(record.qual) > 0 and (len(record.seq) != len(record.qual)):
     stderr.writeLine("Sequence <", record.name, ">: quality and sequence length mismatch.")
-    return 
+    return
 
   if len(record.qual) > 0 and forceFasta == false:
     # print FQ
-    
+
     seqString = "@" & name & "\n" & record.seq & "\n+\n" & record.qual
   elif forceFastq == true:
     seqString = "@" & name & "\n" & record.seq & "\n+\n" & repeat(qualToChar(defaultQual), len(record.seq))
   else:
     # print FA
-    seqString = ">" & name & "\n" & record.seq 
+    seqString = ">" & name & "\n" & record.seq
 
   if outputFile == nil:
     echo seqString
   else:
     outputFile.writeLine(seqstring)
-  

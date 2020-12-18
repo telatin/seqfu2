@@ -1,11 +1,14 @@
-# FASTA/FASTQ Dereplication
+# seqfu {{ VERSION }}
 
 ![Commit](https://img.shields.io/github/last-commit/telatin/nim-stuff)
 ![Version {{ VERSION }}](https://img.shields.io/badge/version-{{ VERSION }}-blue)
 
-Manipulation of FASTA/FASTQ files
+Manipulation of FASTA/FASTQ files.
+
+:book: **The documentation is available from [dedicated website](https://telatin.github.io/seqfu2)**
+
+---
 
 ```
 {{ SPLASH }}
 ```
-

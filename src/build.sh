@@ -3,7 +3,7 @@ set -exuo pipefail
 OLDWD=$PWD
 
 PLATFORM=""
-if [[ $(uname) == 'Darwin' ]]; 
+if [[ $(uname) == 'Darwin' ]];
 then
  PLATFORM="_mac"
 fi
@@ -25,11 +25,12 @@ VERSION=$(grep return $DIR/seqfu_utils.nim | grep -o \\d\[^\"\]\\+ | head -n 1)
 
 
 perl -e '
-   
+
   $VERSION=shift(@ARGV);
   $BIN=shift(@ARGV);
   $SPLASH=`$BIN --help 2>&1`;
   $TEMPLATE=shift(@ARGV);
+  print STDERR "bin:$BIN;version:$VERSION\n";
   open(I, "<", $TEMPLATE);
   while (<I>) {
    while ( $_=~/\{\{ (\w+) \}\}/g ) {
@@ -40,12 +41,10 @@ perl -e '
    print;
   }
 print "## Some functions\n";
-for my $function ('head', 'interleave', 'deinterleave', 'derep', 'stats', 'count') {
+for my $function ("head", "interleave", "deinterleave", "derep", "stats", "count") {
   print "### seqfu $function\n\n```\n";
   print `$BIN $function --help`;
-  print "````\n"
+  print "```\n"
 }
 
-' "$VERSION" "$DIR/bin/seqfu_$(uname)" "$DIR/README.raw" > $DIR/../README.md
-
-
+' "$VERSION" "$DIR/../bin/seqfu${PLATFORM}" "$DIR/README.raw" > $DIR/../README.md
