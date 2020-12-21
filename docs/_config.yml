@@ -1,4 +1,4 @@
-title: seqfu2
+title: seqfu2 docs
 repository: telatin/seqfu2
 lang: en
 description: "seqfu2: fastx sequence utilities"
@@ -12,6 +12,7 @@ remote_theme: rundocs/jekyll-rtd-theme
 
 plugins:
   - jekyll-remote-theme
+  - jemoji
 
 markdown: CommonMarkGhPages
 commonmark:

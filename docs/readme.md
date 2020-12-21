@@ -3,6 +3,13 @@
 
 # SeqFu
 
+
+A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
+supporting gzipped input files.
+Includes functions to _interleave_ and _de-interleave_ FASTQ files,
+to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
+
+
 ```note
 **Warning**: this website is under costruction. API are not stable.
 ```
