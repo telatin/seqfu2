@@ -36,7 +36,7 @@ else
 	ERRORS=$((ERRORS+1))
 fi
 
-# Interleave 
+# Interleave
 if [[ $($BIN ilv -1 $iPair1 -2 $iPair2 | wc -l) == $(cat $iPair1 $iPair2 | gzip -d | wc -l ) ]]; then
 	echo "OK: Interleave"
 else
@@ -92,4 +92,12 @@ else
 	echo "PASS"
 fi
 
-
+echo ""
+for TEST in $DIR/*.sh;
+do
+  BASE=$(basename $TEST  | cut -f 1 -d .)
+  if [[ "$BASE" != "mini" ]]; then
+    echo " * There are further tests for '$BASE'";
+    #bash $TEST;
+  fi
+done

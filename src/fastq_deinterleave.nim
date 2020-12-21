@@ -19,16 +19,16 @@ ilv: interleave FASTQ files
 
   -s --strip-comments            skip comments
   -p --prefix "string"           rename sequences (append a progressive number)
- 
+
 notes:
     use "-" as input filename to read from STDIN
 
 example:
 
-    dei -o newfile file.fq 
-  
+    dei -o newfile file.fq
+
   """, version=version(), argv=argv)
-  
+
 
   var
     input_file = $args["<interleaved-fastq>"]
@@ -42,12 +42,12 @@ example:
   check = args["--check"]
   stripComments = args["--strip-comments"]
   verbose = args["--verbose"]
-    
 
-  var 
+
+  var
     outStream1 = open(output_1, fmWrite)
     outStream2 = open(output_2, fmWrite)
-      
+
   if verbose:
     stderr.writeLine("- file:\t", input_file)
     stderr.writeLine("- output1:\t", output_1)
@@ -55,13 +55,16 @@ example:
     stderr.writeLine("- stripcomm:\t", stripComments)
 
 
+  if not existsFile(input_file):
+    stderr.writeLine("FATAL ERROR: File ", input_file, " not found.")
+    quit(1)
 
   # Open FASTQ files
   var fq = xopen[GzFile](input_file)
   defer: fq.close()
-  
+
   var record2: FastxRecord
- 
+
   var c = 0
 
 
