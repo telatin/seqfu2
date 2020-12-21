@@ -1,4 +1,4 @@
-# bash completion for seqkit                               -*- shell-script -*-
+# bash completion for seqfu                               -*- shell-script -*-
 
 
 # ADD TO ~/.bash_completion
@@ -6,7 +6,7 @@
 # for bcfile in ~/.bash_completion.d/* ; do
 #   . $bcfile
 # done
-__seqkit_debug()
+__seqfu_debug()
 {
     if [[ -n ${BASH_COMP_DEBUG_FILE} ]]; then
         echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
@@ -15,13 +15,13 @@ __seqkit_debug()
 
 # Homebrew on Macs have version 1.3 of bash-completion which doesn't include
 # _init_completion. This is a very minimal version of that function.
-__seqkit_init_completion()
+__seqfu_init_completion()
 {
     COMPREPLY=()
     _get_comp_words_by_ref "$@" cur prev words cword
 }
 
-__seqkit_index_of_word()
+__seqfu_index_of_word()
 {
     local w word=$1
     shift
@@ -33,7 +33,7 @@ __seqkit_index_of_word()
     index=-1
 }
 
-__seqkit_contains_word()
+__seqfu_contains_word()
 {
     local w word=$1; shift
     for w in "$@"; do
@@ -42,9 +42,9 @@ __seqkit_contains_word()
     return 1
 }
 
-__seqkit_handle_reply()
+__seqfu_handle_reply()
 {
-    __seqkit_debug "${FUNCNAME[0]}"
+    __seqfu_debug "${FUNCNAME[0]}"
     case $cur in
         -*)
             if [[ $(type -t compopt) = "builtin" ]]; then
@@ -71,7 +71,7 @@ __seqkit_handle_reply()
 
                 local index flag
                 flag="${cur%=*}"
-                __seqkit_index_of_word "${flag}" "${flags_with_completion[@]}"
+                __seqfu_index_of_word "${flag}" "${flags_with_completion[@]}"
                 COMPREPLY=()
                 if [[ ${index} -ge 0 ]]; then
                     PREFIX=""
@@ -89,7 +89,7 @@ __seqkit_handle_reply()
 
     # check if we are handling a flag with special work handling
     local index
-    __seqkit_index_of_word "${prev}" "${flags_with_completion[@]}"
+    __seqfu_index_of_word "${prev}" "${flags_with_completion[@]}"
     if [[ ${index} -ge 0 ]]; then
         ${flags_completion[${index}]}
         return
@@ -119,9 +119,9 @@ __seqkit_handle_reply()
     fi
 
     if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
-		if declare -F __seqkit_custom_func >/dev/null; then
+		if declare -F __seqfu_custom_func >/dev/null; then
 			# try command name qualified custom func
-			__seqkit_custom_func
+			__seqfu_custom_func
 		else
 			# otherwise fall back to unqualified for compatibility
 			declare -F __custom_func >/dev/null && __custom_func
@@ -141,21 +141,21 @@ __seqkit_handle_reply()
 }
 
 # The arguments should be in the form "ext1|ext2|extn"
-__seqkit_handle_filename_extension_flag()
+__seqfu_handle_filename_extension_flag()
 {
     local ext="$1"
     _filedir "@(${ext})"
 }
 
-__seqkit_handle_subdirs_in_dir_flag()
+__seqfu_handle_subdirs_in_dir_flag()
 {
     local dir="$1"
     pushd "${dir}" >/dev/null 2>&1 && _filedir -d && popd >/dev/null 2>&1 || return
 }
 
-__seqkit_handle_flag()
+__seqfu_handle_flag()
 {
-    __seqkit_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+    __seqfu_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
 
     # if a command required a flag, and we found it, unset must_have_one_flag()
     local flagname=${words[c]}
@@ -166,13 +166,13 @@ __seqkit_handle_flag()
         flagname=${flagname%=*} # strip everything after the =
         flagname="${flagname}=" # but put the = back
     fi
-    __seqkit_debug "${FUNCNAME[0]}: looking for ${flagname}"
-    if __seqkit_contains_word "${flagname}" "${must_have_one_flag[@]}"; then
+    __seqfu_debug "${FUNCNAME[0]}: looking for ${flagname}"
+    if __seqfu_contains_word "${flagname}" "${must_have_one_flag[@]}"; then
         must_have_one_flag=()
     fi
 
     # if you set a flag which only applies to this command, don't show subcommands
-    if __seqkit_contains_word "${flagname}" "${local_nonpersistent_flags[@]}"; then
+    if __seqfu_contains_word "${flagname}" "${local_nonpersistent_flags[@]}"; then
       commands=()
     fi
 
@@ -189,8 +189,8 @@ __seqkit_handle_flag()
     fi
 
     # skip the argument to a two word flag
-    if [[ ${words[c]} != *"="* ]] && __seqkit_contains_word "${words[c]}" "${two_word_flags[@]}"; then
-			  __seqkit_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
+    if [[ ${words[c]} != *"="* ]] && __seqfu_contains_word "${words[c]}" "${two_word_flags[@]}"; then
+			  __seqfu_debug "${FUNCNAME[0]}: found a flag ${words[c]}, skip the next argument"
         c=$((c+1))
         # if we are looking for a flags value, don't show commands
         if [[ $c -eq $cword ]]; then
@@ -202,13 +202,13 @@ __seqkit_handle_flag()
 
 }
 
-__seqkit_handle_noun()
+__seqfu_handle_noun()
 {
-    __seqkit_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+    __seqfu_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
 
-    if __seqkit_contains_word "${words[c]}" "${must_have_one_noun[@]}"; then
+    if __seqfu_contains_word "${words[c]}" "${must_have_one_noun[@]}"; then
         must_have_one_noun=()
-    elif __seqkit_contains_word "${words[c]}" "${noun_aliases[@]}"; then
+    elif __seqfu_contains_word "${words[c]}" "${noun_aliases[@]}"; then
         must_have_one_noun=()
     fi
 
@@ -216,55 +216,55 @@ __seqkit_handle_noun()
     c=$((c+1))
 }
 
-__seqkit_handle_command()
+__seqfu_handle_command()
 {
-    __seqkit_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+    __seqfu_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
 
     local next_command
     if [[ -n ${last_command} ]]; then
         next_command="_${last_command}_${words[c]//:/__}"
     else
         if [[ $c -eq 0 ]]; then
-            next_command="_seqkit_root_command"
+            next_command="_seqfu_root_command"
         else
             next_command="_${words[c]//:/__}"
         fi
     fi
     c=$((c+1))
-    __seqkit_debug "${FUNCNAME[0]}: looking for ${next_command}"
+    __seqfu_debug "${FUNCNAME[0]}: looking for ${next_command}"
     declare -F "$next_command" >/dev/null && $next_command
 }
 
-__seqkit_handle_word()
+__seqfu_handle_word()
 {
     if [[ $c -ge $cword ]]; then
-        __seqkit_handle_reply
+        __seqfu_handle_reply
         return
     fi
-    __seqkit_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+    __seqfu_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
     if [[ "${words[c]}" == -* ]]; then
-        __seqkit_handle_flag
-    elif __seqkit_contains_word "${words[c]}" "${commands[@]}"; then
-        __seqkit_handle_command
+        __seqfu_handle_flag
+    elif __seqfu_contains_word "${words[c]}" "${commands[@]}"; then
+        __seqfu_handle_command
     elif [[ $c -eq 0 ]]; then
-        __seqkit_handle_command
-    elif __seqkit_contains_word "${words[c]}" "${command_aliases[@]}"; then
+        __seqfu_handle_command
+    elif __seqfu_contains_word "${words[c]}" "${command_aliases[@]}"; then
         # aliashash variable is an associative array which is only supported in bash > 3.
         if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
             words[c]=${aliashash[${words[c]}]}
-            __seqkit_handle_command
+            __seqfu_handle_command
         else
-            __seqkit_handle_noun
+            __seqfu_handle_noun
         fi
     else
-        __seqkit_handle_noun
+        __seqfu_handle_noun
     fi
-    __seqkit_handle_word
+    __seqfu_handle_word
 }
 
-_seqkit_amplicon()
+_seqfu_amplicon()
 {
-    last_command="seqkit_amplicon"
+    last_command="seqfu_amplicon"
 
     command_aliases=()
 
@@ -322,9 +322,9 @@ _seqkit_amplicon()
     noun_aliases=()
 }
 
-_seqkit_bam()
+_seqfu_bam()
 {
-    last_command="seqkit_bam"
+    last_command="seqfu_bam"
 
     command_aliases=()
 
@@ -442,9 +442,9 @@ _seqkit_bam()
     noun_aliases=()
 }
 
-_seqkit_common()
+_seqfu_common()
 {
-    last_command="seqkit_common"
+    last_command="seqfu_common"
 
     command_aliases=()
 
@@ -489,9 +489,9 @@ _seqkit_common()
     noun_aliases=()
 }
 
-_seqkit_concat()
+_seqfu_concat()
 {
-    last_command="seqkit_concat"
+    last_command="seqfu_concat"
 
     command_aliases=()
 
@@ -527,9 +527,9 @@ _seqkit_concat()
     noun_aliases=()
 }
 
-_seqkit_convert()
+_seqfu_convert()
 {
-    last_command="seqkit_convert"
+    last_command="seqfu_convert"
 
     command_aliases=()
 
@@ -589,9 +589,9 @@ _seqkit_convert()
     noun_aliases=()
 }
 
-_seqkit_duplicate()
+_seqfu_duplicate()
 {
-    last_command="seqkit_duplicate"
+    last_command="seqfu_duplicate"
 
     command_aliases=()
 
@@ -631,9 +631,9 @@ _seqkit_duplicate()
     noun_aliases=()
 }
 
-_seqkit_faidx()
+_seqfu_faidx()
 {
-    last_command="seqkit_faidx"
+    last_command="seqfu_faidx"
 
     command_aliases=()
 
@@ -678,9 +678,9 @@ _seqkit_faidx()
     noun_aliases=()
 }
 
-_seqkit_fish()
+_seqfu_fish()
 {
-    last_command="seqkit_fish"
+    last_command="seqfu_fish"
 
     command_aliases=()
 
@@ -765,9 +765,9 @@ _seqkit_fish()
     noun_aliases=()
 }
 
-_seqkit_fq2fa()
+_seqfu_fq2fa()
 {
-    last_command="seqkit_fq2fa"
+    last_command="seqfu_fq2fa"
 
     command_aliases=()
 
@@ -803,9 +803,9 @@ _seqkit_fq2fa()
     noun_aliases=()
 }
 
-_seqkit_fx2tab()
+_seqfu_fx2tab()
 {
-    last_command="seqkit_fx2tab"
+    last_command="seqfu_fx2tab"
 
     command_aliases=()
 
@@ -873,9 +873,9 @@ _seqkit_fx2tab()
     noun_aliases=()
 }
 
-_seqkit_genautocomplete()
+_seqfu_genautocomplete()
 {
-    last_command="seqkit_genautocomplete"
+    last_command="seqfu_genautocomplete"
 
     command_aliases=()
 
@@ -920,9 +920,9 @@ _seqkit_genautocomplete()
     noun_aliases=()
 }
 
-_seqkit_grep()
+_seqfu_grep()
 {
-    last_command="seqkit_grep"
+    last_command="seqfu_grep"
 
     command_aliases=()
 
@@ -994,9 +994,9 @@ _seqkit_grep()
     noun_aliases=()
 }
 
-_seqkit_head()
+_seqfu_head()
 {
-    last_command="seqkit_head"
+    last_command="seqfu_head"
 
     command_aliases=()
 
@@ -1036,9 +1036,9 @@ _seqkit_head()
     noun_aliases=()
 }
 
-_seqkit_locate()
+_seqfu_locate()
 {
-    last_command="seqkit_locate"
+    last_command="seqfu_locate"
 
     command_aliases=()
 
@@ -1106,9 +1106,9 @@ _seqkit_locate()
     noun_aliases=()
 }
 
-_seqkit_mutate()
+_seqfu_mutate()
 {
-    last_command="seqkit_mutate"
+    last_command="seqfu_mutate"
 
     command_aliases=()
 
@@ -1176,9 +1176,9 @@ _seqkit_mutate()
     noun_aliases=()
 }
 
-_seqkit_range()
+_seqfu_range()
 {
-    last_command="seqkit_range"
+    last_command="seqfu_range"
 
     command_aliases=()
 
@@ -1218,9 +1218,9 @@ _seqkit_range()
     noun_aliases=()
 }
 
-_seqkit_rename()
+_seqfu_rename()
 {
-    last_command="seqkit_rename"
+    last_command="seqfu_rename"
 
     command_aliases=()
 
@@ -1259,9 +1259,9 @@ _seqkit_rename()
     noun_aliases=()
 }
 
-_seqkit_replace()
+_seqfu_replace()
 {
-    last_command="seqkit_replace"
+    last_command="seqfu_replace"
 
     command_aliases=()
 
@@ -1329,9 +1329,9 @@ _seqkit_replace()
     noun_aliases=()
 }
 
-_seqkit_restart()
+_seqfu_restart()
 {
-    last_command="seqkit_restart"
+    last_command="seqfu_restart"
 
     command_aliases=()
 
@@ -1371,9 +1371,9 @@ _seqkit_restart()
     noun_aliases=()
 }
 
-_seqkit_rmdup()
+_seqfu_rmdup()
 {
-    last_command="seqkit_rmdup"
+    last_command="seqfu_rmdup"
 
     command_aliases=()
 
@@ -1426,9 +1426,9 @@ _seqkit_rmdup()
     noun_aliases=()
 }
 
-_seqkit_sample()
+_seqfu_sample()
 {
-    last_command="seqkit_sample"
+    last_command="seqfu_sample"
 
     command_aliases=()
 
@@ -1479,9 +1479,9 @@ _seqkit_sample()
     noun_aliases=()
 }
 
-_seqkit_sana()
+_seqfu_sana()
 {
-    last_command="seqkit_sana"
+    last_command="seqfu_sana"
 
     command_aliases=()
 
@@ -1521,9 +1521,9 @@ _seqkit_sana()
     noun_aliases=()
 }
 
-_seqkit_seq()
+_seqfu_seq()
 {
-    last_command="seqkit_seq"
+    last_command="seqfu_seq"
 
     command_aliases=()
 
@@ -1621,9 +1621,9 @@ _seqkit_seq()
     noun_aliases=()
 }
 
-_seqkit_shuffle()
+_seqfu_shuffle()
 {
-    last_command="seqkit_shuffle"
+    last_command="seqfu_shuffle"
 
     command_aliases=()
 
@@ -1669,9 +1669,9 @@ _seqkit_shuffle()
     noun_aliases=()
 }
 
-_seqkit_sliding()
+_seqfu_sliding()
 {
-    last_command="seqkit_sliding"
+    last_command="seqfu_sliding"
 
     command_aliases=()
 
@@ -1721,9 +1721,9 @@ _seqkit_sliding()
     noun_aliases=()
 }
 
-_seqkit_sort()
+_seqfu_sort()
 {
-    last_command="seqkit_sort"
+    last_command="seqfu_sort"
 
     command_aliases=()
 
@@ -1787,9 +1787,9 @@ _seqkit_sort()
     noun_aliases=()
 }
 
-_seqkit_split()
+_seqfu_split()
 {
-    last_command="seqkit_split"
+    last_command="seqfu_split"
 
     command_aliases=()
 
@@ -1856,9 +1856,9 @@ _seqkit_split()
     noun_aliases=()
 }
 
-_seqkit_split2()
+_seqfu_split2()
 {
-    last_command="seqkit_split2"
+    last_command="seqfu_split2"
 
     command_aliases=()
 
@@ -1917,9 +1917,9 @@ _seqkit_split2()
     noun_aliases=()
 }
 
-_seqkit_stats()
+_seqfu_stats()
 {
-    last_command="seqkit_stats"
+    last_command="seqfu_stats"
 
     command_aliases=()
 
@@ -1975,9 +1975,9 @@ _seqkit_stats()
     noun_aliases=()
 }
 
-_seqkit_subseq()
+_seqfu_subseq()
 {
-    last_command="seqkit_subseq"
+    last_command="seqfu_subseq"
 
     command_aliases=()
 
@@ -2043,9 +2043,9 @@ _seqkit_subseq()
     noun_aliases=()
 }
 
-_seqkit_tab2fx()
+_seqfu_tab2fx()
 {
-    last_command="seqkit_tab2fx"
+    last_command="seqfu_tab2fx"
 
     command_aliases=()
 
@@ -2085,9 +2085,9 @@ _seqkit_tab2fx()
     noun_aliases=()
 }
 
-_seqkit_translate()
+_seqfu_translate()
 {
-    last_command="seqkit_translate"
+    last_command="seqfu_translate"
 
     command_aliases=()
 
@@ -2149,9 +2149,9 @@ _seqkit_translate()
     noun_aliases=()
 }
 
-_seqkit_version()
+_seqfu_version()
 {
-    last_command="seqkit_version"
+    last_command="seqfu_version"
 
     command_aliases=()
 
@@ -2187,9 +2187,9 @@ _seqkit_version()
     noun_aliases=()
 }
 
-_seqkit_watch()
+_seqfu_watch()
 {
-    last_command="seqkit_watch"
+    last_command="seqfu_watch"
 
     command_aliases=()
 
@@ -2274,9 +2274,9 @@ _seqkit_watch()
     noun_aliases=()
 }
 
-_seqkit_root_command()
+_seqfu_root_command()
 {
-    last_command="seqkit"
+    last_command="seqfu"
 
     command_aliases=()
 
@@ -2358,7 +2358,7 @@ _seqkit_root_command()
     noun_aliases=()
 }
 
-__start_seqkit()
+__start_seqfu()
 {
     local cur prev words cword
     declare -A flaghash 2>/dev/null || :
@@ -2366,7 +2366,7 @@ __start_seqkit()
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -s || return
     else
-        __seqkit_init_completion -n "=" || return
+        __seqfu_init_completion -n "=" || return
     fi
 
     local c=0
@@ -2375,19 +2375,19 @@ __start_seqkit()
     local local_nonpersistent_flags=()
     local flags_with_completion=()
     local flags_completion=()
-    local commands=("seqkit")
+    local commands=("seqfu")
     local must_have_one_flag=()
     local must_have_one_noun=()
     local last_command
     local nouns=()
 
-    __seqkit_handle_word
+    __seqfu_handle_word
 }
 
 if [[ $(type -t compopt) = "builtin" ]]; then
-    complete -o default -F __start_seqkit seqkit
+    complete -o default -F __start_seqfu seqfu
 else
-    complete -o default -o nospace -F __start_seqkit seqkit
+    complete -o default -o nospace -F __start_seqfu seqfu
 fi
 
 # ex: ts=4 sw=4 et filetype=sh

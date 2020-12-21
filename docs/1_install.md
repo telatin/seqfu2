@@ -5,10 +5,6 @@ permalink: /installation
 
 # Installation
 
-```note
-This page is a stub
-```
-
 ## Pre-compiled binaries
 
 Pre-compiled binaries are the fastest and easiest way to get _qax_. To get the latest version,
@@ -27,12 +23,8 @@ chmod +x seqfu
 
 ## Install via Miniconda
 
-```note
-Miniconda installation has been tested on MacOS and Linux, but being _qax_ a single binary, if the precompiled works for you we recommend it.
-```
-
-Alternatively, you can install _qax_ from BioConda, if you have _conda_ installed:
+Alternatively, you can install **seqfu** from BioConda, if you have _conda_ installed ([how to install it](https://docs.conda.io/en/latest/miniconda.html)):
 
 ```
-conda install -c conda-forge -c bioconda seqfu2
+conda install -c conda-forge -c bioconda seqfu
 ```

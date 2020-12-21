@@ -1,10 +1,10 @@
 <a href="https://telatin.github.io/seqfu2" description="SeqFu documentation">
 <img align="right" width="128" height="128" src="docs/img/seqfu-512.png"></a>
 
-# SeqFu 0.8.2
+# SeqFu 0.8.4
 
 ![Commit](https://img.shields.io/github/last-commit/telatin/nim-stuff)
-![Version 0.8.2](https://img.shields.io/badge/version-0.8.2-blue)
+![Version 0.8.4](https://img.shields.io/badge/version-0.8.4-blue)
 [![Build Status](https://travis-ci.com/telatin/seqfu2.svg?branch=main)](https://travis-ci.com/telatin/seqfu2)
 
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
@@ -20,7 +20,7 @@ sequences and to *count* and print *statistics* on sequence lengths.
 The program has a set of subcommands (and there are some extra utilities as well)
 ```
 SeqFU - Sequence Fastx Utilities
-version: 0.8.2
+version: 0.8.4
 
 	• count [cnt]         : count FASTA/FASTQ reads, pair-end aware
 	• deinterleave [dei]  : deinterleave FASTQ
@@ -40,7 +40,7 @@ Add --help after each command to print usage
 ```
 ## Some functions
 
-### seqfu head
+### :closed_book: seqfu head
 
 ```
 Usage: head [options] [<inputfile> ...]
@@ -59,7 +59,7 @@ Options:
   -h, --help             Show this help
 ```
 
-### seqfu interleave
+### :closed_book: seqfu interleave
 
 ```
 ilv: interleave FASTQ files
@@ -84,7 +84,7 @@ example:
     ilv -1 file_R1.fq > interleaved.fq
 ```
 
-### seqfu deinterleave
+### :closed_book: seqfu deinterleave
 
 ```
 ilv: interleave FASTQ files
@@ -108,7 +108,7 @@ example:
     dei -o newfile file.fq
 ```
 
-### seqfu derep
+### :closed_book: seqfu derep
 
 ```
 Usage: derep [options] [<inputfile> ...]
@@ -130,7 +130,7 @@ Options:
   -h, --help                   Show this help
 ```
 
-### seqfu stats
+### :closed_book: seqfu stats
 
 ```
 Usage: stats [options] [<inputfile> ...]
@@ -144,7 +144,7 @@ Options:
   -h, --help             Show this help
 ```
 
-### seqfu count
+### :closed_book: seqfu count
 
 ```
 Usage: count [options] [<inputfile> ...]

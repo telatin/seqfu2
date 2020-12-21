@@ -16,7 +16,7 @@ BETA: 0.8.{{VERSION}}
 ]#
 
 proc version*(): string =
-  return "0.8.2"
+  return "0.8.4"
 
 
 

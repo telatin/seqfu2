@@ -14,7 +14,7 @@ to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
 **Warning**: this website is under costruction. API are not stable.
 ```
 
-:package: See the [repository](https://github.com/telatin/seqfu2)
+:package: See the **[repository](https://github.com/telatin/seqfu2)**
 
 
 ## Contents
