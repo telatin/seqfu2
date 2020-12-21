@@ -1,5 +1,5 @@
 <a href="https://telatin.github.io/seqfu2" description="SeqFu documentation">
-<img align="right" width="128" height="128" src="docs/img/seqfu-512.png"></a>
+<img align="right" width="128" height="128" src="img/seqfu-512.png"></a>
 
 # SeqFu
 
