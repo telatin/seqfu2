@@ -1,5 +1,6 @@
 ---
 sort: 3
+permalink: /tools
 ---
 
 # Tools
