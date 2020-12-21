@@ -169,10 +169,11 @@ proc main(args: seq[string]) =
           break
 
         echo ">", i.name, " ", i.comment, "\n", i.sequence
-
+  except ShortCircuit:
+    echo p.help
   except:
     echo p.help
-    stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
+    stderr.writeLine("Error: wrong parameters: ", getCurrentExceptionMsg())
     quit(0)
 
 
