@@ -5,7 +5,7 @@
 
 ![Commit](https://img.shields.io/github/last-commit/telatin/nim-stuff)
 ![Version 0.8.2](https://img.shields.io/badge/version-0.8.2-blue)
-[![Build Status](https://travis-ci.org/telatin/seqfu2.svg?branch=main)](https://travis-ci.org/telatin/seqfu2)
+[![Build Status](https://travis-ci.com/telatin/seqfu2.svg?branch=main)](https://travis-ci.com/telatin/seqfu2)
 
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
 supporting gzipped input files.
