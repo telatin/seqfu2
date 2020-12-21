@@ -1,7 +1,9 @@
-# seqfu {{ VERSION }}
+# SeqFu {{ VERSION }}
+<img align="right" width="256" height="256" src="docs/img/seqfu-512.png">
 
 ![Commit](https://img.shields.io/github/last-commit/telatin/nim-stuff)
 ![Version {{ VERSION }}](https://img.shields.io/badge/version-{{ VERSION }}-blue)
+[![Build Status](https://travis-ci.org/telatin/seqfu2.svg?branch=main)](https://travis-ci.org/telatin/seqfu2)
 
 Manipulation of FASTA/FASTQ files.
 
@@ -9,6 +11,7 @@ Manipulation of FASTA/FASTQ files.
 
 ---
 
+The program has a set of subcommands (and there are some extra utilities as well)
 ```
 {{ SPLASH }}
 ```

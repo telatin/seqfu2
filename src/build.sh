@@ -42,7 +42,7 @@ perl -e '
   }
 print "## Some functions\n";
 for my $function ("head", "interleave", "deinterleave", "derep", "stats", "count") {
-  print "### seqfu $function\n\n```\n";
+  print "\n### seqfu $function\n\n```\n";
   print `$BIN $function --help`;
   print "```\n"
 }

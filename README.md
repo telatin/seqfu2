@@ -1,7 +1,9 @@
-# seqfu 0.8.2
+# SeqFu 0.8.2
+<img align="right" width="256" height="256" src="docs/img/seqfu-512.png">
 
 ![Commit](https://img.shields.io/github/last-commit/telatin/nim-stuff)
 ![Version 0.8.2](https://img.shields.io/badge/version-0.8.2-blue)
+[![Build Status](https://travis-ci.org/telatin/seqfu2.svg?branch=main)](https://travis-ci.org/telatin/seqfu2)
 
 Manipulation of FASTA/FASTQ files.
 
@@ -9,6 +11,7 @@ Manipulation of FASTA/FASTQ files.
 
 ---
 
+The program has a set of subcommands (and there are some extra utilities as well)
 ```
 SeqFU - Sequence Fastx Utilities
 version: 0.8.2
@@ -30,6 +33,7 @@ Add --help after each command to print usage
 
 ```
 ## Some functions
+
 ### seqfu head
 
 ```
@@ -48,6 +52,7 @@ Options:
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
+
 ### seqfu interleave
 
 ```
@@ -72,6 +77,7 @@ example:
 
     ilv -1 file_R1.fq > interleaved.fq
 ```
+
 ### seqfu deinterleave
 
 ```
@@ -95,6 +101,7 @@ example:
 
     dei -o newfile file.fq
 ```
+
 ### seqfu derep
 
 ```
@@ -116,6 +123,7 @@ Options:
   -v, --verbose                Print verbose messages
   -h, --help                   Show this help
 ```
+
 ### seqfu stats
 
 ```
@@ -129,6 +137,7 @@ Options:
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
+
 ### seqfu count
 
 ```
