@@ -5,4 +5,4 @@ before_install:
   - docker pull nimlang/nim
 script:
   - docker run nimlang/nim nim --version
-  - docker run -v "$(pwd):/project" -w /project nimlang/nim sh -c "nimble refresh && nimble seqfu &&  bash test/mini.sh "
+  - docker run -v "$(pwd):/project" -w /project nimlang/nim sh -c "nimble refresh && nimble seqfu --verbose &&  bash test/mini.sh "
