@@ -18,8 +18,17 @@ fi
 
 nim c  --hints:off -w:on --opt:speed $RELEASE -p:$DIR/lib -o:$DIR/../bin/seqfu${PLATFORM} $DIR/sfu.nim  \
   || { echo "Compilation failed."; exit 1; }
-nim c --hints:off  -w:on --opt:speed $RELEASE -p:$DIR/lib -o:$DIR/../bin/fu-cov${PLATFORM} src/fu_cov.nim \
-  || { echo "fu-cov failed.";   exit 2; }
+
+for UTIL in src/fu*.nim;
+do
+ NAME=$(basename ${UTIL%.nim} | sed 's/_/-/g')
+ THREADS=""
+ if [[ $(grep thread "$UTIL")  ]]; then
+   THREADS=" --threads:on "
+ fi
+ nim c $THREADS --hints:off  -w:on --opt:speed $RELEASE -p:$DIR/lib -o:$DIR/../bin/${NAME}${PLATFORM} $UTIL \
+  || { echo "Util ${NAME} compilation failed.";   exit 2; }
+done
 
 if [ -e "$DIR/../test/mini.sh" ]; then
   bash $DIR/../test/mini.sh
@@ -29,7 +38,7 @@ else
 fi
 
 VERSION=$(grep return $DIR/seqfu_utils.nim | grep -o \\d\[^\"\]\\+ | head -n 1)
-sed -i "s/version\s\+=\s\+\".\+\"/version = \"$VERSION\"/" $DIR/../seqfu.nimble
+sed -i "s/version\s\+=\s\+\".\+\"/version = \"$VERSION\"/" $DIR/../seqfu.nimble || true
 
 perl -e '
 $VERSION=shift(@ARGV);

@@ -57,6 +57,7 @@ proc main() =
                }.toTable
 
   var args = commandLineParams()
+
   if len(args) < 1 or not progs.contains(args[0]):
     # no first argument: print help
     var 

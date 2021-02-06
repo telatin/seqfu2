@@ -16,7 +16,7 @@ BETA: 0.8.{{VERSION}}
 ]#
 
 proc version*(): string =
-  return "0.8.4"
+  return "0.8.5"
 
 
 
@@ -128,3 +128,102 @@ proc print_seq*(record: FastxRecord, outputFile: File) =
     echo seqString
   else:
     outputFile.writeLine(seqstring)
+
+
+### AMPLICHECK
+
+
+template initClosure*(id:untyped,iter:untyped) =
+  let id = iterator():auto {.closure.} =
+    for x in iter:
+      yield x
+
+proc translateIUPAC*(c: char): char =
+  const
+    inputBase = "ATUGCYRSWKMBDHVN"
+    rcBase    = "TAACGRYSWMKVHDBN"
+  let
+    base = toUpperAscii(c)
+  let o = inputBase.find(base)
+  if o >= 0:
+    return rcBase[o]
+  else:
+    return base
+
+proc matchIUPAC*(a, b: char): bool =
+  # a=primer; b=read
+  let
+    metachars = @['Y','R','S','W','K','M','B','D','H','V']
+
+  if b == 'N':
+    return false
+  elif a == b or a == 'N':
+    return true
+  elif a in metachars:
+    if a == 'Y' and (b == 'C' or b == 'T'):
+      return true
+    if a == 'R' and (b == 'A' or b == 'G'):
+      return true
+    if a == 'S' and (b == 'G' or b == 'C'):
+      return true
+    if a == 'W' and (b == 'A' or b == 'T'):
+      return true
+    if a == 'K' and (b == 'T' or b == 'G'):
+      return true
+    if a == 'M' and (b == 'A' or b == 'C'):
+      return true
+    if a == 'B' and (b != 'A'):
+      return true
+    if a == 'D' and (b != 'C'):
+      return true
+    if a == 'H' and (b != 'G'):
+      return true
+    if a == 'V' and (b != 'T'):
+      return true
+  return false
+
+proc reverse*(str: string): string =
+  result = ""
+  for index in countdown(str.high, 0):
+    result.add(str[index])
+
+proc revcompl*(s: string): string =
+  result = ""
+  let rev = reverse(s)
+  for c in rev:
+      result &= c.translateIUPAC
+
+proc findOligoMatches*(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[int] =
+  let dna = '-'.repeat(len(primer) - 1) & sequence & '-'.repeat(len(primer) - 1)
+
+  for pos in 0..len(dna)-len(primer):
+    let query = dna[pos..<pos+len(primer)]
+    var
+      matches = 0
+      mismatches = 0
+      primerRealLen = 0
+
+    for c in 0..<len(query):
+      if matchIUPAC(primer[c], query[c]):
+        matches += 1
+        primerRealLen += 1
+      elif query[c] != '-':
+        mismatches += 1
+        primerRealLen += 1
+
+      if mismatches > max_mismatches:
+        break
+ 
+    let
+      score = float(matches) / float(primerRealLen)
+    if score >= threshold and mismatches <= max_mismatches and matches >= min_matches:
+      result.add(pos-len(primer)+1)
+
+proc findPrimerMatches*(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[seq[int]] =
+  let
+    forMatches = findOligoMatches(sequence, primer, threshold, max_mismatches, min_matches)
+    primerReverse = revcompl(primer)
+    revMatches = findOligoMatches(sequence, primerReverse, threshold, max_mismatches, min_matches)
+
+  result = @[forMatches, revMatches]
+

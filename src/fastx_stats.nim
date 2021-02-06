@@ -1,9 +1,10 @@
 import klib
 import tables, strutils, sequtils
+import terminaltables
 from os import fileExists
 import docopt
 import ./seqfu_utils
-import terminaltables
+ 
 
 type
   FastxStats*   = tuple[count, sum, min, max, n25, n50, n75, n90: int, auN, avg: float]
@@ -13,7 +14,7 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
     f = xopen[GzFile](filename)
     r: FastxRecord
     total = 0
-    nseq  = 0 
+    nseq  = 0
     ctgSizes = initOrderedTable[int, int]()
 
     accum = 0
@@ -22,7 +23,7 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
 #    nArray = initTable[int, int]()
 #    iArray = initTable[int, int]()
   defer: f.close()
-  
+
   while f.readFastx(r):
     var ctgLen = len(r.seq)
 
@@ -53,9 +54,9 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
   for ctgLen in ctgSizesKeys:
 
     let
-      count = ctgSizes[ctgLen] 
+      count = ctgSizes[ctgLen]
       ctgLengths = (ctgLen * count)
-   
+
     i += 1
     accum += ctgLengths
     auN += float( ctgLen * ctgLen / total);
@@ -84,10 +85,10 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
   result.count = nseq
 
   result.avg   =float( total / nseq )
- 
 
 
-  
+
+
 proc fastx_stats(argv: var seq[string]): int =
   let args = docopt("""
 Usage: stats [options] [<inputfile> ...]
@@ -104,27 +105,27 @@ Options:
 
   verbose = args["--verbose"]
 
- 
+
   let
     printBasename = args["--basename"]
     nice     = args["--nice"]
 
-  var 
+  var
     files : seq[string]
     sep = "\t"
-  
+
 
   if args["--csv"]:
     sep = ","
-    
+
   if args["<inputfile>"].len() == 0:
     stderr.writeLine("Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
     files.add("-")
   else:
     for file in args["<inputfile>"]:
       files.add(file)
-    
-  
+
+
   let outputTable = newUnicodeTable()
   if nice:
     outputTable.separateRows = false
@@ -133,7 +134,7 @@ Options:
     echo "File", sep, "#Seq", sep, "Sum", sep, "Avg", sep, "N50", sep, "N75", sep, "N90", sep, "Min", sep, "Max"
 
   for filename in files:
-    var 
+    var
       stats = getFastxStats(filename)
 
     var rendername = if printBasename: $getBasename(filename)
@@ -145,5 +146,3 @@ Options:
       echo $rendername, sep, $stats.count, sep, $stats.sum, sep, stats.avg.formatFloat(ffDecimal, 1), sep, $stats.n50, sep, $stats.n75, sep, $stats.n90, $stats.min, sep, $stats.max
   if nice:
     outputTable.printTable()
-  
- 

@@ -109,7 +109,7 @@ proc main(args: seq[string]) =
       pf = 0      # passing filters
       ff = 0      # parsed files
     for filename in opts.inputfile:
-      if not existsFile(filename):
+      if not fileExists(filename):
         echo "FATAL ERROR: File ", filename, " not found."
         quit(1)
 
