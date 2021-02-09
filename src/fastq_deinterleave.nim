@@ -1,7 +1,7 @@
 import os
 import re
 import docopt
-import klib
+import readfq, iterutils
 import ./seqfu_utils
 
 
@@ -60,26 +60,26 @@ example:
     quit(1)
 
   # Open FASTQ files
-  var fq = xopen[GzFile](input_file)
-  defer: fq.close()
+  
 
-  var record2: FastxRecord
+  var 
+    c = 0
+    record1: FQRecord
+    n1, n2: string
 
-  var c = 0
-
-
-  while fq.readFastx(record2):
-    var
-      record1 = record2
-    fq.readFastx(record2)
-
-    if prefix != "nil":
-        record1.name = prefix & $c
-        record2.name = prefix & $c
+  for record2 in readfq(input_file):
+    n2 = record2.name
     c += 1
-    print_seq(record1, outStream1)
-    print_seq(record2, outStream2)
-
+    if (c mod 2 == 0):
+      print_seq(record1, outStream1, rename=n1)
+      print_seq(record2, outStream2, rename=n2)
+    if prefix != "nil":
+        n1 = prefix & $c
+        n2 = prefix & $c
+    
+    
+    record1 = record2
+    n1= n2
 
 
 

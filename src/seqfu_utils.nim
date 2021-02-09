@@ -1,4 +1,4 @@
-import klib
+import klib, readfq
 
 import  strutils, os
 #[ Versions
@@ -128,6 +128,37 @@ proc print_seq*(record: FastxRecord, outputFile: File) =
     echo seqString
   else:
     outputFile.writeLine(seqstring)
+
+
+proc print_seq*(record: FQRecord, outputFile: File, rename="") =
+  var
+    name = record.name
+    seqstring : string
+
+  if len(rename) > 0:
+    name = rename
+  if not stripComments:
+    name.add(" " & record.comment)
+
+  if len(record.quality) > 0 and (len(record.sequence) != len(record.quality)):
+    stderr.writeLine("Sequence <", record.name, ">: quality and sequence length mismatch.")
+    return
+
+  if len(record.quality) > 0 and forceFasta == false:
+    # print FQ
+
+    seqString = "@" & name & "\n" & record.sequence & "\n+\n" & record.quality
+  elif forceFastq == true:
+    seqString = "@" & name & "\n" & record.sequence & "\n+\n" & repeat(qualToChar(defaultQual), len(record.sequence))
+  else:
+    # print FA
+    seqString = ">" & name & "\n" & record.sequence
+
+  if outputFile == nil:
+    echo seqString
+  else:
+    outputFile.writeLine(seqstring)
+
 
 
 ### AMPLICHECK

@@ -1,4 +1,4 @@
-import klib
+import readfq
 import tables, strutils, sequtils
 import terminaltables
 from os import fileExists
@@ -11,31 +11,31 @@ type
 
 proc getFastxStats*(filename: string): FastxStats {.discardable.} =
   var
-    f = xopen[GzFile](filename)
-    r: FastxRecord
-    total = 0
+    totalBases = 0
     nseq  = 0
     ctgSizes = initOrderedTable[int, int]()
 
     accum = 0
     auN    : float
     i      = 0
-#    nArray = initTable[int, int]()
-#    iArray = initTable[int, int]()
-  defer: f.close()
 
-  while f.readFastx(r):
-    var ctgLen = len(r.seq)
+  try:
+    for r in readfq(filename):
+      var ctgLen = len(r.sequence)
+      if not (ctgLen in ctgSizes):
+        ctgSizes[ctgLen] = 1
+      else:
+        ctgSizes[ctgLen]+=1
+      totalBases += ctgLen
+      nseq  += 1
+  except Exception as e:
+    stderr.writeLine("Warning: ignoring file ", filename)
+    return
 
-
-    if not (ctgLen in ctgSizes):
-      ctgSizes[ctgLen] = 1
-    else:
-      ctgSizes[ctgLen]+=1
-    total += ctgLen
-    nseq  += 1
-
-  result.sum = total
+  if totalBases == 0:
+    stderr.writeLine("Warning: file <", filename, "> is empty or malformed.")
+    return 
+  result.sum = totalBases
 
   var
     ctgSizesKeys  = toSeq(keys(ctgSizes))
@@ -59,15 +59,15 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
 
     i += 1
     accum += ctgLengths
-    auN += float( ctgLen * ctgLen / total);
+    auN += float( ctgLen * ctgLen / totalBases);
 
-    if (result.n25 == 0)  and (float(accum) >=  float( total)  * float((100 - 25) / 100) )  :
+    if (result.n25 == 0)  and (float(accum) >=  float( totalBases)  * float((100 - 25) / 100) )  :
       result.n25 = ctgLen
-    if (result.n50 == 0)  and (float(accum) >=  float( total)  * float((100 - 50) / 100) )  :
+    if (result.n50 == 0)  and (float(accum) >=  float( totalBases)  * float((100 - 50) / 100) )  :
       result.n50 = ctgLen
-    if (result.n75 == 0)  and (float(accum) >=  float( total)  * float((100 - 75) / 100) )  :
+    if (result.n75 == 0)  and (float(accum) >=  float( totalBases)  * float((100 - 75) / 100) )  :
       result.n75 = ctgLen
-    if (result.n90 == 0)  and (float(accum) >=  float( total)  * float((100 - 90) / 100) )  :
+    if (result.n90 == 0)  and (float(accum) >=  float( totalBases)  * float((100 - 90) / 100) )  :
       result.n90 = ctgLen
   #[
     for index in nIndexes:
@@ -75,7 +75,7 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
         # was already calculated... skip
         continue
       let
-        quote = float(total) * float((100 - index) / 100)
+        quote = float(totalBases) * float((100 - index) / 100)
       if float(accum) >= quote:
         nArray[index] = ctgLen
         iArray[index] = i
@@ -84,7 +84,7 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
   result.auN = auN
   result.count = nseq
 
-  result.avg   =float( total / nseq )
+  result.avg   =float( totalBases / nseq )
 
 
 
@@ -134,6 +134,10 @@ Options:
     echo "File", sep, "#Seq", sep, "Sum", sep, "Avg", sep, "N50", sep, "N75", sep, "N90", sep, "Min", sep, "Max"
 
   for filename in files:
+    if not fileExists(filename):
+      stderr.writeLine("Error: file <", filename, "> not found. Skipping.")
+      continue
+
     var
       stats = getFastxStats(filename)
 

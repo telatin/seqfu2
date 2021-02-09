@@ -1,6 +1,6 @@
 import docopt
-import readfq 
-import os, strutils, re, iterutils, sequtils
+import readfq, iterutils
+import os, strutils, re, sequtils
 import threadpool
 import ./seqfu_utils
 let
