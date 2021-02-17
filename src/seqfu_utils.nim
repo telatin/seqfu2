@@ -1,22 +1,10 @@
 import klib, readfq
 
 import  strutils, os
-#[ Versions
-BETA: 0.8.{{VERSION}}
-- 2.0.0   Moved to 'seqfu2', to keep seqfu for perl utilities
-- 0.4.0   Added 'tail'
-- 0.3.0   Added 'stats'
-- 0.2.1   Added 'head'
-- 0.2.0   Improved 'count' with PE support
-          Initial refactoring
-- 0.1.2   Added 'count' stub
-- 0.1.1   Added 'derep' to dereplicate
-- 0.1.0   Initial release
-
-]#
+ 
 
 proc version*(): string =
-  return "0.8.5"
+  return "0.8.7"
 
 
 

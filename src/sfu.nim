@@ -29,6 +29,7 @@ include ./fastx_head
 include ./fastx_tail
 include ./fastx_stats
 include ./fastx_sort
+include ./fastx_grep
 #include ./fastx_fast_derep
  
 
@@ -46,6 +47,7 @@ var progs = {
        "srt": fastx_sort,             
          "sort" : fastx_sort,
        "view": fastx_view,
+       "grep": fastx_grep,
        "head": fastx_head,
        "tail": fastx_tail,  
 }.toTable
