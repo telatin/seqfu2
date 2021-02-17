@@ -88,17 +88,21 @@ Options:
     
     for id, counts in fileTable:
       if "SE" in counts:
-        echo counts["filename_SE"], "\t", counts["SE"]
+        echo counts["filename_SE"], "\t", counts["SE"], "\tSE"
       else:
-        if counts["R1"] == counts["R2"]:
-          echo counts["filename_R1"], "\t", counts["R1"]
-          if (unpaired):
-            echo counts["filename_R2"], "\t", counts["R2"]
+        if "R2" in counts:
+          if counts["R1"] == counts["R2"]:
+            echo counts["filename_R1"], "\t", counts["R1"], "\tPaired"
+            if (unpaired):
+              echo counts["filename_R2"], "\t", counts["R2"], "\tPaired:R2"
+          else:
+            errors += 1
+            stderr.writeLine("ERROR: Different counts in ", counts["filename_R1"], " and ", counts["filename_R2"] )
+            stderr.writeLine("# ", counts["filename_R1"], ": ", counts["R1"] )
+            stderr.writeLine("# ", counts["filename_R2"], ": ", counts["R2"] )
         else:
-          errors += 1
-          stderr.writeLine("ERROR: Different counts in ", counts["filename_R1"], " and ", counts["filename_R2"] )
-          stderr.writeLine("# ", counts["filename_R1"], ": ", counts["R1"] )
-          stderr.writeLine("# ", counts["filename_R2"], ": ", counts["R2"] )
+          echo counts["filename_R1"], "\t", counts["R1"], "\tSE"
+        
     
     if errors > 0:
       stderr.writeLine(errors, " errors found.")

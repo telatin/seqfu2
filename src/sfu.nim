@@ -4,7 +4,17 @@ import strutils
 import tables
 import algorithm
 import docopt
-#import nimprof
+import posix
+signal(SIG_PIPE, SIG_IGN)
+
+
+type EKeyboardInterrupt = object of CatchableError
+ 
+proc handler() {.noconv.} =
+  raise newException(EKeyboardInterrupt, "Keyboard Interrupt")
+ 
+setControlCHook(handler)
+
 
 # Suite Version
 import ./seqfu_utils
@@ -20,22 +30,24 @@ include ./fastx_tail
 include ./fastx_stats
 include ./fastx_sort
 #include ./fastx_fast_derep
-
-
-
+ 
 
 var progs = {
-       "ilv": fastq_interleave,       "interleave": fastq_interleave,
-       "dei": fastq_deinterleave,     "deinterleave": fastq_deinterleave,  
-       "der": fastx_derep,            "derep": fastx_derep,
-#       "uniq": fastx_fast_derep,      "fast_derep": fastx_fast_derep,
-       "cnt": fastx_count,            "count": fastx_count, 
-       "st" : fastx_stats,            "stats": fastx_stats,
-       "srt": fastx_sort,             "sort" : fastx_sort,
+       "ilv": fastq_interleave,       
+         "interleave": fastq_interleave,
+       "dei": fastq_deinterleave,     
+         "deinterleave": fastq_deinterleave,  
+       "der": fastx_derep,            
+         "derep": fastx_derep, 
+       "cnt": fastx_count,            
+         "count": fastx_count, 
+       "st" : fastx_stats,            
+         "stats": fastx_stats,
+       "srt": fastx_sort,             
+         "sort" : fastx_sort,
        "view": fastx_view,
        "head": fastx_head,
-       "tail": fastx_tail,
-       
+       "tail": fastx_tail,  
 }.toTable
 
 proc main() =
@@ -83,7 +95,14 @@ proc main() =
     echo "\nAdd --help after each command to print usage"
   else:
     var p = args[0]; args.delete(0)
-    quit(progs[p](args))
+    try:
+      let exitStatus = progs[p](args)
+      quit(exitStatus)
+    except EKeyboardInterrupt:
+      quit(0)
+    except:
+      stderr.writeLine( getCurrentExceptionMsg() )
+      quit(1)   
 
 when isMainModule:
   main()

@@ -10,6 +10,9 @@ proc fastx_head(argv: var seq[string]): int =
     let args = docopt("""
 Usage: head [options] [<inputfile> ...]
 
+Select a number of sequences from the beginning of a file, allowing
+to select
+
 Options:
   -n, --num NUM          Print the first NUM sequences [default: 10]
   -k, --skip SKIP        Print one sequence every SKIP [default: 0]
@@ -18,24 +21,24 @@ Options:
   -b, --basename         prepend basename to sequence name
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
-  --sep STRING       Sequence name fields separator [default: _]
+  --sep STRING           Sequence name fields separator [default: _]
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
-  -h, --help             Show this help
+  --help                 Show this help
 
   """, version=version(), argv=argv)
 
-    verbose = args["--verbose"]
+    verbose       = args["--verbose"]
     stripComments = args["--strip-comments"]
-    forceFasta = args["--fasta"]
-    forceFastq = args["--fastq"]
-    defaultQual = parseInt($args["--fastq-qual"])
+    forceFasta    = args["--fasta"]
+    forceFastq    = args["--fastq"]
+    defaultQual   = parseInt($args["--fastq-qual"])
     var
-      num, skip : int
-      prefix : string
-      files : seq[string]  
+      num, skip    : int
+      prefix       : string
+      files        : seq[string]  
       printBasename: bool 
-      separator:  string 
+      separator    :  string 
 
 
     try:
@@ -59,7 +62,12 @@ Options:
     
     
     for filename in files:
-      echoVerbose(filename, verbose)
+      if not fileExists(filename):
+        stderr.writeLine("Skipping ", filename, ": not found")
+        continue
+      else:
+        echoVerbose(filename, verbose)
+
       var 
         f = xopen[GzFile](filename)
         y = 0

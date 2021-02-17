@@ -147,6 +147,6 @@ Options:
     if nice:
       outputTable.addRow(@[$rendername, $stats.count, $stats.sum, stats.avg.formatFloat(ffDecimal, 1), $stats.n50,$stats.n75,$stats.n90,$stats.min, $stats.max])
     else:
-      echo $rendername, sep, $stats.count, sep, $stats.sum, sep, stats.avg.formatFloat(ffDecimal, 1), sep, $stats.n50, sep, $stats.n75, sep, $stats.n90, $stats.min, sep, $stats.max
+      echo $rendername, sep, $stats.count, sep, $stats.sum, sep, stats.avg.formatFloat(ffDecimal, 1), sep, $stats.n50, sep, $stats.n75, sep, $stats.n90, sep, $stats.min, sep, $stats.max
   if nice:
     outputTable.printTable()

@@ -38,7 +38,9 @@ var
    lineWidth*       = 0
 
 
-
+proc charToQual*(c: char): int =
+  ## returns Illumina quality score for a given character
+  c.ord - 33
 
 proc getBasename*(filename: string): string =
   let  fileParse = splitFile(filename)

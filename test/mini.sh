@@ -2,9 +2,9 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 PLATFORM=""
-if [[ $(uname) == "Darwin" ]]; then
- PLATFORM="_mac"
-fi
+#if [[ $(uname) == "Darwin" ]]; then
+# PLATFORM="_mac"
+#fi
 BIN=$DIR/../bin/seqfu${PLATFORM}
 FILES=$DIR/../data/
 
