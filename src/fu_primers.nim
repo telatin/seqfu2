@@ -5,14 +5,14 @@ import threadpool
 import ./seqfu_utils
 let
   programVersion = "1.0"
-  programName = "amplicheck"
+  programName = "fu-primers"
 
 var
   poolsize = 100
  
 type
   trimmingResults = object
-    input, output, trimmed: int
+    input,     output,     trimmed: int
 
 type
   primerOptions = object
@@ -53,13 +53,19 @@ proc processRead(read: FQRecord, opts: primerOptions): FQRecord =
         elif m+plen >= slen - opts.margin:
           if trimEnd > m:
             trimEnd = m
-    
+
+  if trimEnd - trimFrom < 2:
+      result.sequence = ""
+      result.quality = ""
+      return
+
   result.sequence = read.sequence[trimFrom ..< trimEnd]
+   
   if len(read.quality) > 0:
     result.quality  = read.quality[trimFrom  ..< trimEnd]
 
 proc processSequencePairsArray(pool: seq[FQRecord], opts: primerOptions, minlen: int): trimmingResults =
-  result.input = pool.high + 1
+  result.input = 2 * (pool.high + 1)
   var
     results1 = newSeq[FQRecord]()
     results2 = newSeq[FQRecord]()
@@ -96,7 +102,7 @@ proc processSequenceSingleArray(pool: seq[FQRecord], opts: primerOptions, minlen
 
 proc main(args: seq[string]) =
   let args = docopt("""
-  Usage: amplicheck [options] -1 <FOR> [-2 <REV>]
+  Usage: fu-primers [options] -1 <FOR> [-2 <REV>]
 
   This program currently only supports paired-end Illumina reads.
 
@@ -106,12 +112,12 @@ proc main(args: seq[string]) =
     -f --primer-for FOR       Sequence of the forward primer [default: CCTACGGGNGGCWGCAG]
     -r --primer-rev REV       Sequence of the reverse primer [default: GGACTACHVGGGTATCTAATCC]
     -m --min-len INT          Minimum sequence length after trimming [default: 50]
+    --primer-thrs FLOAT       Minimum amount of matches over total length [default: 0.8]
+    --primer-mismatches INT   Maximum number of missmatches allowed [default: 2]
+    --primer-min-matches INT  Minimum numer of matches required [default: 8]
+    --primer-pos-margin INT   Number of bases from the extremity of the sequence allowed [default: 2]
     --pattern-R1 <tag-1>      Tag in first pairs filenames [default: auto]
     --pattern-R2 <tag-2>      Tag in second pairs filenames [default: auto]
-    --primer-thrs FLOAT       Minimum amount of matches over total length [default: 1.0]
-    --primer-mismatches INT   Maximum number of missmatches allowed [default: 0]
-    --primer-min-matches INT  Minimum numer of matches required [default: 8]
-    --primer-pos-margin INT   Number of bases from the extremity of the sequence allowed [default: 0]
     -v --verbose              Verbose output
     -h --help                 Show this help
     """, version=version(), argv=args)

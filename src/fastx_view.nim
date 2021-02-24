@@ -88,9 +88,9 @@ Options:
   -q, --qual-scale STR   Quality thresholds, seven values
                          separated by columns [default: 3:15:25:28:30:35:40]
 
-  --match-ths FLOAT      Oligo matching threshold [default: 1.0]
-  --min-matches INT      Oligo minimum matches [default: 4]
-  --max-mismatches INT   Oligo maxmimum mismataches [default: 1]
+  --match-ths FLOAT      Oligo matching threshold [default: 0.75]
+  --min-matches INT      Oligo minimum matches [default: 5]
+  --max-mismatches INT   Oligo maxmimum mismataches [default: 2]
 
   -n, --nocolor          Disable colored output
   --verbose              Show extra information

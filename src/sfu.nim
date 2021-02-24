@@ -60,11 +60,11 @@ proc main() =
                "derep [der]"       : "feature-rich dereplication of FASTA/FASTQ files",
 #               "fast_derep [uniq]" : "fast dereplication of FASTA/FASTQ files",
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
-               "merge [mrg]"       : "merge Illumina lanes",
+#               "merge [mrg]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
                "sort [srt]"        : "sort sequences by size (uniques)"
                }.toTable
-    helps_last = {"view"           : "view sequences",
+    helps_last = {"view"           : "view sequences with colored quality and oligo matches",
                   "head"           : "print first sequences",
                   "tail"           : "view last sequences",
                   "grep"           : "select sequences with patterns",

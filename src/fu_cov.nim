@@ -1,5 +1,5 @@
 import klib
-import re
+ 
 import argparse
 import strutils
 import stats
@@ -8,7 +8,6 @@ from os import fileExists
 import algorithm
 
 const prog = "fu-cov"
-const version = "0.3.1"
 
 #[
    extract contigs by coverage

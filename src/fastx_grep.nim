@@ -84,7 +84,7 @@ Options:
         if $args["--name"] != "nil" and rfind(name, $args["--name"]) < 0:
           pass = 0
         
-        if $args["--regex"] != "nil" and not match(name, re(pattern), matches):
+        if $args["--regex"] != "nil" and not match(name, re(pattern, flags={reIgnoreCase}), matches):
           pass = 0
 
         if $args["--oligo"] != "nil":

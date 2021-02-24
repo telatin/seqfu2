@@ -2,9 +2,9 @@ import klib, readfq
 
 import  strutils, os
  
-
+const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 proc version*(): string =
-  return "0.8.7"
+  return NimblePkgVersion
 
 
 

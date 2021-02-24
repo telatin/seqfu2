@@ -1,5 +1,5 @@
 # Package
-version = "0.8.4"
+version = "0.8.8"
 author        = "Andrea Telatin"
 description   = "SeqFU command-line tools"
 license       = "MIT"
@@ -9,7 +9,7 @@ requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argpa
 
 srcDir = "src"
 binDir = "bin" 
-namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers"}.toTable()
+namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers", "fu_orf": "fu-orf"}.toTable()
 
 task seqfu, "compile SeqFU":
   mkdir  "bin"
