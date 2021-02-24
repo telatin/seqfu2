@@ -54,7 +54,7 @@ Options:
     
     
     for filename in files:
-      if not fileExists(filename):
+      if filename != "-"  and not fileExists(filename):
         stderr.writeLine("Skipping ", filename, ": not found")
         continue
       else:

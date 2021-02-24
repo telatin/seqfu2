@@ -54,8 +54,11 @@ Options:
       var
         printedFilename = filename
 
-      if filename != "-" and not existsFile(filename):
-        stderr.writeLine("WARNING: File ", filename, " not found.")
+      if filename != "-" and not fileExists(filename):
+        if dirExists(filename):
+          stderr.writeLine("WARNING: Directories as not supported. Skipping ", filename)
+        else:
+          stderr.writeLine("WARNING: File ", filename, " not found.")
         continue
       
       let

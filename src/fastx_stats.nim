@@ -134,8 +134,8 @@ Options:
     echo "File", sep, "#Seq", sep, "Sum", sep, "Avg", sep, "N50", sep, "N75", sep, "N90", sep, "Min", sep, "Max"
 
   for filename in files:
-    if not fileExists(filename):
-      stderr.writeLine("Error: file <", filename, "> not found. Skipping.")
+    if filename != "-"  and not fileExists(filename):
+      stderr.writeLine("Error: file <", filename, "> not found or not a file. Skipping.")
       continue
 
     var
