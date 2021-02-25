@@ -30,6 +30,7 @@ include ./fastx_tail
 include ./fastx_stats
 include ./fastx_sort
 include ./fastx_grep
+include ./fastq_merge_lanes
 #include ./fastx_fast_derep
  
 
@@ -46,6 +47,8 @@ var progs = {
          "stats": fastx_stats,
        "srt": fastx_sort,             
          "sort" : fastx_sort,
+       "mrg" : fastq_merge_lanes,
+         "merge" : fastq_merge_lanes,
        "view": fastx_view,
        "grep": fastx_grep,
        "head": fastx_head,
@@ -60,7 +63,7 @@ proc main() =
                "derep [der]"       : "feature-rich dereplication of FASTA/FASTQ files",
 #               "fast_derep [uniq]" : "fast dereplication of FASTA/FASTQ files",
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
-#               "merge [mrg]"       : "merge Illumina lanes",
+               "merge [mrg]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
                "sort [srt]"        : "sort sequences by size (uniques)"
                }.toTable

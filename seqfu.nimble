@@ -21,5 +21,5 @@ task seqfu, "compile SeqFU":
 task build, "build":
   exec "nim c -d:release  --opt:speed --threads:on src/fu_primers.nim"
   exec "nim c -d:release  --opt:speed --threads:on src/sfu.nim"
-
+  exec "nim c -d:release  --opt:speed src/fu_cov"
 
