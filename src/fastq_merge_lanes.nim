@@ -1,7 +1,7 @@
 import klib
 import sequtils
-import tables, strutils
-import os, sugar
+import tables
+import os
 import docopt
 import ./seqfu_utils
  
@@ -105,7 +105,9 @@ Options:
             r  : FastxRecord
           defer: fq.close()
           while fq.readFastx(r):
-            fOut.writeLine('@', r.name, fqSeparator, r.comment, "\n", r.seq, "\n+\n", r.qual)
+            if len(r.comment) > 0:
+              r.comment = fqSeparator & r.comment
+            fOut.writeLine('@', r.name,  r.comment, "\n", r.seq, "\n+\n", r.qual)
           
           if args["--verbose"]:
             stderr.writeLine(file)
@@ -120,6 +122,8 @@ Options:
             r  : FastxRecord
           defer: fq.close()
           while fq.readFastx(r):
-            rOut.writeLine('@', r.name, fqSeparator, r.comment, "\n", r.seq, "\n+\n", r.qual)
+            if len(r.comment) > 0:
+              r.comment = fqSeparator & r.comment
+            rOut.writeLine('@', r.name, r.comment, "\n", r.seq, "\n+\n", r.qual)
           if args["--verbose"]:
             stderr.writeLine(file)

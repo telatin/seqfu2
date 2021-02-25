@@ -1,0 +1,44 @@
+# plot_type: 'table'
+# section_name: 'SeqFu statistics'
+# description: 'Statistics on sequence lengths of a set of samples'
+# pconfig:
+#     namespace: 'Cust Data'
+# headers:
+#     col1:
+#         title: '#Seqs'
+#         description: 'Number of sequences'
+#         format: '{:,.0f}'
+#     col2:
+#         title: 'Total bp'
+#         description: 'Total size of the dataset'
+#     col3:
+#         title: 'Avg'
+#         description: 'Average sequence length'
+#     col4:
+#         title: 'N50'
+#         description: '50% of the sequences are longer than this size'
+#     col5:
+#         title: 'N75'
+#         description: '75% of the sequences are longer than this size'
+#     col6:
+#         title: 'N90'
+#         description: '90% of the sequences are longer than this size'
+#     col7:
+#         title: 'Min'
+#         description: 'Length of the shortest sequence'
+#     col8:
+#         title: 'Max'
+#         description: 'Length of the longest sequence'
+Sample	col1	col2	col3	col4	col5	col6	col7  col8
+data/compressed.fasta.gz	3	118	39.3	65	32	21	21	65
+data/compressed.fastq.gz	3	114	38.0	38	38	38	38	38
+data/dataset.fastq.gz	1250	313750	251.0	251	251	251	251	251
+data/filt.fa.gz	78730	24299931	308.6	316	316	220	180	485
+data/illumina_1.fq.gz	7	630	90.0	90	90	90	90	90
+data/illumina_2.fq.gz	7	630	90.0	90	90	90	90	90
+data/interleaved.fq.gz	14	1260	90.0	90	90	90	90	90
+data/longerone_R1.fq.gz	7	630	90.0	90	90	90	90	90
+data/longerone_R2.fq.gz	2	180	90.0	90	90	90	90	90
+data/longertwo_R1.fq.gz	2	180	90.0	90	90	90	90	90
+data/longertwo_R2.fq.gz	7	630	90.0	90	90	90	90	90
+data/test_4.fa.gz	32	3300	103.1	189	168	168	4	256
