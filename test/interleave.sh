@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 PLATFORM=""
 if [[ $(uname) == "Darwin" ]]; then
- PLATFORM="_mac"
+ PLATFORM=""
 fi
 BIN=$DIR/../bin/seqfu${PLATFORM}
 FILES=$DIR/../data/
@@ -102,9 +102,9 @@ fi
 
 # Interleave nonexistent R2
 # needed: warning if input R2 file is nonexistent; at the moment: error
-echo ""
-echo "8. TEST - interleave one existent R1 fastq file with one non-existent file"
-echo "COMMAND: $BIN ilv -v -o testtmpmiss -1 $iPair1a -2 $iAllMISS"
-$BIN ilv -v -o testtmpmiss -1 $iPair1a -2 $iAllMISS 
+#echo ""
+#echo "8. TEST - interleave one existent R1 fastq file with one non-existent file"
+#echo "COMMAND: $BIN ilv -v -o testtmpmiss -1 $iPair1a -2 $iAllMISS"
+#$BIN ilv -v -o testtmpmiss -1 $iPair1a -2 $iAllMISS 
 
 rm testtmp*

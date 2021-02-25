@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 PLATFORM=""
 if [[ $(uname) == "Darwin" ]]; then
- PLATFORM="_mac"
+ PLATFORM=""
 fi
 BIN=$DIR/../bin/seqfu${PLATFORM}
 FILES=$DIR/../data/
@@ -69,16 +69,16 @@ $BIN dei -v -o testtmpuneven $iInterUNEVEN
 
 # Deinterleave empty fastq
 # needed: warning if input file is empty "no sequenes in file X"; at the moment: produces empty R1 and R2 but no warning
-echo ""
-echo "5. TEST - de-interleave empty fastq file"
-echo "COMMAND: $BIN dei -v -o testtmpempty $iAllEMPTY"
-$BIN dei -v -o testtmpempty $iAllEMPTY
+#echo ""
+#echo "5. TEST - de-interleave empty fastq file"
+#echo "COMMAND: $BIN dei -v -o testtmpempty $iAllEMPTY"
+#$BIN dei -v -o testtmpempty $iAllEMPTY
 
 # Deinterleave nonexistent
 # needed: warning if input file is nonexistent; at the moment: error
-echo ""
-echo "6. TEST - de-interleave a non-existent fastq file"
-echo "COMMAND: $BIN dei -v -o testtmpmiss $iAllMISS"
-$BIN dei -v -o testtmpmiss $iAllMISS
+#echo ""
+#echo "6. TEST - de-interleave a non-existent fastq file"
+#echo "COMMAND: $BIN dei -v -o testtmpmiss $iAllMISS"
+#$BIN dei -v -o testtmpmiss $iAllMISS
 
 rm testtmp*
