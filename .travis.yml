@@ -2,6 +2,6 @@ sudo: required
 services:
   - docker
 before_install:
-  - docker pull nimlang/nim
+  - apt install -y zlib1g-dev wget curl build-essential
 script:
   - bash src/travis.sh
