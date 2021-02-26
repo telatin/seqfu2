@@ -13,15 +13,15 @@ var p = newParser(prog):
   help("Extract ORFs from Paired-End reads.")
   option("-1", "--R1", help="FASTQ file, first pair")
   option("-2", "--R2", help="FASTQ file, second pair")
-  option("-m", "--min-size", help="Minimum ORF size (aa)", default=some("26"))
+  option("-m", "--min-size", help="Minimum ORF size (aa)", default="26")
   option("-p", "--prefix", help="Rename reads using this prefix")
-  option("--pool-size", help="Size of the batch of reads to process per thread", default=some("260"))
+  option("--pool-size", help="Size of the batch of reads to process per thread", default="260")
   flag("-v",   "--verbose", help="Print verbose info")
   
   flag("-j", "--join", help="Try joining paired ends")
-  option("--min-overlap", help="Minimum PE overlap", default=some("12"))
-  option("--max-overlap", help="Maximum PE overlap", default=some("200"))
-  option("--min-identity", help="Minimum sequence identity in overlap", default=some("0.85"))
+  option("--min-overlap", help="Minimum PE overlap", default="12")
+  option("--max-overlap", help="Maximum PE overlap", default="200")
+  option("--min-identity", help="Minimum sequence identity in overlap", default="0.85")
   
 type
     mergeCfg = tuple[join: bool, minId: float, minOverlap, maxOverlap, minorf: int]
