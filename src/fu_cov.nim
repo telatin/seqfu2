@@ -1,10 +1,10 @@
 import klib
  
-import argparse
+import docopt
 import strutils
 import stats
 import strformat
-from os import fileExists
+import os
 import algorithm
 
 const prog = "fu-cov"
@@ -54,16 +54,6 @@ proc format_dna(seq: string, format_width: int): string =
     else:
       result &= seq[i..i + format_width - 1] & "\n"
 
-var p = newParser(prog):
-  help("Extract contig by sequence length and coverage, if provided in the sequence name.")
-  flag("-v", "--verbose", help="Print verbose messages")
-  flag("-s", "--sort", help="Store contigs in memory, and sort them by descending coverage")
-  option("-c", "--min-cov", help="Minimum coverage", default="0.0")
-  option("-l", "--min-len", help = "Minimum length", default ="0")
-  option("-x", "--max-cov", help = "Maximum coverage", default ="0.0")
-  option("-y", "--max-len", help = "Maximum length", default ="0")
-  option("-t", "--top", help = "Print the first TOP sequences (passing filters) when using --sort", default="10") 
-  arg("inputfile",  nargs = -1)
 
 proc getNumberAfterPos(s: string, pos: int): float =
   var ans = ""
@@ -85,10 +75,26 @@ proc getCovFromString(s: string): float =
 
 
 proc main(args: seq[string]) =
+  let args = docopt("""
+  fu-cov
 
+  Extract contigs using coverage data from the assembler
+
+  Usage: 
+  fu-cov [options] [inputfile ...]
+
+  Options:
+    -c, --min-cov FLOAT    Minimum coverage [default: 0.0]
+    -x, --max-cov FLOAT    Maximum coverage [default: 0.0]
+    -l, --min-len INT      Minimum contig length [default: 0]
+    -y, --max-len INT      Maximum contig length [default: 0]
+    -t, --top INT          Print the first TOP sequences when using --sort [default: 0] 
+    -s, --sort             Store contigs in memory and sort them by descending coverage
+    --verbose              Print verbose log
+    --help                 Show help
+  """, version=version, argv=commandLineParams())
   try:
     var
-      opts = p.parse(commandLineParams())
       skip_hi_cov = 0
       skip_lo_cov = 0
       skip_short  = 0
@@ -97,9 +103,9 @@ proc main(args: seq[string]) =
 
 
 
-    if opts.inputfile.len() == 0:
+    if len(args["inputfile"]) == 0:
       echo "Missing argument: input file (type -h for more info)"
-      #if not opts.help == true:
+      #if not $args["help == true:
       #  echo "Type --help for more info."
       quit(0)
 
@@ -107,7 +113,7 @@ proc main(args: seq[string]) =
       c  = 0      # total count of sequences
       pf = 0      # passing filters
       ff = 0      # parsed files
-    for filename in opts.inputfile:
+    for filename in args["inputfile"]:
       if not fileExists(filename):
         echo "FATAL ERROR: File ", filename, " not found."
         quit(1)
@@ -115,7 +121,7 @@ proc main(args: seq[string]) =
       var f = xopen[GzFile](filename)
       defer: f.close()
       var r: FastxRecord
-      verbose("Reading " & filename, opts.verbose)
+      verbose("Reading " & filename, $args["verbose"])
       ff += 1
       # Prse FASTX
       var match: array[1, string]
@@ -129,25 +135,25 @@ proc main(args: seq[string]) =
         # Coverage check
         if cov >= 0:
           covStats.push(cov)
-          if opts.min_cov != "0.0" and cov < parseFloat(opts.min_cov):
+          if $args["min_cov"] != "0.0" and cov < parseFloat($args["min_cov"]):
             skip_lo_cov += 1
             continue
-          if opts.max_cov != "0.0" and cov > parseFloat(opts.max_cov):
+          if $args["max_cov"] != "0.0" and cov > parseFloat($args["max_cov"]):
             skip_hi_cov += 1
             continue
 
         # Contig length filter
-        if opts.min_len != "0" and len(r.seq) < parseInt(opts.min_len):
+        if $args["min_len"] != "0" and len(r.seq) < parseInt($args["min_len"]):
           skip_short += 1
           continue
-        if opts.max_len != "0" and len(r.seq) > parseInt(opts.max_len):
+        if $args["max_len"] != "0" and len(r.seq) > parseInt($args["max_len"]):
           skip_long += 1
           continue
 
 
         pf += 1
 
-        if opts.sort == false:
+        if args["sort"] == false:
           echo ">", r.name, " ", r.comment, "\n", r.seq;
         else:
           covTable.add((name: r.name, comment: r.comment, cov: cov, length: len(r.seq), sequence: r.seq))
@@ -158,21 +164,20 @@ proc main(args: seq[string]) =
     if covStats.n > 0:
       stderr.writeLine(fmt"Average coverage: {covStats.mean():.2f}X, [{covStats.min:.1f}-{covStats.max:.1f}]")
 
-    if opts.sort == true:
+    if $args["sort"] == true:
       var
         top = 0
       for i in rev(covTable.sortedByIt(it.cov)):
         top += 1
 
-        if top > parseInt(opts.top):
+        if $args["top"] != "0" and top > parseInt($args["top"]):
           break
 
         echo ">", i.name, " ", i.comment, "\n", i.sequence
-  except ShortCircuit:
-    echo p.help
+ 
   except:
-    echo p.help
-    stderr.writeLine("Error: wrong parameters: ", getCurrentExceptionMsg())
+    
+    stderr.writeLine("Try fu-cov --help.\nError: wrong parameters: ", getCurrentExceptionMsg())
     quit(0)
 
 

@@ -1,27 +1,14 @@
 import threadpool
 import klib
-import argparse, strutils, tables, math
-from os import fileExists
+import docopt, strutils, tables, math
+import os
 from posix import signal, SIG_PIPE, SIG_IGN
 signal(SIG_PIPE, SIG_IGN)
 
-const prog = "porfast"
-const version = "0.8.0"
+const prog = "fu-orf"
+const version = "0.9.0"
 const minSeqLen = 18
 
-var p = newParser(prog):
-  help("Extract ORFs from Paired-End reads.")
-  option("-1", "--R1", help="FASTQ file, first pair")
-  option("-2", "--R2", help="FASTQ file, second pair")
-  option("-m", "--min-size", help="Minimum ORF size (aa)", default="26")
-  option("-p", "--prefix", help="Rename reads using this prefix")
-  option("--pool-size", help="Size of the batch of reads to process per thread", default="260")
-  flag("-v",   "--verbose", help="Print verbose info")
-  
-  flag("-j", "--join", help="Try joining paired ends")
-  option("--min-overlap", help="Minimum PE overlap", default="12")
-  option("--max-overlap", help="Maximum PE overlap", default="200")
-  option("--min-identity", help="Minimum sequence identity in overlap", default="0.85")
   
 type
     mergeCfg = tuple[join: bool, minId: float, minOverlap, maxOverlap, minorf: int]
@@ -255,9 +242,31 @@ proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): int =
 
 
 
-
+ 
+   
 proc main(args: seq[string]) =
-  
+  let args = docopt("""
+  fu-orf
+
+  Extract ORFs from Paired-End reads.
+
+  Usage: 
+  fu-orf [options] -1 File_R1.fq
+
+  Options:
+    -1, --R1 FILE          First paired end file
+    -2, --R2 FILE          Second paired end file
+    -m, --min-size INT     Minimum ORF size (aa) [default: 25]
+    -p, --prefix STRING    Rename reads using this prefix
+    --min-overlap INT      Minimum PE overlap [default: 12]
+    --max-overlap INT      Maximum PE overlap [default: 200]
+    --min-identity FLOAT   Minimum sequence identity in overlap [default: 0.80]
+    -j, --join             Attempt Paired-End joining
+    --pool-size INT        Size of the sequences array to be processed
+                           by each working thread [default: 250]
+    --verbose              Print verbose log
+    --help                 Show help
+  """, version=version, argv=commandLineParams())
   var
     fileR1, fileR2: string
     minOrfSize, counter: int
@@ -267,17 +276,15 @@ proc main(args: seq[string]) =
     poolSize : int
     prefix : string
   try:
-    var
-      opts = p.parse(commandLineParams()) 
-    fileR1 = opts.R1
-    fileR2 = opts.R2
-    minOrfSize = parseInt(opts.min_size)
-    verbose = opts.verbose 
-    poolSize = parseInt(opts.pool_size)
-    prefix = $opts.prefix
-    mergeOptions = (join: opts.join or false,  minId: parseFloat(opts.min_identity), minOverlap: parseInt(opts.min_overlap), maxOverlap: parseInt(opts.max_overlap), minorf: minOrfSize)
+    fileR1 = $args["--R1"]
+    fileR2 = $args["--R2"]
+    minOrfSize = parseInt($args["--min-size"])
+    verbose = args["--verbose"]
+    poolSize = parseInt($args["--pool-size"])
+    prefix = $args["--prefix"]
+    mergeOptions = (join: args["--join"] or false,  minId: parseFloat($args["--min-identity"]), minOverlap: parseInt($args["--min-overlap"]), maxOverlap: parseInt($args["--max-overlap"]), minorf: minOrfSize)
   except:
-    echo p.help
+    stderr.writeLine("Use fu-orf --help")
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
     quit(0)
 
