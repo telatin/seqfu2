@@ -55,7 +55,7 @@ example:
     stderr.writeLine("- stripcomm:\t", stripComments)
 
 
-  if not existsFile(input_file):
+  if input_file != "-" and not fileExists(input_file):
     stderr.writeLine("FATAL ERROR: File ", input_file, " not found.")
     quit(1)
 
