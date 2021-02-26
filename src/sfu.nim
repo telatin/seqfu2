@@ -31,6 +31,7 @@ include ./fastx_stats
 include ./fastx_sort
 include ./fastx_grep
 include ./fastq_merge_lanes
+include ./fastx_rc
 #include ./fastx_fast_derep
  
 
@@ -45,6 +46,7 @@ var progs = {
          "count": fastx_count, 
        "st" : fastx_stats,            
          "stats": fastx_stats,
+       "rc" : fastx_rc,
        "srt": fastx_sort,             
          "sort" : fastx_sort,
        "mrg" : fastq_merge_lanes,
@@ -71,6 +73,7 @@ proc main() =
                   "head"           : "print first sequences",
                   "tail"           : "view last sequences",
                   "grep"           : "select sequences with patterns",
+                  "rc"             : "reverse complement strings or files"
                }.toTable
 
   var args = commandLineParams()

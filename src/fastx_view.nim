@@ -54,7 +54,54 @@ proc qualToUnicode(s: string, v: seq[int], color = false): string =
         result &= "█"
 
 
-proc highlight(r: string, matches: seq[seq[int]], l:int) =
+proc qualToColor(s: string, v: seq[int], color = false): string =
+  #  1   2   3   4   5   6   7
+  #  Low     Mid     Ok
+  for i in s:
+    let
+      val = charToQual(i)
+    if val <= v[0]:
+      if color == true:
+        result &= fgDarkGray($i)
+      else:
+        result &= i
+    elif val <= v[1]:
+      if color == true:
+        result &= fgDarkGray($i)
+      else:
+        result &= i
+    elif val <= v[2]:
+      if color == true:
+        result &= fgRed($i)
+      else:
+        result &= i
+    elif val <= v[3]:
+      if color == true:
+        result &= fgRed($i)
+      else:
+        result &= i
+    elif val <= v[4]:
+      if color == true:
+        result &= fgYellow($i)
+      else:
+        result &= i
+    elif val <= v[5]:
+      if color == true:
+        result &= fgYellow($i)
+      else:
+        result &= i
+    elif val <= v[6]:
+      if color == true:
+        result &= fgGreen($i)
+      else:
+        result &= i
+    else:
+      if color == true:
+        result &= fgGreen($i)
+      else:
+        result &= i
+
+proc highlight(r: string, matches: seq[seq[int]], l:int, color: proc) =
   if len(matches[0]) > 0:
     for m in matches[0]:
       let 
@@ -62,9 +109,9 @@ proc highlight(r: string, matches: seq[seq[int]], l:int) =
                else: l + m
         start = if m >= 0: m
               else: 0
-      echo ' '.repeat(start) & "ᐅ".bgRed.fgWhite.repeat(stop)
+      echo ' '.repeat(start) & "ᐅ".color.fgWhite.repeat(stop)
 
-  echo r
+  #echo r
 
   if len(matches[1]) > 0:
     for m in matches[1]:
@@ -73,18 +120,19 @@ proc highlight(r: string, matches: seq[seq[int]], l:int) =
                else: l + m
         start = if m >= 0: m
               else: 0
-      echo ' '.repeat(start) & "ᐊ".bgBlue.fgWhite.repeat(stop)
+      echo ' '.repeat(start) & "ᐊ".color.fgWhite.repeat(stop)
     
 proc fastx_view(argv: var seq[string]): int =
   let args = docopt("""
-Usage: view [options] <inputfile>
+Usage: view [options] <inputfile> [<input_reverse>]
 
 View a FASTA/FASTQ file for manual inspection, allowing to search for
-an oligonucleotide
+an oligonucleotide.
 
 Options:
-  -o, --oligo OLIGO      Match oligo, with ambiguous IUPAC chars allowed
-                         (reverse complementary search is performed)
+  -o, --oligo1 OLIGO     Match oligo, with ambiguous IUPAC chars allowed
+                         (rev. compl. search is performed), color blue
+  -r, --oligo2 OLIGO     Second oligo to be scanned for, color red
   -q, --qual-scale STR   Quality thresholds, seven values
                          separated by columns [default: 3:15:25:28:30:35:40]
 
@@ -92,6 +140,7 @@ Options:
   --min-matches INT      Oligo minimum matches [default: 5]
   --max-mismatches INT   Oligo maxmimum mismataches [default: 2]
 
+  -Q, --qual-chars       Show quality characters instead of bars
   -n, --nocolor          Disable colored output
   --verbose              Show extra information
   -h, --help             Show this help
@@ -135,13 +184,23 @@ Options:
   
   defer: f.close()
   while f.readFastx(read):
-    echo "@", read.name, "\t", read.comment
-    if $args["--oligo"] != "nil":
-      let matches = findPrimerMatches(read.seq, $args["--oligo"], matchThs, maxMismatches, minMatches)
-      highlight(read.seq, matches, len($args["--oligo"]))
+    # Print seq name
+    if args["--nocolor"]:
+      echo "@", read.name, "\t", read.comment
     else:
-      echo read.seq
-    echo qualToUnicode(read.qual, thresholdValues, colorOutput)
+      echo "@", (read.name).bold, "\t", (read.comment).fgLightGray
+      
+    if $args["--oligo1"] != "nil":
+      let matches = findPrimerMatches(read.seq, $args["--oligo1"], matchThs, maxMismatches, minMatches)
+      highlight(read.seq, matches, len($args["--oligo1"]), bgBlue)
+    if $args["--oligo2"] != "nil":
+      let matches = findPrimerMatches(read.seq, $args["--oligo2"], matchThs, maxMismatches, minMatches)
+      highlight(read.seq, matches, len($args["--oligo2"]), bgRed)
+    echo read.seq
+    if args["--qual-chars"]:
+      echo qualToColor(read.qual, thresholdValues, colorOutput)
+    else:
+      echo qualToUnicode(read.qual, thresholdValues, colorOutput)
 
      
   return 0
