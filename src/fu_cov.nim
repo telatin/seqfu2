@@ -8,10 +8,11 @@ import os
 import algorithm
 
 const prog = "fu-cov"
-
+const version = "0.4.0"
 #[
    extract contigs by coverage
 
+  0.4   Transition to docopt
   0.3.1 Bug fixes, improved statistics
   0.3   Added in memory sorting
   0.2   Added statistics
@@ -121,7 +122,7 @@ proc main(args: seq[string]) =
       var f = xopen[GzFile](filename)
       defer: f.close()
       var r: FastxRecord
-      verbose("Reading " & filename, $args["verbose"])
+      verbose("Reading " & filename, args["verbose"])
       ff += 1
       # Prse FASTX
       var match: array[1, string]
@@ -164,7 +165,7 @@ proc main(args: seq[string]) =
     if covStats.n > 0:
       stderr.writeLine(fmt"Average coverage: {covStats.mean():.2f}X, [{covStats.min:.1f}-{covStats.max:.1f}]")
 
-    if $args["sort"] == true:
+    if args["sort"] == true:
       var
         top = 0
       for i in rev(covTable.sortedByIt(it.cov)):
