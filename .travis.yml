@@ -1,7 +1,5 @@
 sudo: required
-services:
-  - docker
 before_install:
-  - apt install -y zlib1g-dev wget curl build-essential
+  - sudo apt install -y zlib1g-dev wget curl build-essential
 script:
   - bash src/travis.sh
