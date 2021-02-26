@@ -64,7 +64,7 @@ proc main(): int =
     -i, --input-file FILE  Input FASTA/FASTQ file
     -m, --min-len INT      Minimum sequence length [default: 10]
     -x, --max-len INT      Discard sequences longer than this, 0 for unlimited [default: 0]
-    -p, --pool-size INT    Number of sequences per processing thread [default: 200]
+    -p, --pool-size INT    Number of sequences per processing thread [default: 2000]
     --verbose              Print verbose log
     --help                 Show help
   """, version=version, argv=commandLineParams())

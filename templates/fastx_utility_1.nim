@@ -7,6 +7,12 @@ signal(SIG_PIPE, SIG_IGN)
 
 let version = "1.0"
 
+
+# We store the options in a single object to be easilyu passed to the threads
+type
+  programOptions = tuple
+    minlen, maxlen: int
+
 # Handle Ctrl+C interruptions and pipe breaks
 type EKeyboardInterrupt = object of CatchableError
 proc handler() {.noconv.} =
@@ -62,8 +68,16 @@ proc main(): int =
     separator  = if $args["--separator"] == "TAB": "\t"
                  else: $args["--separator"]
 
-    minlen = parseInt($args["--min-len"])
-    maxlen = parseInt($args["--max-len"])
+
+
+  var
+    opts : programOptions 
+
+  try:
+    opts = programOptions (minlen: parseInt($args["--min-len"]), maxlen: parseInt($args["--max-len"]) )
+  except Exception:
+    stderr.writeLine("Error parsing options. See --help for manual.")
+    quit(1)
 
   # Check input file existence
   if not fileExists(input_file):
@@ -78,7 +92,7 @@ proc main(): int =
       # seqObject.comment
       # seqObject.sequence
       # seqObject.quality
-      let filtered = processRead(seqObject, minlen, maxlen)
+      let filtered = processRead(seqObject, opts.minlen, opts.maxlen)
       if len(filtered.sequence) > 0:
         echo filtered
   except Exception as e:
