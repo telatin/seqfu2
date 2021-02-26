@@ -4,5 +4,4 @@ services:
 before_install:
   - docker pull nimlang/nim
 script:
-  - docker run nimlang/nim nim --version
-  - docker run -v "$(pwd):/project" -w /project nimlang/nim sh -c "apt install -y zlib1g-dev && nimble refresh && nimble build -y  --verbose &&  bash test/mini.sh "
+  - bash src/travis.sh
