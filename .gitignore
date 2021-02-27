@@ -2,3 +2,5 @@
 tax/*
 tax
 bin/*
+bin/*.zip
+.DS_Store
