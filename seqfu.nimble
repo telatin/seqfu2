@@ -9,7 +9,7 @@ requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argpa
 
 srcDir = "src"
 binDir = "bin" 
-namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers", "fu_orf": "fu-orf"}.toTable()
+namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers", "fu_orf": "fu-orf", "dadaist2_mergeseqs": "dadaist2-mergeseqs"}.toTable()
 
 task seqfu, "compile SeqFU":
   mkdir  "bin"
