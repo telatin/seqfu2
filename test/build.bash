@@ -1,2 +1,2 @@
-nim c  imported.nim
-nim c -p:../src/lib native.nim
+nim c  speed/imported.nim
+nim c -p:../src/lib speed/native.nim

@@ -1,15 +1,16 @@
 # Package
-version       = "0.8.10"
+version       = "0.8.11"
 author        = "Andrea Telatin"
 description   = "SeqFU command-line tools"
 license       = "MIT"
 
 # Dependencies
-requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argparse",  "colorize"
+requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argparse",  "colorize", "neo"
 
 srcDir = "src"
 binDir = "bin" 
-namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers", "fu_orf": "fu-orf", "dadaist2_mergeseqs": "dadaist2-mergeseqs"}.toTable()
+namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers", "fu_orf": "fu-orf", 
+"dadaist2_mergeseqs": "dadaist2-mergeseqs", "dadaist2_region": "dadaist2-region"}.toTable()
 
 task seqfu, "compile SeqFU":
   mkdir  "bin"
