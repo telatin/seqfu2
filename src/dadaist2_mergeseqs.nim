@@ -13,14 +13,42 @@ proc handler() {.noconv.} =
   raise newException(EKeyboardInterrupt, "Keyboard Interrupt")
 setControlCHook(handler)
 
-proc combine(x, y: string): string =
+proc compare(x, y: string, maxMismatches: int): bool =
+  if len(x) != len(y):
+    return false
+  var
+    mismatches = 0
+  
+  if x == y:
+    return true
+
   for i in 0 .. x.high:
-    let
-      xSlice =  x[i .. y.high]
-      ySlice =  y[0 .. min(xSlice.high, y.high)]
-    if xSlice == ySlice:
-      return x[0 ..< i] & y
-  return ""
+    if x[i] != y[i]:
+      mismatches += 1
+      if mismatches > maxMismatches:
+        return false
+  return true
+
+
+proc combine(x, y: string, maxMismatches: int): string =
+  if maxMismatches == 0:
+    for i in 0 .. x.high:
+      let
+        xSlice =  x[i .. y.high]
+        ySlice =  y[0 .. min(xSlice.high, y.high)]
+      if xSlice == ySlice:
+        return x[0 ..< i] & y
+    return ""
+  else:
+    for i in 0 .. x.high:
+      let
+        xSlice =  x[i .. y.high]
+        ySlice =  y[0 .. min(xSlice.high, y.high)]
+      if compare(xSlice, ySlice, maxMismatches):
+        echo ">", x[0 ..< i] & y
+        echo "<", x
+        return x[0 ..< i] & y
+    return ""
   
 proc main(): int =
   let args = docopt("""
@@ -35,6 +63,7 @@ proc main(): int =
     -p, --pair-spacer STRING   Pairs separator [default: NNNNNNNNNN]
     -s, --strip STRING         Remove this string from sample names
     -n, --seq-name STRING      Sequence string name [default: MD5]
+    -m, --max-mismatches INT   Maximum allowed mismatches [default: 0]
     --id STRING                Features column name [default: #OTU ID]
     --verbose                  Print verbose output
 
@@ -79,6 +108,8 @@ proc main(): int =
   # Output: header
   echo (p.headers).join("\t")
 
+  let
+    maxMismatches = parseInt($args["--max-mismatches"])
   var
     counter = 0
     joined = 0
@@ -93,7 +124,7 @@ proc main(): int =
       fragments = repSeq.split($args["--pair-spacer"])
 
     if fragments.high == 1:
-      merge = combine(fragments[0], fragments[1])
+      merge = combine(fragments[0], fragments[1], maxMismatches)
       split += 1
     elif args["--verbose"]:
       stderr.writeLine("Sequence not splittable at ", counter)
