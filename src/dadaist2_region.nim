@@ -4,13 +4,42 @@ import json
 import os, strutils, re, iterutils, sequtils
 import threadpool
 import neo
+import tables, algorithm
 import posix
 signal(SIG_PIPE, SIG_IGN)
 
 let
   programVersion = "1.0"
-  programName = "amplicheck"
+  programName = "dadaist2-region"
   defaultTarget =  "AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGCAGCTTGCTGCTTCGCTGACGAGTGGCGGACGGGTGAGTAATGTCTGGGAAGCTGCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATAATGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGATGGGATTAGCTTGTTGGTGGGGTAACGGCTCACCAAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCCATGCCGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTGAAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGATGTCGACTTGGAGGTTGTGCCCTTGAGGCGTGGCTTCCGGAGCTAACGCGTTAAGTCGACCGCCTGGGGAGTACGGCCGCAAGGTTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGAAGAACCTTACCTGGTCTTGACATCCACGGAAGTTTTCAGAGATGAGAATGTGCCTTCGGGAACCGTGAGACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTTGTGAAATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTATCCTTTGTTGCCAGCGGTCCGGCCGGGAACTCAAAGGAGACTGCCAGTGATAAACTGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTACAATGGCGCATACAAAGAGAAGCGACCTCGCGAGAGCAAGCGGACCTCATAAAGTGCGTCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGTGGATCAGAATGCCACGGTGAATACGTTCCCGGGCCTTGTACACACCGCCCGTCACACCATGGGAGTGGGTTGCAAAAGAAGTAGGTAGCTTAACCTTCGGGAGGGCGCTTACCACTTTGTGATTCATGACTGGGGTGAAGTCGTAACAAGGTAACCGTAGGGGAACCTGCGGTTGGATCACCTCCTTA"
+  regions = parseJson("""
+{
+ "V1": {
+   "start": 68,
+   "end": 99
+  }, "V2": {
+   "start": 136,
+   "end": 242
+  }, "V3": {
+   "start": 338,
+   "end": 533
+  }, "V4": {
+   "start": 576,
+   "end": 682
+  }, "V5": {
+   "start": 821,
+   "end": 879
+  }, "V6": {
+   "start": 970,
+   "end": 1046
+  }, "V7": {
+   "start": 1117,
+   "end": 1294
+  }, "V8": {
+   "start": 1435,
+   "end": 1465
+  }
+}""")
 
 
 var
@@ -38,6 +67,12 @@ let
     minscore: 1)
 
 
+proc regionsToDict(regions: JsonNode): Table[int, string] =
+  result = initTable[int, string]()
+  for n in regions.keys:
+    if "start" in regions[n] and "end" in regions[n]:
+      for i in countup(regions[n]["start"].getInt(), regions[n]["end"].getInt() ):
+        result[i] = n
 
 proc reverse*(str: string): string =
   result = ""
@@ -307,76 +342,58 @@ proc revcompl(s: string): string =
   for c in rev:
       result &= c.translateIUPAC
 
-proc findOligoMatches(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[int] =
-  #var
-  #  result = newSeq[int]()
-  let dna = '-'.repeat(len(primer) - 1) & sequence & '-'.repeat(len(primer) - 1)
 
-  for pos in 0..len(dna)-len(primer):
-    let query = dna[pos..<pos+len(primer)]
-    var
-      matches = 0
-      mismatches = 0
-      primerRealLen = 0
-
-    for c in 0..<len(query):
-      if matchIUPAC(primer[c], query[c]):
-        matches += 1
-        primerRealLen += 1
-      elif query[c] != '-':
-        mismatches += 1
-        primerRealLen += 1
-
-      if mismatches > max_mismatches:
-        break
-
-
-    let
-      score = float(matches) / float(primerRealLen)
-    if score >= threshold and mismatches <= max_mismatches and matches >= min_matches:
-      result.add(pos-len(primer)+1)
-
-proc findPrimerMatches(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[seq[int]] =
-  let
-    forMatches = findOligoMatches(sequence, primer, threshold, max_mismatches, min_matches)
-    primerReverse = revcompl(primer)
-    revMatches = findOligoMatches(sequence, primerReverse, threshold, max_mismatches, min_matches)
-
-  result = @[forMatches, revMatches]
-
-proc processPair(R1, R2: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights): string =
+ 
+proc processPair(R1, R2: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string]): string =
   let
    aln1 = simpleSmithWaterman(R1.sequence, reference, alnOpt)
    aln2 = simpleSmithWaterman(R2.sequence, reference, alnOpt)
-  stdout.writeLine(R1.name, ".1\t", aln1.score, ": ", aln1.targetStart, "-", aln1.targetEnd)
-  stdout.writeLine(R2.name, ".2\t", aln2.score, ": ", aln2.targetStart, "-", aln2.targetEnd)
+  var
+    reg1, reg2: string
+    regCount1 = initCountTable[string]()
+    regCount2 = initCountTable[string]()
+  for position in aln1.targetStart .. aln1.targetEnd:
+    if position in regionsDict:
+      regCount1.inc(regionsDict[position], 1)
+  for position in aln2.targetStart .. aln2.targetEnd:
+    if position in regionsDict:
+      regCount2.inc(regionsDict[position], 1)
+
+  regCount1.sort()
+  regCount2.sort()
+  for i,v in regCount1.pairs:
+    reg1 = i
+    break
+
+  for i,v in regCount2.pairs:
+    reg2 = i
+    break
+  stdout.writeLine(R1.name, ".1\t", reg1, "\tscore=", aln1.score, "\t", aln1.targetStart, "-", aln1.targetEnd)
+  stdout.writeLine(R2.name, ".2\t", reg2, "\tscore=", aln2.score, "\t", aln2.targetStart, "-", aln2.targetEnd)
 
 
-proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights): int =
+proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string]): int =
   for i in 0 .. pool.high:
     if i mod 2 == 1:
       result += 1
       try:
-        stdout.write( processPair(pool[i - 1], pool[i], reference, opts, alnOpts))
+        stdout.write( processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict))
       except:
-        stdout.write( processPair(pool[i - 1], pool[i], reference, opts, alnOpts))
+        stdout.write( processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict))
         quit()
 
 
 proc main(args: seq[string]) =
   let args = docopt("""
-  Usage: amplicheck [options] -1 <FOR> [-2 <REV>]
+  Usage: dadaist2-regions [options] -1 <FOR> [-2 <REV>]
 
   Options:
     -1 --first-pair <FOR>     First sequence in pair
     -2 --second-pair <REV>    Second sequence in pair (can be inferred)
-    -f --primer-for FOR       Sequence of the forward primer [default: CCTACGGGNGGCWGCAG]
-    -r --primer-rev REV       Sequence of the reverse primer [default: GGACTACHVGGGTATCTAATCC]
+    -r --reference FILE       FASTA file with a reference sequence, E. coli 16S by default
+    -j --regions FILE         Regions names in JSON format, E. coli variable regions by default
     --pattern-R1 <tag-1>      Tag in first pairs filenames [default: auto]
     --pattern-R2 <tag-2>      Tag in second pairs filenames [default: auto]
-    --primer-thrs FLOAT       Minimum amount of matches over total length [default: 1.0]
-    --primer-mismatches INT   Maximum number of missmatches allowed [default: 0]
-    --primer-min-matches INT  Minimum numer of matches required [default: 8]
     --pool-size INT           Number of sequences/pairs to process per thread [default: 20]
     --min-score INT           Minimum alignment score [default: 80]
     --max-reads INT           Parse up to INT reads then quit [default: 1000]
@@ -387,13 +404,8 @@ proc main(args: seq[string]) =
   var
     file_R2: string
     file_R1 = $args["--first-pair"]
-    sampleId, direction: string
     respCount = 0
-  let
-    p1for = $args["--primer-for"]
-    p2for = $args["--primer-rev"]
-    p1rev = p1for.revcompl()
-    p2rev = p2for.revcompl()
+ 
 
   poolSize = parseInt($args["--pool-size"])
 
@@ -435,21 +447,17 @@ proc main(args: seq[string]) =
   initClosure(getR1,readfq(file_R1))
   initClosure(getR2,readfq(file_R2))
 
-
-  if not false:
-    stderr.writeLine("# Primer for: ", p1for, ":", p1rev)
-    stderr.writeLine("# Primer rev: ", p2for, ":", p2rev)
-
+ 
   var
     counter = 0
     readspool : seq[FQRecord]
     responses = newSeq[FlowVar[int]]()
   let
     programParameters = primerOptions(
-      primers:       @[p1for, p2for],
-      minMatches:    parseInt($args["--primer-min-matches"]),
-      maxMismatches: parseInt(   $args["--primer-mismatches"]),
-      matchThs:      parseFloat( $args["--primer-thrs"] )
+      #primers:       @[p1for, p2for],
+      minMatches:    1,
+      maxMismatches: 1,
+      matchThs:      1
     )
     alnParameters = swWeights(
       match: swDefaults.match, 
@@ -458,6 +466,8 @@ proc main(args: seq[string]) =
       gapopening: swDefaults.gapopening,
       minscore: parseInt($args["--min-score"])
     )
+    regionsDict = regionsToDict(regions)
+
   for (R1, R2) in zip(getR1, getR2):
     counter += 1
 
@@ -466,10 +476,10 @@ proc main(args: seq[string]) =
 
     if counter mod poolSize == 0:
       #stderr.writeLine(counter, ": Spawning pool of size: ", len(readspool))
-      responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters))
+      responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
       readspool.setLen(0)
 
-  responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters))
+  responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
 
   for resp in responses:
     respCount += ^resp
