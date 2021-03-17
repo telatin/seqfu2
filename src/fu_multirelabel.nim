@@ -27,7 +27,7 @@ proc main(): int =
   SeqFu MultiRelabel
 
   A program to rename sequences from multiple files (adding the filename,
-  and or numerical postfix)
+  and or numerical postfix). Will fail if multiple sequence receive the same name.
 
   Usage: 
   fu-multirelabel [options] FILE...
@@ -52,7 +52,13 @@ proc main(): int =
 
   # Check input file existence
   var tot_counter = 0
+  var seq_names = newSeq[string]()
   for input_file in args["FILE"]:
+
+    if not fileExists(input_file):
+      stderr.writeLine("ERROR: Input file not found: ", input_file)
+      quit(1)
+      
     var
       counter = 0
     let
@@ -76,7 +82,13 @@ proc main(): int =
                       else: ""
         
           name =  file_split & seq_name & seq_counter
-        
+          
+        if name in seq_names:
+          stderr.writeLine("ERROR: Sequence name <", name, "> was found twice. Stopping parsing ", input_file)
+          quit(1)
+        else:
+          seq_names.add(name)
+
         echo(seq_to_string(name, comments, seqObject.sequence, seqObject.quality, comment_separator))
 
     except Exception as e:
