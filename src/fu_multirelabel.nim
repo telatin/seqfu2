@@ -24,17 +24,19 @@ proc seq_to_string(name, comment, sequence, quality, separator: string): string 
 
 proc main(): int =
   let args = docopt("""
-  Fastx utility
+  SeqFu MultiRelabel
 
-  A program to print the sequence size of each record in a FASTA/FASTQ file
+  A program to rename sequences from multiple files (adding the filename,
+  and or numerical postfix)
 
   Usage: 
-  fastx_utility [options] FILE...
+  fu-multirelabel [options] FILE...
 
   Options:
     -b, --basename             Prepend file basename to sequence
     -r, --rename NAME          Replace original name with NAME
     -n, --numeric-postfix      Add progressive number (reset at each new basename)
+    -t, --total-postfix        Add progressive number (without resetting at each new input file)
     -d, --split-basename CHAR  Remove the final part of basename after CHAR [default: .]
     -s, --separator STRING     Separator between prefix, name, suffix [default: _]
     --no-comments              Strip out comments
@@ -69,7 +71,8 @@ proc main(): int =
           seq_name      = if $args["--rename"] == "nil": seqObject.name
                       else: $args["--rename"]
 
-          seq_counter   = if args["--numeric-postfix"]: $args["--separator"] & $counter
+          seq_counter   = if args["--total-postfix"]:  $args["--separator"] & $tot_counter
+                      elif args["--numeric-postfix"]:  $args["--separator"] & $counter
                       else: ""
         
           name =  file_split & seq_name & seq_counter
