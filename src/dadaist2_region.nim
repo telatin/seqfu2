@@ -62,8 +62,8 @@ let
   swDefaults = swWeights(
     match: 5,
     mismatch: -2,
-    gap: -5,
-    gapopening: -5,
+    gap: -4,
+    gapopening: -4,
     minscore: 1)
 
 
