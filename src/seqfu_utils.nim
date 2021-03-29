@@ -26,6 +26,78 @@ var
    lineWidth*       = 0
 
 
+proc reverse*(str: string): string =
+  result = ""
+  for index in countdown(str.high, 0):
+    result.add(str[index])
+
+
+proc translateIUPAC*(c: char): char =
+  const
+    inputBase = "ATUGCYRSWKMBDHVN"
+    rcBase    = "TAACGRYSWMKVHDBN"
+  let
+    base = toUpperAscii(c)
+  let o = inputBase.find(base)
+  if o >= 0:
+    return rcBase[o]
+  else:
+    return base
+
+proc matchIUPAC*(a, b: char): bool =
+  # a=primer; b=read
+  let
+    metachars = @['Y','R','S','W','K','M','B','D','H','V']
+
+  if b == 'N':
+    return false
+  elif a == b or a == 'N':
+    return true
+  elif a in metachars:
+    if a == 'Y' and (b == 'C' or b == 'T'):
+      return true
+    if a == 'R' and (b == 'A' or b == 'G'):
+      return true
+    if a == 'S' and (b == 'G' or b == 'C'):
+      return true
+    if a == 'W' and (b == 'A' or b == 'T'):
+      return true
+    if a == 'K' and (b == 'T' or b == 'G'):
+      return true
+    if a == 'M' and (b == 'A' or b == 'C'):
+      return true
+    if a == 'B' and (b != 'A'):
+      return true
+    if a == 'D' and (b != 'C'):
+      return true
+    if a == 'H' and (b != 'G'):
+      return true
+    if a == 'V' and (b != 'T'):
+      return true
+  return false
+
+
+# Reverse complement
+proc revcompl*(s: string): string =
+  result = ""
+  let rev = reverse(s)
+  for c in rev:
+      result &= c.translateIUPAC
+
+proc revcompl*(s: FQRecord): FQRecord =
+  result.name     = s.name
+  result.comment  = s.comment
+  result.quality  = reverse(s.quality)
+  result.sequence = revcompl(s.sequence)
+
+
+proc revcompl*(s: FastxRecord): FastxRecord =
+  result.name    = s.name
+  result.comment = s.comment
+  result.qual    = reverse(s.qual)
+  result.seq     = revcompl(s.seq)
+
+
 proc charToQual*(c: char): int =
   ## returns Illumina quality score for a given character
   c.ord - 33
@@ -40,41 +112,6 @@ proc getBasename*(filename: string): string =
     return fileParse[1]
   #( dir, filenameNoExt, extension) = splitFile(filename)
   #(sampleId, direction) = extractTag(filenameNoExt, pattern1, pattern2)
-
-proc extractTag*(filename: string, patternFor: string, patternRev: string): (string, string) =
-    if patternFor == "auto":
-      # automatic guess
-      var basename = split(filename, "_R1.")
-      if len(basename) > 1:
-        return (basename[0], "R1")
-      basename = split(filename, "_R1_")
-      if len(basename) > 1:
-        return (basename[0], "R1")
-      basename = split(filename, "_1.")
-      if len(basename) > 1:
-        return (basename[0], "R1")
-    else:
-      var basename = split(filename, patternFor)
-      if len(basename) > 1:
-        return (basename[0], "R1")
-
-    if patternFor == "auto":
-      # automatic guess
-      var basename = split(filename, "_R2.")
-      if len(basename) > 1:
-        return (basename[0], "R2")
-      basename = split(filename, "_R2_")
-      if len(basename) > 1:
-        return (basename[0], "R2")
-      basename = split(filename, "_2.")
-      if len(basename) > 1:
-        return (basename[0], "R2")
-    else:
-      var basename = split(filename, patternFor)
-      if len(basename) > 1:
-        return (basename[0], "R2")
-
-    return (filename, "SE")
 
 proc format_dna*(seq: string, format_width: int): string =
   if format_width == 0:
@@ -150,8 +187,90 @@ proc print_seq*(record: FQRecord, outputFile: File, rename="") =
     outputFile.writeLine(seqstring)
 
 
+  # FQRecord* = object
+  #   name*: string
+  #   comment*: string# optional
+  #   sequence*: string
+  #   quality*: string# optional
+proc mergeSeqs*(f, r: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): FQRecord {.discardable.} =
+  result.name = f.name
+  var rc = revcompl(r) 
+  var max = if     f.sequence.high > rc.sequence.high: rc.sequence.high
+            else:  f.sequence.high
+  
+  var max_score = 0.0
+  var pos = 0
+  var str : string
+
+  for i in minlen .. max:
+    var
+      s1 = f.sequence[f.sequence.high - i .. f.sequence.high]
+      s2 = rc.sequence[0 .. 0 + i ]
+      q1 = f.quality[f.sequence.high - i .. f.sequence.high]
+      q2 = r.quality[r.sequence.high - i .. r.sequence.high]
+      score = 0.0
+      
+
+    for i in 0 .. s1.high:
+      if s1[i] == s2[i]:
+        score += 1
+   
+    score = score / float(len(s1))
+
+    if score > max_score:
+      max_score = score
+      pos = i
+      str = s1
+      if score > identityAccepted:
+        break
+  # end loop
+
+  # Fix mismatches
+  if max_score > min_id:
+    result.name = f.name
+    result.sequence = f.sequence & rc.sequence[pos + 1 .. ^1]
+    result.quality = f.quality & rc.quality[pos + 1 .. ^1]
+  else:
+    result = f
+
+
 
 ### AMPLICHECK
+
+proc extractTag*(filename: string, patternFor: string, patternRev: string): (string, string) =
+    if patternFor == "auto":
+      # automatic guess
+      var basename = split(filename, "_R1.")
+      if len(basename) > 1:
+        return (basename[0], "R1")
+      basename = split(filename, "_R1_")
+      if len(basename) > 1:
+        return (basename[0], "R1")
+      basename = split(filename, "_1.")
+      if len(basename) > 1:
+        return (basename[0], "R1")
+    else:
+      var basename = split(filename, patternFor)
+      if len(basename) > 1:
+        return (basename[0], "R1")
+
+    if patternFor == "auto":
+      # automatic guess
+      var basename = split(filename, "_R2.")
+      if len(basename) > 1:
+        return (basename[0], "R2")
+      basename = split(filename, "_R2_")
+      if len(basename) > 1:
+        return (basename[0], "R2")
+      basename = split(filename, "_2.")
+      if len(basename) > 1:
+        return (basename[0], "R2")
+    else:
+      var basename = split(filename, patternFor)
+      if len(basename) > 1:
+        return (basename[0], "R2")
+
+    return (filename, "SE")
 
 
 template initClosure*(id:untyped,iter:untyped) =
@@ -159,60 +278,6 @@ template initClosure*(id:untyped,iter:untyped) =
     for x in iter:
       yield x
 
-proc translateIUPAC*(c: char): char =
-  const
-    inputBase = "ATUGCYRSWKMBDHVN"
-    rcBase    = "TAACGRYSWMKVHDBN"
-  let
-    base = toUpperAscii(c)
-  let o = inputBase.find(base)
-  if o >= 0:
-    return rcBase[o]
-  else:
-    return base
-
-proc matchIUPAC*(a, b: char): bool =
-  # a=primer; b=read
-  let
-    metachars = @['Y','R','S','W','K','M','B','D','H','V']
-
-  if b == 'N':
-    return false
-  elif a == b or a == 'N':
-    return true
-  elif a in metachars:
-    if a == 'Y' and (b == 'C' or b == 'T'):
-      return true
-    if a == 'R' and (b == 'A' or b == 'G'):
-      return true
-    if a == 'S' and (b == 'G' or b == 'C'):
-      return true
-    if a == 'W' and (b == 'A' or b == 'T'):
-      return true
-    if a == 'K' and (b == 'T' or b == 'G'):
-      return true
-    if a == 'M' and (b == 'A' or b == 'C'):
-      return true
-    if a == 'B' and (b != 'A'):
-      return true
-    if a == 'D' and (b != 'C'):
-      return true
-    if a == 'H' and (b != 'G'):
-      return true
-    if a == 'V' and (b != 'T'):
-      return true
-  return false
-
-proc reverse*(str: string): string =
-  result = ""
-  for index in countdown(str.high, 0):
-    result.add(str[index])
-
-proc revcompl*(s: string): string =
-  result = ""
-  let rev = reverse(s)
-  for c in rev:
-      result &= c.translateIUPAC
 
 proc findOligoMatches*(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[int] =
   let dna = '-'.repeat(len(primer) - 1) & sequence & '-'.repeat(len(primer) - 1)

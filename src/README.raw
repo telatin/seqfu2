@@ -19,7 +19,18 @@ sequences and to *count* and print *statistics* on sequence lengths.
 
 ---
 
+
+## Installation
+
+Seqfu can be easily installed via Miniconda:
+
+```bash
+conda install -y -c bioconda seqfu
+```
+
+## Overview 
 The program has a set of subcommands (and there are some extra utilities as well)
+
 ```
 {{ SPLASH }}
 ```

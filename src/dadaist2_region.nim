@@ -6,10 +6,14 @@ import threadpool
 import neo
 import tables, algorithm
 import posix
+import ./seqfu_utils
+
 signal(SIG_PIPE, SIG_IGN)
 
+const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
+
 let
-  programVersion = "1.0"
+  programVersion = NimblePkgVersion
   programName = "dadaist2-region"
   defaultTarget =  "AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGCAGCTTGCTGCTTCGCTGACGAGTGGCGGACGGGTGAGTAATGTCTGGGAAGCTGCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATAATGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGATGGGATTAGCTTGTTGGTGGGGTAACGGCTCACCAAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCCATGCCGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTGAAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGATGTCGACTTGGAGGTTGTGCCCTTGAGGCGTGGCTTCCGGAGCTAACGCGTTAAGTCGACCGCCTGGGGAGTACGGCCGCAAGGTTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGAAGAACCTTACCTGGTCTTGACATCCACGGAAGTTTTCAGAGATGAGAATGTGCCTTCGGGAACCGTGAGACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTTGTGAAATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTATCCTTTGTTGCCAGCGGTCCGGCCGGGAACTCAAAGGAGACTGCCAGTGATAAACTGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTACAATGGCGCATACAAAGAGAAGCGACCTCGCGAGAGCAAGCGGACCTCATAAAGTGCGTCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGTGGATCAGAATGCCACGGTGAATACGTTCCCGGGCCTTGTACACACCGCCCGTCACACCATGGGAGTGGGTTGCAAAAGAAGTAGGTAGCTTAACCTTCGGGAGGGCGCTTACCACTTTGTGATTCATGACTGGGGTGAAGTCGTAACAAGGTAACCGTAGGGGAACCTGCGGTTGGATCACCTCCTTA"
   regions = parseJson("""
@@ -43,7 +47,7 @@ let
 
 
 var
-  poolsize = 100
+  poolsize = 200
 
 
 
@@ -60,11 +64,11 @@ type
 
 let
   swDefaults = swWeights(
-    match: 5,
-    mismatch: -2,
-    gap: -4,
+    match:       6,
+    mismatch:   -2,
+    gap:        -4,
     gapopening: -4,
-    minscore: 1)
+    minscore:    1 )
 
 
 proc regionsToDict(regions: JsonNode): Table[int, string] =
@@ -79,44 +83,43 @@ proc reverse*(str: string): string =
   for index in countdown(str.high, 0):
     result.add(str[index])
 
-proc `$`(i: swAlignment): string =
-  let
-    alignmentWidth = 60
 
-  result = "#score=" & $i.score & ";length=" & $i.length & ";query=" & $i.queryStart & "-" & $i.queryEnd & ";target=" & $i.targetStart  & "-" & $i.targetEnd &  "\n"
-  #     i.top    & "\n" &
-  #     i.middle & "\n" &
-  #     i.bottom
+# proc `$`(i: swAlignment): string =
+#   let
+#     alignmentWidth = 60
+#   result = "#score=" & $i.score & ";length=" & $i.length & ";query=" & $i.queryStart & "-" & $i.queryEnd & ";target=" & $i.targetStart  & "-" & $i.targetEnd &  "\n"
+#   #     i.top    & "\n" &
+#   #     i.middle & "\n" &
+#   #     i.bottom
+#   for p in countup(0, len(i.top), alignmentWidth):
+#     let span = if p+alignmentWidth > len(i.top): len(i.top)
+#                else: p+alignmentWidth
+#     result &= " " & i.top[p ..< span] & "\n"
+#     result &= " " & i.middle[p ..< span] & "\n"
+#     result &= " " & i.bottom[p ..< span] & "\n\n"
 
-  for p in countup(0, len(i.top), alignmentWidth):
-    let span = if p+alignmentWidth > len(i.top): len(i.top)
-               else: p+alignmentWidth
-    result &= " " & i.top[p ..< span] & "\n"
-    result &= " " & i.middle[p ..< span] & "\n"
-    result &= " " & i.bottom[p ..< span] & "\n\n"
 
+# proc swInitializeMatrix(alpha, beta: string, weights: swWeights): Matrix[system.int] =
+#   result = makeMatrix(len(alpha) + 1,
+#     len(beta) + 1,
+#     proc(i, j: int): int = 0
+#   )
 
-proc swInitializeMatrix(alpha, beta: string, weights: swWeights): Matrix[system.int] =
-  result = makeMatrix(len(alpha) + 1,
-    len(beta) + 1,
-    proc(i, j: int): int = 0
-  )
+#   for t, x in result:
+#     let
+#       (i, j) = t
 
-  for t, x in result:
-    let
-      (i, j) = t
-
-    if i == 0 or j == 0:
-      result[i, j] = 0
-    else:
-      let
-        score= if alpha[i - 1] == beta[j - 1]: weights.match
-               else: weights.mismatch
-        top  = result[i,   j-1] + weights.gap
-        left = result[i-1, j]   + weights.gap
-        diag = result[i-1, j-1] + score
-      result[i, j] =  max( 0, max(top, max(left, diag)))
-  return result
+#     if i == 0 or j == 0:
+#       result[i, j] = 0
+#     else:
+#       let
+#         score= if alpha[i - 1] == beta[j - 1]: weights.match
+#                else: weights.mismatch
+#         top  = result[i,   j-1] + weights.gap
+#         left = result[i-1, j]   + weights.gap
+#         diag = result[i-1, j-1] + score
+#       result[i, j] =  max( 0, max(top, max(left, diag)))
+#   return result
 
 
 
@@ -290,57 +293,57 @@ template initClosure(id:untyped,iter:untyped) =
     for x in iter:
       yield x
 
-proc translateIUPAC(c: char): char =
-  const
-    inputBase = "ATUGCYRSWKMBDHVN"
-    rcBase    = "TAACGRYSWMKVHDBN"
-  let
-    base = toUpperAscii(c)
-  let o = inputBase.find(base)
-  if o >= 0:
-    return rcBase[o]
-  else:
-    return base
+# proc translateIUPAC(c: char): char =
+#   const
+#     inputBase = "ATUGCYRSWKMBDHVN"
+#     rcBase    = "TAACGRYSWMKVHDBN"
+#   let
+#     base = toUpperAscii(c)
+#   let o = inputBase.find(base)
+#   if o >= 0:
+#     return rcBase[o]
+#   else:
+#     return base
 
-proc matchIUPAC(a, b: char): bool =
-  # a=primer; b=read
-  let
-    metachars = @['Y','R','S','W','K','M','B','D','H','V']
+# proc matchIUPAC(a, b: char): bool =
+#   # a=primer; b=read
+#   let
+#     metachars = @['Y','R','S','W','K','M','B','D','H','V']
 
-  if b == 'N':
-    return false
-  elif a == b or a == 'N':
-    return true
-  elif a in metachars:
-    if a == 'Y' and (b == 'C' or b == 'T'):
-      return true
-    if a == 'R' and (b == 'A' or b == 'G'):
-      return true
-    if a == 'S' and (b == 'G' or b == 'C'):
-      return true
-    if a == 'W' and (b == 'A' or b == 'T'):
-      return true
-    if a == 'K' and (b == 'T' or b == 'G'):
-      return true
-    if a == 'M' and (b == 'A' or b == 'C'):
-      return true
-    if a == 'B' and (b != 'A'):
-      return true
-    if a == 'D' and (b != 'C'):
-      return true
-    if a == 'H' and (b != 'G'):
-      return true
-    if a == 'V' and (b != 'T'):
-      return true
-  return false
+#   if b == 'N':
+#     return false
+#   elif a == b or a == 'N':
+#     return true
+#   elif a in metachars:
+#     if a == 'Y' and (b == 'C' or b == 'T'):
+#       return true
+#     if a == 'R' and (b == 'A' or b == 'G'):
+#       return true
+#     if a == 'S' and (b == 'G' or b == 'C'):
+#       return true
+#     if a == 'W' and (b == 'A' or b == 'T'):
+#       return true
+#     if a == 'K' and (b == 'T' or b == 'G'):
+#       return true
+#     if a == 'M' and (b == 'A' or b == 'C'):
+#       return true
+#     if a == 'B' and (b != 'A'):
+#       return true
+#     if a == 'D' and (b != 'C'):
+#       return true
+#     if a == 'H' and (b != 'G'):
+#       return true
+#     if a == 'V' and (b != 'T'):
+#       return true
+#   return false
 
 
 
-proc revcompl(s: string): string =
-  result = ""
-  let rev = reverse(s)
-  for c in rev:
-      result &= c.translateIUPAC
+# proc revcompl(s: string): string =
+#   result = ""
+#   let rev = reverse(s)
+#   for c in rev:
+#       result &= c.translateIUPAC
 
 
  
@@ -397,6 +400,7 @@ proc main(args: seq[string]) =
     --pool-size INT           Number of sequences/pairs to process per thread [default: 20]
     --min-score INT           Minimum alignment score [default: 80]
     --max-reads INT           Parse up to INT reads then quit [default: 1000]
+    --se                      Force single end
     -v --verbose              Verbose output
     -h --help                 Show this help
     """, version=version(), argv=args)
@@ -405,7 +409,7 @@ proc main(args: seq[string]) =
     file_R2: string
     file_R1 = $args["--first-pair"]
     respCount = 0
- 
+    singleend = false
 
   poolSize = parseInt($args["--pool-size"])
 
@@ -414,8 +418,8 @@ proc main(args: seq[string]) =
     stderr.writeLine("Missing required parameter -1 (--first-pair)")
     quit(0)
 
-  # Try inferring second filename
-  if (not args["--second-pair"]):
+  # Try inferring second filename (not specified and not SE)
+  if (not args["--second-pair"] and not args["--se"]):
     if $args["--pattern-R1"] == "auto" and $args["--pattern-R2"] == "auto":
         # automatic guess
         if match(file_R1, re".+_R1_.+"):
@@ -425,8 +429,10 @@ proc main(args: seq[string]) =
         elif match(file_R1, re".+_R1\..+"):
           file_R2 = file_R1.replace(re"_R1\.", "_R2.")
         else:
-          echo "Unable to automatically detect --for-tag (_R1_, _R1. or _1.) in <", file_R1, ">"
-          quit(1)
+          #echo "Unable to automatically detect --for-tag (_R1_, _R1. or _1.) in <", file_R1, ">"
+          #quit(1)
+          singleend = true
+
     else:
       # user defined patterns
       if match(file_R1, re(".+" & $args["--pattern-R1"] & ".+") ):
@@ -440,9 +446,10 @@ proc main(args: seq[string]) =
   if not fileExists(file_R1):
     stderr.writeLine("ERROR: File R1 not found: ", fileR1)
     quit(1)
-  elif not fileExists(file_R2):
-    stderr.writeLine("ERROR: File R2 not found: ", fileR2)
-    quit(1)
+  
+  if not fileExists(file_R2) or args["--se"]:
+    stderr.writeLine("Running single end mode")
+    singleend = true
 
   initClosure(getR1,readfq(file_R1))
   initClosure(getR2,readfq(file_R2))
@@ -468,23 +475,38 @@ proc main(args: seq[string]) =
     )
     regionsDict = regionsToDict(regions)
 
-  for (R1, R2) in zip(getR1, getR2):
-    counter += 1
+  if not singleend:
+    for (R1, R2) in zip(getR1, getR2):
+      counter += 1
 
-    readspool.add(R1)
-    readspool.add(R2)
+      readspool.add(R1)
+      readspool.add(R2)
 
-    if counter mod poolSize == 0:
-      #stderr.writeLine(counter, ": Spawning pool of size: ", len(readspool))
-      responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
-      readspool.setLen(0)
+      if counter mod poolSize == 0:
+        #stderr.writeLine(counter, ": Spawning pool of size: ", len(readspool))
+        responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
+        readspool.setLen(0)
 
-  responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
+    responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
 
-  for resp in responses:
-    respCount += ^resp
+    for resp in responses:
+      respCount += ^resp
 
+  else:
+    for R1 in  getR1:
+      counter += 1
 
+      readspool.add(R1)
+
+      if counter mod poolSize == 0:
+        #stderr.writeLine(counter, ": Spawning pool of size: ", len(readspool))
+        responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
+        readspool.setLen(0)
+
+    responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
+
+    for resp in responses:
+      respCount += ^resp
 
 when isMainModule:
   main(commandLineParams())
