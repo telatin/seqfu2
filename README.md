@@ -8,7 +8,7 @@
 [![Code size](https://img.shields.io/github/languages/code-size/telatin/seqfu2)](README.md)
 [![Downloads](https://img.shields.io/conda/dn/bioconda/seqfu)](https://bioconda.github.io/recipes/seqfu/README.html)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
-[![Latest Version dParse[1]](https://img.shields.io/badge/Development_version-dParse[1]-orange)](README.md)
+
 
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
 supporting gzipped input files.
