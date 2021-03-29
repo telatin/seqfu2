@@ -32,6 +32,7 @@ include ./fastx_sort
 include ./fastx_grep
 include ./fastq_merge_lanes
 include ./fastx_rc
+include ./fastx_qual
 #include ./fastx_fast_derep
  
 
@@ -51,6 +52,7 @@ var progs = {
          "sort" : fastx_sort,
        "mrg" : fastq_merge_lanes,
          "merge" : fastq_merge_lanes,
+       "qual": fastx_qual,
        "view": fastx_view,
        "grep": fastx_grep,
        "head": fastx_head,
