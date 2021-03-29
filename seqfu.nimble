@@ -1,5 +1,5 @@
 # Package
-version       = "0.8.15"
+version = "dParse[1]"
 author        = "Andrea Telatin"
 description   = "SeqFU command-line tools"
 license       = "MIT"

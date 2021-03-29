@@ -6,23 +6,35 @@
 ![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
 [![Build Status](https://travis-ci.com/telatin/seqfu2.svg?branch=main)](https://travis-ci.com/telatin/seqfu2)
 [![Code size](https://img.shields.io/github/languages/code-size/telatin/seqfu2)](README.md)
+[![Downloads](https://img.shields.io/conda/dn/bioconda/seqfu)](https://bioconda.github.io/recipes/seqfu/README.html)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
-[![Latest Version 0.8.5](https://img.shields.io/badge/Development_version-0.8.5-orange)](README.md)
+[![Latest Version dParse[1]](https://img.shields.io/badge/Development_version-dParse[1]-orange)](README.md)
 
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
 supporting gzipped input files.
 Includes functions to *interleave* and *de-interleave* FASTQ files, to *rename*
 sequences and to *count* and print *statistics* on sequence lengths.
 
-## Dedicated website
+
 :book: **The documentation is available from [dedicated website](https://telatin.github.io/seqfu2)**
 
 ---
 
+
+## Installation
+
+Seqfu can be easily installed via Miniconda:
+
+```bash
+conda install -y -c bioconda seqfu
+```
+
+## Overview 
 The program has a set of subcommands (and there are some extra utilities as well)
+
 ```
 SeqFU - Sequence Fastx Utilities
-version: 0.8.5
+version: <NimblePkgVersion>
 
 	• count [cnt]         : count FASTA/FASTQ reads, pair-end aware
 	• deinterleave [dei]  : deinterleave FASTQ
@@ -34,8 +46,9 @@ version: 0.8.5
 
 	• grep                : select sequences with patterns
 	• head                : print first sequences
+	• rc                  : reverse complement strings or files
 	• tail                : view last sequences
-	• view                : view sequences
+	• view                : view sequences with colored quality and oligo matches
 
 Add --help after each command to print usage
 
@@ -145,6 +158,7 @@ Options:
   -b, --basename         Print only filenames
   -n, --nice             Print nice terminal table
   --csv                  Separate with commas (default: tabs)
+  --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
