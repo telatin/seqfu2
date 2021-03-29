@@ -29,7 +29,12 @@ Seqfu can be easily installed via Miniconda:
 conda install -y -c bioconda seqfu
 ```
 
-## Overview 
+## Full documentation
+
+The full documentation is available at:
+[telatin.github.io/seqfu2](https://telatin.github.io/seqfu2)
+
+## Examples
 The program has a set of subcommands (and there are some extra utilities as well)
 
 ```
