@@ -10,6 +10,22 @@ import ./seqfu_utils
 
 
 proc fastx_count(argv: var seq[string]): int =
+    let multiQCheader = """# plot_type: 'table'
+# section_name: 'SeqFu counts'
+# description: 'Number of reads per sample'
+# pconfig:
+#     namespace: 'Cust Data'
+# headers:
+#     col1:
+#         title: '#Seqs'
+#         description: 'Number of sequences'
+#         format: '{:,.0f}'
+#     col2:
+#         title: 'Type'
+#         description: 'Paired End (PE) or Single End (SE) dataset'
+Sample	col1	col2
+"""
+
     let args = docopt("""
 Usage: count [options] [<inputfile> ...]
 
@@ -17,8 +33,9 @@ Options:
   -a, --abs-path         Print absolute paths
   -b, --basename         Print only filenames
   -u, --unpair           Print separate records for paired end files
-  -f, --for-tag R1       Forward tag [default: auto]
-  -r, --rev-tag R2       Reverse tag [default: auto]
+  -f, --for-tag R1       Forward string, like _R1 [default: auto]
+  -r, --rev-tag R2       Reverse string, like _R2 [default: auto]
+  -m, --multiqc FILE     Save report in MultiQC format
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
@@ -33,7 +50,7 @@ Options:
       unpaired = args["--unpair"]
       pattern1 = $args["--for-tag"]
       pattern2 = $args["--rev-tag"]
-      
+      mqc_report : string = multiQCheader
    
  
     
@@ -92,24 +109,41 @@ Options:
     for id, counts in fileTable:
       if "SE" in counts:
         echo counts["filename_SE"], "\t", counts["SE"], "\tSE"
+        mqc_report &= counts["filename_SE"] & "\t" & counts["SE"] & "\tSE\n"
       else:
         if "R2" in counts:
           if counts["R1"] == counts["R2"]:
             echo counts["filename_R1"], "\t", counts["R1"], "\tPaired"
+            mqc_report &= counts["filename_R1"] & "\t" & counts["R1"] & "\tPE\n"
             if (unpaired):
               echo counts["filename_R2"], "\t", counts["R2"], "\tPaired:R2"
+              mqc_report &= counts["filename_R2"] & "\t" & counts["R2"] & "\tPE (Reverse)\n"
           else:
             errors += 1
             stderr.writeLine("ERROR: Different counts in ", counts["filename_R1"], " and ", counts["filename_R2"] )
             stderr.writeLine("# ", counts["filename_R1"], ": ", counts["R1"] )
             stderr.writeLine("# ", counts["filename_R2"], ": ", counts["R2"] )
+            mqc_report &= counts["filename_R1"] & "\t" & counts["R1"] & "/" & counts["R2"]  & "\tError\n"
         else:
           echo counts["filename_R1"], "\t", counts["R1"], "\tSE"
+          mqc_report &= counts["filename_R1"] & "\t" & counts["R1"] & "\tSE\n"
         
     
+
+
+      
+    if $args["--multiqc"] != "nil":
+      if args["--verbose"]:
+        stderr.writeLine("Saving MultiQC report to ", $args["--multiqc"])
+      try:
+        var f = open($args["--multiqc"], fmWrite)
+        defer: f.close()
+        f.write(mqc_report)
+      except Exception:
+        stderr.writeLine("Unable to write MultiQC report to ", $args["--multiqc"],": printing to STDOUT instead.")
+        echo mqc_report
+
     if errors > 0:
       stderr.writeLine(errors, " errors found.")
       quit(1)
-
-
  

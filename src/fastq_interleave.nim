@@ -20,7 +20,7 @@ ilv: interleave FASTQ files
   Usage: ilv [options] -1 <forward-pair> [-2 <reverse-pair>]
 
   -f --for-tag <tag-1>       string identifying forward files [default: auto]
-  -r --rev-tag <tag-2>       string identifying forward files [default: auto]
+  -r --rev-tag <tag-2>       string identifying reverse files [default: auto]
   -o --output <outputfile>   save file to <out-file> instead of STDOUT
   -c --check                 enable careful mode (check sequence names and numbers)
   -v --verbose               print verbose output
