@@ -371,24 +371,26 @@ proc processPair(R1, R2: FQRecord, reference: string, opts: primerOptions, alnOp
   for i,v in regCount2.pairs:
     reg2 = i
     break
-  stdout.writeLine(R1.name, ".1\t", reg1, "\tscore=", aln1.score, "\t", aln1.targetStart, "-", aln1.targetEnd)
-  stdout.writeLine(R2.name, ".2\t", reg2, "\tscore=", aln2.score, "\t", aln2.targetStart, "-", aln2.targetEnd)
+  result &= R1.name  &  "\t"  &  reg1  &  "\tscore="  &  $(aln1.score)  &  "\t"  &  $(aln1.targetStart)  &  "-"  &  $(aln1.targetEnd) & "\n"
+  result &= R2.name  &  "\t"  &  reg2  &  "\tscore="  &  $(aln2.score)  &  "\t"  &  $(aln2.targetStart)  &  "-"  &  $(aln2.targetEnd)
 
 
-proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string]): int =
+proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string]): seq[string] =
+  var
+    outputString = ""
   for i in 0 .. pool.high:
     if i mod 2 == 1:
-      result += 1
       try:
-        stdout.write( processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict))
+        outputString &= processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict) & "\n"
       except:
-        stdout.write( processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict))
+        outputString &= processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict) & "\n"
         quit()
+  result.add(outputString) 
 
 
 proc main(args: seq[string]) =
   let args = docopt("""
-  Usage: dadaist2-regions [options] -1 <FOR> [-2 <REV>]
+  Usage: fu-16Sregion [options] -1 <FOR> [-2 <REV>]
 
   Options:
     -1 --first-pair <FOR>     First sequence in pair
@@ -458,7 +460,7 @@ proc main(args: seq[string]) =
   var
     counter = 0
     readspool : seq[FQRecord]
-    responses = newSeq[FlowVar[int]]()
+    responses = newSeq[FlowVar[seq[string]]]()
   let
     programParameters = primerOptions(
       #primers:       @[p1for, p2for],
@@ -490,7 +492,8 @@ proc main(args: seq[string]) =
     responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
 
     for resp in responses:
-      respCount += ^resp
+      let s = ^resp
+      stdout.write(s)
 
   else:
     for R1 in  getR1:
@@ -506,7 +509,8 @@ proc main(args: seq[string]) =
     responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
 
     for resp in responses:
-      respCount += ^resp
+      let s = ^resp
+      stdout.write(s)
 
 when isMainModule:
   main(commandLineParams())

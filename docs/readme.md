@@ -14,18 +14,15 @@ Includes functions to _interleave_ and _de-interleave_ FASTQ files,
 to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
 
 
-```note
-**Warning**: this website is under costruction. API are not stable.
-```
-
 :package: See the **[repository](https://github.com/telatin/seqfu2)**
+
+
+## Contents
+
+{% include list.liquid all=true %}
 
 ## Authors
 
 * Andrea Telatin
 * Piero Fariselli
 * Giovanni Birolo
-
-## Contents
-
-{% include list.liquid all=true %}
