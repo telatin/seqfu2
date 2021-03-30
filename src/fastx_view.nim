@@ -6,7 +6,7 @@ import ./seqfu_utils
 import colorize
 
 
-proc qualToUnicode(s: string, v: seq[int], color = false): string =
+proc qualToUnicode*(s: string, v: seq[int], color = false): string =
   #  1   2   3   4   5   6   7
   #  Low     Mid     Ok
   for i in s:

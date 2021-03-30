@@ -3,26 +3,25 @@ import tables, strutils
 from os import fileExists
 import docopt
 import ./seqfu_utils
-import colorize
-
+import strformat
+import stats
 
 proc rangesToTable(ranges: Table[string, tuple[rangeStart, rangeEnd: int]]): Table[int, string] =
   echo "OK"
 
-proc rangeToStr(min, max: int, t: Table[string, tuple[rangeStart, rangeEnd: int]]): string =
+proc rangeToStr(min, max: float, t: Table[string, tuple[rangeStart, rangeEnd: int]]): string =
   result = ""
   for x,y in t:
-    if min >= y.rangeStart and max <= y.rangeEnd:
+    if min >= float(y.rangeStart) and max <= float(y.rangeEnd):
       result &= x & ";"
   if result == "":
     result = "Invalid Range"
   
-proc qualityProfile(sum,cnt: seq[int]): string =
-  for i, quality in sum:
-    if cnt[i] < 1:
+proc qualityProfile(s: seq[RunningStat]): string =
+  for i, stats in s:
+    if stats.n == 0:
       break
-    let avg = quality / cnt[i]
-    result &= qualToChar(int(avg))
+    result &= qualToChar(int(stats.mean))
     
     
 
@@ -43,8 +42,9 @@ scores
 
 Options:
   -m, --max INT          Check the first INT reads [default: 2000]
-  -l, --maxlen INT       Maximum read length [default: 300]
-  -p, --profile          Print graphical average quality profile
+  -l, --maxlen INT       Maximum read length [default: 1000]
+  -p, --profile          Quality profile per position
+  -c, --colorbars        Print graphical average quality profile
   -v, --verbose          Verbose output
   --help                 Show this help
 
@@ -54,13 +54,14 @@ Options:
     let
       maxSeqs = parseInt($args["--max"])
       maxLen  = parseInt($args["--maxlen"])
-
+      comment = if args["--profile"]: "#"
+                else: ""
     for file in @(args["<FASTQ>"]):
       if args["--verbose"]:
         stderr.writeLine("Parsing: ", file)
       
       var count = 0
-      var min, max: int 
+ 
 
       if not fileExists(file):
         stderr.writeLine("ERROR: File not found: ", file)
@@ -68,34 +69,37 @@ Options:
          
       try:
         var
-          sumSeq = newSeq[int]()
-          cntSeq = newSeq[int]() 
 
-        for i in 0 .. maxLen:
-          sumSeq.add(0)
-          cntSeq.add(0)   
-
+          sttSeq = newSeq[RunningStat](maxLen + 1)
+          stats: RunningStat
         for record in readfq(file):
           count += 1
           if count > maxSeqs:
             break
           for i, q in record.quality:
-            if count == 1:
-              min = q.ord
-              max = min
-            else:
-              if min > q.ord:
-                min = q.ord
-              if max < q.ord:
-                max = q.ord
-            cntSeq[i] += 1
-            sumSeq[i] += charToQual(q)
-
-        let encodingType = rangeToStr(min, max, ranges)
+            let 
+              quality_ord = q.ord
+              quality_enc = charToQual(q)
+            sttSeq[i].push(quality_enc)
+            stats.push(quality_ord)
+        let encodingType = rangeToStr(stats.min, stats.max, ranges)
         
-        echo(file, "\t", min, "\t", max, "\t", encodingType)
+
+        echo(comment, file, "\t", stats.min, "\t", stats.max, "\t", encodingType, "\t", fmt"{stats.mean:.2f}+/-{stats.standardDeviationS:.2f}")
+        if args["--colorbars"]:
+          let profile = qualityProfile(sttSeq)
+          echo "#",  qualToUnicode(profile, @[1, 10, 20, 25, 30, 35, 40], true)
+
+
         if args["--profile"]:
-          let profile = qualityProfile(sumSeq, cntSeq)
-          echo qualToUnicode(profile, @[1, 10, 20, 25, 30, 35, 40], true)
+          echo("#Pos\tMin\tMax\tMean\tStDev\tSkewness")
+          var profString = ""
+          for pos, stats in sttSeq:
+            if stats.n == 0:
+              continue
+            profString &= fmt"{pos}" & "\t" & fmt"{stats.min:.1f}" & "\t" & fmt"{stats.max:.1f}" & "\t" & fmt"{stats.mean:.2f}" & "\t" & fmt"{stats.standardDeviationS:.2f}" & "\t" & fmt"{stats.skewness:.2f}" & "\n"
+          echo profString
+
+        
       except Exception as e:
         stderr.writeLine("Error parsing ", file, ": ", e.msg)
