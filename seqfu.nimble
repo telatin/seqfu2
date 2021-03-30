@@ -1,5 +1,5 @@
 # Package
-version       = "0.9.0"
+version       = "0.9.1"
 author        = "Andrea Telatin"
 description   = "SeqFU command-line tools"
 license       = "MIT"
@@ -11,7 +11,7 @@ srcDir = "src"
 binDir = "bin" 
 namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers", "fu_orf": "fu-orf", 
 "fu_multirelabel": "fu-multirelabel", "fu_sw": "fu-sw",
-"dadaist2_mergeseqs": "dadaist2-mergeseqs", "dadaist2_region": "dadaist2-region"}.toTable()
+"dadaist2_mergeseqs": "dadaist2-mergeseqs", "dadaist2_region": "fu-16Sregion"}.toTable()
 
 task seqfu, "compile SeqFU":
   mkdir  "bin"
