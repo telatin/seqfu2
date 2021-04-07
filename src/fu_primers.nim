@@ -3,9 +3,12 @@ import readfq, iterutils
 import os, strutils, re, sequtils
 import threadpool
 import ./seqfu_utils
-let
-  programVersion = "1.0"
-  programName = "fu-primers"
+
+const NimblePkgVersion {.strdefine.} = "undef"
+const programName = "fu-primers"
+const programVersion = if NimblePkgVersion == "undef": "X.9"
+                       else: NimblePkgVersion
+
 
 var
   poolsize = 100

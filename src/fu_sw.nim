@@ -1,7 +1,8 @@
 import docopt
 import readfq
 import strformat
-import os, strutils, re, iterutils, sequtils
+import os, strutils, sequtils
+#import re, iterutils, 
 import threadpool
 import neo
 import tables, algorithm
@@ -10,10 +11,10 @@ import ./seqfu_utils
 
 signal(SIG_PIPE, SIG_IGN)
 
-const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
-
+const NimblePkgVersion {.strdefine.} = "undef"
+const programVersion = if NimblePkgVersion == "undef": "X.9"
+                       else: NimblePkgVersion
 let
-  programVersion = NimblePkgVersion
   programName = "fu-sw"
    
 

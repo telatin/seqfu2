@@ -14,7 +14,7 @@ type
 
 proc fastq_merge_lanes(argv: var seq[string]): int =
     let args = docopt("""
-Usage: merge [options] -o <outdir> <input_directory>
+Usage: lanes [options] -o <outdir> <input_directory>
 
 Options:
   -o, --outdir DIR           Output directory

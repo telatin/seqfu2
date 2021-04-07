@@ -33,7 +33,7 @@ include ./fastx_grep
 include ./fastq_merge_lanes
 include ./fastx_rc
 include ./fastx_qual
-#include ./fastx_fast_derep
+include ./fastq_merge
  
 
 var progs = {
@@ -50,8 +50,10 @@ var progs = {
        "rc" : fastx_rc,
        "srt": fastx_sort,             
          "sort" : fastx_sort,
-       "mrg" : fastq_merge_lanes,
-         "merge" : fastq_merge_lanes,
+       "ill" : fastq_merge_lanes,
+         "lanes" : fastq_merge_lanes,
+       "mrg" : fastq_merge,
+         "merge" : fastq_merge,
        "qual": fastx_qual,
        "view": fastx_view,
        "grep": fastx_grep,
@@ -65,12 +67,13 @@ proc main() =
     helps = {  "interleave [ilv]"  :  "interleave FASTQ pair ends",
                "deinterleave [dei]": "deinterleave FASTQ",
                "derep [der]"       : "feature-rich dereplication of FASTA/FASTQ files",
-#               "fast_derep [uniq]" : "fast dereplication of FASTA/FASTQ files",
+#              "merge [mrg]"       : "join Paired End reads",
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
-               "merge [mrg]"       : "merge Illumina lanes",
+               "lanes [mrl]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
                "sort [srt]"        : "sort sequences by size (uniques)"
                }.toTable
+
     helps_last = {"view"           : "view sequences with colored quality and oligo matches",
                   "head"           : "print first sequences",
                   "tail"           : "view last sequences",
@@ -94,14 +97,14 @@ proc main() =
       if a < b: return -1
       else: return 1
       )
-    echo format("SeqFU - Sequence Fastx Utilities\nversion: $#\n", version())
+    echo format("SeqFu - Sequence Fastx Utilities\nversion: $#\n", version())
 
     for k in hkeys1:
       echo format("	• $1: $2", k & repeat(" ", 20 - len(k)), helps[k])
     echo ""
     for k in hkeys2:
       echo format("	• $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
-      #echo format("	• \e[01;33m$1\e[00m: $2", k & repeat(" ", 20 - len(k)), helps[k])
+      
     echo "\nAdd --help after each command to print usage"
   else:
     var p = args[0]; args.delete(0)

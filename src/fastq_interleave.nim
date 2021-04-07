@@ -92,11 +92,11 @@ example:
     echo "FATAL ERROR: First file and second file are equal."
     quit(1)
 
-  if not existsFile(file_R1):
+  if not fileExists(file_R1):
     echo "FATAL ERROR: First pair (", file_R1 , ") not found."
     quit(1)
 
-  if not existsFile(file_R2):
+  if not fileExists(file_R2):
     echo "FATAL ERROR: First pair (", file_R2 , ") not found."
     quit(1)
 

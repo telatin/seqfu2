@@ -6,7 +6,6 @@
 [![Build Status](https://travis-ci.com/telatin/seqfu2.svg?branch=main)](https://travis-ci.com/telatin/seqfu2)
 [![Code size](https://img.shields.io/github/languages/code-size/telatin/seqfu2)](README.md)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
-[![Latest Version 0.8.5](https://img.shields.io/badge/Development_version-0.8.5-orange)](README.md)
 
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
 supporting gzipped input files.

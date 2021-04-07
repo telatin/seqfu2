@@ -1,11 +1,44 @@
 import klib, readfq
 
-import  strutils, os
+import  strutils, os, re
  
 const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 proc version*(): string =
   return NimblePkgVersion
 
+ 
+
+
+proc `$`(s: FQRecord): string =
+  if len(s.quality) > 0:
+    "@" & s.name & " " & s.comment & "\n" & s.sequence & "\n+\n" & s.quality
+  else:
+    ">" & s.name & " " & s.comment & "\n" & s.sequence & "\n"
+
+
+
+proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto"): string =
+  if not fileExists(file_R1):
+    return ""
+
+  if pattern_R1 == "auto" and pattern_R2 == "auto":
+    # automatic guess
+    if match(file_R1, re".+_R1\..+"):           
+      result = file_R1.replace(re"_R1\.", "_R2.")
+    elif match(file_R1, re".+_1\..+"):            
+      result = file_R1.replace(re"_1\.", "_2.")
+    else:
+      #echo "Unable to detect --for-tag (_R1. or _1.) in <", file_R1, ">"
+      return ""
+  else:
+    # user defined patterns
+    if match(file_R1, re(".+" & pattern_R1 & ".+") ):
+      result = file_R1.replace(re(pattern_R1), pattern_R2)
+    else:
+      return ""
+  
+  if not fileExists(result):
+    return ""
 
 
 

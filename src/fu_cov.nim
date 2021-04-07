@@ -7,8 +7,11 @@ import strformat
 import os
 import algorithm
 
-const prog = "fu-cov"
-const version = "0.4.0"
+const NimblePkgVersion {.strdefine.} = "undef"
+const programVersion = if NimblePkgVersion == "undef": "X.9"
+                       else: NimblePkgVersion
+let
+  programName = "fu-cov"
 #[
    extract contigs by coverage
 
@@ -93,7 +96,7 @@ proc main(args: seq[string]) =
     -s, --sort             Store contigs in memory and sort them by descending coverage
     --verbose              Print verbose log
     --help                 Show help
-  """, version=version, argv=commandLineParams())
+  """, version=programVersion, argv=commandLineParams())
   try:
     var
       skip_hi_cov = 0

@@ -3,10 +3,13 @@ import klib
 import docopt, strutils, tables, math
 import os
 from posix import signal, SIG_PIPE, SIG_IGN
+import ./seqfu_utils
 signal(SIG_PIPE, SIG_IGN)
 
+const NimblePkgVersion {.strdefine.} = "undef"
 const prog = "fu-orf"
-const version = "0.9.0"
+const version = if NimblePkgVersion == "undef": "X.9"
+                else: NimblePkgVersion
 const minSeqLen = 18
 
   
@@ -114,33 +117,12 @@ proc format_dna(seq: string, format_width: int): string =
       result &= seq[i..i + format_width - 1] & "\n"
 
 
-  
-proc reverseComplement*(self:FastxRecord):FastxRecord =
-  # returns reverse complement of sequence
-  var revseq, revqual = newseq[char]()
-  var slen = len(self.seq)
-  result = self
-  for i in 1..slen:
-    revqual.add(self.qual[slen - i])
-    case self.seq[slen - i]:
-      of 'A':
-        revseq.add('T')
-      of 'C':
-        revseq.add('G')
-      of 'G':
-        revseq.add('C')
-      of 'T', 'U':
-        revseq.add('A')
-      else:
-        revseq.add('N')
-  result.qual = revqual.join
-  result.seq = revseq.join
 
 proc translateAll(input: FastxRecord, minOrfSize=10): seq[string] =
   var
     rawprots : seq[string]
       
-  for sequence in @[input, input.reverseComplement()]:
+  for sequence in @[input, input.revcompl()]:
     if len(sequence.seq) < minSeqLen:
       break
     for frame in @[0, 1, 2]:
@@ -162,7 +144,7 @@ proc translateAll(input: FastxRecord, minOrfSize=10): seq[string] =
       
  
 proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90): FastxRecord {.discardable.} = 
-  var REV = reverseComplement(R2) 
+  var REV = revcompl(R2) 
   var max = if R1.seq.high > REV.seq.high: REV.seq.high
           else:  R1.seq.high
   
@@ -227,14 +209,13 @@ proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
     result &= '>' & R1.name & "_" & $counter & "/" & $(len(orfs)) & "\n" & peptide & "\n"
 
   
-proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): int =
+proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
   for i in 0 .. pool.high:
     if i mod 2 == 1:
-      result += 1
       try:
-        stdout.write( processPair(pool[i - 1], pool[i], opts))  
+        result &= processPair(pool[i - 1], pool[i], opts)  
       except:
-        stdout.write( processPair(pool[i - 1], pool[i], opts))
+        result &= processPair(pool[i - 1], pool[i], opts) 
         quit()
 
 
@@ -275,6 +256,8 @@ proc main(args: seq[string]) =
     respCount = 0
     poolSize : int
     prefix : string
+    singleEnd = true
+
   try:
     fileR1 = $args["--R1"]
     fileR2 = $args["--R2"]
@@ -289,16 +272,19 @@ proc main(args: seq[string]) =
     quit(0)
 
     
-  if len(fileR1) == 0 or len(fileR2) == 0:
-    verbose("Missing required parameters: -1 FILE1 -2 FILE2", true)
+  if len(fileR1) == 0:
+    verbose("Missing required parameters: -1 FILE1 [-2 FILE2]", true)
     quit(0)
 
   if not fileExists(fileR1):
     stderr.writeLine("FATAL ERROR: File [-1] ", fileR1, " not found.")
     quit(1)
-  if not fileExists(fileR2):
+  if fileR2 != "nil" and not fileExists(fileR2):
     stderr.writeLine("FATAL ERROR: File [-2] ", fileR2, " not found.")
     quit(1)
+  elif fileR2 == "nil":
+    verbose("Single end mode", args["--verbose"])
+    singleEnd = true
   
 
   var R1 = xopen[GzFile](fileR1)
@@ -306,32 +292,50 @@ proc main(args: seq[string]) =
   var read1: FastxRecord
   verbose("Reading R1:" & fileR1, verbose)
 
-  var R2 = xopen[GzFile](fileR2)
-  defer: R2.close()
-  var read2: FastxRecord
-  verbose("Reading R2:" & fileR2, verbose)
+
   
   var readspool : seq[FastxRecord]
-  var responses = newSeq[FlowVar[int]]()
-  while R1.readFastx(read1):
-    counter += 1
-    if len(prefix) > 0:
-      read1.name = prefix & $counter
-      read2.name = prefix & $counter
-    R2.readFastx(read2)
+  var responses = newSeq[FlowVar[string]]()
+  if not singleEnd:
+    var R2 = xopen[GzFile](fileR2)
+    defer: R2.close()
+    var read2: FastxRecord
+    verbose("Reading R2:" & fileR2, verbose)
+    while R1.readFastx(read1):
+      counter += 1
+      if prefix != "nil":
+        read1.name = prefix & $counter
+        read2.name = prefix & $counter
+      R2.readFastx(read2)
+      
+      readspool.add(read1)
+      readspool.add(read2)  
+
+      if counter mod poolSize == 0:
+        responses.add(spawn parseArray(readspool, mergeOptions))
+        readspool.setLen(0)
+
+    responses.add(spawn parseArray(readspool, mergeOptions))
     
-    readspool.add(read1)
-    readspool.add(read2)  
+    for resp in responses:
+      let s = ^resp
+      stdout.write(s)
+  else:
+    while R1.readFastx(read1):
+      counter += 1
+      if prefix != "nil":
+        read1.name = prefix & $counter
+         
+      readspool.add(read1)
+      if counter mod poolSize == 0:
+        responses.add(spawn parseArray(readspool, mergeOptions))
+        readspool.setLen(0)
 
-    if counter mod poolSize == 0:
-      responses.add(spawn parseArray(readspool, mergeOptions))
-      readspool.setLen(0)
-
-  responses.add(spawn parseArray(readspool, mergeOptions))
-  
-  for resp in responses:
-    respCount += ^resp
-
+    responses.add(spawn parseArray(readspool, mergeOptions))
+    
+    for resp in responses:
+      let s = ^resp
+      stdout.write(s)
 
 when isMainModule:
   main(commandLineParams())

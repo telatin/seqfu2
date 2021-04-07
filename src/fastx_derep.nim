@@ -77,7 +77,7 @@ Options:
 
 
     for filename in files:      
-      if filename != "-" and not existsFile(filename):
+      if filename != "-" and not fileExists(filename):
         echo "FATAL ERROR: File ", filename, " not found."
         quit(1)
 

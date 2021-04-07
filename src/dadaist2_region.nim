@@ -6,7 +6,7 @@ import threadpool
 import neo
 import tables, algorithm
 import posix
-import ./seqfu_utils
+#import ./seqfu_utils
 
 signal(SIG_PIPE, SIG_IGN)
 
