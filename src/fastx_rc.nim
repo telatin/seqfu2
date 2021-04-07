@@ -44,8 +44,12 @@ Options:
       if not fileExists(filename):
         # Process as string
         stringCount += 1
-        echo ">", seqDefaultName, "_" , $stringCount, "\n", revcompl(filename)
-        continue
+        if len(files) == 1:
+          echo revcompl(filename)
+          continue
+        else:
+          echo ">", seqDefaultName, "_" , $stringCount, "\n", revcompl(filename)
+          continue
       else:
         echoVerbose(filename, verbose)
 

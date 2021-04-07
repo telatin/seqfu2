@@ -8,7 +8,8 @@ permalink: /installation
 
 ## Install via Miniconda
 
-The recommended installation method is via BioConda. If you have _conda_ installed ([how to install it](https://docs.conda.io/en/latest/miniconda.html)):
+The **recommended** installation method is via BioConda. 
+If you have _conda_ installed ([how to install it](https://docs.conda.io/en/latest/miniconda.html)):
 
 ```
 conda install -c conda-forge -c bioconda seqfu
@@ -18,6 +19,6 @@ More info on [installing conda](https://telatin.github.io/microbiome-bioinformat
 
 ## Pre-compiled binaries
 
-Pre-compiled binaries are distributed with the [stable releases](https://github.com/telatin/qax/releases).  
+Pre-compiled binaries are distributed with the [stable releases](https://github.com/telatin/seqfu2/releases).  
 
  

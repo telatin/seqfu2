@@ -101,27 +101,46 @@ proc qualToColor(s: string, v: seq[int], color = false): string =
       else:
         result &= i
 
-proc highlight(r: string, matches: seq[seq[int]], l:int, color: proc) =
+proc isOnlySpaces(s: string): bool =
+  for c in s:
+    if c != ' ':
+      return false
+  return true
+
+proc highlightOligoMatches(r: string, matches: seq[seq[int]], oligo_length:int, color: proc): string =
+  var
+    glyphs = newSeq[string](len(r))
+  
+  for i in 0 ..< len(r):
+    glyphs[i] = " "
+
+
   if len(matches[0]) > 0:
     for m in matches[0]:
       let 
-        stop = if m >= 0: l
-               else: l + m
+        stop = if m >= 0: oligo_length
+               else: oligo_length + m
         start = if m >= 0: m
               else: 0
-      echo ' '.repeat(start) & "ᐅ".color.fgWhite.repeat(stop)
+      for i in start ..< start+stop:
+        if i < len(glyphs):
+          glyphs[i] = "ᐅ".color.fgWhite
 
   #echo r
-
   if len(matches[1]) > 0:
     for m in matches[1]:
       let 
-        stop = if m >= 0: l
-               else: l + m
+        stop = if m >= 0: oligo_length
+               else: oligo_length + m
         start = if m >= 0: m
               else: 0
-      echo ' '.repeat(start) & "ᐊ".color.fgWhite.repeat(stop)
-    
+      #echo "?", ' '.repeat(start) & "ᐊ".color.fgWhite.repeat(stop)
+      for i in start ..< start+stop:
+        if i < len(glyphs):
+          glyphs[i] = "ᐊ".color.fgWhite
+  
+  return glyphs.join("")
+
 proc fastx_view(argv: var seq[string]): int =
   let args = docopt("""
 Usage: view [options] <inputfile> [<input_reverse>]
@@ -192,10 +211,14 @@ Options:
       
     if $args["--oligo1"] != "nil":
       let matches = findPrimerMatches(read.seq, $args["--oligo1"], matchThs, maxMismatches, minMatches)
-      highlight(read.seq, matches, len($args["--oligo1"]), bgBlue)
+      let forString = highlightOligoMatches(read.seq, matches, len($args["--oligo1"]), bgBlue)
+      if forString.isOnlySpaces == false:
+        echo forString
     if $args["--oligo2"] != "nil":
       let matches = findPrimerMatches(read.seq, $args["--oligo2"], matchThs, maxMismatches, minMatches)
-      highlight(read.seq, matches, len($args["--oligo2"]), bgRed)
+      let revString = highlightOligoMatches(read.seq, matches, len($args["--oligo2"]), bgRed)
+      if revString.isOnlySpaces == false:
+        echo revString
     echo read.seq
     if args["--qual-chars"]:
       echo qualToColor(read.qual, thresholdValues, colorOutput)
