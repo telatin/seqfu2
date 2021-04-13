@@ -83,46 +83,7 @@ proc reverse*(str: string): string =
   for index in countdown(str.high, 0):
     result.add(str[index])
 
-
-# proc `$`(i: swAlignment): string =
-#   let
-#     alignmentWidth = 60
-#   result = "#score=" & $i.score & ";length=" & $i.length & ";query=" & $i.queryStart & "-" & $i.queryEnd & ";target=" & $i.targetStart  & "-" & $i.targetEnd &  "\n"
-#   #     i.top    & "\n" &
-#   #     i.middle & "\n" &
-#   #     i.bottom
-#   for p in countup(0, len(i.top), alignmentWidth):
-#     let span = if p+alignmentWidth > len(i.top): len(i.top)
-#                else: p+alignmentWidth
-#     result &= " " & i.top[p ..< span] & "\n"
-#     result &= " " & i.middle[p ..< span] & "\n"
-#     result &= " " & i.bottom[p ..< span] & "\n\n"
-
-
-# proc swInitializeMatrix(alpha, beta: string, weights: swWeights): Matrix[system.int] =
-#   result = makeMatrix(len(alpha) + 1,
-#     len(beta) + 1,
-#     proc(i, j: int): int = 0
-#   )
-
-#   for t, x in result:
-#     let
-#       (i, j) = t
-
-#     if i == 0 or j == 0:
-#       result[i, j] = 0
-#     else:
-#       let
-#         score= if alpha[i - 1] == beta[j - 1]: weights.match
-#                else: weights.mismatch
-#         top  = result[i,   j-1] + weights.gap
-#         left = result[i-1, j]   + weights.gap
-#         diag = result[i-1, j-1] + score
-#       result[i, j] =  max( 0, max(top, max(left, diag)))
-#   return result
-
-
-
+ 
 proc simpleSmithWaterman(alpha, beta: string, weights: swWeights): swAlignment =
 
   # Constants defining path sources
@@ -293,60 +254,7 @@ template initClosure(id:untyped,iter:untyped) =
     for x in iter:
       yield x
 
-# proc translateIUPAC(c: char): char =
-#   const
-#     inputBase = "ATUGCYRSWKMBDHVN"
-#     rcBase    = "TAACGRYSWMKVHDBN"
-#   let
-#     base = toUpperAscii(c)
-#   let o = inputBase.find(base)
-#   if o >= 0:
-#     return rcBase[o]
-#   else:
-#     return base
 
-# proc matchIUPAC(a, b: char): bool =
-#   # a=primer; b=read
-#   let
-#     metachars = @['Y','R','S','W','K','M','B','D','H','V']
-
-#   if b == 'N':
-#     return false
-#   elif a == b or a == 'N':
-#     return true
-#   elif a in metachars:
-#     if a == 'Y' and (b == 'C' or b == 'T'):
-#       return true
-#     if a == 'R' and (b == 'A' or b == 'G'):
-#       return true
-#     if a == 'S' and (b == 'G' or b == 'C'):
-#       return true
-#     if a == 'W' and (b == 'A' or b == 'T'):
-#       return true
-#     if a == 'K' and (b == 'T' or b == 'G'):
-#       return true
-#     if a == 'M' and (b == 'A' or b == 'C'):
-#       return true
-#     if a == 'B' and (b != 'A'):
-#       return true
-#     if a == 'D' and (b != 'C'):
-#       return true
-#     if a == 'H' and (b != 'G'):
-#       return true
-#     if a == 'V' and (b != 'T'):
-#       return true
-#   return false
-
-
-
-# proc revcompl(s: string): string =
-#   result = ""
-#   let rev = reverse(s)
-#   for c in rev:
-#       result &= c.translateIUPAC
-
-
- 
 proc processPair(R1, R2: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string]): string =
   let
    aln1 = simpleSmithWaterman(R1.sequence, reference, alnOpt)
