@@ -26,9 +26,10 @@ When possible, we recommend to install SeqFu via Miniconda (see above), as it pr
 
 ## Manual compilation
 
-1) If `nim` is not installed ([see instructions](https://nim-lang.org/install_unix.html)).
+1) If `nim` is not installed, install it ([see instructions](https://nim-lang.org/install_unix.html)).
   * We suggest - when available - the `choosenim` method
 2) Clone the repository (`git clone https://github.com/telatin/seqfu2`)
 3) Compile with `nimble build`
+4) The binaries will be available in the `./bin` directory
 
  
