@@ -62,7 +62,7 @@ Options:
     
     
     for filename in files:
-      if not fileExists(filename):
+      if not fileExists(filename) and filename != "-":
         stderr.writeLine("Skipping ", filename, ": not found")
         continue
       else:
