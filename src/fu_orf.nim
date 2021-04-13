@@ -1,10 +1,11 @@
+from posix import signal, SIG_PIPE, SIG_IGN
+signal(SIG_PIPE, SIG_IGN)
+
 import threadpool
 import klib
 import docopt, strutils, tables, math
 import os
-from posix import signal, SIG_PIPE, SIG_IGN
 import ./seqfu_utils
-signal(SIG_PIPE, SIG_IGN)
 
 const NimblePkgVersion {.strdefine.} = "undef"
 const prog = "fu-orf"
@@ -59,8 +60,7 @@ proc num2kmer*(num, klen:int):string =
   kmer
 
 proc translate*(self:FastxRecord, code = 1): FastxRecord = 
-  ## translates a nucleotide sequence with the given genetic code number
-  ## see https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi for codes
+  ## translates a nucleotide sequence with the given genetic code number: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi for codes
   var codeMap = 
     ["FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
@@ -109,8 +109,7 @@ proc format_dna(seq: string, format_width: int): string =
   if format_width == 0:
     return seq
   for i in countup(0,seq.len - 1,format_width):
-    #let endPos = if (seq.len - i < format_width): seq.len - 1
-    #            else: i + format_width - 1
+ 
     if (seq.len - i <= format_width):
       result &= seq[i..seq.len - 1]
     else:

@@ -190,7 +190,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
 
 
     let
-      statsSeq = @[$rendername, $stats.count, $stats.sum, stats.avg.formatFloat(ffDecimal, 1), $stats.n50, $stats.n75, $stats.n90, $stats.auN, $stats.min, $stats.max]
+      statsSeq = @[$rendername, $stats.count, $stats.sum, stats.avg.formatFloat(ffDecimal, 1), $stats.n50, $stats.n75, $stats.n90, $stats.auN.formatFloat(ffDecimal, 3), $stats.min, $stats.max]
 
     if nice:            
       outputTable.addRow(statsSeq)
