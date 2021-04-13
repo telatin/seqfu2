@@ -14,10 +14,7 @@ A general-purpose program to manipulate and parse information from FASTA/FASTQ f
 supporting gzipped input files.
 Includes functions to *interleave* and *de-interleave* FASTQ files, to *rename*
 sequences and to *count* and print *statistics* on sequence lengths.
-
-
-:book: **The documentation is available from [dedicated website](https://telatin.github.io/seqfu2)**
-
+ 
 ---
 
 
