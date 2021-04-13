@@ -7,21 +7,14 @@
 [![Code size](https://img.shields.io/github/languages/code-size/telatin/seqfu2)](README.md)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
 
+:package: See the **[repository](https://github.com/telatin/seqfu2)**
+
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
 supporting gzipped input files.
 Includes functions to _interleave_ and _de-interleave_ FASTQ files,
 to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
-
-
-:package: See the **[repository](https://github.com/telatin/seqfu2)**
-
+SeqFu is available for Linux and MacOS.
 
 ## Contents
 
 {% include list.liquid all=true %}
-
-## Authors
-
-* Andrea Telatin
-* Piero Fariselli
-* Giovanni Birolo
