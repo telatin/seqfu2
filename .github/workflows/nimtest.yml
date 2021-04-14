@@ -25,14 +25,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: add lib
-        run: sudo apt-get install zlib1g-dev
-
       - name: NIM Lang Alpine
        # You may pin to the exact commit or the version.
        # uses: skynet-core/nim@5c3d72356c8763b02fb045a14d7d83a563cd2b12
         uses: skynet-core/nim@v1.2
         with:
           # Command to run
-          command: nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-static -d:release --opt:size -y
+          command: nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc -d:release --opt:speed -y
