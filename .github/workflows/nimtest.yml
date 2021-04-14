@@ -31,4 +31,4 @@ jobs:
         uses: skynet-core/nim@v1.2
         with:
           # Command to run
-          command: nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc -d:release --opt:speed -y
+          command: nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y
