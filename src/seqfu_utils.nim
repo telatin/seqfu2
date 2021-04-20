@@ -1,7 +1,7 @@
 import klib, readfq
-
 import  strutils, os, re
- 
+when not defined(windows):
+  import posix
 const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 proc version*(): string =
   return NimblePkgVersion
@@ -361,6 +361,7 @@ proc main_helper*(main_func: var seq[string] -> int) =
       stderr.writeLine( getCurrentExceptionMsg() )
       quit(2)   
   else:
+    
     signal(SIG_PIPE, SIG_IGN)
     # Handle Ctrl+C interruptions and pipe breaks
     type EKeyboardInterrupt = object of CatchableError

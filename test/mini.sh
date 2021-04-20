@@ -5,7 +5,8 @@ PLATFORM=""
 #if [[ $(uname) == "Darwin" ]]; then
 # PLATFORM="_mac"
 #fi
-BIN=$DIR/../bin/seqfu${PLATFORM}
+BINDIR="$DIR/../bin/"
+BIN="$BINDIR"/seqfu
 FILES=$DIR/../data/
 
 iInterleaved=$FILES/interleaved.fq.gz
@@ -18,9 +19,15 @@ ERRORS=0
 echo "# Minimal test suite"
 
 # Binary works
-$BIN > /dev/null|| { echo "Binary not working"; exit 1; }
-echo "OK: Running"
+$BIN > /dev/null || { echo "Binary not working: $BIN"; exit 1; }
+echo "OK: Binary running"
 
+for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave count;
+do
+  echo " - $MOD"
+  $BIN $MOD --help >/dev/null  2>&1 || {  echo "Help for $MOD returned non-zero"; exit 1; }
+
+done
 # Dereiplicate
 if [[ $($BIN derep $iAmpli  | grep -c '>') -eq "18664" ]]; then
 	echo "OK: Dereplicate"
@@ -85,12 +92,79 @@ else
   ERRORS=$((ERRORS+1))
 fi
 
+## Head 
+if [[ $($BIN head -n 1 $iInterleaved | wc -l) -eq 4 ]]; then
+  echo "OK: Head 1 sequence"
+else
+  echo "ERR: Head failed"
+  ERRORS=$((ERRORS+1))
+fi
+
+
+
+## Tail 
+if [[ $($BIN tail -n 1 $iInterleaved | wc -l) -eq 4 ]]; then
+  echo "OK: tail 1 sequence"
+else
+  echo "ERR: Tail failed"
+  ERRORS=$((ERRORS+1))
+fi
+
+
+
+##QUal
+if [[ $($BIN qual  $iInterleaved | grep 'Illumina-1.8' | wc -l ) -eq 1 ]]; then
+  echo "OK: qual tested"
+else
+  echo "ERR: qual failed"
+  ERRORS=$((ERRORS+1))
+fi
+## External
+
+if [[ $($BINDIR/fu-orf -1 $iPair1 -m 29 | grep -c '>') -eq 5 ]]; then
+  echo "OK: fu-orf tested"
+else
+  echo "ERR: fu-orf test failed: $($BINDIR/fu-orf -1 $iPair1 -m 29 | grep -c '>') != 5"
+  ERRORS=$((ERRORS+1))
+fi
+
+if [[ $($BINDIR/fu-sw -q $FILES/query.fa -t $FILES/target.fa | grep -c 'Score') -eq 2 ]]; then
+  echo "OK: fu-sw tested"
+else
+  echo "ERR: fu-sw test failed: $BINDIR/fu-sw -q $DATA/query.fa -t $DATA/target.fa | grep -c 'Score' != 2"
+  ERRORS=$((ERRORS+1))
+fi
+## STREAMING
+
+if [[ $(cat  $iInterleaved | gzip -d | $BIN head -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
+  echo "OK: Head 1 sequence (stream)"
+else
+  echo "ERR: Head failed"
+  ERRORS=$((ERRORS+1))
+fi
+
+if [[ $(cat  $iInterleaved | gzip -d | $BIN tail -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
+  echo "OK: tail 1 sequence (stream)"
+else
+  echo "ERR: tail failed"
+  ERRORS=$((ERRORS+1))
+fi
+
+if [[ $($BIN head -n 6  $iInterleaved | $BIN tail -n 2 2>/dev/null | wc -l) -eq 8 ]]; then
+  echo "OK: head/tail 1 sequence (stream)"
+else
+  echo "ERR: head/tail failed"
+  ERRORS=$((ERRORS+1))
+fi
+
+### Check failures
 if  [[ $ERRORS -gt 0 ]]; then
 	echo "FAIL: $ERRORS test failed."
 	exit 1
 else
 	echo "PASS"
 fi
+
 
 echo ""
 for TEST in $DIR/*.sh;

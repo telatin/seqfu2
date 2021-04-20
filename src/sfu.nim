@@ -4,7 +4,7 @@ import strutils
 import tables
 import algorithm
 import docopt
-import posix
+
 
 
 
@@ -96,7 +96,7 @@ proc main(args: var seq[string]): int =
       echo format("	• $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
       
     echo "\nAdd --help after each command to print usage"
-    1
+    0
   else:
     var p = args[0]
     var pargs = args[1 .. ^1]

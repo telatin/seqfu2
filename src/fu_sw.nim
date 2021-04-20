@@ -282,7 +282,15 @@ proc main(args: var seq[string]): int =
     query = $args["--query"]
     target = $args["--target"] 
     pctid = parseFloat($args["--pct-id"])
-     
+  
+  if not fileExists(query):
+    stderr.writeLine("ERROR: Query file not found: ", query)
+    quit(1)
+
+  
+  if not fileExists(target):
+    stderr.writeLine("ERROR: Target file not found: ", target)
+    quit(1)
 
   poolSize = parseInt($args["--pool-size"])
  
