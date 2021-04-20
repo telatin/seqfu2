@@ -346,3 +346,37 @@ proc findPrimerMatches*(sequence, primer: string, threshold: float, max_mismatch
 
   result = @[forMatches, revMatches]
 
+# boiler plate code for handling exceptions in command line utils
+import sugar
+proc main_helper*(main_func: var seq[string] -> int) =
+  var args: seq[string] = commandLineParams()
+  when defined(windows):
+    try:
+      let exitStatus = main_func(args)
+      quit(exitStatus)
+    except IOError:
+      # Broken pipe
+      quit(0)
+    except Exception:
+      stderr.writeLine( getCurrentExceptionMsg() )
+      quit(2)   
+  else:
+    signal(SIG_PIPE, SIG_IGN)
+    # Handle Ctrl+C interruptions and pipe breaks
+    type EKeyboardInterrupt = object of CatchableError
+    proc handler() {.noconv.} =
+      raise newException(EKeyboardInterrupt, "Keyboard Interrupt")
+    setControlCHook(handler)
+    # Handle "Ctrl+C" intterruption
+    try:
+      let exitStatus = main_func(args)
+      quit(exitStatus)
+    except EKeyboardInterrupt:
+      # Ctrl+C
+      quit(1)
+    except IOError:
+      # Broken pipe
+      quit(0)
+    except Exception:
+      stderr.writeLine( getCurrentExceptionMsg() )
+      quit(2)   

@@ -103,7 +103,7 @@ proc processSequenceSingleArray(pool: seq[FQRecord], opts: primerOptions, minlen
     stdout.write( '@' & r.name & "\n" & r.sequence & "\n+\n" & r.quality & "\n" )
   
 
-proc main(args: seq[string]) =
+proc main(args: var seq[string]): int =
   let args = docopt("""
   Usage: fu-primers [options] -1 <FOR> [-2 <REV>]
 
@@ -241,10 +241,6 @@ proc main(args: seq[string]) =
   if args["--verbose"]:
     stderr.writeLine("Seqs: ", processed, "; Trimmed: ", trimmed, "; Discarded: ", filteredout)
  
-    
-
-
-
 
 when isMainModule:
-  main(commandLineParams())
+  main_helper(main)

@@ -5,15 +5,7 @@ import tables
 import algorithm
 import docopt
 import posix
-signal(SIG_PIPE, SIG_IGN)
 
-
-type EKeyboardInterrupt = object of CatchableError
- 
-proc handler() {.noconv.} =
-  raise newException(EKeyboardInterrupt, "Keyboard Interrupt")
- 
-setControlCHook(handler)
 
 
 # Suite Version
@@ -61,7 +53,7 @@ var progs = {
        "tail": fastx_tail,  
 }.toTable
 
-proc main() =
+proc main(args: var seq[string]): int =
   
   var 
     helps = {  "interleave [ilv]"  :  "interleave FASTQ pair ends",
@@ -80,8 +72,6 @@ proc main() =
                   "grep"           : "select sequences with patterns",
                   "rc"             : "reverse complement strings or files"
                }.toTable
-
-  var args = commandLineParams()
 
   if len(args) < 1 or not progs.contains(args[0]):
     # no first argument: print help
@@ -106,16 +96,11 @@ proc main() =
       echo format("	• $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
       
     echo "\nAdd --help after each command to print usage"
+    1
   else:
-    var p = args[0]; args.delete(0)
-    try:
-      let exitStatus = progs[p](args)
-      quit(exitStatus)
-    except EKeyboardInterrupt:
-      quit(0)
-    except:
-      stderr.writeLine( getCurrentExceptionMsg() )
-      quit(1)   
+    var p = args[0]
+    var pargs = args[1 .. ^1]
+    progs[args[0]](pargs)
 
 when isMainModule:
-  main()
+  main_helper(main)

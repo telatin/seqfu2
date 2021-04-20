@@ -6,6 +6,7 @@ import stats
 import strformat
 import os
 import algorithm
+import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"
 const programVersion = if NimblePkgVersion == "undef": "X.9"
@@ -78,7 +79,7 @@ proc getCovFromString(s: string): float =
 
 
 
-proc main(args: seq[string]) =
+proc main(args: var seq[string]): int =
   let args = docopt("""
   fu-cov
 
@@ -186,4 +187,4 @@ proc main(args: seq[string]) =
 
 
 when isMainModule:
-  main(commandLineParams())
+  main_helper(main)

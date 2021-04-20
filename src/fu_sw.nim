@@ -9,8 +9,6 @@ import tables, algorithm
 import posix
 import ./seqfu_utils
 
-signal(SIG_PIPE, SIG_IGN)
-
 const NimblePkgVersion {.strdefine.} = "undef"
 const programVersion = if NimblePkgVersion == "undef": "X.9"
                        else: NimblePkgVersion
@@ -264,7 +262,7 @@ proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOp
         quit()
 
 
-proc main(args: seq[string]) =
+proc main(args: var seq[string]): int =
   let args = docopt("""
   Usage: fu-sw [options] -q QUERY -t TARGET
 
@@ -278,7 +276,7 @@ proc main(args: seq[string]) =
     --pct-id FLOAT            Minimum percentage of identity [default: 85]
     -v --verbose              Verbose output
     -h --help                 Show this help
-    """, version=version(), argv=args)
+    """, version=version(), argv=commandLineParams())
 
   var
     query = $args["--query"]
@@ -343,4 +341,4 @@ proc main(args: seq[string]) =
 
 
 when isMainModule:
-  main(commandLineParams())
+  main_helper(main)

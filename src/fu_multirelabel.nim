@@ -3,15 +3,9 @@ import docopt
 import os
 import posix
 import strutils
-signal(SIG_PIPE, SIG_IGN)
+import ./seqfu_utils
 
 let version = "1.0"
-
-# Handle Ctrl+C interruptions and pipe breaks
-type EKeyboardInterrupt = object of CatchableError
-proc handler() {.noconv.} =
-  raise newException(EKeyboardInterrupt, "Keyboard Interrupt")
-setControlCHook(handler)
 
 proc seq_to_string(name, comment, sequence, quality, separator: string): string =
   let
@@ -22,7 +16,7 @@ proc seq_to_string(name, comment, sequence, quality, separator: string): string 
   else:
     return ">" & name & printed_comment & "\n" & sequence
 
-proc main(): int =
+proc main(argv: var seq[string]): int =
   let args = docopt("""
   SeqFu MultiRelabel
 
@@ -42,7 +36,7 @@ proc main(): int =
     --no-comments              Strip out comments
     --comment-separator CHAR   Separate comment from name with CHAR [default: TAB]
   
-  """, version=version, argv=commandLineParams())
+  """, version=version, argv=argv)
 
   
   # Retrieve the arguments from the docopt (we will replace "TAB" with "\t")
@@ -94,21 +88,7 @@ proc main(): int =
     except Exception as e:
       stderr.writeLine("ERROR: Unable to parse FASTX file: ", input_file, "\n", e.msg)
       return 1
-    
+ 
   
-  
-
 when isMainModule:
-  # Handle "Ctrl+C" intterruption
-  try:
-    let exitStatus = main()
-    quit(exitStatus)
-  except EKeyboardInterrupt:
-    # Ctrl+C
-    quit(1)
-  except IOError:
-    # Broken pipe
-    quit(0)
-  except Exception:
-    stderr.writeLine( getCurrentExceptionMsg() )
-    quit(2)   
+  main_helper(main)

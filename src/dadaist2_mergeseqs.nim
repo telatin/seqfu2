@@ -3,15 +3,9 @@ import docopt
 import os
 import md5
 import posix
-signal(SIG_PIPE, SIG_IGN)
+import ./seqfu_utils
 
 let version = "1.0"
-
-# Handle Ctrl+C interruptions and pipe breaks
-type EKeyboardInterrupt = object of CatchableError
-proc handler() {.noconv.} =
-  raise newException(EKeyboardInterrupt, "Keyboard Interrupt")
-setControlCHook(handler)
 
 proc compare(x, y: string, maxMismatches: int): bool =
   if len(x) != len(y):
@@ -50,7 +44,7 @@ proc combine(x, y: string, maxMismatches: int): string =
         return x[0 ..< i] & y
     return ""
   
-proc main(): int =
+proc main(argv: var seq[string]): int =
   let args = docopt("""
   Combine pairs in DADA2 unmerged tables
 
@@ -67,7 +61,7 @@ proc main(): int =
     --id STRING                Features column name [default: #OTU ID]
     --verbose                  Print verbose output
 
-  """, version=version, argv=commandLineParams())
+  """, version=version, argv=argv)
 
   
   # Retrieve the arguments from the docopt (we will replace "TAB" with "\t")
@@ -156,18 +150,4 @@ proc main(): int =
     stderr.writeLine(fmt"Total:{counter};Split:{split};Joined:{joined}")
 
 when isMainModule:
-  # Handle "Ctrl+C" intterruption
-  try:
-    let exitStatus = main()
-    quit(exitStatus)
-  except EKeyboardInterrupt:
-    # Ctrl+C
-    stderr.writeLine("Quitting: ",getCurrentExceptionMsg() )
-    quit(1)
-  except IOError:
-    # Broken pipe
-    stderr.writeLine("Quitting: ",getCurrentExceptionMsg() )
-    quit(0)
-  except Exception:
-    stderr.writeLine("Quitting: ",getCurrentExceptionMsg() )
-    quit(2)   
+  main_helper(main)

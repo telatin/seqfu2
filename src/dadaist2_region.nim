@@ -6,9 +6,8 @@ import threadpool
 import neo
 import tables, algorithm
 import posix
-#import ./seqfu_utils
+import ./seqfu_utils
 
-signal(SIG_PIPE, SIG_IGN)
 
 const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 
@@ -296,7 +295,7 @@ proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOp
   result.add(outputString) 
 
 
-proc main(args: seq[string]) =
+proc main(argv: var seq[string]): int =
   let args = docopt("""
   Usage: fu-16Sregion [options] -1 <FOR> [-2 <REV>]
 
@@ -313,7 +312,7 @@ proc main(args: seq[string]) =
     --se                      Force single end
     -v --verbose              Verbose output
     -h --help                 Show this help
-    """, version=version(), argv=args)
+    """, version=version(), argv=argv)
 
   var
     file_R2: string
@@ -421,4 +420,4 @@ proc main(args: seq[string]) =
       stdout.write(s)
 
 when isMainModule:
-  main(commandLineParams())
+  main_helper(main)

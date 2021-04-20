@@ -13,6 +13,7 @@ const klibVer* = "0.1"
 
 when defined(windows):
   const libz = "zlib1.dll"
+  const libc = "msvcrt.dll"
 elif defined(macosx):
   const libz = "libz.dylib"
   const libc = "libc.dylib"

@@ -5,19 +5,12 @@ import posix
 
 import strutils, strformat
 import tables, algorithm
-
-signal(SIG_PIPE, SIG_IGN)
+import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"
 const version = if NimblePkgVersion == "undef": "X.9"
                 else: NimblePkgVersion
 
-# Handle Ctrl+C interruptions and pipe breaks
-type EKeyboardInterrupt = object of CatchableError
-proc handler() {.noconv.} =
-  raise newException(EKeyboardInterrupt, "Keyboard Interrupt")
-setControlCHook(handler)
- 
 
  
 
@@ -50,7 +43,7 @@ proc processReadPool(pool: seq[FQRecord]): topHit =
 
 
 
-proc main(): int =
+proc main(argv: var seq[string]): int =
   let args = docopt("""
   Fastx utility
 
@@ -65,7 +58,7 @@ proc main(): int =
     -r, --min-ratio FLOAT  Minimum ratio of matches of the top index [default: 0.85]
     --verbose              Print verbose log
     --help                 Show help
-  """, version=version, argv=commandLineParams())
+  """, version=version, argv=argv)
 
   if args["--verbose"]:
     echo $args
@@ -120,18 +113,4 @@ proc main(): int =
     
 
 when isMainModule:
-  # Handle "Ctrl+C" intterruption
-  try:
-    let exitStatus = main()
-    quit(exitStatus) 
-  except EKeyboardInterrupt:
-    # Ctrl+C
-    stderr.writeLine( getCurrentExceptionMsg() )
-    quit(1)
-  except IOError:
-    # Broken pipe
-    stderr.writeLine( getCurrentExceptionMsg() )
-    quit(0)
-  except Exception:
-    stderr.writeLine( getCurrentExceptionMsg() )
-    quit(2)   
+  main_helper(main)

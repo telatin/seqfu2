@@ -1,6 +1,3 @@
-from posix import signal, SIG_PIPE, SIG_IGN
-signal(SIG_PIPE, SIG_IGN)
-
 import threadpool
 import klib
 import docopt, strutils, tables, math
@@ -217,14 +214,8 @@ proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
         result &= processPair(pool[i - 1], pool[i], opts) 
         quit()
 
-
-  
-
-
-
- 
    
-proc main(args: seq[string]) =
+proc main(argv: var seq[string]): int =
   let args = docopt("""
   fu-orf
 
@@ -246,7 +237,7 @@ proc main(args: seq[string]) =
                            by each working thread [default: 250]
     --verbose              Print verbose log
     --help                 Show help
-  """, version=version, argv=commandLineParams())
+  """, version=version, argv=argv)
   var
     fileR1, fileR2: string
     minOrfSize, counter: int
@@ -337,4 +328,4 @@ proc main(args: seq[string]) =
       stdout.write(s)
 
 when isMainModule:
-  main(commandLineParams())
+  main_helper(main)
