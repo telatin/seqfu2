@@ -13,7 +13,8 @@ A general-purpose program to manipulate and parse information from FASTA/FASTQ f
 supporting gzipped input files.
 Includes functions to _interleave_ and _de-interleave_ FASTQ files,
 to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
-SeqFu is available for Linux and MacOS.
+SeqFu is available for Linux and MacOS. It is possible to compile the program for Windows, and 
+we added [Windows binaries](https://github.com/telatin/seqfu2/releases/tag/v0.9.6) to a release.
 
 ## Contents
 
