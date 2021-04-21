@@ -37,8 +37,8 @@ Add --help after each command to print usage
 ## Subprograms
 
 *SeqFu* is bundled with an (increasing) set of utilities sharing the FASTX parsing library:
-* **fu-primers** to remove amplification primers from sequencing datasets
 * **fu-orf** to extract ORFs from Paired-End libraries
 * **fu-cov** to extract contigs from the most commonly used assembly programs using the coverage information printed in the headers
+* **fu-primers** to remove amplification primers from sequencing datasets
 * ...
 * See the **[full list](https://telatin.github.io/seqfu2/utilities/)**.
