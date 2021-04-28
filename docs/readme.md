@@ -13,12 +13,14 @@ A general-purpose program to manipulate and parse information from FASTA/FASTQ f
 supporting gzipped input files.
 Includes functions to _interleave_ and _de-interleave_ FASTQ files,
 to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
-SeqFu is available for Linux and MacOS. It is possible to compile the program for Windows, but the procedure
+SeqFu is available for Linux and MacOS. 
+
+It is possible to compile the program for Windows, but the procedure
 is unsupported.
 
 A Perl library (**FASTX::Reader**) using the same parser enging (klib) is also available:
 * From [MetaCPAN](https://metacpan.org/release/FASTX-Reader), installable with `cpanm FASTX::Reader`
-* From [Bioconda](https://bioconda.github.io/recipes/perl-fastx-reader/README.html?highlight=fastx#package-package%20&#x27;perl-fastx-reader&#x27;) as `perl-fastx-reader`
+* From [Bioconda](https://bioconda.github.io/recipes/perl-fastx-reader/README.html) as `perl-fastx-reader`
 
 ## Contents
 
