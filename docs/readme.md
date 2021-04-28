@@ -2,6 +2,7 @@
 <img align="right" width="128" height="128" src="img/seqfu-512.png"></a>
 
 # SeqFu
+
 ![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
 [![Build Status](https://travis-ci.com/telatin/seqfu2.svg?branch=main)](https://travis-ci.com/telatin/seqfu2)
 [![Code size](https://img.shields.io/github/languages/code-size/telatin/seqfu2)](README.md)
