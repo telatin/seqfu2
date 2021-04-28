@@ -5,3 +5,4 @@ bin/*
 bin/*.zip
 .DS_Store
 bin/*
+data/benchmark/
