@@ -34,7 +34,7 @@ my $reader = FASTX::Reader->new( { filename => "$file" });
 while (my $record = $reader->getRead() ) {
    say "@", $record-{name},
      $record->{seq},
-     "\n+\n,
+     "\n+\n",
      $record->{qual};
 }
 ```
