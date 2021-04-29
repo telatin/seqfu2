@@ -6,10 +6,15 @@ const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 proc version*(): string =
   return NimblePkgVersion
 
- 
+
+proc printFastxRecord*(s: FastxRecord): string =
+  if len(s.qual) > 0:
+    "@" & s.name & " " & s.comment & "\n" & s.seq & "\n+\n" & s.qual
+  else:
+    ">" & s.name & " " & s.comment & "\n" & s.seq 
 
 
-proc `$`(s: FQRecord): string =
+proc `$`*(s: FQRecord): string =
   if len(s.quality) > 0:
     "@" & s.name & " " & s.comment & "\n" & s.sequence & "\n+\n" & s.quality
   else:

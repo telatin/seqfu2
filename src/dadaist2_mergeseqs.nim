@@ -2,7 +2,7 @@ import parsecsv, strutils, strformat
 import docopt
 import os
 import md5
-import posix
+#import posix
 import ./seqfu_utils
 
 let version = "1.0"

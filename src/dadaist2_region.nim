@@ -5,7 +5,6 @@ import os, strutils, re, iterutils, sequtils
 import threadpool
 import neo
 import tables, algorithm
-import posix
 import ./seqfu_utils
 
 

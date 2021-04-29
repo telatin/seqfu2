@@ -1,7 +1,7 @@
 import readfq
 import docopt
 import os
-import posix
+#import posix
 import strutils
 import ./seqfu_utils
 

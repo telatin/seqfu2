@@ -2,11 +2,11 @@ import docopt
 import readfq
 import strformat
 import os, strutils, sequtils
-#import re, iterutils, 
+ 
 import threadpool
 import neo
 import tables, algorithm
-import posix
+ 
 import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"

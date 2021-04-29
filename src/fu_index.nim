@@ -1,7 +1,7 @@
 import readfq
 import docopt
 import os
-import posix
+ 
 
 import strutils, strformat
 import tables, algorithm
@@ -47,7 +47,7 @@ proc main(argv: var seq[string]): int =
   let args = docopt("""
   Fastx utility
 
-  A program to print the sequence size of each record in a FASTA/FASTQ file
+  A program to print the Illumina INDEX of a set of FASTQ files
 
   Usage: 
   fu-index [options] <FASTQ>...

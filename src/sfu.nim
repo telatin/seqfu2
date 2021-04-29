@@ -26,19 +26,23 @@ include ./fastq_merge_lanes
 include ./fastx_rc
 include ./fastx_qual
 include ./fastq_merge
- 
+include ./fastx_cat
 
 var progs = {
+        "cat": fastx_cat,
        "ilv": fastq_interleave,       
          "interleave": fastq_interleave,
        "dei": fastq_deinterleave,     
          "deinterleave": fastq_deinterleave,  
        "der": fastx_derep,            
          "derep": fastx_derep, 
+         "dereplicate": fastx_derep, 
+         "uniques": fastx_derep, 
        "cnt": fastx_count,            
          "count": fastx_count, 
        "st" : fastx_stats,            
          "stats": fastx_stats,
+         "stat": fastx_stats,
        "rc" : fastx_rc,
        "srt": fastx_sort,             
          "sort" : fastx_sort,
@@ -66,11 +70,12 @@ proc main(args: var seq[string]): int =
                "sort [srt]"        : "sort sequences by size (uniques)"
                }.toTable
 
-    helps_last = {"view"           : "view sequences with colored quality and oligo matches",
+    helps_last = {"cat"            : "concatenate FASTA/FASTQ files",
                   "head"           : "print first sequences",
                   "tail"           : "view last sequences",
                   "grep"           : "select sequences with patterns",
-                  "rc"             : "reverse complement strings or files"
+                  "rc"             : "reverse complement strings or files",
+                  "view"           : "view sequences with colored quality and oligo matches",
                }.toTable
 
   if len(args) < 1 or not progs.contains(args[0]):

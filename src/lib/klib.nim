@@ -186,6 +186,7 @@ type
   FastxRecord* = tuple[seq, qual, name, comment: string, status, lastChar: int]
 
 
+ 
 
 proc readFastx*[T](f: var Bufio[T], r: var FastxRecord): bool {.discardable.} =
   var x: int
