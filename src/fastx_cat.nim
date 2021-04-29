@@ -13,9 +13,17 @@ Concatenate multiple FASTA or FASTQ files.
 
 Options:
   -k, --skip SKIP        Print one sequence every SKIP [default: 0]
+
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -s, --strip-comments   Remove comments
-  -b, --basename         prepend basename to sequence name
+  -z, --strip-name       Remove name
+  -b, --basename         Prepend file basename to the sequence name
+
+  -m, --min-len INT      Discard sequences shorter than INT [default: 1]
+  -x, --max-len INT      Discard sequences longer than INT, 0 to ignore [default: 0]
+  --trim-front INT       Trim INT base from the start of the sequence [default: 0]
+  --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
+
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
   --sep STRING           Sequence name fields separator [default: _]
@@ -36,13 +44,19 @@ Options:
       files  : seq[string]  
       printBasename: bool 
       separator:  string 
-  
+      minSeqLen,maxSeqLen: int
+      trimFront, trimEnd: int
+
     try:
       skip =  parseInt($args["--skip"])
       printBasename = args["--basename"] 
       separator = $args["--sep"]
-    except:
-      stderr.writeLine("Error: Wrong parameters!")
+      minSeqLen = parseInt($args["--min-len"])
+      maxSeqLen = parseInt($args["--max-len"])
+      trimFront = parseInt($args["--trim-front"])
+      trimEnd   = parseInt($args["--trim-tail"]) + 1
+    except Exception as e:
+      stderr.writeLine("Error: Wrong parameters! ", e.msg)
       quit(1)
 
     if args["--prefix"]:
@@ -57,7 +71,7 @@ Options:
     
     var
       totalPrintedSeqs = 0
-
+      wrongLenCount = 0
     for filename in files:
       echoVerbose(filename, verbose)
 
@@ -85,8 +99,24 @@ Options:
         if y == 0:
           # Print sequence
           currentPrintedSeqs += 1
-          totalPrintedSeqs   += 1
           
+          
+
+          ## DISCARD BY LEN
+          if trimFront > 0 or trimEnd > 0:
+            r.seq = r.seq[trimFront .. ^trimEnd]
+            if len(r.qual) > 0:
+              r.qual = r.qual[trimFront .. ^trimEnd]
+      
+                     
+          if len(r.seq) < minSeqLen or (maxSeqLen > 0 and len(r.seq) > maxSeqLen):
+            wrongLenCount += 1
+            continue 
+          
+
+          totalPrintedSeqs   += 1
+
+          ## SEQUENCE NAME
           var
             newName = ""
 
@@ -102,7 +132,8 @@ Options:
             else:
               newName &= $totalPrintedSeqs
           else:
-            newName &= r.name
+            if not args["--strip-name"]:
+              newName &= r.name
           
           r.name = newName
 
@@ -119,11 +150,12 @@ Options:
             if args["--fastq"]:
               r.qual = repeat(qualToChar(defaultQual), len(r.seq))
 
+          
           echo printFastxRecord(r)
 
       # File parsed
       if verbose:
-        stderr.writeLine(currentPrintedSeqs, "/", currentSeqCount, " sequences printed")
+        stderr.writeLine(currentPrintedSeqs, "/", currentSeqCount, " sequences printed. ", wrongLenCount, " wrong length.")
 
       
  
