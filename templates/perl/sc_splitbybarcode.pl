@@ -3,7 +3,7 @@
 use 5.012;
 use FASTX::Reader;
 use Getopt::Long;
- 
+
 my $opt_barcodes = 'barcodes.txt';
 my $opt_outdir = './split/';
 GetOptions(
@@ -29,8 +29,10 @@ while (my $l = readline($I) ) {
   chomp($l);
   my ($bc, $hits, $start, $len) = split /\t/, $l;
   if ($hits > 0) {
-    open (my $o, '>', "$opt_outdir/$bc.fq") || die;
-    $barcodes{$bc} = $o;
+    open (my $o1, '>', "$opt_outdir/${bc}_R1.fq") || die;
+    open (my $o2, '>', "$opt_outdir/${bc}_R2.fq") || die;
+    open (my $oI, '>', "$opt_outdir/${bc}_I1.fq") || die;
+    $barcodes{$bc} = [$o1, $o2, $oI];
     $opt_start = $start;
     $opt_len = $len;
   } else {
@@ -42,13 +44,23 @@ while (my $l = readline($I) ) {
 for my $file (@ARGV) {
   next if not -e "$file";
   say STDERR " * Parsing $file";
+  my $index = $file;
+  my $file_rev = $file;
+  $index =~s/_R1_/_I1_/;
+  $file_rev =~s/_R1_/_R2_/;
   my $R = FASTX::Reader->new( { filename => "$file" });
+  my $Z = FASTX::Reader->new( { filename => "$file_rev" });
+  my $I = FASTX::Reader->new( { filename => "$index" });
   my $counter = 0;
   while (my $s = $R->getRead() ) {
+    my $z = $Z->getRead();
+    my $i = $I->getRead();
     $counter++;
     my $bc = substr($s->{seq}, $opt_start, $opt_len);
     next unless defined $barcodes{$bc};
-    say { $barcodes{$bc} } '@', $s->{name}, "\n", $s->{seq}, "\n+\n", $s->{qual};
+    say { $barcodes{$bc}[0] } '@', $s->{name}, "\n", $s->{seq}, "\n+\n", $s->{qual};
+    say { $barcodes{$bc}[1] } '@', $z->{name}, "\n", $z->{seq}, "\n+\n", $z->{qual};
+    say { $barcodes{$bc}[2] } '@', $i->{name}, "\n", $i->{seq}, "\n+\n", $i->{qual};
   }
   say STDERR "\t $counter reads parsed.";
 }

@@ -5,8 +5,8 @@ use FASTX::Reader;
 use Getopt::Long;
  
 my $opt_outputfile = "./barcodes.txt";
-my $opt_start = 16;
-my $opt_len = 10;
+my $opt_start = 0;
+my $opt_len = 16;
 my $opt_bc_num = 100;
 my $opt_min_counts = 3;
 GetOptions(
