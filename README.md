@@ -26,6 +26,13 @@ Seqfu can be easily installed via Miniconda:
 conda install -y -c bioconda seqfu
 ```
 
+## Citation
+
+
+Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files*. 
+Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
+
+
 ## Full documentation
 
 The full documentation is available at:
