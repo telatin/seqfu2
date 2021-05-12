@@ -3,9 +3,9 @@
 
 # SeqFu
 
-![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
+[![Build_Nim](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml)
 [![Build Status](https://travis-ci.com/telatin/seqfu2.svg?branch=main)](https://travis-ci.com/telatin/seqfu2)
-[![Code size](https://img.shields.io/github/languages/code-size/telatin/seqfu2)](README.md)
+![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
 [![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/seqfu?label=Bioconda%20Downloads)](https://anaconda.org/bioconda/seqfu)
 
@@ -17,13 +17,22 @@ Includes functions to _interleave_ and _de-interleave_ FASTQ files,
 to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
 SeqFu is available for Linux and MacOS. 
 
-It is possible to compile the program for Windows, but the procedure
-is unsupported.
+Can be easily [installed](installation) via conda:
+```
+conda install -c bioconda seqfu
+```
+ 
+## Citation
 
-A Perl library (**FASTX::Reader**) using the same parser enging (klib) is also available:
-* From [MetaCPAN](https://metacpan.org/release/FASTX-Reader), installable with `cpanm FASTX::Reader`
-* From [Bioconda](https://bioconda.github.io/recipes/perl-fastx-reader/README.html) as `perl-fastx-reader`
+Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files*. 
+Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
 
 ## Contents
 
 {% include list.liquid all=true %}
+
+### Perl library
+
+A Perl library (`FASTX::Reader`) using the same parser enging (klib) is also available:
+* From **[MetaCPAN](https://metacpan.org/release/FASTX-Reader)**, installable with `cpanm FASTX::Reader`
+* From **[Bioconda](https://bioconda.github.io/recipes/perl-fastx-reader/README.html)** as `perl-fastx-reader`
