@@ -196,6 +196,7 @@ proc print_seq*(record: FastxRecord, outputFile: File) =
 
 
 proc print_seq*(record: FQRecord, outputFile: File, rename="") =
+  # Output file == nil then print
   var
     name = record.name
     seqstring : string
@@ -211,7 +212,6 @@ proc print_seq*(record: FQRecord, outputFile: File, rename="") =
 
   if len(record.quality) > 0 and forceFasta == false:
     # print FQ
-
     seqString = "@" & name & "\n" & record.sequence & "\n+\n" & record.quality
   elif forceFastq == true:
     seqString = "@" & name & "\n" & record.sequence & "\n+\n" & repeat(qualToChar(defaultQual), len(record.sequence))

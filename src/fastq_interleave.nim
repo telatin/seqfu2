@@ -1,12 +1,5 @@
 import os
 import re
-
-#[
-import sequtils
-import strutils
-import tables
-import algorithm
-]#
 import docopt
 import klib
 import ./seqfu_utils
