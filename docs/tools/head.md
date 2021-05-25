@@ -28,4 +28,21 @@ Options:
   --help                 Show this help
 ```
 
-  
+## Example
+
+By default the program prints the first 10 sequences of a file (the number
+can be changed with `-n` or `--num`).
+
+Sometimes to have a preview of a file we can add the `--skip` (or `-k` for short)
+parameter to take a sequence every _N_.
+
+The following examples shows the output of `seqfu head -n 10`, and `seqfu head -n 5 -k 4`):
+
+![Example]({{site.baseurl}}/img/seqfu-head.png)
+
+## Input and output
+
+`seqfu head` takes as input one ore _more_ FASTA/FASTQ files (or reads from
+the standard input if no filenames are provided, or `-` is added to the list).
+The output will be in the same format as the input, unless `--fasta` or `--fastq`
+are specified to force a different output.
