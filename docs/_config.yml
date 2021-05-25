@@ -21,8 +21,8 @@ commonmark:
 
 scss: |
   .header     { background: #44435C}
-  .markdown-body a { color: #44435C}
-  .markdown-body a:hover { color: #54536C}
+  .markdown-body a { color: #46077d}
+  .markdown-body a:hover { color: #7c39b7}
   .toctree>ul>.toc:not(.current)>a:active  {background: #6c1b7a}
   a { color: #34334C}
   .toasts.note .title { background: #caaaf2 }
