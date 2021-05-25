@@ -3,7 +3,7 @@ sort: 14
 ---
 # seqfu cat
 
-Concatenate multiple FASTA/FASTQ files.
+Concatenate multiple FASTA/FASTQ files, in a similar way of the GNU `cat` utility.
 
 ```text
 Usage: cat [options] [<inputfile> ...]
@@ -22,3 +22,13 @@ Options:
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
+
+
+## Input
+
+One or more FASTA or FASTQ files. If no files are provided, the program will read from _standard input_. 
+Additionally, you can add _standard input_ to the list of input files
+by adding `-`.
+
+## Output
+It is possible to mix FASTA and FASTQ files, and by default the program will produce a mixed output. Using `--fasta` or `--fastq` will force a specific output format. For FASTA sequences  a default quality values will be used.

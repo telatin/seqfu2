@@ -5,10 +5,10 @@ permalink: /about
 
 # About SeqFu
 
-
 ## Citing
 
-1. Telatin, Andrea, Birolo, Giovanni, & Fariselli, Piero. (2021, April 13). *SeqFu - Fastx Sequence Utilities 1.0.* Zenodo. doi:10.5281/zenodo.4740106
+1. Telatin A, Fariselli P, Birolo G. **SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files**. Bioengineering 2021, 8, 59. 
+[https://doi.org/10.3390/bioengineering8050059](doi.org/10.3390/bioengineering8050059)
 
 ## Why
 
