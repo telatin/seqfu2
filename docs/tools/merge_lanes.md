@@ -4,7 +4,7 @@ sort: 11
 # seqfu lanes
 
 ```note
-This function was originally called `merge`.
+This function was called `merge` in a pre-release.
 ```
 
 *lanes*  is one of the core subprograms of *SeqFu*, that allows 
