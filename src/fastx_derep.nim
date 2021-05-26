@@ -61,7 +61,8 @@ Options:
                   else: false
       seqFreqs = initCountTable[string]()
       seqNames = initTable[string, string]()
-      seqFiles = initTable[string, seq[string]]()
+      #seqFiles = initTable[string, seq[string]]()
+      seqFiles  = newTable[string, TableRef[string, seq[string]]]()
       files    : seq[string]
       total    = 0
  
@@ -116,10 +117,22 @@ Options:
           if useHash:
             seqNames[r.seq] = getMD5(r.seq)
           
-          seqFiles[ getMD5(r.seq) ] = @[filename & ":" & r.name]
+          if useJson:
+            if getMD5(r.seq) notin seqFiles:
+              seqFiles[ getMD5(r.seq) ] = newTable[string, seq[string]]()
+            if filename in seqFiles[ getMD5(r.seq) ]:
+              seqFiles[ getMD5(r.seq) ][filename].add(r.name)
+            else:
+              seqFiles[ getMD5(r.seq) ][filename] = @[r.name]
           
         else:
-            seqFiles[ getMD5(r.seq) ].add(filename & ":" & r.name)
+          if useJson:
+            if getMD5(r.seq) notin seqFiles:
+              seqFiles[ getMD5(r.seq) ] = newTable[string, seq[string]]()
+            if filename in seqFiles[ getMD5(r.seq) ]:
+              seqFiles[ getMD5(r.seq) ][filename].add(r.name)
+            else:
+              seqFiles[ getMD5(r.seq) ][filename] = @[r.name]
 
         # Json metadata
         #if useJson:
