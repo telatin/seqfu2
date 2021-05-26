@@ -1,0 +1,40 @@
+{
+  "56b533cc370c1e28d908debdcf79489b": [
+    "data/prot.faa:protein.8"
+  ],
+  "d8521a76d5088ea0467c0daab9e28465": [
+    "data/prot.faa:protein.3;size=3593"
+  ],
+  "e9ff87b2f6cbc07850e519f60813e1f6": [
+    "data/prot.faa:protein.5;size=3553"
+  ],
+  "98b163acf1b61e83db933d3406030e0a": [
+    "data/prot.faa:protein.2;size=3697"
+  ],
+  "fc4f077eb268a92f29017fcaaedd8fa3": [
+    "data/prot.faa:protein.6;size=3511"
+  ],
+  "e03f97b5139f6666407fb85ca8893152": [
+    "data/prot.faa:protein0a1",
+    "data/prot.faa:protein0a2",
+    "data/prot.faa:protein0a3",
+    "data/prot.faa:protein0a4",
+    "data/prot.faa:protein0a5",
+    "data/prot.faa:protein0a6",
+    "data/prot.faa:protein0a7",
+    "data/prot.faa:protein0a8"
+  ],
+  "2689ec8855acafbf4e5b3cdd61237d09": [
+    "data/prot.faa:protein.1a;size=5372",
+    "data/prot.faa:protein.1b;size=5372",
+    "data/prot.faa:protein.1c;size=5372",
+    "data/prot.faa:protein.1d;size=5372",
+    "data/prot.faa:protein.1f;size=5372"
+  ],
+  "4d776f2becc435db4210658806b3f9df": [
+    "data/prot.faa:protein.7;thing=yes"
+  ],
+  "e0f63aa874b218a4c9d359851efe3e90": [
+    "data/prot.faa:protein.4;size=3584"
+  ]
+}
