@@ -7,12 +7,13 @@ from os import fileExists
 import docopt
 import ./seqfu_utils
 
+#[ 
 proc seqFuEventHandler() {.noconv.} =
   stderr.writeLine("Quitting...")
   quit 0
 setControlCHook(seqFuEventHandler)
 
-
+ ]#
 
 proc fastx_derep(argv: var seq[string]): int =
     
@@ -20,7 +21,7 @@ proc fastx_derep(argv: var seq[string]): int =
 Usage: derep [options] [<inputfile> ...]
 
 Options:
-  -k, --keep-name              Do not rename sequence, but use the first sequence name
+  -k, --keep-name              Do not rename sequence (see -p), but use the first sequence name
   -i, --ignore-size            Do not count 'size=INT;' annotations (they will be stripped in any case)
   -m, --min-size=MIN_SIZE      Print clusters with size equal or bigger than INT sequences [default: 0]
   -p, --prefix=PREFIX          Sequence name prefix [default: seq]
@@ -60,7 +61,8 @@ Options:
                   else: false
       seqFreqs = initCountTable[string]()
       seqNames = initTable[string, string]()
-      seqFiles = initTable[string, seq[string]]()
+      #seqFiles = initTable[string, seq[string]]()
+      seqFiles  = newTable[string, TableRef[string, seq[string]]]()
       files    : seq[string]
       total    = 0
  
@@ -105,18 +107,32 @@ Options:
         if $args["--max-length"] != "0" and len(r.seq) > parseInt($args["--max-length"]):
           continue
         
-        # Store first name in seqNames
-        if keepName:
-          var seqname = r.name
+
+
+        # New sequence?
+        if seqFreqs[r.seq] == 0:
+          if keepName:
+            seqNames[r.seq] = (r.name).replace(sizePattern, "")
           
-          if seqFreqs[r.seq] == 0:
-            if useHash:
-              seqNames[r.seq] = getMD5(r.seq)
-              seqFiles[ getMD5(r.seq) ] = @[filename & ":" & r.name]
+          if useHash:
+            seqNames[r.seq] = getMD5(r.seq)
+          
+          if useJson:
+            if getMD5(r.seq) notin seqFiles:
+              seqFiles[ getMD5(r.seq) ] = newTable[string, seq[string]]()
+            if filename in seqFiles[ getMD5(r.seq) ]:
+              seqFiles[ getMD5(r.seq) ][filename].add(r.name)
             else:
-              seqNames[r.seq] = seqname.replace(sizePattern, "")
-          else:
-            seqFiles[ getMD5(r.seq) ].add(filename & ":" & r.name)
+              seqFiles[ getMD5(r.seq) ][filename] = @[r.name]
+          
+        else:
+          if useJson:
+            if getMD5(r.seq) notin seqFiles:
+              seqFiles[ getMD5(r.seq) ] = newTable[string, seq[string]]()
+            if filename in seqFiles[ getMD5(r.seq) ]:
+              seqFiles[ getMD5(r.seq) ][filename].add(r.name)
+            else:
+              seqFiles[ getMD5(r.seq) ][filename] = @[r.name]
 
         # Json metadata
         #if useJson:
@@ -134,10 +150,11 @@ Options:
         else:
           seqFreqs.inc(r.seq)
 
+      # Current file parsed
       total += c
       echoVerbose("\tParsed " & $(c) & " sequences", args["--verbose"])
 
-    
+    # All files parsed
     var n = 0
     seqFreqs.sort()
 
@@ -163,3 +180,9 @@ Options:
     echoVerbose($(n) & " representative sequences out of " & $(total) & " initial sequences.", args["--verbose"])
     
     #echo pretty(%*seqFiles)
+    if useJson:
+      try:
+        writeFile($args["--json"], pretty(%*seqFiles))
+      except Exception as e:
+        stderr.writeLine("ERROR: ", e.msg, "\n", "Unable to write JSON to ", $args["--json"], " (dumping here):\n")
+        stderr.writeLine( pretty(%*seqFiles))

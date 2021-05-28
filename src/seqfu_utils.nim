@@ -1,8 +1,12 @@
 import klib, readfq
-import  strutils, os, re
+import strutils
+import os
+import tables
+import re
 when not defined(windows):
   import posix
 const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
+
 proc version*(): string =
   return NimblePkgVersion
 
@@ -13,14 +17,11 @@ proc printFastxRecord*(s: FastxRecord): string =
   else:
     ">" & s.name & " " & s.comment & "\n" & s.seq 
 
-
 proc `$`*(s: FQRecord): string =
   if len(s.quality) > 0:
     "@" & s.name & " " & s.comment & "\n" & s.sequence & "\n+\n" & s.quality
   else:
     ">" & s.name & " " & s.comment & "\n" & s.sequence & "\n"
-
-
 
 proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto"): string =
   if not fileExists(file_R1):
@@ -386,3 +387,34 @@ proc main_helper*(main_func: var seq[string] -> int) =
     except Exception:
       stderr.writeLine( getCurrentExceptionMsg() )
       quit(2)   
+
+
+####
+####  Get Illumina Index
+
+proc getIndex(s: string): string =
+  let split = s.split(':')
+  if len(split) > 2:
+    return split[^1]
+
+proc getIndexFromFile(f: string, max = 250): string =
+  var
+    c = 0
+    countTable = initCountTable[string]()
+  try:
+    for record in readfq(f):
+      c += 1
+      if c > max:
+        break
+      let index = getIndex(record.comment)
+      if len(index) > 0:
+        countTable.inc(index)
+    countTable.sort()
+
+    for index, counts in countTable:
+      if float(counts) > float(max) - float(max/10):
+        return index
+
+
+  except Exception:
+    return ""

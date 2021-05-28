@@ -11,10 +11,12 @@ proc fastx_rc(argv: var seq[string]): int =
 Usage: rc [options] [<strings-or-files>...] 
 
 Print the reverse complementary of sequences in files or sequences
-given as parameters
+given as parameters. Can read FASTA/FASTQ also from STDIN, but not
+naked strings.
 
 Options:
-  -s, --seq-name NAME    Sequence name if coming as string [default: string]
+  -s, --seq-name NAME    Sequence name if coming as string [default: dna]
+  -r, --only-rev         Reverse, do not complement
   --strip-comments       Remove sequence comments
   -v, --verbose          Verbose output
   --help                 Show this help
@@ -27,8 +29,7 @@ Options:
  
     
     let
-      seqDefaultName = if $args["--seq-name"] != "nil": $args["--seq-name"]
-         else: "string"
+      seqDefaultName = $args["--seq-name"] 
 
     if args["<strings-or-files>"].len() == 0:
       stderr.writeLine("Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
@@ -41,14 +42,16 @@ Options:
     var
       stringCount = 0
     for filename in files:
-      if not fileExists(filename):
+      if not fileExists(filename) and filename != "-":
         # Process as string
         stringCount += 1
         if len(files) == 1:
-          echo revcompl(filename)
+          echo if args["--only-rev"]: revcompl(filename)
+            else: reverse(filename)
           continue
         else:
-          echo ">", seqDefaultName, "_" , $stringCount, "\n", revcompl(filename)
+          echo ">", seqDefaultName, "_" , $stringCount, "\n", if args["--only-rev"]: reverse(filename)
+              else: revcompl(filename)
           continue
       else:
         echoVerbose(filename, verbose)
@@ -67,7 +70,11 @@ Options:
       while f.readFastx(r):
         let comment = if len(r.comment) > 0 and not args["--strip-comments"]: " " & r.comment
                       else: ""
-        r.seq = revcompl(r.seq)
+        if args["--only-rev"]:
+          r.seq = reverse(r.seq)
+        else:
+          r.seq = revcompl(r.seq)
+
         if len(r.qual) > 0:
           r.qual = reverse(r.qual)
           echo '@', r.name, comment, "\n", r.seq, "\n+\n", r.qual

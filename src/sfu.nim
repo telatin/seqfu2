@@ -27,6 +27,7 @@ include ./fastx_rc
 include ./fastx_qual
 include ./fastq_merge
 include ./fastx_cat
+include ./fastx_tabulate
 
 var progs = {
         "cat": fastx_cat,
@@ -54,7 +55,8 @@ var progs = {
        "view": fastx_view,
        "grep": fastx_grep,
        "head": fastx_head,
-       "tail": fastx_tail,  
+       "tail": fastx_tail,
+       "tabulate": fastx_tabulate  
 }.toTable
 
 proc main(args: var seq[string]): int =
@@ -75,6 +77,7 @@ proc main(args: var seq[string]): int =
                   "tail"           : "view last sequences",
                   "grep"           : "select sequences with patterns",
                   "rc"             : "reverse complement strings or files",
+                  "tabulate"       : "print a table of FASTQ reads (mapping files)",
                   "view"           : "view sequences with colored quality and oligo matches",
                }.toTable
 

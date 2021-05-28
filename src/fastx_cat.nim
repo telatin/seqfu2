@@ -18,11 +18,14 @@ Options:
   -s, --strip-comments   Remove comments
   -z, --strip-name       Remove name
   -b, --basename         Prepend file basename to the sequence name
+  --split CHAR           Split basename at this char [default: .]
+  --part INT             After splitting the basename, take this part [default: 1]
 
   -m, --min-len INT      Discard sequences shorter than INT [default: 1]
   -x, --max-len INT      Discard sequences longer than INT, 0 to ignore [default: 0]
   --trim-front INT       Trim INT base from the start of the sequence [default: 0]
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
+  --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
 
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
@@ -43,9 +46,12 @@ Options:
       prefix : string
       files  : seq[string]  
       printBasename: bool 
+      splitChar : string
+      splitPart : int
       separator:  string 
       minSeqLen,maxSeqLen: int
       trimFront, trimEnd: int
+      truncate: int
 
     try:
       skip =  parseInt($args["--skip"])
@@ -55,8 +61,12 @@ Options:
       maxSeqLen = parseInt($args["--max-len"])
       trimFront = parseInt($args["--trim-front"])
       trimEnd   = parseInt($args["--trim-tail"]) + 1
+      truncate  = parseInt($args["--truncate"])
+      splitChar = $args["--split"]
+      splitPart = parseInt($args["--part"]) - 1
+
     except Exception as e:
-      stderr.writeLine("Error: Wrong parameters! ", e.msg)
+      stderr.writeLine("Error: unexpected parameter value. ", e.msg)
       quit(1)
 
     if args["--prefix"]:
@@ -102,18 +112,24 @@ Options:
           
           
 
-          ## DISCARD BY LEN
+          ## TRIM FRONT / TAIL
           if trimFront > 0 or trimEnd > 0:
             r.seq = r.seq[trimFront .. ^trimEnd]
             if len(r.qual) > 0:
               r.qual = r.qual[trimFront .. ^trimEnd]
-      
-                     
+          
+          ## TRUNCATE
+          if truncate > 0:
+            r.seq = r.seq[0 .. truncate-1]
+            if len(r.qual) > 0:
+              r.qual = r.qual[trimFront .. ^trimEnd]
+
+          ## DISCARD BY LEN           
           if len(r.seq) < minSeqLen or (maxSeqLen > 0 and len(r.seq) > maxSeqLen):
             wrongLenCount += 1
             continue 
           
-
+          # Checkpoint: sequence survived
           totalPrintedSeqs   += 1
 
           ## SEQUENCE NAME
@@ -122,7 +138,12 @@ Options:
 
           # Prepend basename if required
           if printBasename:
-            newName =  lastPathPart(filename) & separator
+            var bn: string
+            if len(splitChar) > 0:
+              bn = lastPathPart(filename).split(splitChar)[splitPart]
+            else:
+              bn = lastPathPart(filename)
+            newName =  bn & separator
           
           # rename with prefix + counter
           if prefix != "":
