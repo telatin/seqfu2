@@ -9,4 +9,4 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 ENV PATH=/root/miniconda/bin:$PATH
 RUN conda update -n base -c defaults conda
-RUN conda install -y -c conda-forge seqfu
+RUN conda install -y -c conda-forge  -c bioconda seqfu
