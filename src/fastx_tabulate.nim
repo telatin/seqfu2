@@ -14,13 +14,17 @@ var
 
 type
   sample = ref object
-    name : string
-    path : string
-    file1: string
-    file2: string
-    count: int
-    files: int
-    flist: seq[string]
+    name : string         # Required: sample ID
+
+    path : string         # Full path to the containing directory
+    file1: string         # Filename R1
+    file2: string         # Filename R2
+    files: int            # Number of files {sample}* (should be 1 or 2)
+
+    count: int            # Number of raw reads
+    index: string         # Illumina Index
+
+    flist: seq[string]    # List of files (for debugging if files > 0)
     fields: Table[string, string]
 
 proc init(s: sample, name: string, path = "", file1 = "", file2 = "", count = 0) =
@@ -122,22 +126,6 @@ proc printDadaist(samples: seq[sample]) =
     
     echo s.name, path, counts
 
-
-proc printTable(samples: seq[sample]) =
-  let headerCounts = if addCounts: "\tCounts"
-                     else: ""
-  let headerPath = if addCounts: "\tPath"
-                     else: ""
-
-  echo "#SampleID", "\t", "Files", headerCounts, headerPath
-
-  for s in samples:
-    let counts = if addCounts: "\t" & $s.count
-                 else: ""
-    let path = if isPe > 0: "\t" & joinPath(s.path, s.file1) & "," & joinPath(s.path, s.file2)
-               else: "\t" & joinPath(s.path, s.file1)
-    
-    echo s.name, path, counts
 
 proc fastx_tabulate(argv: var seq[string]): int =
     let validFormats = {
