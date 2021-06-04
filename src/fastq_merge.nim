@@ -84,22 +84,25 @@ proc joinreads(R1, raw_R2: FastxRecord, o: mergeOptions): joinedRecord =
 proc fastq_merge(argv: var seq[string]): int {.gcsafe.} =
     
   let args = docopt("""
-Usage: merge [options] -1 <file_R1> [-2 <file_R2>]
+Usage: merge [options] -1 File_R1
 
-Options:
+  Options:
+  -1, --R1 FILE                First paired-end file
+  -2, --R2 FILE                Second paired-end file, can be automatically inferred  
   -i, --minid FLOAT            Minimum identity [default: 0.80]
   -m, --minlen INT             Minimum overlap [default: 20]
-  --accepted-identity FLOAT    Accept fusion when identity is above FLOAT [default: 0.95]
+  --accepted-identity FLOAT    Accept fusion when identity is above FLOAT [default: 0.96]
   -v, --verbose                Print verbose messages
   -h, --help                   Show this help
-
-  
-  """, version=version(), argv=argv)
+""", version=version(), argv=argv)
  
-  
+  if args["--verbose"]:
+    stderr.writeLine(args)
+
   let
-    file_R1 = $args["<file_R1>"]
-    file_R2 = guessR2(file_R1)
+    file_R1 = $args["--R1"]
+    file_R2 = if $args["--R2"] != "nil": $args["--R2"]
+              else: guessR2(file_R1, "auto", "auto", true)
   
   var 
     sourceOptions: mergeOptions
@@ -114,8 +117,15 @@ Options:
 
   if not fileExists(file_R1):
     stderr.writeLine("ERROR: Unable to find file R1: ", file_R1)
+    quit(1)
+
+  if file_R2 == "":
+    stderr.writeLine("ERROR: Unable to guess R2 filename. ")
+    quit(1)  
+
   if not fileExists(file_R2):
     stderr.writeLine("ERROR: Unable to find file R2. ", file_R2)
+    quit(1)
   
 
   initClosure(getR1,readfq(file_R1))

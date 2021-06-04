@@ -25,6 +25,27 @@ proc qualityProfile(s: seq[RunningStat]): string =
     
     
 
+proc getStopPos(s: seq[RunningStat], w: int, minq, wndq: float): int =
+   
+  for i, stats in s:
+    let max = if i + w - 1 <= len(s): i + w - 1
+          else: len(s)
+    if stats.n == 0:
+      return i
+    var
+      wnd = 0.0
+      c = 0
+    for j in i .. max:
+      wnd += s[j].mean
+      c += 1
+
+    if s[i].mean < minq:
+      return i
+
+    if wnd / float(c) < wndq:
+      return i
+    
+   
 proc fastx_qual(argv: var seq[string]): int =
     var ranges = initTable[string, tuple[rangeStart, rangeEnd: int]]()
     ranges["Illumina-1.8"] = (33, 74)
@@ -36,61 +57,94 @@ proc fastx_qual(argv: var seq[string]): int =
     let args = docopt("""
 Usage: qual [options] [<FASTQ>...] 
 
-Quickly check the quality of input files returning
-the detected encoding and the profile of quality
-scores
+Quickly check the quality of input files returning the detected encoding 
+and the profile of quality scores. 
+To read from STDIN, use - as filename.
 
-Options:
-  -m, --max INT          Check the first INT reads [default: 2000]
+  -m, --max INT          Check the first INT reads [default: 5000]
   -l, --maxlen INT       Maximum read length [default: 1000]
-  -p, --profile          Quality profile per position
+  -k, --skip INT         Print one sequence every INT [default: 1]
+
+Qualified position:
+  -w, --wnd INT          Sliding window size [default: 4]
+  -q, --wnd-qual FLOAT   Minimum quality in the sliding window [default: 30.0]
+  -z, --min-qual FLOAT   Stop the sliding windows when quality is below [default: 18.0]   
+
+Additional output:
+  -p, --profile          Quality profile per position (will comment the summary lines)
   -c, --colorbars        Print graphical average quality profile
+
+Other options:
   -v, --verbose          Verbose output
+  -O, --offset INT       Quality encoding offset [default: 33]
   --help                 Show this help
 
   """, version=version(), argv=argv)
 
     verbose       = args["--verbose"] 
+
     let
+      skip       = parseInt($args["--skip"])
+      qualOffset = parseInt($args["--offset"])
+      wndSize = parseInt($args["--wnd"])
+      minQual = parseFloat($args["--min-qual"])
+      wndQual = parseFloat($args["--wnd-qual"])
       maxSeqs = parseInt($args["--max"])
       maxLen  = parseInt($args["--maxlen"])
       comment = if args["--profile"]: "#"
                 else: ""
+    
+    if len(  @(args["<FASTQ>"]) ) == 0:
+      stderr.writeLine("No files specified. Use '-' to read STDIN, --help for help.")
     for file in @(args["<FASTQ>"]):
       if args["--verbose"]:
         stderr.writeLine("Parsing: ", file)
       
-      var count = 0
- 
-
-      if not fileExists(file):
+      var
+        count = 0
+        readnum = 0
+      if not fileExists(file) and file != "-":
         stderr.writeLine("ERROR: File not found: ", file)
         continue
          
       try:
         var
-
           sttSeq = newSeq[RunningStat](maxLen + 1)
           stats: RunningStat
+
         for record in readfq(file):
-          count += 1
-          if count > maxSeqs:
+          readnum += 1
+          var
+            modulo = readnum mod skip  
+
+          if modulo > 0:
+            continue
+
+          # Printed total reads
+          if count >= maxSeqs:
             break
+          
+          count += 1
+
           for i, q in record.quality:
             let 
               quality_ord = q.ord
               quality_enc = charToQual(q)
             sttSeq[i].push(quality_enc)
-            stats.push(quality_ord)
-        let encodingType = rangeToStr(stats.min, stats.max, ranges)
+            stats.push(quality_ord - qualOffset)
+        let encodingType = rangeToStr(stats.min + float(qualOffset), stats.max + float(qualOffset), ranges)
+        let stopPos = getStopPos(sttSeq, wndSize, minQual, wndQual)        
         
-
-        echo(comment, file, "\t", stats.min, "\t", stats.max, "\t", encodingType, "\t", fmt"{stats.mean:.2f}+/-{stats.standardDeviationS:.2f}")
+        # Comment "#"
+        echo(comment, file, "\t", stats.min, "\t", stats.max, "\t", encodingType, "\t", fmt"{stats.mean:.2f}+/-{stats.standardDeviationS:.2f}", "\t", stopPos)
+        
+        # Color profile
+        # ▇▇▇▇▇▇▇▇▇▇▇▇▆▆▆▇▇▇▇▇▆▆▆▇▇▇▇▇▇▇▆▆▆▆▆▆▆▆▇▇▆▆▆▆▆▆▆▆▆▆▆▆▆▅▆▆▆▆▅▆▆▆▆▆▆▅...
         if args["--colorbars"]:
           let profile = qualityProfile(sttSeq)
-          echo "#",  qualToUnicode(profile, @[1, 10, 20, 25, 30, 35, 40], true)
+          echo "#",  qualToUnicode(profile, @[1, 5, 10, 15, 20, 30, 40], true)
 
-
+        # Print long profile
         if args["--profile"]:
           echo("#Pos\tMin\tMax\tMean\tStDev\tSkewness")
           var profString = ""
@@ -99,6 +153,9 @@ Options:
               continue
             profString &= fmt"{pos}" & "\t" & fmt"{stats.min:.1f}" & "\t" & fmt"{stats.max:.1f}" & "\t" & fmt"{stats.mean:.2f}" & "\t" & fmt"{stats.standardDeviationS:.2f}" & "\t" & fmt"{stats.skewness:.2f}" & "\n"
           echo profString
+
+        if verbose:
+          stderr.writeLine("Parsed ", count, " reads from ", file)
 
         
       except Exception as e:

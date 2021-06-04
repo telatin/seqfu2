@@ -23,7 +23,7 @@ proc `$`*(s: FQRecord): string =
   else:
     ">" & s.name & " " & s.comment & "\n" & s.sequence & "\n"
 
-proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto"): string =
+proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=false): string =
   if not fileExists(file_R1):
     return ""
 
@@ -31,19 +31,26 @@ proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto"): string =
     # automatic guess
     if match(file_R1, re".+_R1\..+"):           
       result = file_R1.replace(re"_R1\.", "_R2.")
+    elif match(file_R1, re".+_R1_.+"):           
+      result = file_R1.replace(re"_R1_", "_R2_")
     elif match(file_R1, re".+_1\..+"):            
       result = file_R1.replace(re"_1\.", "_2.")
     else:
-      #echo "Unable to detect --for-tag (_R1. or _1.) in <", file_R1, ">"
+      if verbose:
+        stderr.writeLine("Warning: Unable to detect R2 filename using --for-tag (_R1. or _1.) in <", file_R1, ">:")
       return ""
   else:
     # user defined patterns
     if match(file_R1, re(".+" & pattern_R1 & ".+") ):
       result = file_R1.replace(re(pattern_R1), pattern_R2)
     else:
+      if verbose:
+        stderr.writeLine("Warning: Unable to detect R2 file using user defined patterns, from ", file_R1)
       return ""
   
   if not fileExists(result):
+    if verbose:
+        stderr.writeLine("Warning: Automatically detected R2 was not found: ", result)
     return ""
 
 
@@ -377,14 +384,18 @@ proc main_helper*(main_func: var seq[string] -> int) =
     # Handle "Ctrl+C" intterruption
     try:
       let exitStatus = main_func(args)
+      stderr.writeLine("Exit")
       quit(exitStatus)
     except EKeyboardInterrupt:
       # Ctrl+C
+      stderr.writeLine("Keyboard pipe")
       quit(1)
     except IOError:
       # Broken pipe
+      stderr.writeLine("Broken pipe")
       quit(0)
     except Exception:
+      stderr.writeLine("Exc")
       stderr.writeLine( getCurrentExceptionMsg() )
       quit(2)   
 

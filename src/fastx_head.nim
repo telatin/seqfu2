@@ -86,6 +86,8 @@ Options:
           y = c mod skip
 
         if printed == num:
+          if verbose:
+            stderr.writeLine("Stopping after ", printed, " sequences.")
           break
 
         if y == 0:
