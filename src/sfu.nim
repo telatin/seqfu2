@@ -5,8 +5,7 @@ import tables
 import algorithm
 import docopt
 
-
-
+ 
 
 # Suite Version
 import ./seqfu_utils
@@ -30,7 +29,7 @@ include ./fastx_cat
 include ./fastx_tabulate
 
 var progs = {
-        "cat": fastx_cat,
+       "cat": fastx_cat,
        "ilv": fastq_interleave,       
          "interleave": fastq_interleave,
        "dei": fastq_deinterleave,     
@@ -56,7 +55,8 @@ var progs = {
        "grep": fastx_grep,
        "head": fastx_head,
        "tail": fastx_tail,
-       "tabulate": fastx_tabulate  
+       "tabulate": fastx_tabulate,
+        "tab": fastx_tabulate   
 }.toTable
 
 proc main(args: var seq[string]): int =
@@ -98,10 +98,10 @@ proc main(args: var seq[string]): int =
     echo format("SeqFu - Sequence Fastx Utilities\nversion: $#\n", version())
 
     for k in hkeys1:
-      echo format("	• $1: $2", k & repeat(" ", 20 - len(k)), helps[k])
+      echo "  ", format("· $1: $2", k & repeat(" ", 20 - len(k)), helps[k])
     echo ""
     for k in hkeys2:
-      echo format("	• $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
+      echo "  ", format("· $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
       
     echo "\nAdd --help after each command to print usage"
     0
@@ -111,4 +111,9 @@ proc main(args: var seq[string]): int =
     progs[args[0]](pargs)
 
 when isMainModule:
-  main_helper(main)
+  try:
+    main_helper(main)
+  except IOError:
+    stderr.writeLine("Quitting...")
+    quit(0)
+  

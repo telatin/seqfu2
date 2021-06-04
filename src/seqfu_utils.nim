@@ -5,6 +5,11 @@ import tables
 import re
 when not defined(windows):
   import posix
+
+let
+  debug = if getEnv("seqfu_debug", "0") != "0": true
+          else: false
+
 const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 
 proc version*(): string =
@@ -375,7 +380,11 @@ proc main_helper*(main_func: var seq[string] -> int) =
       quit(2)   
   else:
     
-    signal(SIG_PIPE, SIG_IGN)
+    signal(SIG_PIPE,cast[typeof(SIG_IGN)](proc(signal:cint) =
+      if debug:
+        stderr.write("SeqFu-debug: handled sigpipe\n")
+      quit(0)
+    ))
     # Handle Ctrl+C interruptions and pipe breaks
     type EKeyboardInterrupt = object of CatchableError
     proc handler() {.noconv.} =
@@ -384,18 +393,20 @@ proc main_helper*(main_func: var seq[string] -> int) =
     # Handle "Ctrl+C" intterruption
     try:
       let exitStatus = main_func(args)
-      stderr.writeLine("Exit")
+      if debug:
+        stderr.writeLine("SeqFu-debug: Exiting ", exitStatus)
       quit(exitStatus)
     except EKeyboardInterrupt:
       # Ctrl+C
-      stderr.writeLine("Keyboard pipe")
+      if debug:
+        stderr.writeLine("SeqFu-debug: Keyboard Ctrl-C")
       quit(1)
     except IOError:
       # Broken pipe
-      stderr.writeLine("Broken pipe")
-      quit(0)
+      if debug:
+        stderr.writeLine("SeqFu-debug: IOError")
+      quit(1)
     except Exception:
-      stderr.writeLine("Exc")
       stderr.writeLine( getCurrentExceptionMsg() )
       quit(2)   
 
@@ -409,6 +420,7 @@ proc getIndex(s: string): string =
     return split[^1]
 
 proc getIndexFromFile(f: string, max = 250): string =
+
   var
     c = 0
     countTable = initCountTable[string]()

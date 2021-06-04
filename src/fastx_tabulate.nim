@@ -86,6 +86,8 @@ proc printLotus(samples: seq[sample]) =
 
 
 proc printQiime1(samples: seq[sample]) =
+
+  # Qiime1 (compatible with 2): Header
   let headerCounts = if addCounts: "\tCounts"
                        else: ""
 
@@ -93,9 +95,12 @@ proc printQiime1(samples: seq[sample]) =
                      else: ""
 
   echo "#SampleID", headerCounts, headerPath
+
+  # Qiime1 (compatible with 2): Samples
   for s in samples:
-    let files = if len(s.file2) > 0 : s.file1 & "," & s.file2
-                else: s.file1
+    let files = if (addPath and len(s.file2) > 0 ): "\t" & s.file1 & "," & s.file2
+                elif addPath: "\t" & s.file1
+                else: ""
     let counts = if addCounts: "\t" & $s.count
                  else: ""
     echo s.name, counts, files
@@ -201,6 +206,10 @@ Options:
 
 
     for dir in args["<dir>"]:
+      if not  dirExists(dir):
+        stderr.writeLine("Error: input item '", dir, "' is not a directory: specify directory(ies) and not file(s).")
+        quit(1)
+
       if verbose:
         stderr.writeLine("Processing directory: ", dir)
       
@@ -254,6 +263,10 @@ Options:
     if isPe > 0 and isSe > 0:
       stderr.writeLine("ERROR: Some samples have two files (paired-end) and other have only one.")
       quit(1)
+
+    if len(samples) == 0:
+      stderr.writeLine("Warning: no samples found")
+      quit(0)
 
     # Print metadata/mapping file
     case outFmt:

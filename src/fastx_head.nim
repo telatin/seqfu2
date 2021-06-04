@@ -11,7 +11,8 @@ proc fastx_head(argv: var seq[string]): int =
 Usage: head [options] [<inputfile> ...]
 
 Select a number of sequences from the beginning of a file, allowing
-to select
+to select a fraction of the reads (for example to print 100 reads,
+selecting one every 10).
 
 Options:
   -n, --num NUM          Print the first NUM sequences [default: 10]
@@ -19,13 +20,16 @@ Options:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -s, --strip-comments   Remove comments
   -b, --basename         prepend basename to sequence name
+  -v, --verbose          Verbose output
+  -q, --quiet            Don't print warnings
+  --help                 Show this help
+
+Output:
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
   --sep STRING           Sequence name fields separator [default: _]
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
-  -v, --verbose          Verbose output
-  --help                 Show this help
-
+  
   """, version=version(), argv=argv)
 
     verbose       = args["--verbose"]
@@ -99,6 +103,6 @@ Options:
             r.name = $getBasename(filename) & separator & r.name
           printSeq(r, nil)
       
-      if printed < num:
+      if (not args["--quiet"]) and printed < num:
         stderr.writeLine("WARNING\nPrinted less sequences (", printed, "/", num, ") than requested for ", filename, ". Try reducing --skip.")
         
