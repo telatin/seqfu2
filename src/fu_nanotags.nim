@@ -249,7 +249,7 @@ proc main(args: var seq[string]): int =
       stderr.writeLine("Query passed as string: ", $args["--query"])
 
       let
-        q = FQRecord(name: $args["--query"], sequence: $args["--query"])
+        q = FQRecord(name: $args["--query"], sequence: ($args["--query"]).toUpper() )
       if isDNA(q.sequence):
         querySeqs.add(q)
       else:
@@ -260,11 +260,15 @@ proc main(args: var seq[string]): int =
       tagCount = 0
     for faRecord in readfq(queryFile):
       tagCount += 1
-      querySeqs.add(faRecord)
-      autoScores.add( toInt( len(faRecord.sequence) * parseInt($args["--weight-match"]) / 2))
+      let
+        rec = FQRecord(name: faRecord.name, sequence: (faRecord.sequence).toUpper() )
+      querySeqs.add(rec)
+      autoScores.add( toInt( len(rec.sequence) * parseInt($args["--weight-match"]) / 2))
     
     if args["--verbose"]:
       stderr.writeLine(tagCount, " tags found in ", queryFile)
+  
+
 
   
   if len(@( args["<fastq-file>"])) == 0:
@@ -310,7 +314,8 @@ proc main(args: var seq[string]): int =
       stderr.writeLine("Reading file: ", inputFile)
     for fqRecord in readfq(inputFile):
       parsedSequences += 1
-      
+      if args["--verbose"]:
+        stderr.writeLine("## Processing ", fqRecord.name)
       
       var
         tagsFoundFor = 0
@@ -338,6 +343,7 @@ proc main(args: var seq[string]): int =
           if args["--showaln"]:
             stderr.writeLine("# ", fqRecord.name, ":", querySeq.name, " strand=+;score=", alnFor.score, ";pctid=", fmt"{alnFor.pctid:.2f}%")
             stderr.writeLine(" > " ,alnFor.top, "\n > ", alnFor.middle, "\n > ", alnFor.bottom)
+        
         if alnRev.pctid >= pctid:
           tagsFoundRev += 1
           tagsString &= querySeq.name & ";"
@@ -359,8 +365,9 @@ proc main(args: var seq[string]): int =
           echo fqRecord.sequence
 
   
-  if args["--verbose"]:
-    stderr.writeLine(printedSequences, "/", parsedSequences, " sequences printed, of which ", printedSequencesRev, " in reverse strand.")
+  let
+    ratio = printedSequences / parsedSequences
+  stderr.writeLine(fmt"{ratio:.2f}% (", printedSequences, "/", parsedSequences, ") sequences printed, of which ", printedSequencesRev, " in reverse strand.")
     
 #[
   for s in readfq(target):
