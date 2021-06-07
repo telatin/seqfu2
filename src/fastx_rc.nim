@@ -46,8 +46,8 @@ Options:
         # Process as string
         stringCount += 1
         if len(files) == 1:
-          echo if args["--only-rev"]: revcompl(filename)
-            else: reverse(filename)
+          echo if args["--only-rev"]: reverse(filename)
+            else: revcompl(filename)
           continue
         else:
           echo ">", seqDefaultName, "_" , $stringCount, "\n", if args["--only-rev"]: reverse(filename)
