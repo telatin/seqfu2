@@ -26,6 +26,7 @@ include ./fastx_rc
 include ./fastx_qual
 include ./fastq_merge
 include ./fastx_cat
+include ./fastx_metadata
 include ./fastx_tabulate
 
 var progs = {
@@ -45,7 +46,7 @@ var progs = {
          "stat": fastx_stats,
        "rc" : fastx_rc,
        "srt": fastx_sort,             
-         "sort" : fastx_sort,
+       "sort" : fastx_sort,
        "ill" : fastq_merge_lanes,
          "lanes" : fastq_merge_lanes,
        "mrg" : fastq_merge,
@@ -56,7 +57,9 @@ var progs = {
        "head": fastx_head,
        "tail": fastx_tail,
        "tabulate": fastx_tabulate,
-        "tab": fastx_tabulate   
+            "tab": fastx_tabulate,
+       "metadata": fastx_metadata,
+        "met": fastx_metadata   
 }.toTable
 
 proc main(args: var seq[string]): int =
@@ -69,7 +72,8 @@ proc main(args: var seq[string]): int =
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
-               "sort [srt]"        : "sort sequences by size (uniques)"
+               "sort [srt]"        : "sort sequences by size (uniques)",
+               "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
                }.toTable
 
     helps_last = {"cat"            : "concatenate FASTA/FASTQ files",
@@ -77,7 +81,7 @@ proc main(args: var seq[string]): int =
                   "tail"           : "view last sequences",
                   "grep"           : "select sequences with patterns",
                   "rc"             : "reverse complement strings or files",
-                  "tabulate"       : "print a table of FASTQ reads (mapping files)",
+                  "tab"            : "tabulate reads to TSV (and viceversa)",
                   "view"           : "view sequences with colored quality and oligo matches",
                }.toTable
 

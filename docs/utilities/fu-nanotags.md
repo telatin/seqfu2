@@ -61,27 +61,24 @@ will be released.
 
 ## Example
 
-```
+```bash
 fu-nanotags  -q tag.fa fastq-reads.fq.gz > passed.fq
 ```
 
 To inspect the parameters, add `--verbose --showaln`, 
 possibly redirecting the output to `less -S` for a preliminary inspection:
 
-```
+```bash
 fu-nanotags -q tag.fa reads.fq.gz --verbose --showaln 2>&1 | less -S
 ```
 
+A fraction of the output is like the following:
 
 ```
-## Processing a564e10b-c82e-4e59-98a4-fdc6f1b31acb
 # a564e10b-c82e-4e59-98a4-fdc6f1b31acb:test-tag strand=-;score=167;pctid=94.57%
  < AATGATA-TGCGACCACTGAGATCTACACCTCTCTATACACTC-TT-CCTACACGACGCTCTTCCGATCTTTCGTACGTGAGTTTAAATGTATTTGGCTAAGGTGTATGTAAACTTCCGACTTCAACTG
  < |||||||  |||||||| ||||||||||||||||||||||||| || ||||||||||||||||||||||  ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  < AATGATACGGCGACCACCGAGATCTACACCTCTCTATACACTCTTTCCCTACACGACGCTCTTCCGATC--TCGTACGTGAGTTTAAATGTATTTGGCTAAGGTGTATGTAAACTTCCGACTTCAACTG
-## Processing d5b2e371-8481-4362-9239-4b434366f81d
-## Processing f5713c1f-826c-40e3-88d1-d721cbf43dde
-## Processing 132518b1-1522-45ed-9a77-94a3c981ac20
 # 132518b1-1522-45ed-9a77-94a3c981ac20:test-tag strand=+;score=531;pctid=90.55%
  > AATGATACGGCGACCACCGAGATCTACACTATCCCTCTACACTCTTTCCCTACACGACGCTCTTCCGATCTACGTACGTGAGTTTAAATGT-GTTAGCTAAGGTGTATAT-AGCTTCCGACTTCAGC
  > |||||||||||||||||||||||||||||  || || |||||||||||||||||||||||||||||||||| |||||||||||||||||||  || |||||||||||| | | |||||||||||| |

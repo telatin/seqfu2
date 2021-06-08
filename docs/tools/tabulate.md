@@ -3,89 +3,62 @@ sort: 16
 ---
 # seqfu tabulate
 
-Given one (or more) directories containing sequencing reads,
-will produce a metadata file extracting the ID from the filename
-and optionally adding the file paths or read counts.
+```note
+under development
+```
+
+This program converts a sequence file (FASTA or FASTQ) to a tabular file,
+and vice versa.
+
+Several Unix tools can process a stream of information line-by-line, and
+tabular file can be easily modified and filtered piping serveral programs.
+
+This tool will allow to **tabulate** (convert to TSV) and 
+**detabulate** (convert to FASTX) sequences.
 
 ```
-Usage: tabulate [options] [<dir> ...]
+Usage: tabulate [options] [<file>]
 
-Prepare mapping files from directory containing FASTQ files
+Convert FASTQ to TSV and viceversa. Single end is a 4 columns table (name, comment, seq, qual),
+paired end have 4 columns for the R1 and 4 columns for the R2. 
+Paired end reads need to be supplied as interleaved.
+ 
 
 Options:
-  -1, --for-tag STR      String found in filename of forward reads [default: _R1]
-  -2, --rev-tag STR      String found in filename of forward reads [default: _R2]
-  -s, --split STR        Separator used in filename to identify the sample ID [default: _]
-  --pos INT...           Which part of the filename is the Sampel ID [default: 1]
-  --pe                   Enforce paired-end reads (not supported)
-  -p, --add-path         Add the reads absolute path as column 
-  -c, --counts           Add the number of reads as a property column
-  -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2 [default: manifest]
-  -t, --threads INT      Number of simultaneously opened files [default: 2]
-  -v, --verbose          Verbose output
-  -h, --help             Show this help
-```
-## Output formats
-* manifest (used as import manifest for [Qiime2](https://qiime2.org/) artifacts)
-* qiime1, qiime2 (forward-compatible [qiime1](http://qiime.org/) mapping file; a dedicated [Qiime2](https://qiime2.org/) metadata file is under development)
-* dadaist ([Dadaist2](quadram-institute-bioscience.github.io/dadaist2) compatible metadata)
-* lotus ([Lotus](http://lotus2.earlham.ac.uk/) mapping file - tested with Lotus1)
-
-## Examples
-### Manifest
-```
-seqfu tabulate ./MiSeq_SOP/
+  -i, --interleaved        Input is interleaved (paired-end)
+  -d, --detabulate         Convert TSV to FASTQ (if reading from file is autodetected) 
+  -c, --comment-sep CHAR   Separator between name and comment (default: tab)
+  -s, --field-sep CHAR     Field separator (default: tab)
+  -v, --verbose            Verbose output
+  -h, --help               Show this help
 ```
 
-Will produce this output:
+## Tabular format
+
+The conversion works as follows:
+* FASTA files are converted to a 3 columns table: name, comments and sequence
+* Single-End FASTQ files are converted to a 4 columns table: name, comments, sequence and quality
+* Paired-End FASTQ (interleaved) files are converted to 8 colums table: R1 name, comments, sequence and quality and R2 name, comments, sequence and quality
+
+To allow an efficient use of streams, paired-end datasets need to be interleaved (see: _seqfu interleave_).
+
+## Conversions
+
+
+### Sequence to table
 ```
-sample-id	forward-absolute-filepath	reverse-absolute-filepath
-F3D0	/Users/telatin/MiSeq_SOP/F3D0_S188_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D0_S188_L001_R2_001.fastq.gz
-F3D1	/Users/telatin/MiSeq_SOP/F3D1_S189_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D1_S189_L001_R2_001.fastq.gz
-F3D141	/Users/telatin/MiSeq_SOP/F3D141_S207_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D141_S207_L001_R2_001.fastq.gz
-F3D142	/Users/telatin/MiSeq_SOP/F3D142_S208_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D142_S208_L001_R2_001.fastq.gz
-F3D143	/Users/telatin/MiSeq_SOP/F3D143_S209_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D143_S209_L001_R2_001.fastq.gz
-F3D144	/Users/telatin/MiSeq_SOP/F3D144_S210_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D144_S210_L001_R2_001.fastq.gz
-F3D145	/Users/telatin/MiSeq_SOP/F3D145_S211_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D145_S211_L001_R2_001.fastq.gz
-F3D146	/Users/telatin/MiSeq_SOP/F3D146_S212_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D146_S212_L001_R2_001.fastq.gz
-F3D147	/Users/telatin/MiSeq_SOP/F3D147_S213_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D147_S213_L001_R2_001.fastq.gz
-F3D148	/Users/telatin/MiSeq_SOP/F3D148_S214_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D148_S214_L001_R2_001.fastq.gz
-F3D149	/Users/telatin/MiSeq_SOP/F3D149_S215_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D149_S215_L001_R2_001.fastq.gz
-F3D150	/Users/telatin/MiSeq_SOP/F3D150_S216_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D150_S216_L001_R2_001.fastq.gz
-F3D2	/Users/telatin/MiSeq_SOP/F3D2_S190_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D2_S190_L001_R2_001.fastq.gz
-F3D3	/Users/telatin/MiSeq_SOP/F3D3_S191_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D3_S191_L001_R2_001.fastq.gz
-F3D5	/Users/telatin/MiSeq_SOP/F3D5_S193_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D5_S193_L001_R2_001.fastq.gz
-F3D6	/Users/telatin/MiSeq_SOP/F3D6_S194_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D6_S194_L001_R2_001.fastq.gz
-F3D7	/Users/telatin/MiSeq_SOP/F3D7_S195_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D7_S195_L001_R2_001.fastq.gz
-F3D8	/Users/telatin/MiSeq_SOP/F3D8_S196_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D8_S196_L001_R2_001.fastq.gz
-F3D9	/Users/telatin/MiSeq_SOP/F3D9_S197_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D9_S197_L001_R2_001.fastq.gz
-Mock	/Users/telatin/MiSeq_SOP/Mock_S280_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/Mock_S280_L001_R2_001.fastq.gz
+seqfu tabulate file.fastq | gzip -c > tabular.tab.gz
 ```
-### Qiime mapping file
+
+
+### Table to sequences
+When a file is provided, the input format is automatically detected. Otherwise specify `-d` (or `--detabulate` to convert from table to FASTX).
+
 ```
-seqfu tabulate MiSeq_SOP -f qiime1 --add-path --counts
+seqfu tabulate file.tab > sequences.fq
 ```
-Output:
+
 ```
-#SampleID	Counts	Paths
-F3D0	7793	F3D0_S188_L001_R1_001.fastq.gz,F3D0_S188_L001_R2_001.fastq.gz
-F3D1	5869	F3D1_S189_L001_R1_001.fastq.gz,F3D1_S189_L001_R2_001.fastq.gz
-F3D141	5958	F3D141_S207_L001_R1_001.fastq.gz,F3D141_S207_L001_R2_001.fastq.gz
-F3D142	3183	F3D142_S208_L001_R1_001.fastq.gz,F3D142_S208_L001_R2_001.fastq.gz
-F3D143	3178	F3D143_S209_L001_R1_001.fastq.gz,F3D143_S209_L001_R2_001.fastq.gz
-F3D144	4827	F3D144_S210_L001_R1_001.fastq.gz,F3D144_S210_L001_R2_001.fastq.gz
-F3D145	7377	F3D145_S211_L001_R1_001.fastq.gz,F3D145_S211_L001_R2_001.fastq.gz
-F3D146	5021	F3D146_S212_L001_R1_001.fastq.gz,F3D146_S212_L001_R2_001.fastq.gz
-F3D147	17070	F3D147_S213_L001_R1_001.fastq.gz,F3D147_S213_L001_R2_001.fastq.gz
-F3D148	12405	F3D148_S214_L001_R1_001.fastq.gz,F3D148_S214_L001_R2_001.fastq.gz
-F3D149	13083	F3D149_S215_L001_R1_001.fastq.gz,F3D149_S215_L001_R2_001.fastq.gz
-F3D150	5509	F3D150_S216_L001_R1_001.fastq.gz,F3D150_S216_L001_R2_001.fastq.gz
-F3D2	19620	F3D2_S190_L001_R1_001.fastq.gz,F3D2_S190_L001_R2_001.fastq.gz
-F3D3	6758	F3D3_S191_L001_R1_001.fastq.gz,F3D3_S191_L001_R2_001.fastq.gz
-F3D5	4448	F3D5_S193_L001_R1_001.fastq.gz,F3D5_S193_L001_R2_001.fastq.gz
-F3D6	7989	F3D6_S194_L001_R1_001.fastq.gz,F3D6_S194_L001_R2_001.fastq.gz
-F3D7	5129	F3D7_S195_L001_R1_001.fastq.gz,F3D7_S195_L001_R2_001.fastq.gz
-F3D8	5294	F3D8_S196_L001_R1_001.fastq.gz,F3D8_S196_L001_R2_001.fastq.gz
-F3D9	7070	F3D9_S197_L001_R1_001.fastq.gz,F3D9_S197_L001_R2_001.fastq.gz
-Mock	4779	Mock_S280_L001_R1_001.fastq.gz,Mock_S280_L001_R2_001.fastq.gz
+cat file.tab.gz | seqfu tabulate  --detabulate > sequences.fq
 ```
+

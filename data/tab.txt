@@ -1,0 +1,3 @@
+ciao	comm	seq	qual
+ciao	comm	seq	qual
+ciao	comm	seq	qual
