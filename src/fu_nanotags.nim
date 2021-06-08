@@ -5,7 +5,7 @@ import os, strutils, sequtils
  
 import threadpool
 import neo
-import tables, algorithm
+import tables
  
 import ./seqfu_utils
 
@@ -33,8 +33,6 @@ type
   swWeights* = object
     match, mismatch, gap, gapopening: int
     minscore: int
- 
- 
  
  
 
@@ -213,7 +211,7 @@ proc main(args: var seq[string]): int =
     -G, --weight-gap INT       Gap penalty [default: -5]
 
   Other options:
-    --pool-size INT            Number of sequences/pairs to process per thread [default: 25]
+    --pool-size INT            Number of sequences to process per thread, not implemented [default: 25]
     -v, --verbose              Verbose output
     -h, --help                 Show this help
     """, version=version(), argv=commandLineParams())
@@ -268,7 +266,10 @@ proc main(args: var seq[string]): int =
     if args["--verbose"]:
       stderr.writeLine(tagCount, " tags found in ", queryFile)
   
-
+  # Check tags lenght
+  for index, querySeq in querySeqs:
+    if len(querySeq.sequence) > cutLength:
+      stderr.writeLine("WARNING: Tag <", querySeq.name, "> is longer than the '--cut ", cutLength, "' size: ", len(querySeq.sequence))
 
   
   if len(@( args["<fastq-file>"])) == 0:
@@ -289,9 +290,9 @@ proc main(args: var seq[string]): int =
   poolSize = parseInt($args["--pool-size"])
  
   var
-    parsedSequences = 0
-    printedSequences = 0
-    printedSequencesRev = 0
+    totalParsedSequences = 0
+    totalPrintedSequences = 0
+    totalPrintedSequencesRev = 0
     counter = 0
     readspool : seq[FQRecord]
     responses = newSeq[FlowVar[int]]()
@@ -310,12 +311,16 @@ proc main(args: var seq[string]): int =
   
 
   for inputFile in inputFiles:
+    var 
+      printedSequences = 0
+      printedSequencesRev = 0
+      parsedSequences = 0
     if args["--verbose"]:
       stderr.writeLine("Reading file: ", inputFile)
     for fqRecord in readfq(inputFile):
       parsedSequences += 1
-      if args["--verbose"]:
-        stderr.writeLine("## Processing ", fqRecord.name)
+      #if args["--verbose"]:
+      #  stderr.writeLine("## Processing ", fqRecord.name)
       
       var
         tagsFoundFor = 0
@@ -338,17 +343,19 @@ proc main(args: var seq[string]): int =
         let alnRev = if not args["--disable-rev-comp"]: simpleSmithWaterman(readRev, querySeq.sequence, alnParameters)
                      else: swAlignment()
         if alnFor.pctid >= pctid:
+          let cov = float(alnFor.length) * 100 / float(len(querySeq.sequence))
           tagsFoundFor += 1
           tagsString &= querySeq.name & ";"
           if args["--showaln"]:
-            stderr.writeLine("# ", fqRecord.name, ":", querySeq.name, " strand=+;score=", alnFor.score, ";pctid=", fmt"{alnFor.pctid:.2f}%")
+            stderr.writeLine("# ", fqRecord.name, ":", querySeq.name, fmt" strand=+;coverage={cov:.2f}%;score={alnFor.score};pctid={alnFor.pctid:.2f}%")
             stderr.writeLine(" > " ,alnFor.top, "\n > ", alnFor.middle, "\n > ", alnFor.bottom)
         
         if alnRev.pctid >= pctid:
+          let cov = float(alnRev.length) * 100 / float(len(querySeq.sequence))
           tagsFoundRev += 1
           tagsString &= querySeq.name & ";"
           if args["--showaln"]:
-            stderr.writeLine("# ", fqRecord.name, ":", querySeq.name, " strand=-;score=", alnFor.score, ";pctid=", fmt"{alnRev.pctid:.2f}%")    
+            stderr.writeLine("# ", fqRecord.name, ":", querySeq.name, fmt" strand=+;coverage={cov:.2f}%;score={alnRev.score};pctid={alnRev.pctid:.2f}%")    
             stderr.writeLine(" < ", alnRev.top, "\n < ", alnRev.middle, "\n < ", alnRev.bottom)  
       if tagsFoundFor > 0 or tagsFoundRev > 0:
         printedSequences += 1
@@ -364,10 +371,20 @@ proc main(args: var seq[string]): int =
           echo ">", fqRecord.name, " ", fqRecord.comment, " tags=", tagsString
           echo fqRecord.sequence
 
-  
+    # Current file statistics
+    let
+      ratio = printedSequences * 100 / parsedSequences
+    stderr.writeLine(inputFile, "\t", fmt"{ratio:.2f}% (", printedSequences, "/", parsedSequences, ") sequences printed, of which ", printedSequencesRev, " in reverse strand.")
+
+    # Update global counters
+    totalParsedSequences += parsedSequences
+    totalPrintedSequences += printedSequences
+    totalPrintedSequencesRev += printedSequencesRev
+
+  # Total statistics
   let
-    ratio = printedSequences / parsedSequences
-  stderr.writeLine(fmt"{ratio:.2f}% (", printedSequences, "/", parsedSequences, ") sequences printed, of which ", printedSequencesRev, " in reverse strand.")
+    ratio = totalPrintedSequences * 100 / totalParsedSequences
+  stderr.writeLine("Total\t", fmt"{ratio:.2f}% (", totalPrintedSequences, "/", totalParsedSequences, ") sequences printed, of which ", totalPrintedSequencesRev, " in reverse strand.")
     
 #[
   for s in readfq(target):

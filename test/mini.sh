@@ -157,13 +157,6 @@ else
   ERRORS=$((ERRORS+1))
 fi
 
-### Check failures
-if  [[ $ERRORS -gt 0 ]]; then
-	echo "FAIL: $ERRORS test failed."
-	exit 1
-else
-	echo "PASS"
-fi
 
 
 echo ""
@@ -175,3 +168,46 @@ do
     #bash $TEST;
   fi
 done
+
+## Check docs
+echo "# CHECKING DOCS"
+
+for SUB in utilities tools;
+do
+  echo " * Utilities sort order in $SUB"
+   grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | \
+   cut -f 2,3 -d : | \
+   sort | uniq -c | perl -mTerm::ANSIColor -ne  '
+   if ($_=~/^\s*(\S)/)
+     { if ($1 != "1") 
+        { print Term::ANSIColor::color("red"), " >>> KO:", 
+        Term::ANSIColor::color("reset"), " Wrong sort order: duplicate entry(es)\n"; 
+        die;
+        } 
+     }'  || grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | \
+   rev | \
+   sort -n | \
+   rev 
+done
+
+## Check release
+echo "# Checking release"
+LOCAL_RELEASE=$(cat "$DIR/../seqfu.nimble" | grep version | cut -f 2 -d = | sed 's/[" ]//g')
+GH_RELEASE=$(curl -s https://api.github.com/repos/telatin/seqfu2/releases/latest  | perl -nE 'my ($tag, $val) = split /:/, $_; if ($tag=~/tag_name/) { my @tag = split /"/, $val; for my $i (@tag) { $i =~s/[^0-9.]//g; say $i if (length($i) > 2); } }')
+
+if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
+  echo "ERR: Local $LOCAL_RELEASE matches remote $GH_RELEASE"
+  ERRORS=$((ERRORS+1))
+else
+  echo "OK:  $LOCAL_RELEASE != $GH_RELEASE (remote)"
+fi
+
+
+
+### Check failures
+if  [[ $ERRORS -gt 0 ]]; then
+	echo "FAIL: $ERRORS test failed."
+	exit 1
+else
+	echo "PASS"
+fi
