@@ -46,6 +46,11 @@ To allow an efficient use of streams, paired-end datasets need to be interleaved
 
 
 ### Sequence to table
+A single file can be converted to tabular format. 
+
+*NOTE*: If the file is automatically detected as interleaved (the first and second read
+have the same name) you can omit `-i` (or `--interleave`), but we recommend to use it to make the command clearer.
+
 ```
 seqfu tabulate file.fastq | gzip -c > tabular.tab.gz
 ```
@@ -57,8 +62,15 @@ When a file is provided, the input format is automatically detected. Otherwise s
 ```
 seqfu tabulate file.tab > sequences.fq
 ```
-
+or, via _stream_:
 ```
 cat file.tab.gz | seqfu tabulate  --detabulate > sequences.fq
 ```
 
+### Pipeline
+
+We designed the tool to provide a simple way to make ad hoc modifications via tabular lines, so a full workflow could be:
+
+```
+seqfu interleave ... | seqfu tabulate | CUSTOM_STEP | seqfu tabulate --detabulate | seqfu deinterleave -o basename -
+```
