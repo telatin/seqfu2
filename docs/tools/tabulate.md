@@ -4,7 +4,8 @@ sort: 16
 # seqfu tabulate
 
 ```note
-under development
+This tool has been introduced with seqfu 1.2.2, it's stable implementation
+is expected with 1.3.0
 ```
 
 This program converts a sequence file (FASTA or FASTQ) to a tabular file,
@@ -41,6 +42,24 @@ The conversion works as follows:
 * Paired-End FASTQ (interleaved) files are converted to 8 colums table: R1 name, comments, sequence and quality and R2 name, comments, sequence and quality
 
 To allow an efficient use of streams, paired-end datasets need to be interleaved (see: _seqfu interleave_).
+
+To make an example this FASTQ file:
+```
+@read_1 tag=A
+ATTACAATTACAATTACAA
++
+EAFFFFFABBBAAAAAAAC
+@read_2 tag=B
+GGACAGAATTACAATTTTT
++
+FFFFFFFFABBBAAAAAAA
+```
+will become:
+```
+read_1    tag=A    ATTACAATTACAATTACAA    EAFFFFFABBBAAAAAAAC
+read_2    tag=B    GGACAGAATTACAATTTTT    FFFFFFFFABBBAAAAAAA
+```
+
 
 ## Conversions
 
