@@ -42,11 +42,11 @@ A tabular report, per read, is provided with the following columns:
 
 The **main** output is given as two columns: 
 * regions detected in the same read (e.g. "V3,V4")
-* number of reads with the combination
+* fraction of reads with the combination
 
 Example:
 ```text
-V3,V4	342
+V3,V4	0.83
 ```
 This is only reported when the number of reads / total reads is above `--min-fraction`.
 

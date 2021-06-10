@@ -5,7 +5,10 @@ sort: 5
 # Utilities
 
 All these programs are automatically installed with SeqFu, but are accessible via
-independent binaries rather than the core tool _seqfu_:
+independent binaries rather than the core tool _seqfu_.
+
+:warning: The core tools have a strict API validation to ensure forward-compatibility of the commands,
+that is not guaranteed in the external utilities.
 
 ### SeqFu utilities
 

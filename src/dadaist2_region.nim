@@ -434,6 +434,7 @@ proc main(argv: var seq[string]): int =
   
   for region, count in hits:
     if float(count) / float(total) > optMinClassRatio:
-      echo region, "\t", count
+      let ratio = (float(count) / float(total)).formatFloat(ffDecimal, 2)
+      echo region, "\t", ratio
 when isMainModule:
   main_helper(main)

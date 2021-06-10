@@ -36,6 +36,16 @@ sequencing tool. This experimental module of SeqFu joins the reads in a differen
 takes the forward read _as is_, and extends it with the (reverse complemented) missing
 part taken from the R2. 
 
+## Potential uses
+
+This tool can be used to estimate the overlapping size or the "mergeability" of reads 
+before using the tools of choice.
+
+For example:
+```
+seqfu merge -1 reads_R1.fq | seqfu head -n 200 | seqfu stats -n
+```
+
 ## Output
 The merged reads are printed to the standard output.
 
