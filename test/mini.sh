@@ -196,8 +196,9 @@ LOCAL_RELEASE=$(cat "$DIR/../seqfu.nimble" | grep version | cut -f 2 -d = | sed 
 GH_RELEASE=$(curl -s https://api.github.com/repos/telatin/seqfu2/releases/latest  | perl -nE 'my ($tag, $val) = split /:/, $_; if ($tag=~/tag_name/) { my @tag = split /"/, $val; for my $i (@tag) { $i =~s/[^0-9.]//g; say $i if (length($i) > 2); } }')
 
 if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
-  echo "ERR: Local $LOCAL_RELEASE matches remote $GH_RELEASE"
-  ERRORS=$((ERRORS+1))
+  echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  echo "[PRERELEASE WARNING]: Local $LOCAL_RELEASE matches remote $GH_RELEASE"
+  echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 else
   echo "OK:  $LOCAL_RELEASE != $GH_RELEASE (remote)"
 fi
