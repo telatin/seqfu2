@@ -271,9 +271,16 @@ proc main(args: var seq[string]): int =
     -t --target <FILE>        File with the target sequence(s)
     -i --id ID                Align only against the sequence named `ID` in the target file
     -s --showaln              Show graphical alignment
-    --pool-size INT           Number of sequences/pairs to process per thread [default: 20]
+    
+  Smith-Waterman options:
+    --score-match INT         Score for a match [default: 10]
+    --score-mismatch INT      Score for a mismatch [default: -8]
+    --score-gap INT           Score for a gap [default: -10]
     --min-score INT           Minimum alignment score [default: 80]
     --pct-id FLOAT            Minimum percentage of identity [default: 85]
+  
+  Other options:
+    --pool-size INT           Number of sequences/pairs to process per thread [default: 20]
     -v --verbose              Verbose output
     -h --help                 Show this help
     """, version=version(), argv=commandLineParams())
@@ -282,7 +289,14 @@ proc main(args: var seq[string]): int =
     query = $args["--query"]
     target = $args["--target"] 
     pctid = parseFloat($args["--pct-id"])
-  
+
+
+  let
+    optMatch = parseInt($args["--score-match"])
+    optMismatch = parseInt($args["--score-mismatch"])
+    optGap      = parseInt($args["--score-gap"])
+    optMinScore = parseInt($args["--min-score"])
+
   if not fileExists(query):
     stderr.writeLine("ERROR: Query file not found: ", query)
     quit(1)
@@ -306,11 +320,11 @@ proc main(args: var seq[string]): int =
       matchThs:      1
     )
     alnParameters = swWeights(
-      match: swDefaults.match, 
-      mismatch : swDefaults.mismatch, 
-      gap: swDefaults.mismatch, 
-      gapopening: swDefaults.gapopening,
-      minscore: parseInt($args["--min-score"])
+      match: optMatch, 
+      mismatch : optMismatch, 
+      gap: optGap, 
+      gapopening: optGap,
+      minscore: optMinScore
     )
 
 

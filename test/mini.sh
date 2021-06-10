@@ -175,12 +175,12 @@ echo "# CHECKING DOCS"
 for SUB in utilities tools;
 do
   echo " * Utilities sort order in $SUB"
-   grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | \
+   grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | grep -v README | \
    cut -f 2,3 -d : | \
    sort | uniq -c | perl -mTerm::ANSIColor -ne  '
    if ($_=~/^\s*(\S)/)
      { if ($1 != "1") 
-        { print Term::ANSIColor::color("red"), " >>> KO:", 
+        { print Term::ANSIColor::color("red"), " >>> RELEASE WARNING:", 
         Term::ANSIColor::color("reset"), " Wrong sort order: duplicate entry(es)\n"; 
         die;
         } 

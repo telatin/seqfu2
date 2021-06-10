@@ -1,20 +1,20 @@
 import docopt
 import readfq
 import json
-import os, strutils, re, iterutils, sequtils
+import os, strutils, sequtils
 import threadpool
 import neo
 import tables, algorithm
 import ./seqfu_utils
 
 
-const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
+const NimblePkgVersion {.strdefine.} = "internal-build"
 
 let
   programVersion = NimblePkgVersion
   programName = "dadaist2-region"
   defaultTarget =  "AAATTGAAGAGTTTGATCATGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGCAGCTTGCTGCTTCGCTGACGAGTGGCGGACGGGTGAGTAATGTCTGGGAAGCTGCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATAATGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGATGGGATTAGCTTGTTGGTGGGGTAACGGCTCACCAAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCCATGCCGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTGAAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGATGTCGACTTGGAGGTTGTGCCCTTGAGGCGTGGCTTCCGGAGCTAACGCGTTAAGTCGACCGCCTGGGGAGTACGGCCGCAAGGTTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGAAGAACCTTACCTGGTCTTGACATCCACGGAAGTTTTCAGAGATGAGAATGTGCCTTCGGGAACCGTGAGACAGGTGCTGCATGGCTGTCGTCAGCTCGTGTTGTGAAATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTATCCTTTGTTGCCAGCGGTCCGGCCGGGAACTCAAAGGAGACTGCCAGTGATAAACTGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTACGACCAGGGCTACACACGTGCTACAATGGCGCATACAAAGAGAAGCGACCTCGCGAGAGCAAGCGGACCTCATAAAGTGCGTCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGTGGATCAGAATGCCACGGTGAATACGTTCCCGGGCCTTGTACACACCGCCCGTCACACCATGGGAGTGGGTTGCAAAAGAAGTAGGTAGCTTAACCTTCGGGAGGGCGCTTACCACTTTGTGATTCATGACTGGGGTGAAGTCGTAACAAGGTAACCGTAGGGGAACCTGCGGTTGGATCACCTCCTTA"
-  regions = parseJson("""
+  regionsTemplate = parseJson("""
 {
  "V1": {
    "start": 68,
@@ -47,7 +47,20 @@ let
 var
   poolsize = 200
 
+type
+  alignedRead = object
+    readname: string
+    regions: seq[string]
+    score: int
+    alignStart, alignEnd: int
 
+proc `$`(a: alignedRead): string =
+  let
+    status = if a.alignEnd > 0: "Pass"
+                  else: "Fail"
+    boundaries = if a.alignEnd > 0: $(a.alignStart) & ".." & $(a.alignEnd)
+                  else: "NA"
+  a.readname & "\tscore:" & $(a.score) & "\talignment:" & boundaries & "\tregions:" & (a.regions).join(",") & "\t" & status
 
 type
   swAlignment* = object
@@ -62,10 +75,10 @@ type
 
 let
   swDefaults = swWeights(
-    match:       6,
-    mismatch:   -2,
-    gap:        -4,
-    gapopening: -4,
+    match:       10,
+    mismatch:   -5,
+    gap:        -10,
+    gapopening: -10,
     minscore:    1 )
 
 
@@ -210,213 +223,217 @@ type
     minMatches, maxMismatches: int
     matchThs: float
 
-proc extractTag*(filename: string, patternFor: string, patternRev: string): (string, string) =
-    if patternFor == "auto":
-      # automatic guess
-      var basename = split(filename, "_R1.")
-      if len(basename) > 1:
-        return (basename[0], "R1")
-      basename = split(filename, "_R1_")
-      if len(basename) > 1:
-        return (basename[0], "R1")
-      basename = split(filename, "_1.")
-      if len(basename) > 1:
-        return (basename[0], "R1")
-    else:
-      var basename = split(filename, patternFor)
-      if len(basename) > 1:
-        return (basename[0], "R1")
-
-    if patternFor == "auto":
-      # automatic guess
-      var basename = split(filename, "_R2.")
-      if len(basename) > 1:
-        return (basename[0], "R2")
-      basename = split(filename, "_R2_")
-      if len(basename) > 1:
-        return (basename[0], "R2")
-      basename = split(filename, "_2.")
-      if len(basename) > 1:
-        return (basename[0], "R2")
-    else:
-      var basename = split(filename, patternFor)
-      if len(basename) > 1:
-        return (basename[0], "R2")
-    return (filename, "SE")
 
 proc version(): string =
   return programName  & " " & programVersion
 
-template initClosure(id:untyped,iter:untyped) =
-  let id = iterator():auto {.closure.} =
-    for x in iter:
-      yield x
+proc alnToRegs(alnStart, alnEnd: int, regionsDict: Table[int, string]): Table[string, int] =
+  var
+    regCount = initCountTable[string]()
+  for position in alnStart ..< alnEnd:
+    if position in regionsDict:
+      regCount.inc(regionsDict[position], 1)
+  
+  
+  regCount.sort()
+
+  for i,j in regCount:
+    result[i] = j
 
 
-proc processPair(R1, R2: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string]): string =
+proc filtRegs(regs: Table[string, int], regions: JsonNode, threshold = 0.66): seq[string] =
+  for region, counts in regs:
+    var regLen : int
+    try:
+      regLen =  regions[region]["end"].getInt() - regions[region]["start"].getInt() + 1
+    except Exception as e:
+      stderr.writeLine("ERROR: Non integer values or 'start' and 'end' not found in JSON schema.\n Exeption -> ",e.msg)
+      quit(1)
+    let coverage = float(counts) / float(regLen)
+    if coverage >= threshold:
+      result.add(region)
+
+proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string], regions: JsonNode): alignedRead =
   let
-   aln1 = simpleSmithWaterman(R1.sequence, reference, alnOpt)
-   aln2 = simpleSmithWaterman(R2.sequence, reference, alnOpt)
+    alignment_for = simpleSmithWaterman(R1.sequence, reference, alnOpt)
+    alignment_rev = simpleSmithWaterman(revcompl(R1.sequence), reference, alnOpt)
+    alignment = if alignment_for.score >= alignment_rev.score: alignment_for
+                else: alignment_rev
+ 
+  let
+    regs = alnToRegs(alignment.targetStart, alignment.targetEnd, regionsDict)
   var
-    reg1, reg2: string
-    regCount1 = initCountTable[string]()
-    regCount2 = initCountTable[string]()
-  for position in aln1.targetStart .. aln1.targetEnd:
-    if position in regionsDict:
-      regCount1.inc(regionsDict[position], 1)
-  for position in aln2.targetStart .. aln2.targetEnd:
-    if position in regionsDict:
-      regCount2.inc(regionsDict[position], 1)
+    filtRegs = filtRegs(regs, regions, 0.500)
 
-  regCount1.sort()
-  regCount2.sort()
-  for i,v in regCount1.pairs:
-    reg1 = i
-    break
+  filtRegs.sort()
 
-  for i,v in regCount2.pairs:
-    reg2 = i
-    break
-  result &= R1.name  &  "\t"  &  reg1  &  "\tscore="  &  $(aln1.score)  &  "\t"  &  $(aln1.targetStart)  &  "-"  &  $(aln1.targetEnd) & "\n"
-  result &= R2.name  &  "\t"  &  reg2  &  "\tscore="  &  $(aln2.score)  &  "\t"  &  $(aln2.targetStart)  &  "-"  &  $(aln2.targetEnd)
+  result = alignedRead(readname: R1.name, 
+    regions: filtRegs,
+    score: alignment.score,
+    alignStart: alignment.targetStart,
+    alignEnd:   alignment.targetEnd)
 
 
-proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string]): seq[string] =
-  var
-    outputString = ""
-  for i in 0 .. pool.high:
-    if i mod 2 == 1:
-      try:
-        outputString &= processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict) & "\n"
-      except:
-        outputString &= processPair(pool[i - 1], pool[i], reference, opts, alnOpts, regionsDict) & "\n"
-        quit()
-  result.add(outputString) 
+proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string], regions: JsonNode): seq[alignedRead] =
+  for i in 0 ..< pool.high:
+    try:
+      let regions =  processRead( pool[i], reference, opts, alnOpts, regionsDict, regions)
+      result.add(regions)
+    except Exception as e:
+      stderr.writeLine("Exception raised while processing reads: ", e.msg)
+      quit()
+  
 
 
 proc main(argv: var seq[string]): int =
   let args = docopt("""
-  Usage: fu-16Sregion [options] -1 <FOR> [-2 <REV>]
+  Usage: fu-16Sregion [options] [<FASTQ-File>]
 
   Options:
-    -1 --first-pair <FOR>     First sequence in pair
-    -2 --second-pair <REV>    Second sequence in pair (can be inferred)
     -r --reference FILE       FASTA file with a reference sequence, E. coli 16S by default
     -j --regions FILE         Regions names in JSON format, E. coli variable regions by default
-    --pattern-R1 <tag-1>      Tag in first pairs filenames [default: auto]
-    --pattern-R2 <tag-2>      Tag in second pairs filenames [default: auto]
-    --pool-size INT           Number of sequences/pairs to process per thread [default: 20]
-    --min-score INT           Minimum alignment score [default: 80]
-    --max-reads INT           Parse up to INT reads then quit [default: 1000]
-    --se                      Force single end
+    -m --max-reads INT        Parse up to INT reads then quit [default: 500]
+    -s --min-score INT        Minimum alignment score (approx. %id * readlen * matchScore) [default: 2000]
+    -f --min-fraction FLOAT   Minimum fraction of reads classified to report a region as detected [default: 0.5]
+    
+  Smith-Waterman:
+    --score-match INT         Score for a match [default: 10]
+    --score-mismatch INT      Score for a mismatch [default: -5]
+    --score-gap INT           Score for a gap [default: -10]
+  
+  Other options:
+    --pool-size INT           Number of sequences/pairs to process per thread [default: 25]
     -v --verbose              Verbose output
+    --debug                   Enable diagnostics
     -h --help                 Show this help
     """, version=version(), argv=argv)
 
+  let
+    optMinScore = parseInt($args["--min-score"])
+    optMaxReads = parseInt($args["--max-reads"])
+    optMinClassRatio = parseFloat($args["--min-fraction"])
+    optMatch    = parseInt($args["--score-match"])
+    optMismatch = parseInt($args["--score-mismatch"])
+    optGap      = parseInt($args["--score-gap"])
   var
-    file_R2: string
-    file_R1 = $args["--first-pair"]
-    respCount = 0
-    singleend = false
+    inputFile: string
 
   poolSize = parseInt($args["--pool-size"])
-
-  # Check essential parameters
-  if (not args["--first-pair"]):
-    stderr.writeLine("Missing required parameter -1 (--first-pair)")
-    quit(0)
-
-  # Try inferring second filename (not specified and not SE)
-  if (not args["--second-pair"] and not args["--se"]):
-    if $args["--pattern-R1"] == "auto" and $args["--pattern-R2"] == "auto":
-        # automatic guess
-        if match(file_R1, re".+_R1_.+"):
-          file_R2 = file_R1.replace(re"_R1_", "_R2_")
-        elif match(file_R1, re".+_1\..+"):
-          file_R2 = file_R1.replace(re"_R1\.", "_R2.")
-        elif match(file_R1, re".+_R1\..+"):
-          file_R2 = file_R1.replace(re"_R1\.", "_R2.")
-        else:
-          #echo "Unable to automatically detect --for-tag (_R1_, _R1. or _1.) in <", file_R1, ">"
-          #quit(1)
-          singleend = true
-
-    else:
-      # user defined patterns
-      if match(file_R1, re(".+" & $args["--pattern-R1"] & ".+") ):
-        file_R2 = file_R1.replace(re($args["--pattern-R1"]), $args["--pattern-R2"])
-      else:
-        echo "Unable to find pattern <", $args["--pattern-R1"], "> in file <", file_R1, ">"
-        quit(1)
-  else:
-    file_R2 = $args["--second-pair"]
-
-  if not fileExists(file_R1):
-    stderr.writeLine("ERROR: File R1 not found: ", fileR1)
-    quit(1)
   
-  if not fileExists(file_R2) or args["--se"]:
-    stderr.writeLine("Running single end mode")
-    singleend = true
+  # Check regions / import
+  var
+    loadedRegions: JsonNode
+  if $args["--regions"] != "nil":
+    try:
+      loadedRegions = parseFile($args["--regions"])
+    except Exception as e:
+      stderr.writeLine("ERROR: Unable to load JSON regions from ", $args["--regions"], "\n", e.msg)
+      quit(1)
+    if args["--verbose"]:
+      stderr.writeLine("Loading regions from: ", $args["--regions"])
+  
+  let
+    regions = if fileExists($args["--regions"]): loadedRegions
+              else: regionsTemplate
 
-  initClosure(getR1,readfq(file_R1))
-  initClosure(getR2,readfq(file_R2))
+  # Check FASTA file?
+  var
+    loadedRef: string
+  if $args["--reference"] != "nil":
+    try:
+      for referenceRecord in readfq($args["--reference"]):
+        loadedRef = referenceRecord.sequence
+        if args["--verbose"]:
+          stderr.writeLine("Loading reference: ", referenceRecord.name)
+        break
+    except Exception as e:
+      stderr.writeLine("ERROR: Unable to load reference from file: ", $args["--reference"], "\n", e.msg)
+      quit(1)
 
+  let ribosomalSeq = if len(loadedRef) > 0: loadedRef
+                     else: defaultTarget
+
+  # Check input files
+  if $args["<FASTQ-File>"] == "nil":
+    if args["--verbose"]:
+      stderr.writeLine("Reading from STDIN...")
+    inputFile = "-"
+  else:
+    if not fileExists($args["<FASTQ-File>"]):
+      stderr.writeLine("Input file not found: ", $args["<FASTQ-File>"])
+      quit(0)
+    else:
+      inputFile = $args["<FASTQ-File>"]
+      if args["--verbose"]:
+        stderr.writeLine("Reading from: ",  $args["<FASTQ-File>"])
+  
  
   var
     counter = 0
     readspool : seq[FQRecord]
-    responses = newSeq[FlowVar[seq[string]]]()
+    responses = newSeq[FlowVar[seq[alignedRead]]]()
+
   let
     programParameters = primerOptions(
-      #primers:       @[p1for, p2for],
       minMatches:    1,
       maxMismatches: 1,
       matchThs:      1
     )
     alnParameters = swWeights(
-      match: swDefaults.match, 
-      mismatch : swDefaults.mismatch, 
-      gap: swDefaults.mismatch, 
-      gapopening: swDefaults.gapopening,
-      minscore: parseInt($args["--min-score"])
+      match: optMatch, 
+      mismatch : optMismatch, 
+      gap: optGap, 
+      gapopening: optGap,
+      minscore: optMinScore
     )
     regionsDict = regionsToDict(regions)
+ 
+  if args["--verbose"]:
+    stderr.writeLine("Starting. poolsize=", poolSize, "; minfract=", optMinClassRatio, "; maxreads=", optMaxReads)
 
-  if not singleend:
-    for (R1, R2) in zip(getR1, getR2):
-      counter += 1
+  for R1 in readfq(inputFile):
+    counter += 1
+    readspool.add(R1)
 
-      readspool.add(R1)
-      readspool.add(R2)
+    if counter mod poolSize == 0:
+      if args["--debug"]:
+        stderr.writeLine("[",counter, "] spawning thread")
+      responses.add(spawn processSequenceArray(readspool, ribosomalSeq, programParameters, alnParameters, regionsDict, regions))
+      readspool.setLen(0)
 
-      if counter mod poolSize == 0:
-        #stderr.writeLine(counter, ": Spawning pool of size: ", len(readspool))
-        responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
-        readspool.setLen(0)
+    if counter > optMaxReads:
+      break
 
-    responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
+  responses.add(spawn processSequenceArray(readspool, ribosomalSeq, programParameters, alnParameters, regionsDict, regions))
 
-    for resp in responses:
-      let s = ^resp
-      stdout.write(s)
 
-  else:
-    for R1 in  getR1:
-      counter += 1
-
-      readspool.add(R1)
-
-      if counter mod poolSize == 0:
-        #stderr.writeLine(counter, ": Spawning pool of size: ", len(readspool))
-        responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
-        readspool.setLen(0)
-
-    responses.add(spawn processSequenceArray(readspool, defaultTarget, programParameters, alnParameters, regionsDict))
-
-    for resp in responses:
-      let s = ^resp
-      stdout.write(s)
-
+  var
+    hits = initCountTable[string]()
+    total = 0
+    classified = 0
+  for resp in responses:
+    if args["--debug"]:
+      stderr.writeLine("Receiving results from a working thread...")
+    let alnArray = ^resp
+    
+    for aln in alnArray:
+      if args["--verbose"]:
+       stderr.writeLine(aln)
+      
+      total += 1
+      if len(aln.regions) > 0:
+        classified += 1
+        hits.inc((aln.regions).join(","))
+ 
+      else:
+        hits.inc("unaligned")
+    
+  
+  if args["--verbose"]:
+    stderr.writeLine("End. ", classified, "/", total, " reads classified.")
+  
+  for region, count in hits:
+    if float(count) / float(total) > optMinClassRatio:
+      echo region, "\t", count
 when isMainModule:
   main_helper(main)

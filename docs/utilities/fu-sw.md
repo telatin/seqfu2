@@ -14,12 +14,18 @@ Usage: fu-sw [options] -q QUERY -t TARGET
     -t --target <FILE>        File with the target sequence(s)
     -i --id ID                Align only against the sequence named `ID` in the target file
     -s --showaln              Show graphical alignment
-    --pool-size INT           Number of sequences/pairs to process per thread [default: 20]
+    
+  Smith-Waterman options:
+    --score-match INT         Score for a match [default: 10]
+    --score-mismatch INT      Score for a mismatch [default: -5]
+    --score-gap INT           Score for a gap [default: -10]
     --min-score INT           Minimum alignment score [default: 80]
     --pct-id FLOAT            Minimum percentage of identity [default: 85]
+  
+  Other options:
+    --pool-size INT           Number of sequences/pairs to process per thread [default: 20]
     -v --verbose              Verbose output
     -h --help                 Show this help
-
 ```
 
 ## Input files
