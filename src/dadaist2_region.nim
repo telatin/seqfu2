@@ -292,9 +292,9 @@ proc main(argv: var seq[string]): int =
   Options:
     -r --reference FILE       FASTA file with a reference sequence, E. coli 16S by default
     -j --regions FILE         Regions names in JSON format, E. coli variable regions by default
-    -m --max-reads INT        Parse up to INT reads then quit [default: 500]
-    -s --min-score INT        Minimum alignment score (approx. %id * readlen * matchScore) [default: 2000]
-    -f --min-fraction FLOAT   Minimum fraction of reads classified to report a region as detected [default: 0.5]
+    -m --max-reads INT        Parse up to INT reads then quit [default: 400]
+    -s --min-score INT        Minimum alignment score (approx. %id * readlen * matchScore) [default: 1000]
+    -f --min-fraction FLOAT   Minimum fraction of reads classified to report a region as detected [default: 0.25]
     
   Smith-Waterman:
     --score-match INT         Score for a match [default: 10]
@@ -302,11 +302,12 @@ proc main(argv: var seq[string]): int =
     --score-gap INT           Score for a gap [default: -10]
   
   Other options:
-    --pool-size INT           Number of sequences/pairs to process per thread [default: 25]
+    --pool-size INT           Number of sequences/pairs to process per thread [default: 1]
+    --max-threads INT         Maximum number of working threads [default: 128]
     -v --verbose              Verbose output
     --debug                   Enable diagnostics
     -h --help                 Show this help
-    """, version=version(), argv=argv)
+    """, version=programVersion, argv=argv)
 
   let
     optMinScore = parseInt($args["--min-score"])
@@ -315,11 +316,13 @@ proc main(argv: var seq[string]): int =
     optMatch    = parseInt($args["--score-match"])
     optMismatch = parseInt($args["--score-mismatch"])
     optGap      = parseInt($args["--score-gap"])
+    optMaxThreads = parseInt($args["--max-threads"])
   var
     inputFile: string
 
   poolSize = parseInt($args["--pool-size"])
-  
+  setMaxPoolSize(optMaxThreads)
+
   # Check regions / import
   var
     loadedRegions: JsonNode
@@ -355,8 +358,7 @@ proc main(argv: var seq[string]): int =
 
   # Check input files
   if $args["<FASTQ-File>"] == "nil":
-    if args["--verbose"]:
-      stderr.writeLine("Reading from STDIN...")
+    stderr.writeLine("[fu-16sregion] Reading from STDIN...")
     inputFile = "-"
   else:
     if not fileExists($args["<FASTQ-File>"]):
@@ -397,7 +399,7 @@ proc main(argv: var seq[string]): int =
 
     if counter mod poolSize == 0:
       if args["--debug"]:
-        stderr.writeLine("[",counter, "] spawning thread")
+        stderr.writeLine("[",counter, "] spawning thread at:", R1.name)
       responses.add(spawn processSequenceArray(readspool, ribosomalSeq, programParameters, alnParameters, regionsDict, regions))
       readspool.setLen(0)
 
@@ -412,10 +414,10 @@ proc main(argv: var seq[string]): int =
     total = 0
     classified = 0
   for resp in responses:
-    if args["--debug"]:
-      stderr.writeLine("Receiving results from a working thread...")
+
     let alnArray = ^resp
-    
+    if args["--debug"]:
+      stderr.writeLine("Receiving results from a working thread: ", len(alnArray), " results")    
     for aln in alnArray:
       if args["--verbose"]:
        stderr.writeLine(aln)

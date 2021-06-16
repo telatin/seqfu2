@@ -105,6 +105,39 @@ proc printQiime1(samples: seq[sample]) =
                  else: ""
     echo s.name, counts, files
 
+
+
+proc printQiime2(samples: seq[sample]) =
+  var
+    secondLine  = "#q2:types"
+    headerCounts = ""
+    headerPath   = ""
+  # Qiime1 (compatible with 2): Header
+  
+  if addCounts:
+    headerCounts = "\tread-counts"
+    secondLine   &= "\tnumeric"
+
+  if addPath:
+    headerPath = "\tread-paths"
+    secondLine &= "\tcategorical"
+
+ 
+
+  echo "sample-id", headerCounts, headerPath
+  echo secondLine
+
+ 
+  for s in samples:
+    let files = if (addPath and len(s.file2) > 0 ): "\t" & s.file1 & "," & s.file2
+                elif addPath: "\t" & s.file1
+                else: ""
+    let counts = if addCounts: "\t" & $s.count
+                 else: ""
+    echo s.name, counts, files
+
+
+
 proc printManifest(samples: seq[sample]) =
   if isPe > 0:
     echo "sample-id", "\t", "forward-absolute-filepath", "\t", "reverse-absolute-filepath"
@@ -281,7 +314,7 @@ Options:
       of "qiime1":
         printQiime1(samples)
       of "qiime2":
-        printQiime1(samples)
+        printQiime2(samples)
       of "lotus":
         printLotus(samples)
       else:
