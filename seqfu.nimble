@@ -10,7 +10,7 @@ requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argpa
 srcDir = "src"
 binDir = "bin" 
 namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers", "fu_orf": "fu-orf",
-"fu-tabcheck": "fu_tabcheck", 
+"fu_tabcheck": "fu-tabcheck", 
 "fu_multirelabel": "fu-multirelabel", "fu_sw": "fu-sw", "fu_index": "fu-index", "fu_nanotags": "fu-nanotags",
 "dadaist2_mergeseqs": "dadaist2-mergeseqs", "dadaist2_region": "fu-16Sregion"}.toTable()
 
