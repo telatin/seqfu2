@@ -37,13 +37,22 @@ Tabular output has these columns:
 
 Example:
 ```
-data/tab-int.txt.gz     Pass    8       7       separator=<tab>
-data/tab.txt    Pass    4       3       separator=<tab>
-data/table-multi.tsv    Pass    2       4       separator=<tab>
-data/table.csv  Pass    3       3       separator=,
-data/table.tsv  Pass    3       4       separator=<tab>
-data/table2.tsv Error
-data/tablegz.tsv.gz     Pass    3       4       separator=<tab>
+data/tab.txt.gz     Pass    8   7   separator=<tab>
+data/tab.txt        Pass    4   3   separator=<tab>
+data/tab-multi.tsv  Pass    2   4   separator=<tab>
+data/table.csv      Pass    3   3   separator=,
+data/table.tsv      Pass    3   4   separator=<tab>
+data/table2.tsv     Error
+data/tablegz.tsv.gz Pass    3   4   separator=<tab>
+```
+
+:bulb: Multiline records are supported using double quotes, like:
+```text
+#ID	   Description
+R01    "this is       a cell with a tab inside!"
+R02    "this is a
+multi-line description"
+R03    Last Record
 ```
 
 ## Exit code
