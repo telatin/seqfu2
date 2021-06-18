@@ -207,9 +207,6 @@ if __name__ == "__main__":
     if build.returncode != 0:
       eprint("Build failed.")
       quit(1)
-  if last_release == new_tag:
-    eprint(f"ERROR: Update the release first: {new_tag} already published")
-    quit(1)
 
   # Test
   if not args.skip_test:
@@ -225,6 +222,11 @@ if __name__ == "__main__":
     binaries.append(os.path.join(bindir, file))
   eprint(f"Making zip file: {zipfile}")
   subprocess.run(binaries)
+  
+  # Check that there's a new release 
+  if last_release == new_tag:
+    eprint(f"ERROR: Update the release first: {new_tag} already published")
+    quit(1)
 
   # Prepare release dir
   eprint(f"Release dir: {release_dir}")
