@@ -163,16 +163,15 @@ if __name__ == "__main__":
   parser.add_argument("-D", "--delete", help="delete the readme file", action="store_true")
   parser.add_argument("-x", "--skip-test", help="", action="store_true")
   parser.add_argument("-v", "--verbose", help="Enable verbose output", action="store_true")
+  parser.add_argument("-r", "--release", help="Make release", action="store_true")
+  
   args = parser.parse_args()
 
   if not check_gh():
     eprint("ERROR: `gh` is required.")
     quit(1)
 
-  status = subprocess.run(['git', 'status', '-s'], stdout=subprocess.PIPE)
-  if len(status.stdout.decode('utf-8')) > 0:
-    eprint("Uncommitted changes! Try again")
-    quit(1)
+
   # Relevant variables
   last_release = get_last_release()
   script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -267,5 +266,16 @@ if __name__ == "__main__":
     init_markdown(release_notes, new_tag, release_text, bindir)
   
   title = f"SeqFu {new_tag}"
+
+  status = subprocess.run(['git', 'status', '-s'], stdout=subprocess.PIPE)
+  
+
+
+  if len(status.stdout.decode('utf-8')) > 0:
+    eprint("Uncommitted changes!")
+    quit(args.release)
+
+  if not args.release:
+    quit()
   release_cmd = ['gh', 'release', 'create', new_tag, zipfile, '--title', title, '--notes-file', changelog]
   subprocess.run(release_cmd)
