@@ -169,6 +169,10 @@ if __name__ == "__main__":
     eprint("ERROR: `gh` is required.")
     quit(1)
 
+  status = subprocess.run(['git', 'status', '-s'], stdout=subprocess.PIPE)
+  if len(status.stdout.decode('utf-8')) > 0:
+    eprint("Uncommitted changes! Try again")
+    quit(1)
   # Relevant variables
   last_release = get_last_release()
   script_dir = os.path.dirname(os.path.realpath(__file__))
