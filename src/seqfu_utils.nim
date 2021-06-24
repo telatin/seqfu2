@@ -17,17 +17,21 @@ proc version*(): string =
 
 
 proc printFastxRecord*(s: FastxRecord): string =
-  if len(s.qual) > 0:
-    "@" & s.name & " " & s.comment & "\n" & s.seq & "\n+\n" & s.qual
-  else:
-    ">" & s.name & " " & s.comment & "\n" & s.seq 
+  let seqName = if len(s.comment) > 0: s.name & " " & s.comment
+                else: s.name
 
+  if len(s.qual) > 0:
+    "@" & seqName & "\n" & s.seq & "\n+\n" & s.qual
+  else:
+    ">" & seqName & "\n" & s.seq 
+
+#[ 
 proc `$`*(s: FQRecord): string =
   if len(s.quality) > 0:
     "@" & s.name & " " & s.comment & "\n" & s.sequence & "\n+\n" & s.quality
   else:
     ">" & s.name & " " & s.comment & "\n" & s.sequence & "\n"
-
+ ]#
 proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=false): string =
   if not fileExists(file_R1):
     return ""

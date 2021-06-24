@@ -69,6 +69,9 @@ Options:
       stderr.writeLine("Error: unexpected parameter value. ", e.msg)
       quit(1)
 
+    if args["--strip-name"] and not args["--prefix"] and not args["--basename"]:
+      stderr.writeLine("WARNING: Suppressing names is not recommended.")
+      
     if args["--prefix"]:
       prefix = $args["--prefix"]
 
@@ -146,8 +149,9 @@ Options:
             newName =  bn & separator
           
           # rename with prefix + counter
-          if prefix != "":
-            newName &= prefix & separator
+          if prefix != "" or printBasename:
+            if prefix != "":
+              newName &= prefix & separator
             if printBasename:
               newName &= $currentPrintedSeqs
             else:
@@ -155,6 +159,7 @@ Options:
           else:
             if not args["--strip-name"]:
               newName &= r.name
+
           
           r.name = newName
 
@@ -171,7 +176,8 @@ Options:
             if args["--fastq"]:
               r.qual = repeat(qualToChar(defaultQual), len(r.seq))
 
-          
+          if stripComments:
+            r.comment = ""
           echo printFastxRecord(r)
 
       # File parsed

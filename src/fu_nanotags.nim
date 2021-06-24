@@ -200,6 +200,7 @@ proc main(args: var seq[string]): int =
     -s, --showaln              Show graphical alignment
     -c, --cut INT              Cut input reads at INT position [default: 300]
     -x, --disable-rev-comp     Do not scan reverse complemented reads
+    -r, --reverse-reads        Reverse complement reads that have the tags at the end (3')
   
   Alignment options:
     -i, --pct-id FLOAT         Percentage of identity in the aligned region [default: 80.0]
@@ -326,6 +327,7 @@ proc main(args: var seq[string]): int =
         tagsFoundFor = 0
         tagsFoundRev = 0
         tagsString = ""
+        strand = 0
 
       let
         readFor = if cutLength > 0 and len(fqRecord.sequence) >= cutLength: fqRecord.sequence[0 ..< cutLength]
@@ -355,21 +357,28 @@ proc main(args: var seq[string]): int =
           tagsFoundRev += 1
           tagsString &= querySeq.name & ";"
           if args["--showaln"]:
-            stderr.writeLine("# ", fqRecord.name, ":", querySeq.name, fmt" strand=+;coverage={cov:.2f}%;score={alnRev.score};pctid={alnRev.pctid:.2f}%")    
+            stderr.writeLine("# ", fqRecord.name, ":", querySeq.name, fmt" strand=-;coverage={cov:.2f}%;score={alnRev.score};pctid={alnRev.pctid:.2f}%")    
             stderr.writeLine(" < ", alnRev.top, "\n < ", alnRev.middle, "\n < ", alnRev.bottom)  
       if tagsFoundFor > 0 or tagsFoundRev > 0:
         printedSequences += 1
         if tagsFoundRev > 0:
           printedSequencesRev += 1
-
-        if len(fqRecord.quality) > 0:
-          echo "@", fqRecord.name, " ", fqRecord.comment, " tags=", tagsString
-          echo fqRecord.sequence
-          echo "+"
-          echo fqRecord.quality
+        if tagsFoundFor > tagsFoundRev:
+          strand = 1
         else:
-          echo ">", fqRecord.name, " ", fqRecord.comment, " tags=", tagsString
-          echo fqRecord.sequence
+          strand = -1
+
+        var printRecord = fqRecord
+        if args["--reverse-reads"] and strand < 0:
+          printRecord = revcompl(fqRecord)
+        if len(printRecord.quality) > 0:
+          echo "@", printRecord.name, " ", printRecord.comment, " tags=", tagsString
+          echo printRecord.sequence
+          echo "+"
+          echo printRecord.quality
+        else:
+          echo ">", printRecord.name, " ", printRecord.comment, " tags=", tagsString
+          echo printRecord.sequence
 
     # Current file statistics
     let
