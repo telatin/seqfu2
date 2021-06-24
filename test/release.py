@@ -100,9 +100,9 @@ def list_files_md(bindir):
     md5 = md5sum(bindir, f)
     list[f] = md5
     if not os.path.exists(help_page):
+      eprint(f"WARNING: {help_page} not found")
       md += f" * {f}\n"
     else:
-      eprint(f"WARNING: {help_page} not found")
       md += " * [" + f + "]({{site.baseurl}}/utilities/" + f  + ".html)\n"
   
   return [md, list]
@@ -180,7 +180,7 @@ if __name__ == "__main__":
   bindir = f"{basedir}/bin/"
   bin = f"{bindir}/seqfu"
   new_tag = f"v{curr_release}"
-  changelog = f"{basedir}/releases/{new_tag}"
+  changelog = f"{basedir}/releases/changes.md"
   os_tag = get_os()
 
   release_text = ""
@@ -279,5 +279,12 @@ if __name__ == "__main__":
 
   if not args.release:
     quit()
+
+  eprint("Preparing release")
   release_cmd = ['gh', 'release', 'create', new_tag, zipfile, '--title', title, '--notes-file', changelog]
-  subprocess.run(release_cmd)
+  try:
+    subprocess.run(release_cmd)
+  except Exception as e:
+    eprint(f"Failed to release: {e}.\n# {release_cmd.join(' ')}")
+
+  os.rename(changelog, f"{basedir}/releases/{new_tag}.md")
