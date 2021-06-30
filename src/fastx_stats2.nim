@@ -1,14 +1,15 @@
-import readfq
+ 
 import tables, strutils, sequtils
 import terminaltables
 from os import fileExists
 import docopt
 import ./seqfu_utils
-import ./stats_utils 
+import ./stats_utils
 
 
 
-proc fastx_stats(argv: var seq[string]): int =
+
+proc fastx_stats_v2(argv: var seq[string]): int =
   let args = docopt("""
 Usage: stats [options] [<inputfile> ...]
 

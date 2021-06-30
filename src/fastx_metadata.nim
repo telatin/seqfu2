@@ -184,7 +184,7 @@ Options:
   -1, --for-tag STR      String found in filename of forward reads [default: _R1]
   -2, --rev-tag STR      String found in filename of forward reads [default: _R2]
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
-  --pos INT...           Which part of the filename is the Sampel ID [default: 1]
+  --pos INT...           Which part of the filename is the Sample ID [default: 1]
   --pe                   Enforce paired-end reads (not supported)
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column

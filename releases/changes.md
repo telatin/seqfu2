@@ -1,2 +1,1 @@
-* Added **fu-shred**
-* Added  `--reverse-read` to *fu-nanotags*
+* **seqfu count** now multithreading and redesigned. The output format is identical but  the order of the records is not protected (use **seqfu count-legacy** if needed)

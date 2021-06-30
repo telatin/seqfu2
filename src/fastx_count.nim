@@ -27,7 +27,7 @@ Sample	col1	col2
 """
 
     let args = docopt("""
-Usage: count [options] [<inputfile> ...]
+Usage: count-legacy [options] [<inputfile> ...]
 
 Options:
   -a, --abs-path         Print absolute paths

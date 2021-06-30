@@ -1,4 +1,4 @@
-import klib
+import readfq
 import re
 import tables, strutils
 from os import fileExists
@@ -15,29 +15,39 @@ type
     reads: int
     strand: string
 
-proc newStats(): Stats =
-  Stats(filename: "", strand: "", reads: 0)
+type
+  seqfuCount = ref object
+    key: string
+    forward, reverse: Stats
 
+proc newStats(): Stats =
+  Stats(filename: "", sample: "", strand: "", reads: 0)
+
+proc `$`(s: Stats): string =
+  "Stats: " & s.strand & "\t" & s.filename & "\tsample=" & s.sample & "\t" & $s.reads
+
+proc newSeqfuCount(key = ""): seqfuCount =
+  seqfuCount(key: key,  forward: newStats(), reverse: newStats())
 
 proc countReads(niceFilename, sample, filename, strand: string): Stats =
-   
-  # Count sequences file by file
-  result = newStats()
-  var f = xopen[GzFile](filename)
-  defer: f.close()
-  var 
-    r: FastxRecord
-    c = 0
-  while f.readFastx(r):
-    c+=1
   
-  result = Stats(filename: niceFilename, sample: sample, strand: strand, reads: c)
+  try:
+    var c = 0
+    for r in readfq(filename):
+      c += 1
+    result = Stats(filename: niceFilename, sample: sample, strand: strand, reads: c)
+  except Exception as e:
+    result.filename = "Error " & e.msg
+    result.reads = -1
+  
    
   
     
-proc fastx_count(argv: var seq[string]): int =
+proc fastx_count_threads(argv: var seq[string]): int =
     let args = docopt("""
 Usage: count [options] [<inputfile> ...]
+
+Count sequences in paired-end aware format
 
 Options:
   -a, --abs-path         Print absolute paths
@@ -45,7 +55,7 @@ Options:
   -u, --unpair           Print separate records for paired end files
   -f, --for-tag R1       Forward tag [default: auto]
   -r, --rev-tag R2       Reverse tag [default: auto]
-  -t, --threads INT      Working threads [default: 1]
+  -t, --threads INT      Working threads [default: 4]
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
@@ -63,8 +73,8 @@ Options:
       unpaired = args["--unpair"]
       pattern1 = $args["--for-tag"]
       pattern2 = $args["--rev-tag"]
-      
-   
+      legacy   = {"for" : "Paired", "rev": "Paired:R2", "unknown": "SE"}.toTable
+    setMaxPoolSize(threads)
  
     
     if args["<inputfile>"].len() == 0:
@@ -72,77 +82,62 @@ Options:
       files.add("-")
     else:
       for file in args["<inputfile>"]:
-        files.add(file)
-
-    # pre scan files
-    var 
-      fileTable = initTable[string, initTable[string, string]() ]() 
-      errors    = 0
-      responses = newSeq[FlowVar[Stats]]()
-   
-    # Scan all filenames
-    for filename in sorted(files):
-      echoVerbose(filename, verbose)
-      var
-        printedFilename = filename
-
-      if filename != "-" and not existsFile(filename):
-        stderr.writeLine("WARNING: File ", filename, " not found.")
-      
-      let
-        (dir, filenameNoExt, extension) = splitFile(filename)
-        (sampleId, direction) = extractTag(filenameNoExt, pattern1, pattern2)
-        
-   
-      if abspath:
-        printedFilename = absolutePath(filename)
-      elif basename:
-        printedFilename = filenameNoExt & extension
- 
-      #responses.add(spawn countReads(printedFilename, direction)) 
-
-
-      responses.add(spawn countReads(filename, sampleId, printedFilename, direction)) 
-
-
-    # Collect results
-    for resp in responses: # Iterates through each response
-      #Blocks the main thread until the response can be read and then saves the response value in the statistics variable
-      let statistic = ^resp
-      if not ( statistic.sample in fileTable ):
-        fileTable[statistic.sample] = initTable[string, string]()
-      fileTable[statistic.sample][statistic.strand] = $statistic.reads
-      fileTable[statistic.sample]["filename_" & statistic.strand] = statistic.filename
-
-
-        # Populate counts table table[SampleID][R1/R2/Se] = counts
-        #
-        #  fileTable[statistic.filename] = initTable[string, string]()
-
-        #fileTable[statistic.filename][statistic.strand] = statistic.reads
-        #
-    
-
-    for id, counts in fileTable:
-
-      if "SE" in counts:
-        echo counts["filename_SE"], "\t", counts["SE"]
-      else:
-  
-        if counts["R1"] == counts["R2"]:
-          echo counts["filename_R1"], "\t", counts["R1"]
-          if (unpaired):
-            echo counts["filename_R2"], "\t", counts["R2"]
-        
+        if fileExists(file) or file == "-":
+          if abspath:
+            files.add(absolutePath(file))
+          else:
+            files.add(file)
         else:
-          errors += 1
-          stderr.writeLine("ERROR: Different counts in ", counts["filename_R1"], " and ", counts["filename_R2"] )
-          stderr.writeLine("# ", counts["filename_R1"], ": ", counts["R1"] )
-          stderr.writeLine("# ", counts["filename_R2"], ": ", counts["R2"] )
+          stderr.writeLine("WARNING: File not found, skipping: ", file)
 
-    if errors > 0:
-      stderr.writeLine(errors, " errors found.")
-      quit(1)
+    var
+      responses = newSeq[FlowVar[Stats]]()
+      list = newSeq[Stats]()
+      test = newTable[string, seqfuCount]()
 
+    for file in files:
+      let filename = getStrandFromFilename(file, forPattern=pattern1, revPattern=pattern2)
+      if verbose:
+        stderr.writeLine("Processing: ", file, " as ", filename.strand)
+      responses.add(spawn countReads(file, filename.splittedFile, file, filename.strand))
+    
+    for resp in responses:
+      let stats = ^resp
+      if verbose:
+        stderr.writeLine("Got counts for ", stats.filename, ": ", stats.reads)
+      if unpaired:
+        let key = if abspath: absolutePath(stats.filename)
+                  elif basename: extractFilename(stats.filename)
+                  else: stats.filename
+        echo key, "\t", stats.reads, "\t", legacy[getStrandFromFilename(stats.filename).strand]
+      else:
+        list.add(stats)
 
- 
+    if not unpaired:
+      for i in list:
+        let key = if len(i.sample) > 0: i.sample
+                  else: i.filename
+        if key == "":
+          continue
+        if key notin test:
+          test[key] = newSeqfuCount()
+        if i.strand == "rev":
+          test[key].reverse = i
+        else:
+          test[key].forward = i
+
+      var e = 0
+      for key, j in test:
+        let printFileName = if basename: extractFileName(j.forward.filename)
+                            else: j.forward.filename
+        if (j.forward).reads == (j.reverse).reads:
+          echo printFileName, "\t", (j.forward).reads, "\tPaired"
+        elif (j.reverse).reads == 0:
+          echo printFileName, "\t", (j.forward).reads, "\tSE"
+        else:
+          stderr.writeLine("ERROR: Counts in R1 and R2 files do not match for ", printFileName)
+          e += 1
+          echo printFileName, "\t" , (j.forward).reads, "\t<Error:R1>"
+          echo printFileName, "\t" , (j.reverse).reads, "\t<Error:R2>"
+      if e > 0:
+        quit(1)

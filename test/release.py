@@ -287,4 +287,7 @@ if __name__ == "__main__":
   except Exception as e:
     eprint(f"Failed to release: {e}.\n# {release_cmd.join(' ')}")
 
-  os.rename(changelog, f"{basedir}/releases/{new_tag}.md")
+  try:
+    os.rename(changelog, f"{basedir}/releases/{new_tag}.md")
+  except Exception as e:
+    eprint(f"ERROR: Unable to rename {changelog}")

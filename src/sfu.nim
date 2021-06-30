@@ -29,6 +29,10 @@ include ./fastx_cat
 include ./fastx_metadata
 include ./fastx_tabulate
 
+# Experimental
+include ./fastx_stats2
+include ./fastx_count_threads
+
 var progs = {
        "cat": fastx_cat,
        "ilv": fastq_interleave,       
@@ -39,11 +43,13 @@ var progs = {
          "derep": fastx_derep, 
          "dereplicate": fastx_derep, 
          "uniques": fastx_derep, 
-       "cnt": fastx_count,            
-         "count": fastx_count, 
+       "cnt": fastx_count_threads,      # Experimental     
+         "count": fastx_count_threads,  # Experimental
        "st" : fastx_stats,            
          "stats": fastx_stats,
          "stat": fastx_stats,
+       "stats2": fastx_stats_v2,        # Experimental
+       "count-legacy": fastx_count, 
        "rc" : fastx_rc,
        "srt": fastx_sort,             
        "sort" : fastx_sort,

@@ -65,7 +65,7 @@ rm testtmp_*
 if [[ $($BIN count $iAmpli | cut -f 2) == $(cat $iAmpli | gzip -d | grep -c '>' ) ]]; then
 	echo "OK: Count"
 else
-	echo "ERR: Count"
+	echo "ERR: Count $BIN count $iAmpli: $($BIN count $iAmpli | cut -f 2) != $(cat $iAmpli | gzip -d | grep -c '>' )"
 	ERRORS=$((ERRORS+1))
 fi
 

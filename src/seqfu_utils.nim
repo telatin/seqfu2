@@ -1,5 +1,6 @@
 import klib, readfq
 import strutils
+import sequtils
 import os
 import tables
 import re
@@ -15,6 +16,64 @@ const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 proc version*(): string =
   return NimblePkgVersion
 
+type
+  fileNameStrand* = tuple
+    filename: string
+    splittedFile: string
+    id: string
+    strand: string
+    isRev: bool
+ 
+
+proc splitPosWithPattern(s, p: string): int =
+  for i in 0 ..< len(s) - len(p) - 1:
+    if p == s[i ..< i+len(p)]:
+      return i
+  return -1
+    
+proc getStrandFromFilename*(f: string, forPattern = "auto"; revPattern = "auto"): fileNameStrand =
+   
+  result.filename = f
+  
+  var
+    forCount = 0
+    revCount = 0
+    forPatterns=newSeq[string]()
+    revPatterns=newSeq[string]()
+    
+  if forPattern == "auto":
+    forPatterns = @["_R1_", "_R1.", "_1."]
+  else:
+    forPatterns.add(forPattern)
+  
+  if revPattern == "auto":
+    revPatterns = @["_R2_", "_R2.", "_2."]
+  else:
+    revPatterns.add(revPattern)
+  
+  for pattern in forPatterns:
+    let pos = splitPosWithPattern(f, pattern)
+    if pos > 0:
+      forCount += 1
+      result.strand = "for"
+      result.splittedFile = f[0 ..< pos]
+      result.id = extractFilename(result.splittedFile)
+      break
+
+  for pattern in revPatterns:
+    let pos = splitPosWithPattern(f, pattern)
+    if pos > 0:
+      revCount += 1
+      result.strand = "rev"
+      result.splittedFile = f[0 ..< pos]
+      result.id = extractFilename(result.splittedFile)
+      break
+  
+  if (revCount > 0 and forCount > 0) or (forCount == 0 and revCount == 0):
+    result.strand = "unknown"
+  elif revCount > 0:
+    result.isRev = true
+  
 
 proc printFastxRecord*(s: FastxRecord): string =
   let seqName = if len(s.comment) > 0: s.name & " " & s.comment
@@ -25,13 +84,9 @@ proc printFastxRecord*(s: FastxRecord): string =
   else:
     ">" & seqName & "\n" & s.seq 
 
-#[ 
-proc `$`*(s: FQRecord): string =
-  if len(s.quality) > 0:
-    "@" & s.name & " " & s.comment & "\n" & s.sequence & "\n+\n" & s.quality
-  else:
-    ">" & s.name & " " & s.comment & "\n" & s.sequence & "\n"
- ]#
+
+
+
 proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=false): string =
   if not fileExists(file_R1):
     return ""
