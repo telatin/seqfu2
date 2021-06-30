@@ -52,13 +52,13 @@ ERROR: Different counts in data/longerone_R1.fq.gz and data/longerone_R2.fq.gz
 
 ### Multithreading
 
-Performance improvement: 
+Performance improvement measured on the _MiSeq SOP_ dataset from [mothur](https://mothur.org): 
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `seqfu count ../mothur-sop/* -t 4`   | 142.5 ± 5.8  | 127.3 | 152.3 | 1.00        |
-| `seqfu count ../mothur-sop/* -t 1`   | 416.5 ± 15.2 | 397.8 | 440.9 | 2.92 ± 0.16 |
-| `seqfu count-legagy ../mothur-sop/*` | 539.2 ± 16.6 | 519.6 | 577.4 | 3.78 ± 0.19 |
+| `seqfu count ../mothur-sop/*.fastq -t 4`   | 142.5 ± 5.8  | 127.3 | 152.3 | 1.00        |
+| `seqfu count ../mothur-sop/*.fastq -t 1`   | 416.5 ± 15.2 | 397.8 | 440.9 | 2.92 ± 0.16 |
+| `seqfu count-legacy ../mothur-sop/*.fastq` | 539.2 ± 16.6 | 519.6 | 577.4 | 3.78 ± 0.19 |
 
 
 ## Legacy algorithm 
