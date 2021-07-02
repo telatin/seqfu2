@@ -121,7 +121,7 @@ def init_markdown(file, release, changes, bindir):
   """
   splash = get_output(f"{bindir}/seqfu")
   core = get_core_utils(f"{bindir}/../docs/tools/")
-  changes = ""
+  #changes = ""
   utils, data = list_files_md(bindir)
   template = f"""# {programName} {release}
 
@@ -133,13 +133,6 @@ def init_markdown(file, release, changes, bindir):
 {splash}
 ```
 
-### Core utils
-
-{core}
-
-### Utilities
-
-{utils}
   """
   try:
     with open(file, 'w') as f:
@@ -190,7 +183,9 @@ if __name__ == "__main__":
   except Exception as e:
     eprint(f"ERROR: Change log not found {changelog}.\n{e}")
     quit(1)
-
+  if len(release_text) == 0:
+    eprint("No release notes")
+    quit(1)
   if args.verbose:
     eprint(f"Last GH release:\t{last_release}")
     eprint(f"Current release:\t{new_tag}")

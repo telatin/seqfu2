@@ -29,6 +29,7 @@ Options:
 
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
+  --list                 Output a list of sequence names 
   --sep STRING           Sequence name fields separator [default: _]
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
@@ -42,6 +43,7 @@ Options:
     forceFastq = args["--fastq"]
     defaultQual = parseInt($args["--fastq-qual"])
     var
+      formatList: bool
       skip   : int
       prefix : string
       files  : seq[string]  
@@ -54,6 +56,7 @@ Options:
       truncate: int
 
     try:
+      formatList = args["--list"]
       skip =  parseInt($args["--skip"])
       printBasename = args["--basename"] 
       separator = $args["--sep"]
@@ -160,13 +163,24 @@ Options:
             if not args["--strip-name"]:
               newName &= r.name
 
+          # Replace name if needed
           
-          r.name = newName
-
           if not args["--strip-comments"]:
             newName &= "\t" & r.comment
+  
+          r.name = newName
+
+          # Remove comments
+          if stripComments:
+            r.comment = ""
+
+          # Print output
+
           
-          if len(r.qual) > 0:
+          if formatList:
+            echo r.name
+            continue
+          elif len(r.qual) > 0:
             # Record is FASTQ
             if args["--fasta"]:
               # Force FASTA
@@ -176,8 +190,7 @@ Options:
             if args["--fastq"]:
               r.qual = repeat(qualToChar(defaultQual), len(r.seq))
 
-          if stripComments:
-            r.comment = ""
+
           echo printFastxRecord(r)
 
       # File parsed

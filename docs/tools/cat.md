@@ -12,11 +12,23 @@ Concatenate multiple FASTA or FASTQ files.
 
 Options:
   -k, --skip SKIP        Print one sequence every SKIP [default: 0]
+
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -s, --strip-comments   Remove comments
-  -b, --basename         prepend basename to sequence name
+  -z, --strip-name       Remove name
+  -b, --basename         Prepend file basename to the sequence name
+  --split CHAR           Split basename at this char [default: .]
+  --part INT             After splitting the basename, take this part [default: 1]
+
+  -m, --min-len INT      Discard sequences shorter than INT [default: 1]
+  -x, --max-len INT      Discard sequences longer than INT, 0 to ignore [default: 0]
+  --trim-front INT       Trim INT base from the start of the sequence [default: 0]
+  --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
+  --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
+
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
+  --list                 Output a list of sequence names 
   --sep STRING           Sequence name fields separator [default: _]
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
@@ -27,8 +39,9 @@ Options:
 ## Input
 
 One or more FASTA or FASTQ files. If no files are provided, the program will read from _standard input_. 
-Additionally, you can add _standard input_ to the list of input files
+Additionally, you can add _standard input_ to the list of input files.
 by adding `-`.
 
 ## Output
 It is possible to mix FASTA and FASTQ files, and by default the program will produce a mixed output. Using `--fasta` or `--fastq` will force a specific output format. For FASTA sequences  a default quality values will be used.
+Using `--list` the simple list of records matching the criteria will be printed.
