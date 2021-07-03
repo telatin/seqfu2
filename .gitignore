@@ -7,4 +7,4 @@ bin/*.zip
 bin/*
 data/benchmark/
 tradis
-releases/zips/
+releases/zips/*zip
