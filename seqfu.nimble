@@ -1,5 +1,5 @@
 # Package
-version       = "1.5.0"
+version       = "1.5.2"
 author        = "Andrea Telatin"
 description   = "SeqFU command-line tools"
 license       = "MIT"

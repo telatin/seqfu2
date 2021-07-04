@@ -85,7 +85,18 @@ proc printFastxRecord*(s: FastxRecord): string =
     ">" & seqName & "\n" & s.seq 
 
 
-
+proc get_gc*(s: string): float =
+  var 
+    gc_count = 0
+    at_count = 0
+    upper_seq = toUpperAscii(s)
+  for c in upper_seq:
+    if c in @['G', 'C']:
+      gc_count += 1
+    elif c in @['A', 'T', 'U']:
+      at_count += 1
+  
+  return float(gc_count) / float(gc_count + at_count)
 
 proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=false): string =
   if not fileExists(file_R1):

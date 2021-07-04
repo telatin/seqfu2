@@ -14,23 +14,38 @@ Concatenate multiple FASTA or FASTQ files.
 Options:
   -k, --skip SKIP        Print one sequence every SKIP [default: 0]
 
+Sequence name:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
-  -s, --strip-comments   Remove comments
-  -z, --strip-name       Remove name
+  -z, --strip-name       Remove the original sequence name
+  -a, --append STRING    Append this string to the sequence name [default: ]
+  --sep STRING           Sequence name fields separator [default: _]
+
   -b, --basename         Prepend file basename to the sequence name
   --split CHAR           Split basename at this char [default: .]
   --part INT             After splitting the basename, take this part [default: 1]
+  --basename-sep STRING  Separate basename from the rest with this [default: _]
 
+Sequence comments:
+  -s, --strip-comments   Remove original sequence comments
+  --comment-sep CHAR     Comment separator [default:  ]
+  --add-len              Add 'len=LENGTH' to the comments
+  --add-initial-len      Add 'original_len=LENGTH' to the comments
+  --add-gc               Add 'gc=%GC' to the comments
+  --add-initial-gc       Add 'original_gc=%GC' to the comments
+  --add-name             Add 'original_name=INITIAL_NAME' to the comments
+
+Filtering:
   -m, --min-len INT      Discard sequences shorter than INT [default: 1]
   -x, --max-len INT      Discard sequences longer than INT, 0 to ignore [default: 0]
   --trim-front INT       Trim INT base from the start of the sequence [default: 0]
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
   --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
+                         Negative values to print the last INT bases
 
+Output:
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
   --list                 Output a list of sequence names 
-  --sep STRING           Sequence name fields separator [default: _]
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
   -h, --help             Show this help
@@ -42,7 +57,13 @@ Options:
     forceFasta = args["--fasta"]
     forceFastq = args["--fastq"]
     defaultQual = parseInt($args["--fastq-qual"])
+
+    let
+      GC_DECIMAL_DIGITS = 2
+
     var
+      appendToName: string
+      appendSuffixToName: bool
       formatList: bool
       skip   : int
       prefix : string
@@ -54,8 +75,13 @@ Options:
       minSeqLen,maxSeqLen: int
       trimFront, trimEnd: int
       truncate: int
+      basenameSeparatorString: string
 
     try:
+      appendToName = $args["--append"]
+      appendSuffixToName = if len(appendToName) > 0: true
+                           else: false
+      basenameSeparatorString = $args["--basename-sep"]
       formatList = args["--list"]
       skip =  parseInt($args["--skip"])
       printBasename = args["--basename"] 
@@ -116,7 +142,18 @@ Options:
           # Print sequence
           currentPrintedSeqs += 1
           
-          
+          let 
+            original_name = r.name
+
+          # Remove comments
+          if stripComments:
+            r.comment = ""
+
+          # Add comments if needed
+          if args["--add-initial-len"]:
+            r.comment &= $args["--comment-sep"] & "initial_len=" & $(len(r.seq))
+          if args["--add-initial-gc"]:
+            r.comment &= $args["--comment-sep"] & "initial_gc=" & get_gc(r.seq).formatFloat(ffDecimal, GC_DECIMAL_DIGITS)
 
           ## TRIM FRONT / TAIL
           if trimFront > 0 or trimEnd > 0:
@@ -129,6 +166,10 @@ Options:
             r.seq = r.seq[0 .. truncate-1]
             if len(r.qual) > 0:
               r.qual = r.qual[trimFront .. ^trimEnd]
+          elif truncate < 0:
+            r.seq = r.seq[^(truncate * -1) .. ^1]
+            if len(r.qual) > 0:
+              r.qual = r.qual[^(truncate * -1) .. ^1]
 
           ## DISCARD BY LEN           
           if len(r.seq) < minSeqLen or (maxSeqLen > 0 and len(r.seq) > maxSeqLen):
@@ -149,7 +190,7 @@ Options:
               bn = lastPathPart(filename).split(splitChar)[splitPart]
             else:
               bn = lastPathPart(filename)
-            newName =  bn & separator
+            newName =  bn & basenameSeparatorString
           
           # rename with prefix + counter
           if prefix != "" or printBasename:
@@ -163,20 +204,31 @@ Options:
             if not args["--strip-name"]:
               newName &= r.name
 
-          # Replace name if needed
           
-          if not args["--strip-comments"]:
-            newName &= "\t" & r.comment
-  
+
+          # Append suffix to name
+          if appendSuffixToName:
+            newName &= appendToName
+
+          # Replace name if needed
           r.name = newName
 
-          # Remove comments
-          if stripComments:
-            r.comment = ""
+          if not stripComments:
+            newName &= "\t" & r.comment
+  
 
+
+
+          ## COMMENTS AFTER TRIMMING
+          if args["--add-len"]:
+            r.comment &= $args["--comment-sep"] & "len=" & $len(r.seq)
+
+          if args["--add-gc"]:
+            r.comment &= $args["--comment-sep"] & "gc=" & get_gc(r.seq).formatFloat(ffDecimal, GC_DECIMAL_DIGITS)
+
+          if args["--add-name"]:
+            r.comment &= $args["--comment-sep"] & "original_name=" & original_name
           # Print output
-
-          
           if formatList:
             echo r.name
             continue

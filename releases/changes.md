@@ -1,2 +1,2 @@
-* **seqfu count** now multithreading and redesigned. The output format is identical but  the order of the records is not protected (use **seqfu count-legacy** if needed)
-* **seqfu cat** can print a list of sequences matching the criteria (`--list`)
+
+* **seqfu cat** has new options to manipulate the sequence name (like `--append STRING`) and to add comments (like  `--add-len`, `--add-gc`)
