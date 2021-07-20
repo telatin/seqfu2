@@ -105,7 +105,8 @@ Output:
       prefix = $args["--prefix"]
 
     if args["<inputfile>"].len() == 0:
-      stderr.writeLine("Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
+      if getEnv("SEQFU_QUIET") == "":
+        stderr.writeLine("[seqfu cat] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
       files.add("-")
     else:
       for file in args["<inputfile>"]:
@@ -165,7 +166,7 @@ Output:
           if truncate > 0:
             r.seq = r.seq[0 .. truncate-1]
             if len(r.qual) > 0:
-              r.qual = r.qual[trimFront .. ^trimEnd]
+              r.qual = r.qual[0 .. truncate-1]
           elif truncate < 0:
             r.seq = r.seq[^(truncate * -1) .. ^1]
             if len(r.qual) > 0:

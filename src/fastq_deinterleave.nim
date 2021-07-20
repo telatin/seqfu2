@@ -58,7 +58,10 @@ example:
   if input_file != "-" and not fileExists(input_file):
     stderr.writeLine("FATAL ERROR: File ", input_file, " not found.")
     quit(1)
-
+  elif input_file == "-":
+    if getEnv("SEQFU_QUIET") == "":
+      stderr.writeLine("[seqfu deinterleave] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
+    
   # Open FASTQ files
   
 

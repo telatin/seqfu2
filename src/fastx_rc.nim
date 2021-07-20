@@ -32,7 +32,8 @@ Options:
       seqDefaultName = $args["--seq-name"] 
 
     if args["<strings-or-files>"].len() == 0:
-      stderr.writeLine("Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
+      if getEnv("SEQFU_QUIET") == "":
+        stderr.writeLine("[seqfu rc] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
       files.add("-")
     else:
       for file in args["<strings-or-files>"]:

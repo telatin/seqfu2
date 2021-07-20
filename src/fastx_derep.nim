@@ -71,7 +71,8 @@ Options:
       keepName = true
     
     if args["<inputfile>"].len() == 0:
-      stderr.writeLine("Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
+      if getEnv("SEQFU_QUIET") == "":
+        stderr.writeLine("[seqfu derep] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
       files.add("-")
     else:
       for file in args["<inputfile>"]:

@@ -69,7 +69,8 @@ proc main(args: var seq[string]): int =
       else:
         stderr.writeLine("ERROR: Skipping file <", f, ">: not found.")
   else:
-      stderr.writeLine("[seqfu] Waiting for sequences from STDIN (Ctrl-C to quit)...")
+      if getEnv("SEQFU_QUIET") == "":
+        stderr.writeLine("[fu-shred] Waiting for sequences from STDIN (Ctrl-C to quit)...")
       inputFiles.add("-")
 
   for inputFile in inputFiles:

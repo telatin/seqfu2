@@ -1,2 +1,2 @@
-
-* **seqfu cat** has new options to manipulate the sequence name (like `--append STRING`) and to add comments (like  `--add-len`, `--add-gc`)
+* Improved STDIN messages, that can be disabled by `$SEQFU_QUIET=1`
+* Minor improvements on `seqfu cat`

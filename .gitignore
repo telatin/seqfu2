@@ -8,3 +8,5 @@ bin/*
 data/benchmark/
 tradis
 releases/zips/*zip
+kraken-test
+kronat-test/

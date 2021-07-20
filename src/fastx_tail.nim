@@ -1,7 +1,7 @@
 import klib
 import strformat
 import tables, strutils
-from os import fileExists
+from os import fileExists, getEnv
 import docopt
 import ./seqfu_utils
 
@@ -58,7 +58,8 @@ Options:
       prefix = $args["--prefix"]
 
     if args["<inputfile>"].len() == 0:
-      stderr.writeLine("Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
+      if getEnv("SEQFU_QUIET") == "":
+        stderr.writeLine("[seqfu tail] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
       files.add("-")
     else:
       for file in args["<inputfile>"]:

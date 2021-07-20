@@ -6,7 +6,7 @@ import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"
 const prog = "fu-orf"
-const version = if NimblePkgVersion == "undef": "X.9"
+const version = if NimblePkgVersion == "undef": "<preprelease>"
                 else: NimblePkgVersion
 const minSeqLen = 18
 

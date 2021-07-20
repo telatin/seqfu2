@@ -78,7 +78,8 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
     
 
   if args["<inputfile>"].len() == 0:
-    stderr.writeLine("Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
+    if getEnv("SEQFU_QUIET") == "":
+      stderr.writeLine("[seqfu stats] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
     files.add("-")
   else:
     for file in args["<inputfile>"]:
