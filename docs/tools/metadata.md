@@ -16,22 +16,26 @@ Options:
   -1, --for-tag STR      String found in filename of forward reads [default: _R1]
   -2, --rev-tag STR      String found in filename of forward reads [default: _R2]
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
-  --pos INT...           Which part of the filename is the Sampel ID [default: 1]
+  -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2, irida [default: manifest]
+  -P, --project INT      Project ID (only for irida)
+  --pos INT...           Which part of the filename is the Sample ID [default: 1]
   --pe                   Enforce paired-end reads (not supported)
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column
-  -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2 [default: manifest]
   -t, --threads INT      Number of simultaneously opened files [default: 2]
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
+
 ## Output formats
 * manifest (used as import manifest for [Qiime2](https://qiime2.org/) artifacts)
 * qiime1, qiime2 (forward-compatible [qiime1](http://qiime.org/) mapping file; a dedicated [Qiime2](https://qiime2.org/) metadata file is under development)
 * dadaist ([Dadaist2](quadram-institute-bioscience.github.io/dadaist2) compatible metadata)
 * lotus ([Lotus](http://lotus2.earlham.ac.uk/) mapping file - tested with Lotus1)
+* irida ([IRIDA uploader](https://github.com/phac-nml/irida-uploader) sample sheet. Requires `-P PROJECTID`)
 
 ## Examples
+
 ### Manifest
 ```
 seqfu metadata ./MiSeq_SOP/
@@ -61,7 +65,11 @@ F3D8	/Users/telatin/MiSeq_SOP/F3D8_S196_L001_R1_001.fastq.gz	/Users/telatin/MiSe
 F3D9	/Users/telatin/MiSeq_SOP/F3D9_S197_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D9_S197_L001_R2_001.fastq.gz
 Mock	/Users/telatin/MiSeq_SOP/Mock_S280_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/Mock_S280_L001_R2_001.fastq.gz
 ```
+
 ### Qiime mapping file
+
+Note that `-f qiime2` will add a second header line.
+
 ```
 seqfu metadata MiSeq_SOP -f qiime1 --add-path --counts
 ```
@@ -88,4 +96,17 @@ F3D7	5129	F3D7_S195_L001_R1_001.fastq.gz,F3D7_S195_L001_R2_001.fastq.gz
 F3D8	5294	F3D8_S196_L001_R1_001.fastq.gz,F3D8_S196_L001_R2_001.fastq.gz
 F3D9	7070	F3D9_S197_L001_R1_001.fastq.gz,F3D9_S197_L001_R2_001.fastq.gz
 Mock	4779	Mock_S280_L001_R1_001.fastq.gz,Mock_S280_L001_R2_001.fastq.gz
+```
+
+### IRIDA uploader
+
+```
+seqfu metadata -f irida  -P 123 data/pe/
+```
+
+Output:
+```
+Sample_Name,Project_ID,File_Forward,File_Reverse
+sample1,123,sample1_R1.fq.gz,sample1_R2.fq.gz
+sample2,123,sample2_R1.fq.gz,sample2_R2.fq.gz
 ```

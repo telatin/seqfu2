@@ -186,7 +186,7 @@ Options:
   -2, --rev-tag STR      String found in filename of forward reads [default: _R2]
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
   -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2, irida [default: manifest]
-  -P, --project STR      Project ID (only for irida)
+  -P, --project INT      Project ID (only for irida)
   --pos INT...           Which part of the filename is the Sample ID [default: 1]
   --pe                   Enforce paired-end reads (not supported)
   -p, --add-path         Add the reads absolute path as column 
