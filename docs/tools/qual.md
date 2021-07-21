@@ -24,6 +24,7 @@ Qualified position:
   -z, --min-qual FLOAT   Stop the sliding windows when quality is below [default: 18.0]   
 
 Additional output:
+  --gc                   Print GC content as extra column
   -p, --profile          Quality profile per position (will comment the summary lines)
   -c, --colorbars        Print graphical average quality profile
 
@@ -60,6 +61,7 @@ For each file a tab separated record is printed:
 4. Possible encoding (semicolon separated list)
 5. Mean, StDev of the quality value  
 6. Last qualified position
+7. GC content (5 decimal positions) if enabled via `--gc`
 
 ## Per base statistics
 

@@ -1,6 +1,5 @@
 import klib, readfq
 import strutils
-import sequtils
 import os
 import tables
 import re
@@ -85,15 +84,24 @@ proc printFastxRecord*(s: FastxRecord): string =
     ">" & seqName & "\n" & s.seq 
 
 
+proc count_gc*(s: string): int =
+
+  let
+    upper_seq = toUpperAscii(s)
+  
+  for c in upper_seq:
+    if c == 'G' or c == 'C':
+      result += 1
+
 proc get_gc*(s: string): float =
   var 
     gc_count = 0
     at_count = 0
     upper_seq = toUpperAscii(s)
   for c in upper_seq:
-    if c in @['G', 'C']:
+    if c == 'G' or c == 'C':
       gc_count += 1
-    elif c in @['A', 'T', 'U']:
+    elif c == 'A' or c == 'T' or c == 'U':
       at_count += 1
   
   return float(gc_count) / float(gc_count + at_count)

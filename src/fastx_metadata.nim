@@ -84,6 +84,10 @@ proc printLotus(samples: seq[sample]) =
                 else: s.file1
     echo s.name, "\t", files
 
+proc printIrida(samples: seq[sample], p: int) =
+  echo "Sample_Name,Project_ID,File_Forward,File_Reverse"
+  for s in samples:
+    echo s.name, ",", p, ",", s.file1, ",", s.file2
 
 proc printQiime1(samples: seq[sample]) =
 
@@ -112,22 +116,18 @@ proc printQiime2(samples: seq[sample]) =
     secondLine  = "#q2:types"
     headerCounts = ""
     headerPath   = ""
+
   # Qiime1 (compatible with 2): Header
-  
   if addCounts:
     headerCounts = "\tread-counts"
     secondLine   &= "\tnumeric"
-
   if addPath:
     headerPath = "\tread-paths"
     secondLine &= "\tcategorical"
 
- 
-
   echo "sample-id", headerCounts, headerPath
   echo secondLine
 
- 
   for s in samples:
     let files = if (addPath and len(s.file2) > 0 ): "\t" & s.file1 & "," & s.file2
                 elif addPath: "\t" & s.file1
@@ -171,7 +171,8 @@ proc fastx_metadata(argv: var seq[string]): int =
       "qiime1": "Qiime1 mapping file",
       "qiime2": "Qiime2 metadata file",
       "dadaist": "Dadaist2 metadata file",
-      "lotus": "lOTUs mappint file"
+      "lotus": "lOTUs mappint file",
+      "irida": "IRIDA uploader file",
     }.toTable
 
 
@@ -184,11 +185,12 @@ Options:
   -1, --for-tag STR      String found in filename of forward reads [default: _R1]
   -2, --rev-tag STR      String found in filename of forward reads [default: _R2]
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
+  -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2, irida [default: manifest]
+  -P, --project STR      Project ID (only for irida)
   --pos INT...           Which part of the filename is the Sample ID [default: 1]
   --pe                   Enforce paired-end reads (not supported)
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column
-  -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2 [default: manifest]
   -t, --threads INT      Number of simultaneously opened files [default: 2]
   -v, --verbose          Verbose output
   -h, --help             Show this help
@@ -202,7 +204,10 @@ Options:
       forTag, revTag, splitString: string
       posList: seq[Value]
       threads: int
+      projectID = 0
     try:
+      projectID = if args["--project"]: parseInt($args["--project"])
+                  else: 0
       outFmt = $args["--format"]
       forTag = $args["--for-tag"]
       revTag = $args["--rev-tag"]
@@ -317,6 +322,11 @@ Options:
         printQiime2(samples)
       of "lotus":
         printLotus(samples)
+      of "irida":
+        if projectID == 0:
+          stderr.writeLine("ERROR: Project ID not specified")
+          quit(1)
+        printIrida(samples, projectID)
       else:
         stderr.writeLine("ERROR:\nUnsupported output format: ", outFmt)
     

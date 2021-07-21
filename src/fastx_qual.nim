@@ -71,6 +71,7 @@ Qualified position:
   -z, --min-qual FLOAT   Stop the sliding windows when quality is below [default: 18.0]   
 
 Additional output:
+  --gc                   Print GC content as extra column
   -p, --profile          Quality profile per position (will comment the summary lines)
   -c, --colorbars        Print graphical average quality profile
 
@@ -84,6 +85,7 @@ Other options:
     verbose       = args["--verbose"] 
 
     let
+      addGC      = args["--gc"]
       skip       = parseInt($args["--skip"])
       qualOffset = parseInt($args["--offset"])
       wndSize = parseInt($args["--wnd"])
@@ -97,6 +99,10 @@ Other options:
     if len(  @(args["<FASTQ>"]) ) == 0:
       stderr.writeLine("No files specified. Use '-' to read STDIN, --help for help.")
     for file in @(args["<FASTQ>"]):
+      var
+        totalLength = 0
+        totalGC = 0
+
       if args["--verbose"]:
         stderr.writeLine("Parsing: ", file)
       
@@ -126,17 +132,29 @@ Other options:
           
           count += 1
 
+          if addGC:
+            totalGC += count_gc(record.sequence)
+            totalLength += len(record.sequence)
+
           for i, q in record.quality:
             let 
               quality_ord = q.ord
               quality_enc = charToQual(q)
             sttSeq[i].push(quality_enc)
             stats.push(quality_ord - qualOffset)
+
+
+        # End parsing file
+
         let encodingType = rangeToStr(stats.min + float(qualOffset), stats.max + float(qualOffset), ranges)
         let stopPos = getStopPos(sttSeq, wndSize, minQual, wndQual)        
         
-        # Comment "#"
-        echo(comment, file, "\t", stats.min, "\t", stats.max, "\t", encodingType, "\t", fmt"{stats.mean:.2f}+/-{stats.standardDeviationS:.2f}", "\t", stopPos)
+        # Generate GC column if required
+        let gcColumn = if addGC: "\t" &  fmt"{float(totalGC) / float(totalLength):.5f}"
+                       else: ""
+ 
+        # Comment "#" if needed
+        echo(comment, file, "\t", stats.min, "\t", stats.max, "\t", encodingType, "\t", fmt"{stats.mean:.2f}+/-{stats.standardDeviationS:.2f}", "\t", stopPos, gcColumn)
         
         # Color profile
         # ▇▇▇▇▇▇▇▇▇▇▇▇▆▆▆▇▇▇▇▇▆▆▆▇▇▇▇▇▇▇▆▆▆▆▆▆▆▆▇▇▆▆▆▆▆▆▆▆▆▆▆▆▆▅▆▆▆▆▅▆▆▆▆▆▆▅...

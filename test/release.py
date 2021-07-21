@@ -239,6 +239,7 @@ if __name__ == "__main__":
       splashes[f"seqfu {core}"] = splash_screen
   except Exception as e:
     quit()
+    
   # UTILS:
   try:
     for utilManPage in os.listdir(f"{basedir}/docs/utilities/"):
