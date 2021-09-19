@@ -4,8 +4,7 @@ sort: 16
 # seqfu tabulate
 
 ```note
-This tool has been introduced with seqfu 1.2.2, it's stable implementation
-is expected with 1.3.0
+This tool has been introduced with seqfu 1.2.2
 ```
 
 This program converts a sequence file (FASTA or FASTQ) to a tabular file,
