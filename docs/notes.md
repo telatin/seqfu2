@@ -40,18 +40,21 @@ C version of Heng Li's parsed, wrapped in an object oriented module.
 
 ## About the name
 
-The names was modeled after "[ScriptFu](https://docs.gimp.org/en/gimp-concepts-script-fu.html)", a set of macros built in the image manipulation **GIMP**.
+The name of the program was modeled after "[ScriptFu](https://docs.gimp.org/en/gimp-concepts-script-fu.html)", 
+a set of macros built in the image manipulation **GIMP**.
+
+[Apparently](https://twitter.com/StevenSalzberg1/status/1439704488508526599?s=20), 
+in the US this might sound offensive.
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I love it that these guys got away with creating a tool called &#39;seqfu&#39;, and even put it in the title of their paper (<a href="https://t.co/dCCUStKTEB">https://t.co/dCCUStKTEB</a>). Did the editors/reviewers realize what this word sounds like in English? 😉 h/t <a href="https://twitter.com/telatin?ref_src=twsrc%5Etfw">@telatin</a> <a href="https://t.co/fHvOxsKXKx">https://t.co/fHvOxsKXKx</a></p>&mdash; Steven Salzberg (@StevenSalzberg1) <a href="https://twitter.com/StevenSalzberg1/status/1439704488508526599?ref_src=twsrc%5Etfw">September 19, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-
-[Apparently](https://twitter.com/StevenSalzberg1/status/1439704488508526599?s=20), in the US this might sound offensive, so we after a consultation with Microsoft, offer a tool to rename the program to **SeqFlower**. 
-
 ![How to get away]({{site.baseurl}}/img/howtoget.png)
 
-It's called `flower.sh` in the _src_ directory.
+So we after a consultation with Microsoft, offer a tool to rename the program to **SeqFlower**.
 
-![SeqFlower]({{site.baseurl}}/img/flowers.png)
+![SeqFlower]({{site.baseurl}}/img/flowers.png) 
+
+The renaming script is called `flower.sh` in the _src_ directory.
 
  
 ## Developer's details
