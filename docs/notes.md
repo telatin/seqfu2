@@ -7,7 +7,7 @@ permalink: /about
 
 ## Citing
 
-1. Telatin A, Fariselli P, Birolo G. **SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files**. Bioengineering 2021, 8, 59. 
+Telatin A, Fariselli P, Birolo G. **SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files**. Bioengineering 2021, 8, 59. 
 [https://doi.org/10.3390/bioengineering8050059](doi.org/10.3390/bioengineering8050059)
 
 ## Why
@@ -38,6 +38,18 @@ The main parsing library is `klib.nim` by Heng Li ([lh3/biofast](https://github.
 For some utilities the *readfq* library has been used ([andreas-wilm/nimreadfq](https://github.com/andreas-wilm/nimreadfq)). This is based on the
 C version of Heng Li's parsed, wrapped in an object oriented module.
 
+## About the name
+
+The names was modeled after "[ScriptFu](https://docs.gimp.org/en/gimp-concepts-script-fu.html)", a set of macros built in the image manipulation GIMP.
+
+![How to get away]({{site.baseurl}}/img/howtoget.png)
+
+[Apparently](https://twitter.com/StevenSalzberg1/status/1439704488508526599?s=20), in the US this might sound offensive, so we after a consultation with Microsoft, offer a tool to rename the program to **SeqFlower**. It's called `flower.sh` in the _src_ directory.
+
+![SeqFlower]({{site.baseurl}}/img/flowers.png)
+
+
+## Other information 
 ### Perl module
 A Perl version of the parser is available both from 
 **[MetaCPAN](https://metacpan.org/release/FASTX-Reader)** and from Bioconda:
