@@ -36,7 +36,7 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 
 {% include list.liquid all=true %}
 
-### Perl library
+### Companion library
 
 A Perl library (`FASTX::Reader`) using the same parser enging (klib) is also available:
 * From **[MetaCPAN](https://metacpan.org/release/FASTX-Reader)**, installable with `cpanm FASTX::Reader`
