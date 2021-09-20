@@ -50,13 +50,14 @@ in the US this might sound offensive.
 
 ![How to get away]({{site.baseurl}}/img/howtoget.png)
 
-So we after a consultation with Microsoft, offer a tool to rename the program to **SeqFlower**.
+So we after a consultation with Microsoft (and thanks to their previous experience with Minesweep),
+offer a tool to rename the program to **SeqFlower**.
 
 ![SeqFlower]({{site.baseurl}}/img/flowers.png) 
 
 The renaming script is called `flower.sh` in the _src_ directory.
 
- 
+
 ## Developer's details
  
 ### Perl module
