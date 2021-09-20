@@ -18,6 +18,10 @@ Includes functions to _interleave_ and _de-interleave_ FASTQ files,
 to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
 SeqFu is available for Linux and MacOS. 
 
+* A compiled program delivering high performance analyses
+* Supports FASTA/FASTQ files, also Gzip compressed
+* A growing collection of handy utilities, also for quick inspection of the datasets
+
 Can be easily [installed](installation) via conda:
 ```
 conda install -c bioconda seqfu
