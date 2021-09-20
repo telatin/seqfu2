@@ -41,15 +41,16 @@ C version of Heng Li's parsed, wrapped in an object oriented module.
 ## About the name
 
 The names was modeled after "[ScriptFu](https://docs.gimp.org/en/gimp-concepts-script-fu.html)", a set of macros built in the image manipulation GIMP.
-
+ 
 ![How to get away]({{site.baseurl}}/img/howtoget.png)
 
 [Apparently](https://twitter.com/StevenSalzberg1/status/1439704488508526599?s=20), in the US this might sound offensive, so we after a consultation with Microsoft, offer a tool to rename the program to **SeqFlower**. It's called `flower.sh` in the _src_ directory.
 
 ![SeqFlower]({{site.baseurl}}/img/flowers.png)
 
-
-## Other information 
+ 
+## Developer's details
+ 
 ### Perl module
 A Perl version of the parser is available both from 
 **[MetaCPAN](https://metacpan.org/release/FASTX-Reader)** and from Bioconda:
