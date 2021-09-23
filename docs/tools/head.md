@@ -12,7 +12,8 @@ can be instructed to skip a number of sequences between each printed one.
 Usage: head [options] [<inputfile> ...]
 
 Select a number of sequences from the beginning of a file, allowing
-to select
+to select a fraction of the reads (for example to print 100 reads,
+selecting one every 10).
 
 Options:
   -n, --num NUM          Print the first NUM sequences [default: 10]
@@ -20,13 +21,15 @@ Options:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -s, --strip-comments   Remove comments
   -b, --basename         prepend basename to sequence name
+  -v, --verbose          Verbose output
+  --quiet                Don't print warnings
+  --help                 Show this help
+
+Output:
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
   --sep STRING           Sequence name fields separator [default: _]
-  -q, --fastq-qual INT   FASTQ default quality [default: 33]
-  -v, --verbose          Verbose output
-  --help                 Show this help
-```
+  -q, --fastq-qual INT   FASTQ default quality [default: 33]```
 
 ## Example
 

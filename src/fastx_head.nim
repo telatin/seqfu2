@@ -21,7 +21,7 @@ Options:
   -s, --strip-comments   Remove comments
   -b, --basename         prepend basename to sequence name
   -v, --verbose          Verbose output
-  -q, --quiet            Don't print warnings
+  --quiet                Don't print warnings
   --help                 Show this help
 
 Output:
