@@ -172,7 +172,7 @@ proc highlightOligoMatches(r: string, matches: seq[seq[int]], oligo_length:int, 
               else: 0
       for i in start ..< start+stop:
         if i < len(glyphs):
-          glyphs[i] = "ᐅ".color.fgWhite
+          glyphs[i] = ">".color.fgWhite # was ᐅ
 
   #echo r
   if len(matches[1]) > 0:
@@ -182,10 +182,10 @@ proc highlightOligoMatches(r: string, matches: seq[seq[int]], oligo_length:int, 
                else: oligo_length + m
         start = if m >= 0: m
               else: 0
-      #echo "?", ' '.repeat(start) & "ᐊ".color.fgWhite.repeat(stop)
+              
       for i in start ..< start+stop:
         if i < len(glyphs):
-          glyphs[i] = "ᐊ".color.fgWhite
+          glyphs[i] = "<".color.fgWhite # was ᐅ
   
   return glyphs.join("")
 
