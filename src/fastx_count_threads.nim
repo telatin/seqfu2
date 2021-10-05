@@ -1,5 +1,5 @@
 import readfq
-import re
+
 import tables, strutils
 from os import fileExists
 import docopt

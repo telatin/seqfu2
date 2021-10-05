@@ -1,9 +1,9 @@
 import docopt
 import readfq
-import strformat
-import os, strutils, sequtils
-import tables
  
+import os
+import tables
+import strutils
 import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"

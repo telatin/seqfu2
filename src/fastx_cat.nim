@@ -20,7 +20,7 @@ Sequence name:
   -a, --append STRING    Append this string to the sequence name [default: ]
   --sep STRING           Sequence name fields separator [default: _]
 
-  -b, --basename         Prepend file basename to the sequence name
+  -b, --basename         Prepend file basename to the sequence name (before prefix)
   --split CHAR           Split basename at this char [default: .]
   --part INT             After splitting the basename, take this part [default: 1]
   --basename-sep STRING  Separate basename from the rest with this [default: _]
@@ -116,6 +116,7 @@ Output:
       totalPrintedSeqs = 0
       wrongLenCount = 0
     for filename in files:
+
       echoVerbose(filename, verbose)
 
       if filename != "-" and not fileExists(filename):
@@ -136,6 +137,7 @@ Output:
       while f.readFastx(r):
         currentSeqCount += 1
 
+        # Skip sequences [store in y==0 the ok to print]
         if skip > 0:
           y = currentSeqCount mod skip
 
@@ -172,7 +174,7 @@ Output:
             if len(r.qual) > 0:
               r.qual = r.qual[^(truncate * -1) .. ^1]
 
-          ## DISCARD BY LEN           
+          ## DISCARD BY LEN [after trimming/truncating]  
           if len(r.seq) < minSeqLen or (maxSeqLen > 0 and len(r.seq) > maxSeqLen):
             wrongLenCount += 1
             continue 
@@ -183,29 +185,34 @@ Output:
           ## SEQUENCE NAME
           var
             newName = ""
+            baseNamePrefix = ""
+            seqNumber = ""
+ 
+          # Rename prefix, counter, ...
+          # [ Basename ] [ prefix ] [ realname ] [ counter ]
+
+ 
 
           # Prepend basename if required
           if printBasename:
-            var bn: string
             if len(splitChar) > 0:
-              bn = lastPathPart(filename).split(splitChar)[splitPart]
+              baseNamePrefix = lastPathPart(filename).split(splitChar)[splitPart]  & basenameSeparatorString
             else:
-              bn = lastPathPart(filename)
-            newName =  bn & basenameSeparatorString
-          
-          # rename with prefix + counter
-          if prefix != "" or printBasename:
-            if prefix != "":
-              newName &= prefix & separator
-            if printBasename:
-              newName &= $currentPrintedSeqs
-            else:
-              newName &= $totalPrintedSeqs
-          else:
-            if not args["--strip-name"]:
-              newName &= r.name
+              baseNamePrefix = lastPathPart(filename)   &   basenameSeparatorString
+            newName = baseNamePrefix
 
-          
+          # Prepare counter
+          if prefix != "":
+            if printBasename:
+              seqNumber = $currentPrintedSeqs
+            else:
+              seqNumber = $totalPrintedSeqs
+
+            if args["--strip-name"]:
+              newName &= prefix & separator & seqNumber
+            else:
+              newName &= prefix & separator & original_name & separator & seqNumber
+        
 
           # Append suffix to name
           if appendSuffixToName:
@@ -213,12 +220,6 @@ Output:
 
           # Replace name if needed
           r.name = newName
-
-          if not stripComments:
-            newName &= "\t" & r.comment
-  
-
-
 
           ## COMMENTS AFTER TRIMMING
           if args["--add-len"]:
@@ -229,6 +230,7 @@ Output:
 
           if args["--add-name"]:
             r.comment &= $args["--comment-sep"] & "original_name=" & original_name
+
           # Print output
           if formatList:
             echo r.name
