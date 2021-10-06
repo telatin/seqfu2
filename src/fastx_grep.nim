@@ -18,6 +18,7 @@ Options:
   -c, --comment STRING   String required in the sequence comment
   -o, --oligo IUPAC      Oligonucleotide required in the sequence,
                          using ambiguous bases and reverse complement
+  -A, --append-pos       Append matching positions to the sequence comment
   --max-mismatches INT   Maximum mismatches allowed [default: 0]
   --min-matches INT      Minimum number of matches [default: oligo-length]
   -v, --verbose          Verbose output
@@ -89,10 +90,14 @@ Options:
           pass = 0
 
         if $args["--oligo"] != "nil":
+          # Search for oligo in the sequence
           let oligos = findPrimerMatches(r.seq, $args["--oligo"], matchThs, maxMismatches, minMatches)
           if len(oligos[0]) == 0 and len(oligos[1]) == 0:
             pass = 0
-
+          else:
+            if args["--append-pos"]:
+              r.comment &= " for-matches=" & strutils.join(oligos[0], ",")
+              r.comment &= ":rev-matches=" & strutils.join(oligos[0], ",")
         if pass == 1:
           print_seq(r, nil)
           
