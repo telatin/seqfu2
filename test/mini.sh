@@ -14,6 +14,7 @@ iPair1=$FILES/illumina_1.fq.gz
 iPair2=$FILES/illumina_2.fq.gz
 iAmpli=$FILES/filt.fa.gz
 iSort=$FILES/sort.fa
+iMini=$FILES/target.fa
 
 ERRORS=0
 echo "# Minimal test suite"
@@ -157,7 +158,27 @@ else
   ERRORS=$((ERRORS+1))
 fi
 
+# CAT
+if [[ $($BIN cat $iMini | head -n 1) == ">ecoli comment" ]]; then
+  echo "OK: cat: default"
+else
+  echo "ERR: cat: default"
+  ERRORS=$((ERRORS+1))
+fi
 
+if [[ $($BIN cat $iMini -s | head -n 1) == ">ecoli" ]]; then
+  echo "OK: cat: strip comment"
+else
+  echo "ERR: cat: strip comment"
+  ERRORS=$((ERRORS+1))
+fi
+
+if [[ $($BIN cat -z -p test $iMini | head -n 1) == ">test_1 comment" ]]; then
+  echo "OK: cat: prefix"
+else
+  echo "ERR: cat"
+  ERRORS=$((ERRORS+1))
+fi
 
 echo ""
 for TEST in $DIR/*.sh;

@@ -201,7 +201,7 @@ Output:
               baseNamePrefix = lastPathPart(filename)   &   basenameSeparatorString
             newName = baseNamePrefix
 
-          # Prepare counter
+          # Prepare sequence name
           if prefix != "":
             if printBasename:
               seqNumber = $currentPrintedSeqs
@@ -212,7 +212,8 @@ Output:
               newName &= prefix & separator & seqNumber
             else:
               newName &= prefix & separator & original_name & separator & seqNumber
-        
+          else:
+            newName = original_name
 
           # Append suffix to name
           if appendSuffixToName:
