@@ -1,0 +1,1 @@
+* `seqfu grep` supports for comments

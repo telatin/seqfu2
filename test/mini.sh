@@ -29,6 +29,7 @@ do
   $BIN $MOD --help >/dev/null  2>&1 || {  echo "Help for $MOD returned non-zero"; exit 1; }
 
 done
+
 # Dereiplicate
 if [[ $($BIN derep $iAmpli  | grep -c '>') -eq "18664" ]]; then
 	echo "OK: Dereplicate"
@@ -43,6 +44,21 @@ else
 	echo "ERR: Dereplicate, min size"
 	ERRORS=$((ERRORS+1))
 fi
+
+# Grep
+if [[ $($BIN grep -n seq.1 $FILES/comm.fa  | grep -c '>') -eq "1" ]]; then
+	echo "OK: grep, name"
+else
+	echo "ERR: grep, name"
+	ERRORS=$((ERRORS+1))
+fi
+if [[ $($BIN grep -c -n size=3 $FILES/comm.fa  | grep -c '>') -eq "1" ]]; then
+	echo "OK: grep, size"
+else
+	echo "ERR: grep, size"
+	ERRORS=$((ERRORS+1))
+fi
+
 
 # Interleave
 if [[ $($BIN ilv -1 $iPair1 -2 $iPair2 | wc -l) == $(cat $iPair1 $iPair2 | gzip -d | wc -l ) ]]; then

@@ -15,7 +15,6 @@ Options:
   -n, --name STRING      String required in the sequence name
   -r, --regex PATTERN    Pattern to be matched in sequence name
   -c, --comment          Also search -n and -r in the comment
-  -c, --comment STRING   String required in the sequence comment
   -o, --oligo IUPAC      Oligonucleotide required in the sequence,
                          using ambiguous bases and reverse complement
   -A, --append-pos       Append matching positions to the sequence comment
@@ -80,7 +79,7 @@ Options:
         var pass = 1
         var matches : seq[string]
 
-        let name = if $args["--comment"] != "nil": r.name & " " & r.comment
+        let name = if args["--comment"]: r.name & " " & r.comment
                    else: r.name
 
         if $args["--name"] != "nil" and rfind(name, $args["--name"]) < 0:
