@@ -9,7 +9,7 @@
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
 [![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/seqfu?label=Bioconda%20Downloads)](https://anaconda.org/bioconda/seqfu)
 
-:package: See the **[repository](https://github.com/telatin/seqfu2)**
+:package: See the **[repository](https://github.com/telatin/seqfu2)** | :dvd: [releases](https://github.com/telatin/seqfu2/releases)
 
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
 supporting gzipped input files.
