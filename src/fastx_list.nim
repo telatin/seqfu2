@@ -3,7 +3,7 @@ import tables, strutils
 from os import fileExists
 import docopt
 import ./seqfu_utils
-import strformat
+
 
 
 type
