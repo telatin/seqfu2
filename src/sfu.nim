@@ -29,9 +29,11 @@ include ./fastx_cat
 include ./fastx_metadata
 include ./fastx_tabulate
 
+
 # Experimental
 include ./fastx_stats2
 include ./fastx_count_threads
+include ./fastx_list
 
 var progs = {
        "cat": fastx_cat,
@@ -49,6 +51,8 @@ var progs = {
          "stats": fastx_stats,
          "stat": fastx_stats,
        "stats2": fastx_stats_v2,        # Experimental
+       "list": fastx_list,              # Experimental
+        "lst": fastx_list,              # Experimental
        "count-legacy": fastx_count, 
        "rc" : fastx_rc,
        "srt": fastx_sort,             
@@ -80,6 +84,7 @@ proc main(args: var seq[string]): int =
                "stats [st]"        : "statistics on sequence lengths",
                "sort [srt]"        : "sort sequences by size (uniques)",
                "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
+               "list [lst]"        : "print sequences from a list of names",
                }.toTable
 
     helps_last = {"cat"            : "concatenate FASTA/FASTQ files",

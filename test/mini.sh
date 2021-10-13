@@ -59,6 +59,21 @@ else
 	ERRORS=$((ERRORS+1))
 fi
 
+# List
+if [[ $($BIN list $FILES/prot.list $FILES/prot.faa  | grep -c '>') -eq "5" ]]; then
+	echo "OK: list, default"
+else
+	echo "ERR: list, default $($BIN list $FILES/prot.list $FILES/prot.faa  | grep -c '>') not 5"
+	ERRORS=$((ERRORS+1))
+fi
+if [[ $($BIN list -c $FILES/prot.list $FILES/prot.faa  | grep -c '>') -eq "4" ]]; then
+	echo "OK: list, with comments"
+else
+	echo "ERR: list, with comments $($BIN list -c $FILES/prot.list $FILES/prot.faa  | grep -c '>') not 4"
+	ERRORS=$((ERRORS+1))
+fi
+
+
 
 # Interleave
 if [[ $($BIN ilv -1 $iPair1 -2 $iPair2 | wc -l) == $(cat $iPair1 $iPair2 | gzip -d | wc -l ) ]]; then
