@@ -2,6 +2,7 @@ import readfq
 import docopt
 import os
 import kmer
+import parseutils
 import threadpool
 import strutils, strformat
 import tables, algorithm
@@ -12,12 +13,22 @@ const version = if NimblePkgVersion == "undef": "1.0"
                 else: NimblePkgVersion
 
 
+type 
+  kmerDb = object
+    kmers: seq[uint64]
+    size: int
+    dict: Table[uint64, string]
 
 type
   makeDbOptions = object
+    outfile: string
     kmerSize: int
     windowSize: int
+    subsample : float
+    keepMulti : int
+    keepSingle : bool
     verbose: bool
+
 type
   scanOptions = object
     kmerSize: int
@@ -27,49 +38,88 @@ type
     minCount: int
     poolSize: int
 
-proc compressHomopolymers(s: string): string =
-  result  = $s[0]
-  for c in s[1 .. ^1]:
-    if c != result[^1]:
-      result = result & c
-
 proc makeDb(inputfile: string, options: makeDbOptions): int =
+  let
+    MultiQuery = 4
+    MaxQuery   = 10
   var
-    countTable = initCountTable[uint64]()
+    kTable = initTable[uint64, seq[string] ]()
   for read in  readfq(inputfile):
     let sequence = compressHomopolymers(read.sequence)
-    for i in 0 ..< (len(sequence) - options.kmerSize):
-      let kmer = sequence[i ..< i + options.kmerSize]
-      countTable.inc(encode(kmer))
-  for k, count in countTable.pairs():
+    #for i in 0 ..< (len(sequence) - options.kmerSize):
+    for kmer in sequence.slide(options.kmerSize):
+      
+  
+      if kmer[0] notin kTable:
+        kTable[kmer[0]] = @[read.name]
+      else:
+        if  read.name notin kTable[kmer[0]]:
+          kTable[kmer[0]].add(read.name)
+  
+  let
+    total = len(kTable)
+    modulo = int(100.0 / options.subsample)
+  
+  var
+    c = 0
+  for k, query in kTable.pairs():
     var kmer = newString(options.kmerSize)
-    decode(k, kmer)
-    echo kmer
+    c = c + 1
+    let keep = if len(query) > options.keepMulti: true
+               elif len(query) == 1 and options.keepSingle: true
+               else: false
+
+    if keep or c mod modulo == 0:      
+      decode(k, kmer)
+      echo k, "\t", kmer, "\t", len(query), "\t", if len(query) > MaxQuery: query[0] & "..." & query[^1]
+                     else: query.join(";")
+
   return 0
 
 
 
-proc loadKmerList(filename: string, kmerSize: int): seq[string] =
+proc oldloadKmerList(filename: string, kmerSize: int): seq[string] =
   for line in lines filename:
     if len(line) != kmerSize:
-      stderr.writeLine("Malformed line [exp ", kmerSize, "-mer]: ", line)
+      stderr.writeLine("Malformed line [exp ", kmerSize, "-mer, found ", len(line), "-mer]: \n", line)
       quit(1)
     result.add(line)
 
-proc scanRead(read: FQRecord, db: seq[string], options: scanOptions): bool =
+proc loadKmerList(filename: string, kmerSize: int): kmerDb =
+  var s = newSeq[uint64]()
+  for line in lines filename:
+    # split on tab @[umer, kmer, counts, query
+    let record = line.split("\t")
+    if len(record) != 4:
+      stderr.writeLine("Malformed line: 4 fields expected, found ", len(record), ": \n", line)
+      quit(1)
+    if result.size == 0:
+      result.size = len(record[1])
+    else:
+      if result.size != len(record[1]):
+        stderr.writeLine("Malformed line: ", result.size, "-mer expected, found ", len(record[1]), ": \n", line)
+        quit(1)
+    
+    var umer : uint64 
+    umer = record[0].parseUInt()
+    result.kmers.add(umer)
+  
+
+
+proc scanRead(read: FQRecord, db: kmerDb, options: scanOptions): bool =
   let sequence = compressHomopolymers(read.sequence)
   for j in countup(0, len(sequence) - options.windowSize, options.stepSize):
           var hits = 0
           let window = sequence[j ..< j + options.windowSize]
-          for i in 0 ..< (len(window) - options.kmerSize):
-            let kmer = window[i ..< i + options.kmerSize]
-            if db.contains(kmer):
+          for kmer in window.slide(options.kmerSize):
+             
+            if (db.kmers).contains(kmer[0]):
               hits += 1
           if hits >= options.minCount:
             return true
   return false
 
-proc processReadPool(pool: seq[FQRecord], db: seq[string], o: scanOptions): seq[FQRecord] =
+proc processReadPool(pool: seq[FQRecord], db: kmerDb, o: scanOptions): seq[FQRecord] =
   # Receive a set of sequences to be processed and returns them as string to be printed
   for read in pool:
      if scanRead(read, db, o):
@@ -86,8 +136,11 @@ proc main(argv: var seq[string]): int =
   cmers make [options] <DB> 
 
   Make db options:
-    -k, --kmer-size INT    K-mer size [default: 31]
+    -k, --kmer-size INT    K-mer size [default: 15]
     -o, --output-file STR  Output file [default: stdout]
+    --subsample FLOAT  Keep only FLOAT% kmers [default: 100.0]
+    --keep-multi INT       Keep kmers with multiple more than INT hits (when subsampling) [default: 0]
+    --keep-single          Keep all kmers with single hit (when subsampling)
 
   Scanning options:
     -w, --window-size INT  Window size [default: 1500]
@@ -97,24 +150,30 @@ proc main(argv: var seq[string]): int =
   
   Multithreading options:
     --pool-size INT        Number of sequences per thread pool [default: 1000]
-     
+    --max-threads INT      Maximum number of threads [default: 64]
+    
     --verbose              Print verbose log
     --help                 Show help
   """, version=version, argv=argv)
  
-  let
-    makeOpts = makeDbOptions(
-      kmerSize : parseInt($args["--kmer-size"]),
-      windowSize : parseInt($args["--window-size"]),
-      verbose : args["--verbose"]
-    )
- 
+
 
     
   if args["make"]:
+    let makeOpts = makeDbOptions(
+      outfile    : $args["--output-file"],
+      kmerSize   : parseInt($args["--kmer-size"]),
+      windowSize : parseInt($args["--window-size"]),
+      subsample  : parseFloat($args["--subsample"]),
+      keepMulti  : parseInt($args["--keep-multi"]),
+      keepSingle : args["--keep-single"],
+      verbose    : args["--verbose"]
+    )
+ 
     quit(makeDb($args["<DB>"], makeOpts))
 
-  setMaxPoolSize(64)
+  # Scan
+  setMaxPoolSize(parseInt($args["--max-threads"]) )
     
   # Prepare options
   let opts = scanOptions(
@@ -131,7 +190,7 @@ proc main(argv: var seq[string]): int =
   # Prepare the database
   let db = loadKmerList($args["<DB>"], parseInt($(args["--kmer-size"])) )
   if opts.verbose:
-    stderr.writeLine "Loaded ", len(db), " kmers"
+    stderr.writeLine "Loaded ", len(db.kmers), " ", db.size, "-mers"
 
   # Process file read by read
   for file in @(args["<FASTQ>"]):

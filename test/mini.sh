@@ -73,7 +73,18 @@ else
 	ERRORS=$((ERRORS+1))
 fi
 
-
+# Homopolymer
+HOMO="$(dirname $BIN)/fu-homocomp"
+if [[ -e "$HOMO" ]]; then
+  ORIGINAL=$(cat $FILES/homopolymer.fq | wc -c)
+  COMPRESSED=$($HOMO $FILES/homopolymer.fq | wc -c)
+  if [[ $ORIGINAL -gt $COMPRESSED ]]; then
+    echo "OK: homopolymer pass $ORIGINAL > $COMPRESSED"
+  else
+    echo "ERR: homopolymer failed $ORIGINAL original length, $COMPRESSED compressed length"
+    ERRORS=$((ERRORS+1))
+  fi
+fi
 
 # Interleave
 if [[ $($BIN ilv -1 $iPair1 -2 $iPair2 | wc -l) == $(cat $iPair1 $iPair2 | gzip -d | wc -l ) ]]; then

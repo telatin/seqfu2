@@ -1,5 +1,5 @@
 # Package
-version       = "1.8.0"
+version       = "1.8.1"
 author        = "Andrea Telatin"
 description   = "SeqFU command-line tools"
 license       = "MIT"
@@ -18,6 +18,7 @@ namedBin = {"sfu": "seqfu", "fu_cov": "fu-cov", "fu_primers": "fu-primers",
 "fu_index": "fu-index", 
 "fu_nanotags": "fu-nanotags",
 "dadaist2_mergeseqs": "dadaist2-mergeseqs", 
-"dadaist2_region": "fu-16Sregion"}.toTable()
+"dadaist2_region": "fu-16Sregion",
+"fu_homocomp": "fu-homocomp"}.toTable()
 
  
