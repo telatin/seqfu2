@@ -17,7 +17,7 @@ conda install -c conda-forge -c bioconda seqfu
 
 More info on [installing conda](https://telatin.github.io/microbiome-bioinformatics/Install-Miniconda/).
 
-:warning: It is possible to compile the program for Windows, but we cannot provide support for this platform at the moment.
+:warning: It is _possible_ to compile the program for Windows, but we cannot provide support for this platform at the moment.
 
 ## Pre-compiled binaries
 
