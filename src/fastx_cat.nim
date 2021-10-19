@@ -191,18 +191,34 @@ Output:
           # Rename prefix, counter, ...
           # [ Basename ] [ prefix ] [ realname ] [ counter ]
 
- 
+          # Sequence name:
+          #   -p, --prefix STRING    Rename sequences with prefix + incremental number
+          #   -z, --strip-name       Remove the original sequence name
+          #   -a, --append STRING    Append this string to the sequence name [default: ]
+          #   --sep STRING           Sequence name fields separator [default: _]
+
+          #   -b, --basename         Prepend file basename to the sequence name
+          #   --split CHAR           Split basename at this char [default: .]
+          #   --part INT             After splitting the basename, take this part [default: 1]
+          #   --basename-sep STRING  Separate basename from the rest with this [default: _]
+
+          # Sequence comments:
+          #   -s, --strip-comments   Remove original sequence comments 
 
           # Prepend basename if required
           if printBasename:
             if len(splitChar) > 0:
-              baseNamePrefix = lastPathPart(filename).split(splitChar)[splitPart]  & basenameSeparatorString
+              baseNamePrefix = lastPathPart(filename).split(splitChar)[splitPart]  
             else:
-              baseNamePrefix = lastPathPart(filename)   &   basenameSeparatorString
-            newName = baseNamePrefix
+              baseNamePrefix = lastPathPart(filename)  
+
+            if not args["--strip-name"] or prefix != "":
+              baseNamePrefix &= basenameSeparatorString
+            newName = baseNamePrefix 
 
           # Prepare sequence name
           if prefix != "":
+            # PREFIX to be added 
             if printBasename:
               seqNumber = $currentPrintedSeqs
             else:
@@ -211,9 +227,16 @@ Output:
             if args["--strip-name"]:
               newName &= prefix & separator & seqNumber
             else:
-              newName &= prefix & separator & original_name & separator & seqNumber
+              newName &= prefix & separator & original_name #& separator & seqNumber
           else:
-            newName = original_name
+              if printBasename:
+                if not args["--strip-name"]:
+                  newName &= original_name
+                else:
+                  # add suffix if you strip basename
+                  newName &= separator & seqNumber
+              else:
+                newName = original_name 
 
           # Append suffix to name
           if appendSuffixToName:

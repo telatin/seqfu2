@@ -218,10 +218,19 @@ fi
 if [[ $($BIN cat -z -p test $iMini | head -n 1) == ">test_1 comment" ]]; then
   echo "OK: cat: prefix"
 else
-  echo "ERR: cat"
+  echo "ERR: cat: prefix not found $($BIN cat -z -p test $iMini | head -n 1)"
   ERRORS=$((ERRORS+1))
 fi
 
+if [[ $($BIN cat -b $iMini -s | head -n 1) != ">target_ecoli" ]]; then
+  echo "ERR: cat: basename not added [$($BIN cat -z -b $iMini | head -n 1) ]"
+  ERRORS=$((ERRORS+1))
+else
+  echo "OK: cat: added basename [$($BIN cat -z -b $iMini | head -n 1) ]"
+
+fi
+
+ 
 echo ""
 for TEST in $DIR/*.sh;
 do
