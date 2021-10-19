@@ -74,8 +74,8 @@ fi
 # Homopolymer
 HOMO="$(dirname "$BIN")/fu-homocomp"
 if [[ -e "$HOMO" ]]; then
-  ORIGINAL=$(cat $FILES/homopolymer.fq | wc -c)
-  COMPRESSED=$($HOMO $FILES/homopolymer.fq | wc -c)
+  ORIGINAL=$(grep . $FILES/homopolymer.fq | wc -c)
+  COMPRESSED=$($HOMO $FILES/homopolymer.fq | wc -c )
   if [[ $ORIGINAL -gt $COMPRESSED ]]; then
     echo "OK: homopolymer pass $ORIGINAL > $COMPRESSED"
   else
@@ -93,11 +93,12 @@ else
 fi
 
 # Deinterleave
-"$BIN" dei $iInterleaved -o testtmp_
-if [[ $(cat testtmp_* | wc -l) == $(cat $iInterleaved | gzip -d | wc -l ) ]]; then
+"$BIN" dei $iInterleaved -o testtmp
+if [[ $(grep . testtmp_R{1,2}.fq | wc -l) == $(gzip -dc $iInterleaved | wc -l ) ]]; then
 	echo "OK: Deinterleave"
 else
-	echo "ERR: Deinterleave"
+	echo "ERR: Deinterleave   "
+  
 	ERRORS=$((ERRORS+1))
 fi
 rm testtmp_*
@@ -177,14 +178,14 @@ else
 fi
 ## STREAMING
 
-if [[ $(cat  $iInterleaved | gzip -d | "$BIN" head -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
+if [[ $( gzip -dc  $iInterleaved | "$BIN" head -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
   echo "OK: Head 1 sequence (stream)"
 else
   echo "ERR: Head failed"
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $(cat  $iInterleaved | gzip -d | "$BIN" tail -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
+if [[ $(gzip -dc  $iInterleaved | "$BIN" tail -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
   echo "OK: tail 1 sequence (stream)"
 else
   echo "ERR: tail failed"
@@ -262,7 +263,7 @@ done
 
 ## Check release
 echo "# Checking release"
-LOCAL_RELEASE=$(cat "$DIR/../seqfu.nimble" | grep version | cut -f 2 -d = | sed 's/[" ]//g')
+LOCAL_RELEASE=$(grep version "$DIR/../seqfu.nimble"  | cut -f 2 -d = | sed 's/[" ]//g')
 GH_RELEASE=$(curl -s https://api.github.com/repos/telatin/seqfu2/releases/latest  | perl -nE 'my ($tag, $val) = split /:/, $_; if ($tag=~/tag_name/) { my @tag = split /"/, $val; for my $i (@tag) { $i =~s/[^0-9.]//g; say $i if (length($i) > 2); } }')
 
 if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
