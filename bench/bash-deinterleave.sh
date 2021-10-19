@@ -1,4 +1,5 @@
 #!/bin/bash
+
 if [[ $# != 3 ]]
 then
 echo "USAGE: $0 interleaved.fastq deinterleaved.R1.fastq deinterleaved.R2.fastq"

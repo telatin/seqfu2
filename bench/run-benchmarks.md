@@ -1,3 +1,7 @@
+# Benchmark script
+
+
+```bash
 #!/bin/bash
 # RUN BENCHMARKS
 # requires hyperfine
@@ -48,3 +52,5 @@ done 2>&1 | paste - - - - | awk -v OFS='\t' '{print NR,$2,$4,$6}'
 ############
 rm -f R[12].fq interleaved.fq de_R[12].fq
 
+
+```
