@@ -2,43 +2,41 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 PLATFORM=""
-#if [[ $(uname) == "Darwin" ]]; then
-# PLATFORM="_mac"
-#fi
+
 BINDIR="$DIR/../bin/"
 BIN="$BINDIR"/seqfu
-FILES=$DIR/../data/
+FILES="$DIR"/../data/
 
-iInterleaved=$FILES/interleaved.fq.gz
-iPair1=$FILES/illumina_1.fq.gz
-iPair2=$FILES/illumina_2.fq.gz
-iAmpli=$FILES/filt.fa.gz
-iSort=$FILES/sort.fa
-iMini=$FILES/target.fa
+iInterleaved="$FILES"/interleaved.fq.gz
+iPair1="$FILES"/illumina_1.fq.gz
+iPair2="$FILES"/illumina_2.fq.gz
+iAmpli="$FILES"/filt.fa.gz
+iSort="$FILES"/sort.fa
+iMini="$FILES"/target.fa
 
 ERRORS=0
 echo "# Minimal test suite"
 
 # Binary works
-$BIN > /dev/null || { echo "Binary not working: $BIN"; exit 1; }
+"$BIN" > /dev/null || { echo "Binary not working: "$BIN""; exit 1; }
 echo "OK: Binary running"
 
 for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave count;
 do
   echo " - $MOD"
-  $BIN $MOD --help >/dev/null  2>&1 || {  echo "Help for $MOD returned non-zero"; exit 1; }
+  "$BIN" "$MOD" --help >/dev/null  2>&1 || {  echo "Help for $MOD returned non-zero"; exit 1; }
 
 done
 
 # Dereiplicate
-if [[ $($BIN derep $iAmpli  | grep -c '>') -eq "18664" ]]; then
+if [[ $("$BIN" derep $iAmpli  | grep -c '>') -eq "18664" ]]; then
 	echo "OK: Dereplicate"
 else
 	echo "ERR: Dereplicate didnt return 18664 seqs"
 	ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BIN derep $iAmpli -m 10000 2>/dev/null | grep -c '>') -eq "1" ]]; then
+if [[ $("$BIN" derep $iAmpli -m 10000 2>/dev/null | grep -c '>') -eq "1" ]]; then
 	echo "OK: Dereplicate, min size"
 else
 	echo "ERR: Dereplicate, min size"
@@ -46,13 +44,13 @@ else
 fi
 
 # Grep
-if [[ $($BIN grep -n seq.1 $FILES/comm.fa  | grep -c '>') -eq "1" ]]; then
+if [[ $("$BIN" grep -n seq.1 $FILES/comm.fa  | grep -c '>') -eq "1" ]]; then
 	echo "OK: grep, name"
 else
 	echo "ERR: grep, name"
 	ERRORS=$((ERRORS+1))
 fi
-if [[ $($BIN grep -c -n size=3 $FILES/comm.fa  | grep -c '>') -eq "1" ]]; then
+if [[ $("$BIN" grep -c -n size=3 $FILES/comm.fa  | grep -c '>') -eq "1" ]]; then
 	echo "OK: grep, size"
 else
 	echo "ERR: grep, size"
@@ -60,21 +58,21 @@ else
 fi
 
 # List
-if [[ $($BIN list $FILES/prot.list $FILES/prot.faa  | grep -c '>') -eq "5" ]]; then
+if [[ $("$BIN" list $FILES/prot.list $FILES/prot.faa  | grep -c '>') -eq "5" ]]; then
 	echo "OK: list, default"
 else
-	echo "ERR: list, default $($BIN list $FILES/prot.list $FILES/prot.faa  | grep -c '>') not 5"
+	echo "ERR: list, default not 5"
 	ERRORS=$((ERRORS+1))
 fi
-if [[ $($BIN list -c $FILES/prot.list $FILES/prot.faa  | grep -c '>') -eq "4" ]]; then
+if [[ $("$BIN" list -c $FILES/prot.list $FILES/prot.faa  | grep -c '>') -eq "4" ]]; then
 	echo "OK: list, with comments"
 else
-	echo "ERR: list, with comments $($BIN list -c $FILES/prot.list $FILES/prot.faa  | grep -c '>') not 4"
+	echo "ERR: list, with comments not 4"
 	ERRORS=$((ERRORS+1))
 fi
 
 # Homopolymer
-HOMO="$(dirname $BIN)/fu-homocomp"
+HOMO="$(dirname "$BIN")/fu-homocomp"
 if [[ -e "$HOMO" ]]; then
   ORIGINAL=$(cat $FILES/homopolymer.fq | wc -c)
   COMPRESSED=$($HOMO $FILES/homopolymer.fq | wc -c)
@@ -87,15 +85,15 @@ if [[ -e "$HOMO" ]]; then
 fi
 
 # Interleave
-if [[ $($BIN ilv -1 $iPair1 -2 $iPair2 | wc -l) == $(cat $iPair1 $iPair2 | gzip -d | wc -l ) ]]; then
+if [[ $("$BIN" ilv -1 $iPair1 -2 $iPair2 | wc -l) == $(cat $iPair1 $iPair2 | gzip -d | wc -l ) ]]; then
 	echo "OK: Interleave"
 else
-	echo "ERR: Interleave $($BIN ilv -1 $iPair1 -2 $iPair2 | wc -l) -eq $(cat $iPair1 $iPair2| gzip -d | wc -l )"
+	echo "ERR: Interleave differs cat/wc"
 	ERRORS=$((ERRORS+1))
 fi
 
 # Deinterleave
-$BIN dei $iInterleaved -o testtmp_
+"$BIN" dei $iInterleaved -o testtmp_
 if [[ $(cat testtmp_* | wc -l) == $(cat $iInterleaved | gzip -d | wc -l ) ]]; then
 	echo "OK: Deinterleave"
 else
@@ -105,21 +103,21 @@ fi
 rm testtmp_*
 
 # Count
-if [[ $($BIN count $iAmpli | cut -f 2) == $(cat $iAmpli | gzip -d | grep -c '>' ) ]]; then
+if [[ $("$BIN" count $iAmpli | cut -f 2) == $(cat $iAmpli | gzip -d | grep -c '>' ) ]]; then
 	echo "OK: Count"
 else
-	echo "ERR: Count $BIN count $iAmpli: $($BIN count $iAmpli | cut -f 2) != $(cat $iAmpli | gzip -d | grep -c '>' )"
+	echo "ERR: Count "$BIN" count $iAmpli: differs grep/wc"
 	ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BIN count $iPair1  $iPair2 | wc -l) -eq 1 ]]; then
+if [[ $("$BIN" count $iPair1  $iPair2 | wc -l) -eq 1 ]]; then
 	echo "OK: Count pairs"
 else
 	echo "ERR: Count pairs"
 	ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BIN count -u $iPair1  $iPair2 | wc -l) -eq 2 ]]; then
+if [[ $("$BIN" count -u $iPair1  $iPair2 | wc -l) -eq 2 ]]; then
 	echo "OK: Count pairs, split"
 else
 	echo "ERR: Count pairs, split"
@@ -128,7 +126,7 @@ fi
 
 
 ## Sort by size (asc)
-if [[ $($BIN sort --asc $iSort| head -n 1| cut -c 2-6) -eq 'short' ]]; then
+if [[ $("$BIN" sort --asc $iSort| head -n 1| cut -c 2-6) -eq 'short' ]]; then
   echo "OK: Sort by size"
 else
   echo "ERR: Sort by size failed"
@@ -136,7 +134,7 @@ else
 fi
 
 ## Head 
-if [[ $($BIN head -n 1 $iInterleaved | wc -l) -eq 4 ]]; then
+if [[ $("$BIN" head -n 1 $iInterleaved | wc -l) -eq 4 ]]; then
   echo "OK: Head 1 sequence"
 else
   echo "ERR: Head failed"
@@ -146,7 +144,7 @@ fi
 
 
 ## Tail 
-if [[ $($BIN tail -n 1 $iInterleaved | wc -l) -eq 4 ]]; then
+if [[ $("$BIN" tail -n 1 $iInterleaved | wc -l) -eq 4 ]]; then
   echo "OK: tail 1 sequence"
 else
   echo "ERR: Tail failed"
@@ -156,7 +154,7 @@ fi
 
 
 ##QUal
-if [[ $($BIN qual  $iInterleaved | grep 'Illumina-1.8' | wc -l ) -eq 1 ]]; then
+if [[ $("$BIN" qual  $iInterleaved | grep 'Illumina-1.8' | wc -l ) -eq 1 ]]; then
   echo "OK: qual tested"
 else
   echo "ERR: qual failed"
@@ -164,36 +162,36 @@ else
 fi
 ## External
 
-if [[ $($BINDIR/fu-orf -1 $iPair1 -m 29 | grep -c '>') -eq 5 ]]; then
+if [[ $("$BINDIR"/fu-orf -1 $iPair1 -m 29 | grep -c '>') -eq 5 ]]; then
   echo "OK: fu-orf tested"
 else
-  echo "ERR: fu-orf test failed: $($BINDIR/fu-orf -1 $iPair1 -m 29 | grep -c '>') != 5"
+  echo "ERR: fu-orf test failed: != 5"
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BINDIR/fu-sw -q $FILES/query.fa -t $FILES/target.fa | grep -c 'Score') -eq 2 ]]; then
+if [[ $("$BINDIR"/fu-sw -q $FILES/query.fa -t $FILES/target.fa | grep -c 'Score') -eq 2 ]]; then
   echo "OK: fu-sw tested"
 else
-  echo "ERR: fu-sw test failed: $BINDIR/fu-sw -q $DATA/query.fa -t $DATA/target.fa | grep -c 'Score' != 2"
+  echo "ERR: fu-sw test failed: != 2"
   ERRORS=$((ERRORS+1))
 fi
 ## STREAMING
 
-if [[ $(cat  $iInterleaved | gzip -d | $BIN head -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
+if [[ $(cat  $iInterleaved | gzip -d | "$BIN" head -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
   echo "OK: Head 1 sequence (stream)"
 else
   echo "ERR: Head failed"
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $(cat  $iInterleaved | gzip -d | $BIN tail -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
+if [[ $(cat  $iInterleaved | gzip -d | "$BIN" tail -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
   echo "OK: tail 1 sequence (stream)"
 else
   echo "ERR: tail failed"
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BIN head -n 6  $iInterleaved | $BIN tail -n 2 2>/dev/null | wc -l) -eq 8 ]]; then
+if [[ $("$BIN" head -n 6  $iInterleaved | "$BIN" tail -n 2 2>/dev/null | wc -l) -eq 8 ]]; then
   echo "OK: head/tail 1 sequence (stream)"
 else
   echo "ERR: head/tail failed"
@@ -201,32 +199,32 @@ else
 fi
 
 # CAT
-if [[ $($BIN cat $iMini | head -n 1) == ">ecoli comment" ]]; then
+if [[ $("$BIN" cat $iMini | head -n 1) == ">ecoli comment" ]]; then
   echo "OK: cat: default"
 else
   echo "ERR: cat: default"
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BIN cat $iMini -s | head -n 1) == ">ecoli" ]]; then
+if [[ $("$BIN" cat $iMini -s | head -n 1) == ">ecoli" ]]; then
   echo "OK: cat: strip comment"
 else
   echo "ERR: cat: strip comment"
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BIN cat -z -p test $iMini | head -n 1) == ">test_1 comment" ]]; then
+if [[ $("$BIN" cat -z -p test $iMini | head -n 1) == ">test_1 comment" ]]; then
   echo "OK: cat: prefix"
 else
-  echo "ERR: cat: prefix not found $($BIN cat -z -p test $iMini | head -n 1)"
+  echo "ERR: cat: prefix not found"
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $($BIN cat -b $iMini -s | head -n 1) != ">target_ecoli" ]]; then
-  echo "ERR: cat: basename not added [$($BIN cat -z -b $iMini | head -n 1) ]"
+if [[ $("$BIN" cat -b $iMini -s | head -n 1) != ">target_ecoli" ]]; then
+  echo "ERR: cat: basename not added"
   ERRORS=$((ERRORS+1))
 else
-  echo "OK: cat: added basename [$($BIN cat -z -b $iMini | head -n 1) ]"
+  echo "OK: cat: added basename"
 
 fi
 

@@ -1,3 +1,6 @@
+# Reference deinterleave.sh script
+
+```bash
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
@@ -82,3 +85,4 @@ $BIN dei -v -o testtmpuneven $iInterUNEVEN
 #$BIN dei -v -o testtmpmiss $iAllMISS
 
 rm testtmp*
+```

@@ -2,7 +2,7 @@ FROM debian:stretch-slim
 
 LABEL maintainer="andrea.telatin@quadram.ac.uk"
 
-RUN apt-get update && apt-get install -y wget 
+RUN apt-get update && apt-get install -y wget --no-install-recommends
 RUN wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 RUN bash Miniconda3-latest-Linux-x86_64.sh -b -f -p $HOME/miniconda
 RUN rm Miniconda3-latest-Linux-x86_64.sh

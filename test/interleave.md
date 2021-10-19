@@ -1,3 +1,6 @@
+# Reference interleave.sh script
+
+```bash
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
@@ -108,3 +111,5 @@ fi
 #$BIN ilv -v -o testtmpmiss -1 $iPair1a -2 $iAllMISS 
 
 rm testtmp*
+ 
+``` 

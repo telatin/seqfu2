@@ -3,6 +3,7 @@
 LOCAL_RELEASE=$(cat "$DIR/../seqfu.nimble" | grep version | cut -f 2 -d = | sed 's/[" ]//g')
 GH_RELEASE=$(curl -s https://api.github.com/repos/telatin/seqfu2/releases/latest  | perl -nE 'my ($tag, $val) = split /:/, $_; if ($tag=~/tag_name/) { my @tag = split /"/, $val; for my $i (@tag) { $i =~s/[^0-9.]//g; say $i if (length($i) > 2); } }')
 """
+
 import subprocess
 import sys
 import json

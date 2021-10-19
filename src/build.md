@@ -1,3 +1,6 @@
+# Initial build script
+
+```bash
 #!/bin/bash
 set -exuo pipefail
 OLDWD=$PWD
@@ -65,3 +68,4 @@ for my $function ("head", "interleave", "deinterleave", "derep", "stats", "count
 }
 
 ' "$VERSION" "$DIR/../bin/seqfu${PLATFORM}" "$DIR/README.raw" > $DIR/../README.md
+```
