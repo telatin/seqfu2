@@ -3,8 +3,10 @@ sort: 1
 ---
 # fu-primers
 
-A program to remove primers from the raw output (FASTQ) of amplicons, 
-allowing IUPAC degenerate bases and checking for multiple occurrences (dimers/concatamers).
+A program to remove primers from the raw output (FASTQ)
+of amplicons, 
+allowing IUPAC degenerate bases and checking for
+multiple occurrences (dimers/concatamers).
 
 ```text
 Usage: fu-primers [options] -1 <FOR> [-2 <REV>]

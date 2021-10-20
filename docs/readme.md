@@ -15,7 +15,7 @@ A general-purpose program to manipulate and parse information from FASTA/FASTQ f
 supporting gzipped input files.
 Includes functions to _interleave_ and _de-interleave_ FASTQ files,
 to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
-SeqFu is available for Linux and MacOS. 
+SeqFu is available for Linux and MacOS.
 
 * A compiled program delivering high performance analyses
 * Supports FASTA/FASTQ files, also Gzip compressed
@@ -25,10 +25,11 @@ Can be easily [installed](installation) via conda:
 ```
 conda install -c bioconda seqfu
 ```
- 
+
 ## Citation
 
-Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files*. 
+Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust 
+and Reproducible Manipulation of Sequence Files*. 
 Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
 
 ## Contents

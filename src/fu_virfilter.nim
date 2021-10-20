@@ -10,15 +10,13 @@ const NimblePkgVersion {.strdefine.} = "undef"
 let
   programName = "fu-filter"
    
- 
- 
 
 proc main(): int =
   let args = docopt("""
-  Usage: fu-virfilter [options] <virsorter> <fasta>
+  Usage: fu-virfilter [options] <virfinder> <fasta>
 
   Files:
-    <virsorter>                VirSorter output file (csv format)
+    <virfinder>                VirFinder output file (csv format)
     <fasta-file>               FASTA file to filter
 
   Options:
@@ -50,19 +48,19 @@ proc main(): int =
     maxlen   = parseInt($args["--max-len"])
 
   # Check input files
-  if not fileExists($args["<virsorter>"]):
-    stderr.writeLine("Error: unable to find virsorter table: ", $args["<virsorter>"])
+  if not fileExists($args["<virfinder>"]):
+    stderr.writeLine("Error: unable to find virfinder table: ", $args["<virfinder>"])
     quit(1)
   else:
     if args["--verbose"]:
-      stderr.writeLine("Reading virsorter table: ", $args["<virsorter>"])
+      stderr.writeLine("Reading virfinder table: ", $args["<virfinder>"])
 
   if not fileExists($args["<fasta>"]):
-    stderr.writeLine("Error: unable to find virsorter table: ", $args["<fasta>"])
+    stderr.writeLine("Error: unable to find virfinder table: ", $args["<fasta>"])
     quit(1)
     
   
-  var df = readCsv($args["<virsorter>"])
+  var df = readCsv($args["<virfinder>"])
 
  
   

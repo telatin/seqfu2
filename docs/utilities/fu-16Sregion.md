@@ -4,7 +4,8 @@ sort: 7
 
 # fu-16Sregion
 
-Align paired-end, or single-end, reads against a 16S reference sequence to determine
+Align paired-end, or single-end, reads against a 16S
+reference sequence to determine
 the hypervariable regions sequences via local alignment.
 
 Can read one FASTA/FASTQ file or data from standard input.

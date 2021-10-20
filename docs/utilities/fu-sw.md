@@ -40,8 +40,10 @@ parameter.
 
 ## Example output
 
-The output will print the alignment score and coordinates in a single line after `QUERY` and `TARGET`.
-If `--showaln` is specified, a graphical summary of the local alignment is provided.
+The output will print the alignment score and coordinates in a
+single line after `QUERY` and `TARGET`.
+If `--showaln` is specified, a graphical summary of the local
+alignment is provided.
 
 ```text
 # QUERY: not_in_target

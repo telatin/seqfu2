@@ -3,7 +3,8 @@ sort: 2
 ---
 # fu-cov
 
-A program to filter the output of assembly programs using the coverage information they print
+A program to filter the output of assembly programs using the
+coverage information they print
 in the sequence names.
 
 ```text
@@ -34,6 +35,7 @@ as the _length_ of the sequences is clearly checked from the FASTA file itself, 
 is found in the sequence description:
 
 Example of contig name from _Shovill_:
+
 ```
 >contig00001 len=596929 cov=9.9 corr=0 origname=NODE_1_length_596929_cov_9.873201_pilon sw=shovill-spades/1.0.4 date=20181128
 ACCCGGTAGAATACCGGACTGAGTATCAAAAAGCCGGTTAACTGAAACTGTCCAGGTTTTGGGGTTCAGTTCATGCCGCATCTTATCCGACCTTGTATTATCCCTCCAGTGCAGAGAAAATC

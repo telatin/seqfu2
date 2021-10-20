@@ -9,14 +9,12 @@
 [![Downloads](https://img.shields.io/conda/dn/bioconda/seqfu)](https://bioconda.github.io/recipes/seqfu/README.html)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
 
-
 A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
 supporting gzipped input files.
 Includes functions to *interleave* and *de-interleave* FASTQ files, to *rename*
 sequences and to *count* and print *statistics* on sequence lengths.
- 
----
 
+---
 
 ## Installation
 
@@ -28,10 +26,10 @@ conda install -y -c bioconda seqfu
 
 ## Citation
 
-
-Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files*. 
+Telatin A, Fariselli P, Birolo G.
+*SeqFu: A Suite of Utilities for the Robust
+and Reproducible Manipulation of Sequence Files*.
 Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
-
 
 ## Full documentation
 

@@ -29,6 +29,7 @@ FASTQ files demultiplexed by CASAVA (Illumina).
 ## Example output
 
 A tabular output contains:
+
 * filename
 * extracted tag
 * fraction of the top tag (accounts for errors)

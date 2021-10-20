@@ -3,11 +3,14 @@ sort: 10
 ---
 # fu-shred
 
-A program to systematically shotgun a reference (i.e. this does **not** simulate
-a random shotgun library preparation, but produce reads of length _L_ sliding
+A program to systematically shotgun a reference
+(i.e. this does **not** simulate
+a random shotgun library preparation, but produce
+reads of length _L_ sliding
 over the reference chromosomes at a step _S_).
 
-This tool is to test the effect of read size alone on alignment and classification
+This tool is to test the effect of read size alone on
+alignment and classification
 methods, and was introduced in SeqFu 1.4.
 
 ```text

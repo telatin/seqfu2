@@ -4,8 +4,9 @@ sort: 11
 
 # fu-homocom
 
-Remove all the homopolymers from FASTA and FASTQ files. The output format is the same of
-the input
+Remove all the homopolymers from FASTA and FASTQ files.
+The output format is the same of
+the input.
 
 ```text
 Usage: fu-homocompress [options] [<fastq-file>...]

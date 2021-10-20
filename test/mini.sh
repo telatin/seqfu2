@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-PLATFORM=""
+
 
 BINDIR="$DIR/../bin/"
 BIN="$BINDIR"/seqfu

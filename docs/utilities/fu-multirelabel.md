@@ -4,8 +4,9 @@ sort: 5
 
 # fu-multirelabel
 
-A program to rename sequences from multiple files (adding the filename,
-  and or numerical postfix). Will fail if multiple sequence receive the same name.
+A program to rename sequences from multiple files
+(adding the filename, and or numerical postfix).
+Will fail if multiple sequence receive the same name.
 
 ```text
 Usage: 
@@ -24,8 +25,9 @@ Usage:
 
 ## Description
 
-A list of files (can be specified with wild chars) that can contain sequences with
-the same name. The program allows to prepend the filename as prefix.
+A list of files (can be specified with wild chars) that
+can contain sequences with the same name.
+The program allows to prepend the filename as prefix.
 
 ## Example usage
 

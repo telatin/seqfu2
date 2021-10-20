@@ -7,7 +7,10 @@ permalink: /about
 
 ## Citing
 
-Telatin A, Fariselli P, Birolo G. **SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files**. Bioengineering 2021, 8, 59. 
+Telatin A, Fariselli P, Birolo G.
+**SeqFu: A Suite of Utilities for the Robust and
+Reproducible Manipulation of Sequence Files**.
+Bioengineering 2021, 8, 59.
 [https://doi.org/10.3390/bioengineering8050059](doi.org/10.3390/bioengineering8050059)
 
 ## Why
