@@ -3,6 +3,7 @@
 
 # SeqFu
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/da5c30ca4511439bba1140848c05ad94)](https://app.codacy.com/gh/telatin/seqfu2?utm_source=github.com&utm_medium=referral&utm_content=telatin/seqfu2&utm_campaign=Badge_Grade_Settings)
 [![Build_Nim](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml)
 ![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
 [![Code size](https://img.shields.io/github/languages/code-size/telatin/seqfu2)](README.md)
