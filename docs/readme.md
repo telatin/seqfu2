@@ -22,6 +22,7 @@ SeqFu is available for Linux and MacOS.
 * A growing collection of handy utilities, also for quick inspection of the datasets
 
 Can be easily [installed](installation) via conda:
+
 ```
 conda install -c bioconda seqfu
 ```

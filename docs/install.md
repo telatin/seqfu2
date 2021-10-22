@@ -7,17 +7,17 @@ permalink: /installation
 
 ## Install via Miniconda
 
-The **recommended** installation method is via BioConda, 
+The **recommended** installation method is via BioConda,
 which is supported from both **Linux** and **macOS**.
 If you have _conda_ installed ([how to install it](https://docs.conda.io/en/latest/miniconda.html)):
 
-```
+```bash
 conda install -c conda-forge -c bioconda seqfu
 ```
 
 More info on [installing conda](https://telatin.github.io/microbiome-bioinformatics/Install-Miniconda/).
 
-:warning: It is _possible_ to compile the program for Windows, 
+:warning: It is _possible_ to compile the program for Windows,
 but we cannot provide support for this platform at the moment.
 
 ## Pre-compiled binaries
@@ -27,7 +27,6 @@ where `seqfu` is the native Linux binary and `seqfu-mac` is the MacOS binary.
 When possible, we recommend to install SeqFu via Miniconda (see above),
 as it provides the full set of tools.
 
-
 ## Manual compilation
 
 ### Linux and macOS
@@ -35,8 +34,9 @@ as it provides the full set of tools.
 1) If `nim` is not installed, install it
 (**[see instructions](https://nim-lang.org/install_unix.html)**).
 We suggest - when available - the `choosenim` method
-2) Clone the repository (`git clone https://github.com/telatin/seqfu2`)
-3) Compile with `nimble build`
-4) The binaries will be available in the `./bin` directory
 
- 
+2) Clone the repository (`git clone https://github.com/telatin/seqfu2`)
+
+3) Compile with `nimble build`
+
+4) The binaries will be available in the `./bin` directory

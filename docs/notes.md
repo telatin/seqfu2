@@ -20,12 +20,13 @@ My personal choice has been (and is) **[SeqKit](https://bioinf.shenwei.me/seqkit
 a general purpose toolkit.
 
 As many other bioinformaticians, I found myself coding small _ad hoc_ scripts, for example:
- * A tool to extract the _index_ from Illumina FASTQ files
-(taking the most common occurrence from the first 1000 reads)
- * A tool to extract contigs using a list from a predictor
- * Scripts to interleave/deinterleave FASTQ files
 
-The problem was distributing a very small script to users lacking the library I was using (like the excellent [pyfastx](https://pypi.org/project/pyfastx/) or our 
+* A tool to extract the _index_ from Illumina FASTQ files
+(taking the most common occurrence from the first 1000 reads)
+* A tool to extract contigs using a list from a predictor
+* Scripts to interleave/deinterleave FASTQ files
+
+The problem was distributing a very small script to users lacking the library I was using (like the excellent [pyfastx](https://pypi.org/project/pyfastx/) or our
 [FASTX::Reader](https://metacpan.org/release/FASTX-Reader)).
 
 The possibility to distribute self-contained binaries was an option that was both
@@ -43,10 +44,10 @@ C version of Heng Li's parsed, wrapped in an object oriented module.
 
 ## About the name
 
-The name of the program was modeled after "[ScriptFu](https://docs.gimp.org/en/gimp-concepts-script-fu.html)", 
+The name of the program was modeled after "[ScriptFu](https://docs.gimp.org/en/gimp-concepts-script-fu.html)",
 a set of macros built in the image manipulation **GIMP**.
 
-[Apparently](https://twitter.com/StevenSalzberg1/status/1439704488508526599?s=20), 
+[Apparently](https://twitter.com/StevenSalzberg1/status/1439704488508526599?s=20),
 in the US this might sound offensive.
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I love it that these guys got away with creating a tool called &#39;seqfu&#39;, and even put it in the title of their paper (<a href="https://t.co/dCCUStKTEB">https://t.co/dCCUStKTEB</a>). Did the editors/reviewers realize what this word sounds like in English? 😉 h/t <a href="https://twitter.com/telatin?ref_src=twsrc%5Etfw">@telatin</a> <a href="https://t.co/fHvOxsKXKx">https://t.co/fHvOxsKXKx</a></p>&mdash; Steven Salzberg (@StevenSalzberg1) <a href="https://twitter.com/StevenSalzberg1/status/1439704488508526599?ref_src=twsrc%5Etfw">September 19, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -56,15 +57,15 @@ in the US this might sound offensive.
 So we after a consultation with Microsoft (and thanks to their previous experience with Minesweep),
 offer a tool to rename the program to **SeqFlower**.
 
-![SeqFlower]({{site.baseurl}}/img/flowers.png) 
+![SeqFlower]({{site.baseurl}}/img/flowers.png)
 
 The renaming script is called `flower.sh` in the _src_ directory.
 
-
 ## Developer's details
- 
+
 ### Perl module
-A Perl version of the parser is available both from 
+
+A Perl version of the parser is available both from
 **[MetaCPAN](https://metacpan.org/release/FASTX-Reader)** and from Bioconda:
 
 ```

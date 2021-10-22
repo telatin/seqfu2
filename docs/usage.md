@@ -8,15 +8,14 @@ permalink: /usage
 Check the complete documentation for each [tool]({{site.baseurl}}/tools), that contains the detailed
 documentation.
 
-SeqFu ha tools for:
- * Make life easier when working from the command line 
+SeqFu has tools for:
+
+* Make life easier when working from the command line
  (`seqfu head`, `seqfu tail`, `seqfu rc`...)
- * Provide a visual feedback of datasets (like `seqfu view`)
- * Get statistics (`seqfu count` and `seqfu stats`)
- * Perform common operations with a reliable tool (`seqfu interleave`, `seqfu deinterleave`)
- * Perform specialistic operations with added ease of use or features
-
-
+* Provide a visual feedback of datasets (like `seqfu view`)
+* Get statistics (`seqfu count` and `seqfu stats`)
+* Perform common operations with a reliable tool (`seqfu interleave`, `seqfu deinterleave`)
+* Perform specialistic operations with added ease of use or features
 
 ## Main program
 
@@ -45,11 +44,13 @@ version: {VERSION}
   · view                : view sequences with colored quality and oligo matches
 
 Add --help after each command to print usage
+
 ```
 
 ## Subprograms
 
 *SeqFu* is bundled with an (increasing) set of utilities sharing the FASTX parsing library:
+
 * **fu-orf** to extract ORFs from Paired-End libraries
 * **fu-cov** to extract contigs from the most commonly used assembly programs using the coverage information printed in the headers
 * **fu-homocomp** to compress homopolymers (e.g. for Nanopore applications)

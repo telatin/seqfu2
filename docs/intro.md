@@ -38,7 +38,7 @@ The _reverse complement_ function
 is unique in taking as input both
 files and sequences, and properly supports IUPAC degenerate bases.
 
-## Getting an idea: view, qual, stats, count...
+## Getting an idea: view, qual, stats, count
 
 **[seqfu view]({{site.baseurl}}/tools/view.html)**
 is only for interactive use, and can be used to have a visual
@@ -51,7 +51,7 @@ can print the total number of sequences, bases, average,
 N50, N75, N90 and AuN, minimum and maximum length of a dataset,
 both in TSV format and with a nicer console oriented output:
 
-```
+```text
 ┌────────────────────┬───────┬──────────┬───────┬─────┬─────┬─────┬────────┬─────┬─────┐
 │ File               │ #Seq  │ Total bp │ Avg   │ N50 │ N75 │ N90 │ auN    │ Min │ Max │
 ├────────────────────┼───────┼──────────┼───────┼─────┼─────┼─────┼────────┼─────┼─────┤
@@ -65,7 +65,7 @@ both in TSV format and with a nicer console oriented output:
 ## Managing datasets: interleave, deinterleave, lanes
 
 Very common tasks when dealing with Illumina Paired-End sequences are
-interleaving and deinterleaving the datasets. 
+interleaving and deinterleaving the datasets.
 
 **[seqfu interleave]({{site.baseurl}}/tools/interleave.html)** and
 **[seqfu deinterleave]({{site.baseurl}}/tools/deinterleave.html)**
@@ -81,4 +81,3 @@ Multiple lanes can be quickly merged with **[seqfu lanes]({{site.baseurl}}/tools
 datasets, printing the number of identical sequences. In particular, this information
 can be used also from the input dataset, allowing to dereplicating a
 set of dereplicated files keeping trace of the number of sequences.
-

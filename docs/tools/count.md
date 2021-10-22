@@ -4,7 +4,7 @@ sort: 3
 # seqfu count
 
 *count* (or *cnt*) is one of the core subprograms of *SeqFu*.
-It's used to count the sequences in FASTA/FASTQ files, and it's _paired-end_ aware so 
+It's used to count the sequences in FASTA/FASTQ files, and it's _paired-end_ aware so
 it will print the count of both files in a single line, but checking that both
 files have the same number of sequences.
 
@@ -24,8 +24,6 @@ Options:
   -h, --help             Show this help
 ```
 
-
-
 ### Streaming
 
 Input from stream is supported.
@@ -43,16 +41,16 @@ data/illumina_1.fq.gz 7  Paired
 ```
 
 In case of errors will print a warning:
+
 ```text
 ERROR: Different counts in data/longerone_R1.fq.gz and data/longerone_R2.fq.gz
 # data/longerone_R1.fq.gz: 7
 # data/longerone_R2.fq.gz: 2
 ```
 
-
 ### Multithreading
 
-Performance improvement measured on the _MiSeq SOP_ dataset from [mothur](https://mothur.org): 
+Performance improvement measured on the _MiSeq SOP_ dataset from [mothur](https://mothur.org):
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
@@ -60,9 +58,7 @@ Performance improvement measured on the _MiSeq SOP_ dataset from [mothur](https:
 | `seqfu count ../mothur-sop/*.fastq -t 1`   | 416.5 ± 15.2 | 397.8 | 440.9 | 2.92 ± 0.16 |
 | `seqfu count-legacy ../mothur-sop/*.fastq` | 539.2 ± 16.6 | 519.6 | 577.4 | 3.78 ± 0.19 |
 
-
-## Legacy algorithm 
-
+## Legacy algorithm
 
 ```text
 Usage: count-legacy [options] [<inputfile> ...]

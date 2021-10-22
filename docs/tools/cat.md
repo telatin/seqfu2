@@ -49,14 +49,14 @@ Output:
   -h, --help             Show this help
 ```
 
-
 ## Input
 
-One or more FASTA or FASTQ files. If no files are provided, the program will read from _standard input_. 
+One or more FASTA or FASTQ files. If no files are provided, the program will read from _standard input_.
 Additionally, you can add _standard input_ to the list of input files.
 by adding `-`.
 
 ## Output
-It is possible to mix FASTA and FASTQ files, and by default the program will produce a mixed output. 
+
+It is possible to mix FASTA and FASTQ files, and by default the program will produce a mixed output.
 Using `--fasta` or `--fastq` will force a specific output formats. For FASTA sequences a default quality values will be used.
 Using `--list` the simple list of records matching the criteria will be printed.
