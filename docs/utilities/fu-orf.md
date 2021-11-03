@@ -18,7 +18,7 @@ improved tests and `--scan-reverse` option (previously
 enabled by default).
 
 ```text
-fu-orf
+fu-orf 
  
   Extract ORFs from Paired-End reads.
 
@@ -35,17 +35,21 @@ fu-orf
     -m, --min-size INT     Minimum ORF size (aa) [default: 25]
     -p, --prefix STRING    Rename reads using this prefix
     -r, --scan-reverse     Also scan reverse complemented sequences
+    -c, --code INT         NCBI Genetic code to use [default: 1]
+    -l, --min-read-len INT Minimum read length to process [default: 25]
   
   Paired-end optoins:
+    -j, --join             Attempt Paired-End joining
     --min-overlap INT      Minimum PE overlap [default: 12]
     --max-overlap INT      Maximum PE overlap [default: 200]
     --min-identity FLOAT   Minimum sequence identity in overlap [default: 0.80]
-    -j, --join             Attempt Paired-End joining
   
   Other options:
+    --codes                Print NCBI genetic codes and exit
     --pool-size INT        Size of the sequences array to be processed
                            by each working thread [default: 250]
     --verbose              Print verbose log
+    --debug                Print debug log  
     --help                 Show help
 ```
 
@@ -88,3 +92,32 @@ KIGCKFRPLAAGWAHRQSKFVSKKNTCGAIKQISNDPSAGSPTETLLRLLLPLNDQ
 >filt.2_5 frame=-2 tot=5
 QVDKKLVVSLDLWRQAGPTAKASLFQRKTHVVQLSKSVMILPQVHLRKPCYDFYFL
 ```
+
+
+## Genetic codes
+
+1.  The Standard Code
+2.  The Vertebrate Mitochondrial Code
+3.  The Yeast Mitochondrial Code
+4.  The Mold, Protozoan, and Coelenterate Mitochondrial Code and the Mycoplasma/Spiroplasma Code
+5.  The Invertebrate Mitochondrial Code
+6.  The Ciliate, Dasycladacean and Hexamita Nuclear Code
+9.  The Echinoderm and Flatworm Mitochondrial Code
+10. The Euplotid Nuclear Code
+11. The Bacterial, Archaeal and Plant Plastid Code
+12. The Alternative Yeast Nuclear Code
+13. The Ascidian Mitochondrial Code
+14. The Alternative Flatworm Mitochondrial Code
+16. Chlorophycean Mitochondrial Code
+21. Trematode Mitochondrial Code
+22. Scenedesmus obliquus Mitochondrial Code
+23. Thraustochytrium Mitochondrial Code
+24. Rhabdopleuridae Mitochondrial Code
+25. Candidate Division SR1 and Gracilibacteria Code
+26. Pachysolen tannophilus Nuclear Code
+27. Karyorelict Nuclear Code
+28. Condylostoma Nuclear Code
+29. Mesodinium Nuclear Code
+30. Peritrich Nuclear Code
+31. Blastocrithidia Nuclear Code
+33. Cephalodiscidae Mitochondrial UAA-Tyr Code

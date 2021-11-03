@@ -7,6 +7,7 @@ permalink: /intro
 
 SeqFu consists of core programs, accessible as subcommands, and a set
 of corollary utilities, having the prefix `fu-`.
+
 Type `seqfu` alone to list the core subprograms,
 and `seqfu {command} --help`
 to access the help of each specific subcommand.
