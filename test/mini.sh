@@ -229,6 +229,13 @@ else
 
 fi
 
+## fu-cov
+if [[ $("$BINDIR"/fu-cov "$FILES/ctgs.fa.gz" | grep -c '>') -eq 1 ]]; then
+  echo "OK: fu-cov"
+else
+  echo "ERR: fu-cov"
+  ERRORS=$((ERRORS+1))
+fi
  
 echo ""
 for TEST in "$DIR"/*.sh;

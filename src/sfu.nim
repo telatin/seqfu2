@@ -96,8 +96,20 @@ proc main(args: var seq[string]): int =
                   "view"           : "view sequences with colored quality and oligo matches",
                }.toTable
 
-  if len(args) < 1 or not progs.contains(args[0]):
-    # no first argument: print help
+  if len(args) == 1 and (args[0] == "--version" or args[0] == "version"):
+    # If the first argument is either --version or version, print the version
+    echo(version())
+    0
+  elif len(args) == 1 and (args[0] == "--cite" or args[0] == "cite"):
+    echo "Telatin A, Fariselli P, Birolo G."
+    echo "SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files."
+    echo "Bioengineering 2021, 8, 59. doi.org/10.3390/bioengineering8050059"
+    echo ""
+    echo "Website: https://telatin.github.io/seqfu2"
+    0
+  elif len(args) < 1 or not progs.contains(args[0]):
+    # If the first argument is not a valid subprogram, print the help
+    # No arguments: print help
     var 
       hkeys1 = toSeq(keys(helps))
       hkeys2 = toSeq(keys(helps_last))
@@ -117,13 +129,22 @@ proc main(args: var seq[string]): int =
     echo ""
     for k in hkeys2:
       echo "  ", format("· $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
-      
+    
+    
     echo "\nAdd --help after each command to print usage"
-    0
+    if len(args) > 0:
+      echo "Unknown subprogram: ", args[0]
+      1
+    else:
+      
+      0
   else:
-    var p = args[0]
-    var pargs = args[1 .. ^1]
-    progs[args[0]](pargs)
+    # If the first argument is a valid subprogram, run it
+    # with its arguments
+    var
+      programName = args[0]
+      pargs = args[1 .. ^1]
+    progs[programName](pargs)
 
 when isMainModule:
   try:
