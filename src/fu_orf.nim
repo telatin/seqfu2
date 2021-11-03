@@ -12,14 +12,14 @@ const minSeqLen = 18
 var verbose = false
   
 type
-    mergeCfg = tuple[join: bool, minId: float, minOverlap, maxOverlap, minorf: int]
+    mergeCfg = tuple[join: bool, minId: float, minOverlap, maxOverlap, minorf: int, scanreverse: bool]
 
 proc length(self:FastxRecord): int = 
   ## returns length of sequence
   self.seq.len()
 
-proc `$`(s: FastxRecord): string = 
-  "@" & s.name & " " & s.comment & "\n" & s.seq & "\n+\n" & s.qual
+# proc `$`(s: FastxRecord): string = 
+#   "@" & s.name & " " & s.comment & "\n" & s.seq & "\n+\n" & s.qual
 
 iterator codons(self: FastxRecord) : string = 
   var i = 0
@@ -103,12 +103,16 @@ template echoVerbose(things: varargs[string, `$`]) =
  
  
 
-proc translateAll(input: FastxRecord, minOrfSize=10): seq[FastxRecord] =
+proc translateAll(input: FastxRecord, minOrfSize=10, scanReverse=false): seq[FastxRecord] =
   var
     rawprots : seq[FastxRecord]
-      
+    seqs = @[input]
+
+  if scanReverse == true:
+    seqs.add(input.revcompl()) 
+
   # First translate all the frames
-  for sequence in @[input, input.revcompl()]:
+  for sequence in seqs:
     if len(sequence.seq) < minSeqLen:
       break
     for frame in @[0, 1, 2]:
@@ -116,26 +120,51 @@ proc translateAll(input: FastxRecord, minOrfSize=10): seq[FastxRecord] =
         dna = sequence.seq[frame .. ^1]
       var
         obj : FastxRecord
-      obj.name = if sequence == input: "+" &  $frame
+      obj.name = if scanReverse == false or sequence == input: "+" &  $frame
                 else: "-" & $frame
       obj.seq = dna
       obj.seq = obj.translate().seq 
       rawprots.add( obj )
   
   # Then split on STOP codons
+  for translatedRecord in rawprots:
+    var
+      orf = ""
+      start = 0
+     
+
+    for i, aa in translatedRecord.seq:
+      if aa == '*' or i == len(translatedRecord.seq) - 1:
+        if len(orf) >= minOrfSize:
+          orf = translatedRecord.seq[start ..< i]
+          var
+            obj : FastxRecord
+          obj.name = translatedRecord.name & " start=" & $start
+          obj.seq = orf
+          result.add( obj )
+           
+        start = i + 1
+        orf = ""
+      else:
+        orf &= $aa
+
+#[      
   for translatedseq in rawprots:
+     
     let translations : seq = translatedseq.seq.split('-')
+     
     for t in translations:
       if len(t) > minOrfSize:
         let orfs = t.split('*')
+         
         for orf in orfs:
           if len(orf) > minOrfSize:
             var s: FastxRecord
             s.name = translatedseq.name
             s.seq = orf
             result.add(s)
-      
- 
+]#      
+  
 proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90): FastxRecord {.discardable.} = 
   var REV = revcompl(R2) 
   var max = if R1.seq.high > REV.seq.high: REV.seq.high
@@ -192,10 +221,10 @@ proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
       joined = true
 
   if joined == true:
-    orfs.add( translateAll(s1, opts.minorf) )
+    orfs.add( translateAll(s1, opts.minorf, opts.scanreverse) )
   else:
-    orfs.add( translateAll(R1, opts.minorf))
-    orfs.add( translateAll(R2, opts.minorf))
+    orfs.add( translateAll(R1, opts.minorf, opts.scanreverse))
+    orfs.add( translateAll(R2, opts.minorf, opts.scanreverse))
   
   for peptide in orfs:
     counter += 1
@@ -208,7 +237,7 @@ proc processSingle(R1: FastxRecord, opts: mergeCfg): string =
     orfs: seq[FastxRecord]
     counter = 0
   
-  orfs.add( translateAll(R1, opts.minorf))
+  orfs.add( translateAll(R1, opts.minorf, opts.scanreverse))
   
   for peptide in orfs:
     counter += 1
@@ -233,9 +262,9 @@ proc parseArraySingle(pool: seq[FastxRecord], opts: mergeCfg): string =
       quit()
    
 proc main(argv: var seq[string]): int =
-  let args = docopt("""
-  fu-orf
-
+  let args =  docopt("""
+  fu-orf $version
+ 
   Extract ORFs from Paired-End reads.
 
   Usage: 
@@ -243,15 +272,22 @@ proc main(argv: var seq[string]): int =
   fu-orf [options] -1 File_R1.fq
   fu-orf [options] -1 File_R1.fq -2 File_R2.fq
   
-  Options:
+  Input files:
     -1, --R1 FILE          First paired end file
     -2, --R2 FILE          Second paired end file
+
+  ORF Finding and Output options:
     -m, --min-size INT     Minimum ORF size (aa) [default: 25]
     -p, --prefix STRING    Rename reads using this prefix
+    -r, --scan-reverse     Also scan reverse complemented sequences
+  
+  Paired-end optoins:
     --min-overlap INT      Minimum PE overlap [default: 12]
     --max-overlap INT      Maximum PE overlap [default: 200]
     --min-identity FLOAT   Minimum sequence identity in overlap [default: 0.80]
     -j, --join             Attempt Paired-End joining
+  
+  Other options:
     --pool-size INT        Size of the sequences array to be processed
                            by each working thread [default: 250]
     --verbose              Print verbose log
@@ -265,6 +301,7 @@ proc main(argv: var seq[string]): int =
     poolSize : int
     prefix : string
     singleEnd = true
+     
 
   try:
     fileR1 = $args["--R1"]
@@ -273,7 +310,12 @@ proc main(argv: var seq[string]): int =
     verbose = args["--verbose"]
     poolSize = parseInt($args["--pool-size"])
     prefix = $args["--prefix"]
-    mergeOptions = (join: args["--join"] or false,  minId: parseFloat($args["--min-identity"]), minOverlap: parseInt($args["--min-overlap"]), maxOverlap: parseInt($args["--max-overlap"]), minorf: minOrfSize)
+    mergeOptions = (join: args["--join"] or false,  
+      minId: parseFloat($args["--min-identity"]), 
+      minOverlap: parseInt($args["--min-overlap"]), 
+      maxOverlap: parseInt($args["--max-overlap"]), 
+      minorf: minOrfSize, 
+      scanreverse: args["--scan-reverse"] or false)
   except:
     stderr.writeLine("Use fu-orf --help")
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())

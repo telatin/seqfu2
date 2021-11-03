@@ -170,7 +170,7 @@ fi
 ## External
 
 # Seqfu ORF
-ORF1=$("$BINDIR"/fu-orf -1 "$iPair1" -m 29 | grep -c '>')
+ORF1=$("$BINDIR"/fu-orf -1 "$iPair1" -m 29 -r | grep -c '>')
 if [[ $ORF1 -eq 5 ]]; then
   echo "OK: fu-orf [-1] tested"
 else
@@ -178,7 +178,7 @@ else
   ERRORS=$((ERRORS+1))
 fi
 
-ORFSE=$("$BINDIR"/fu-orf "$iPair1" -m 29 | grep -c '>')
+ORFSE=$("$BINDIR"/fu-orf "$iPair1" -m 29 -r  | grep -c '>')
 if [[ $ORFSE -eq 5 ]]; then
   echo "OK: fu-orf [Single] tested"
 else
@@ -186,7 +186,7 @@ else
   ERRORS=$((ERRORS+1))
 fi
 
-ORF2=$("$BINDIR"/fu-orf  -m 29 -1 "$iPair1" -2 "$iPair2" | grep -c '>')
+ORF2=$("$BINDIR"/fu-orf -r -m 29 -1 "$iPair1" -2 "$iPair2" | grep -c '>')
 if [[ $ORF2 -gt 4 ]]; then
   echo "OK: fu-orf [Paired] tested"
 else
@@ -313,5 +313,5 @@ if  [[ $ERRORS -gt 0 ]]; then
 	echo "FAIL: $ERRORS test failed."
 	exit 1
 else
-	echo "PASS"
+	echo "PASS $PASS"
 fi
