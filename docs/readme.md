@@ -23,7 +23,7 @@ SeqFu is available for Linux and MacOS.
 
 Can be easily [installed](installation) via conda:
 
-```
+```bash
 conda install -c bioconda seqfu
 ```
 

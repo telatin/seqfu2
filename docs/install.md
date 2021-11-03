@@ -22,8 +22,8 @@ but we cannot provide support for this platform at the moment.
 
 ## Pre-compiled binaries
 
-Pre-compiled core binaries are distributed with the [stable releases](https://github.com/telatin/seqfu2/releases),
-where `seqfu` is the native Linux binary and `seqfu-mac` is the MacOS binary.
+Pre-compiled core binaries are distributed with the [releases](https://github.com/telatin/seqfu2/releases),
+as zip files containing all the tools, labeled as "Linux" and "Darwin" as they target Linux and macOS respectively.
 When possible, we recommend to install SeqFu via Miniconda (see above),
 as it provides the full set of tools.
 
@@ -37,6 +37,6 @@ We suggest - when available - the `choosenim` method
 
 2) Clone the repository (`git clone https://github.com/telatin/seqfu2`)
 
-3) Compile with `nimble build`
+3) Compile with `nimble build`, that will download the required packages
 
 4) The binaries will be available in the `./bin` directory

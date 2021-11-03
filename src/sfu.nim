@@ -132,11 +132,10 @@ proc main(args: var seq[string]): int =
     
     
     echo "\nAdd --help after each command to print usage"
-    if len(args) > 0:
+    if len(args) > 0 and args[0] != "--help":
       echo "Unknown subprogram: ", args[0]
       1
     else:
-      
       0
   else:
     # If the first argument is a valid subprogram, run it

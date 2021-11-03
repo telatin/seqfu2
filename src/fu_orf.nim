@@ -5,20 +5,20 @@ import os
 import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"
-const prog = "fu-orf"
+ 
 const version = if NimblePkgVersion == "undef": "<preprelease>"
                 else: NimblePkgVersion
 const minSeqLen = 18
-
+var verbose = false
   
 type
     mergeCfg = tuple[join: bool, minId: float, minOverlap, maxOverlap, minorf: int]
 
-proc length*(self:FastxRecord): int = 
+proc length(self:FastxRecord): int = 
   ## returns length of sequence
   self.seq.len()
 
-proc `$`*(s: FastxRecord): string = 
+proc `$`(s: FastxRecord): string = 
   "@" & s.name & " " & s.comment & "\n" & s.seq & "\n+\n" & s.qual
 
 iterator codons(self: FastxRecord) : string = 
@@ -97,22 +97,11 @@ proc translate*(self:FastxRecord, code = 1): FastxRecord =
   result = self
   result.seq = transeq.join
 
-
-proc verbose(msg: string, print: bool) =
-  if print:
-    stderr.writeLine(" * ", msg)
-
-proc format_dna(seq: string, format_width: int): string =
-  if format_width == 0:
-    return seq
-  for i in countup(0,seq.len - 1,format_width):
+template echoVerbose(things: string) =
+  if verbose == true:
+    stderr.writeLine(" - ", things)
  
-    if (seq.len - i <= format_width):
-      result &= seq[i..seq.len - 1]
-    else:
-      result &= seq[i..i + format_width - 1] & "\n"
-
-
+ 
 
 proc translateAll(input: FastxRecord, minOrfSize=10): seq[string] =
   var
@@ -152,8 +141,8 @@ proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90
     var
       s1 = R1.seq[R1.seq.high - i .. R1.seq.high]
       s2 = REV.seq[0 .. 0 + i ]
-      q1 = R1.qual[R1.seq.high - i .. R1.seq.high]
-      q2 = R2.qual[R2.seq.high - i .. R2.seq.high]
+      #q1 = R1.qual[R1.seq.high - i .. R1.seq.high]
+      #q2 = R2.qual[R2.seq.high - i .. R2.seq.high]
       score = 0.0
       
 
@@ -182,7 +171,7 @@ proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90
 proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
   var
     orfs: seq[string]
-    s1, s2: FastxRecord
+    s1: FastxRecord
     joined = false
     counter = 0
 
@@ -204,7 +193,19 @@ proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
     counter += 1
     result &= '>' & R1.name & "_" & $counter & "/" & $(len(orfs)) & "\n" & peptide & "\n"
 
+
+proc processSingle(R1: FastxRecord, opts: mergeCfg): string =
+  var
+    orfs: seq[string]
+    counter = 0
   
+  orfs.add( translateAll(R1, opts.minorf))
+  
+  for peptide in orfs:
+    counter += 1
+    result &= '>' & R1.name & "_" & $counter & "/" & $(len(orfs)) & "\n" & peptide & "\n"
+
+    
 proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
   for i in 0 .. pool.high:
     if i mod 2 == 1:
@@ -214,6 +215,13 @@ proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
         result &= processPair(pool[i - 1], pool[i], opts) 
         quit()
 
+proc parseArraySingle(pool: seq[FastxRecord], opts: mergeCfg): string =
+  for i in 0 .. pool.high:
+    try:
+      result &= processSingle(pool[i], opts)  
+    except:
+      result &= processSingle(pool[i], opts) 
+      quit()
    
 proc main(argv: var seq[string]): int =
   let args = docopt("""
@@ -241,9 +249,8 @@ proc main(argv: var seq[string]): int =
   var
     fileR1, fileR2: string
     minOrfSize, counter: int
-    verbose: bool
     mergeOptions: mergeCfg
-    respCount = 0
+    #respCount = 0
     poolSize : int
     prefix : string
     singleEnd = true
@@ -260,11 +267,13 @@ proc main(argv: var seq[string]): int =
     stderr.writeLine("Use fu-orf --help")
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
     quit(0)
-
-    
-  if len(fileR1) == 0:
+ 
+  echoVerbose("SeqFu ORF")
+#[
+    if len(fileR1) == 0:
     verbose("Missing required parameters: -1 FILE1 [-2 FILE2]", true)
     quit(0)
+ ]#
 
   if not fileExists(fileR1):
     stderr.writeLine("FATAL ERROR: File [-1] ", fileR1, " not found.")
@@ -273,24 +282,28 @@ proc main(argv: var seq[string]): int =
     stderr.writeLine("FATAL ERROR: File [-2] ", fileR2, " not found.")
     quit(1)
   elif fileR2 == "nil":
-    verbose("Single end mode", args["--verbose"])
+    echoVerbose("Single end mode")
     singleEnd = true
   
 
   var R1 = xopen[GzFile](fileR1)
   defer: R1.close()
   var read1: FastxRecord
-  verbose("Reading R1:" & fileR1, verbose)
+  echoVerbose("Reading R1:" & fileR1)
 
 
   
   var readspool : seq[FastxRecord]
   var responses = newSeq[FlowVar[string]]()
+
   if not singleEnd:
+    ##
+    ## Paired End Mode
+    ##
     var R2 = xopen[GzFile](fileR2)
     defer: R2.close()
     var read2: FastxRecord
-    verbose("Reading R2:" & fileR2, verbose)
+    echoVerbose("Reading R2:" & fileR2, verbose)
     while R1.readFastx(read1):
       counter += 1
       if prefix != "nil":
@@ -305,27 +318,31 @@ proc main(argv: var seq[string]): int =
         responses.add(spawn parseArray(readspool, mergeOptions))
         readspool.setLen(0)
 
+    # Empty queue
     responses.add(spawn parseArray(readspool, mergeOptions))
     
-    for resp in responses:
-      let s = ^resp
-      stdout.write(s)
+
   else:
+    ##
+    ## Single End Mode
+    ##
     while R1.readFastx(read1):
       counter += 1
+
       if prefix != "nil":
         read1.name = prefix & $counter
          
       readspool.add(read1)
       if counter mod poolSize == 0:
-        responses.add(spawn parseArray(readspool, mergeOptions))
+        responses.add(spawn parseArraySingle(readspool, mergeOptions))
         readspool.setLen(0)
 
-    responses.add(spawn parseArray(readspool, mergeOptions))
+ 
+    responses.add(spawn parseArraySingle(readspool, mergeOptions))
     
-    for resp in responses:
-      let s = ^resp
-      stdout.write(s)
+  for resp in responses:
+    let s = ^resp
+    stdout.write(s)
 
 when isMainModule:
   main_helper(main)
