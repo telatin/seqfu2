@@ -40,6 +40,7 @@ One or more FASTA or FASTQ files. By default will read from STDIN.
 ## Parameters
 
 Main parameters:
+
 * the desired sequence length with `--length INT`
 * the distance between the starting site of each read, with `--step INT`
 * the quality value of each base, with `--quality INT` (if you supply **-1**, the output will be in FASTA format)
@@ -55,6 +56,7 @@ complement of the whole dataset with `seqfu rc`.
 
 The generated sequences will be printed to the standard output (STDOUT). Each read has a progressive
 name generated like this:
+
 * file basename (if `--basename` is specified)
 * a string separator (if `--basename` is specified)
 * the chromosome name
@@ -86,6 +88,5 @@ IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 
 ## Shotgun simulation
 
-If you need to simulate a whole genome shotun, you will need alternative software like 
+If you need to simulate a whole genome shotun, you will need alternative software like
 [ART](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm).
- 
