@@ -28,6 +28,11 @@ do
 
 done
 
+# Check version
+
+VERSION=$("$BIN" version)
+grep $VERSION $DIR/../seqfu.nimble
+
 # Dereiplicate
 if [[ $("$BIN" derep "$iAmpli"  | grep -c '>') -eq "18664" ]]; then
 	echo "OK: Dereplicate"
@@ -161,12 +166,31 @@ else
   echo "ERR: qual failed"
   ERRORS=$((ERRORS+1))
 fi
+
 ## External
 
-if [[ $("$BINDIR"/fu-orf -1 "$iPair1" -m 29 | grep -c '>') -eq 5 ]]; then
-  echo "OK: fu-orf tested"
+# Seqfu ORF
+ORF1=$("$BINDIR"/fu-orf -1 "$iPair1" -m 29 | grep -c '>')
+if [[ $ORF1 -eq 5 ]]; then
+  echo "OK: fu-orf [-1] tested"
 else
-  echo "ERR: fu-orf test failed: != 5"
+  echo "ERR: fu-orf [-1] test failed: $ORF1 != 5"
+  ERRORS=$((ERRORS+1))
+fi
+
+ORFSE=$("$BINDIR"/fu-orf "$iPair1" -m 29 | grep -c '>')
+if [[ $ORFSE -eq 5 ]]; then
+  echo "OK: fu-orf [Single] tested"
+else
+  echo "ERR: fu-orf [Single] test failed: $ORFSE != 5"
+  ERRORS=$((ERRORS+1))
+fi
+
+ORF2=$("$BINDIR"/fu-orf  -m 29 -1 "$iPair1" -2 "$iPair2" | grep -c '>')
+if [[ $ORF2 -gt 4 ]]; then
+  echo "OK: fu-orf [Paired] tested"
+else
+  echo "ERR: fu-orf [Paired] test failed: $ORF2 != 5"
   ERRORS=$((ERRORS+1))
 fi
 
@@ -239,12 +263,12 @@ else
 fi
  
 echo ""
-for TEST in "$DIR"/*.sh;
+for TEST in "$DIR"/test-*.sh;
 do
   BASE=$(basename "$TEST"  | cut -f 1 -d .)
-  if [[ "$BASE" != "mini" ]]; then
+  if [[ -e $TEST ]]; then
     echo " * There are further tests for '$BASE'";
-    #bash $TEST;
+    source "$TEST"
   fi
 done
 

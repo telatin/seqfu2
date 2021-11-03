@@ -97,16 +97,17 @@ proc translate*(self:FastxRecord, code = 1): FastxRecord =
   result = self
   result.seq = transeq.join
 
-template echoVerbose(things: string) =
+template echoVerbose(things: varargs[string, `$`]) =
   if verbose == true:
-    stderr.writeLine(" - ", things)
+    stderr.writeLine(things)
  
  
 
-proc translateAll(input: FastxRecord, minOrfSize=10): seq[string] =
+proc translateAll(input: FastxRecord, minOrfSize=10): seq[FastxRecord] =
   var
-    rawprots : seq[string]
+    rawprots : seq[FastxRecord]
       
+  # First translate all the frames
   for sequence in @[input, input.revcompl()]:
     if len(sequence.seq) < minSeqLen:
       break
@@ -115,17 +116,24 @@ proc translateAll(input: FastxRecord, minOrfSize=10): seq[string] =
         dna = sequence.seq[frame .. ^1]
       var
         obj : FastxRecord
+      obj.name = if sequence == input: "+" &  $frame
+                else: "-" & $frame
       obj.seq = dna
-      rawprots.add( obj.translate().seq )
+      obj.seq = obj.translate().seq 
+      rawprots.add( obj )
   
+  # Then split on STOP codons
   for translatedseq in rawprots:
-    let translations : seq = translatedseq.split('-')
+    let translations : seq = translatedseq.seq.split('-')
     for t in translations:
       if len(t) > minOrfSize:
         let orfs = t.split('*')
         for orf in orfs:
           if len(orf) > minOrfSize:
-            result.add(orf)
+            var s: FastxRecord
+            s.name = translatedseq.name
+            s.seq = orf
+            result.add(s)
       
  
 proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90): FastxRecord {.discardable.} = 
@@ -170,7 +178,7 @@ proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90
 
 proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
   var
-    orfs: seq[string]
+    orfs: seq[FastxRecord]
     s1: FastxRecord
     joined = false
     counter = 0
@@ -191,19 +199,20 @@ proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
   
   for peptide in orfs:
     counter += 1
-    result &= '>' & R1.name & "_" & $counter & "/" & $(len(orfs)) & "\n" & peptide & "\n"
+    
+    result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.seq & "\n"
 
 
 proc processSingle(R1: FastxRecord, opts: mergeCfg): string =
   var
-    orfs: seq[string]
+    orfs: seq[FastxRecord]
     counter = 0
   
   orfs.add( translateAll(R1, opts.minorf))
   
   for peptide in orfs:
     counter += 1
-    result &= '>' & R1.name & "_" & $counter & "/" & $(len(orfs)) & "\n" & peptide & "\n"
+    result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.seq & "\n"
 
     
 proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
@@ -230,8 +239,10 @@ proc main(argv: var seq[string]): int =
   Extract ORFs from Paired-End reads.
 
   Usage: 
+  fu-orf [options] <InputFile>  
   fu-orf [options] -1 File_R1.fq
-
+  fu-orf [options] -1 File_R1.fq -2 File_R2.fq
+  
   Options:
     -1, --R1 FILE          First paired end file
     -2, --R2 FILE          Second paired end file
@@ -274,6 +285,36 @@ proc main(argv: var seq[string]): int =
     verbose("Missing required parameters: -1 FILE1 [-2 FILE2]", true)
     quit(0)
  ]#
+
+  if args["<InputFile>"]:
+    fileR1 = $args["<InputFile>"]
+    singleEnd = true
+    if fileExists(fileR1):
+      echoVerbose("Single file: " & fileR1)
+    else:
+      echo("ERROR: Single file not found:", fileR1)
+      quit(0)
+
+  elif len(fileR1) > 0 and fileR2 == "nil":
+    singleEnd = true
+    if fileExists(fileR1):
+      echoVerbose("Single end mode [-1]: ", fileR1)
+    else:
+      echo("ERROR: File not found [-1]:", fileR1)
+      quit(0)
+  elif len(fileR1) > 0 and fileR2 != "nil":
+    singleEnd = false
+    if fileExists(fileR1) and fileExists(fileR2):
+      echoVerbose("Paired end mode [-1] and [-2]: ", fileR1, " and ", fileR2)
+    else:
+      if not fileExists(fileR1):
+        echo("ERROR: File not found [-1]: ", fileR1)
+      if not fileExists(fileR2):
+        echo("ERROR: File not found [-2]: ", fileR2)
+      quit(0) 
+  else:
+    echoVerbose("ERROR: Missing required parameters", fileR1, fileR2)
+    quit(0)
 
   if not fileExists(fileR1):
     stderr.writeLine("FATAL ERROR: File [-1] ", fileR1, " not found.")
