@@ -230,10 +230,11 @@ else
 fi
 
 ## fu-cov
-if [[ $("$BINDIR"/fu-cov "$FILES/ctgs.fa.gz" | grep -c '>') -eq 1 ]]; then
+TOTFILT=$("$BINDIR"/fu-cov "$FILES/ctgs.fa.gz" -c 100 -x 200 2>/dev/null | grep -c '>')
+if [[ $((TOTFILT+0)) -eq 1 ]]; then
   echo "OK: fu-cov"
 else
-  echo "ERR: fu-cov"
+  echo "ERR: fu-cov was supposed to select 1 sequence, $TOTFILT found "
   ERRORS=$((ERRORS+1))
 fi
  
