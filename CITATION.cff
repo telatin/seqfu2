@@ -1,0 +1,64 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: SeqFu
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Andrea
+    family-names: Telatin
+    email: andrea.telatin@gmail.com
+    affiliation: Quadram Institute Bioscience
+    orcid: 'https://orcid.org/0000-0001-7619-281X'
+  - given-names: Giovanni
+    family-names: Birolo
+  - given-names: Piero
+    family-names: Fariselli
+identifiers:
+  - type: doi
+    value: 10.3390/bioengineering8050059
+    description: >-
+      SeqFu: A Suite of Utilities for the Robust and
+      Reproducible Manipulation of Sequence Files 
+abstract: >-
+  Sequence files formats (FASTA and FASTQ) are
+  commonly used in bioinformatics, molecular biology
+  and biochemistry. With the advent of
+  next-generation sequencing (NGS) technologies, the
+  number of FASTQ datasets produced and analyzed has
+  grown exponentially, urging the development of
+  dedicated software to handle, parse, and manipulate
+  such files efficiently. Several bioinformatics
+  packages are available to filter and manipulate
+  FASTA and FASTQ files, yet some essential tasks
+  remain poorly supported, leaving gaps that any
+  workflow analysis of NGS datasets must fill with
+  custom scripts. This can introduce harmful
+  variability and performance bottlenecks in pivotal
+  steps. Here we present a suite of tools, called
+  SeqFu (Sequence Fastx utilities), that provides a
+  broad range of commands to perform both common and
+  specialist operations with ease and is designed to
+  be easily implemented in high-performance
+  analytical pipelines. SeqFu includes
+  high-performance implementation of algorithms to
+  interleave and deinterleave FASTQ files, merge
+  Illumina lanes, and perform various quality
+  controls (identification of degenerate primers,
+  analysis of length statistics, extraction of
+  portions of the datasets). SeqFu dereplicates
+  sequences from multiple files keeping track of
+  their provenance. SeqFu is developed in Nim for
+  high-performance processing, is freely available,
+  and can be installed with the popular package
+  manager Miniconda. 
+keywords:
+  - fastq
+  - fasta
+  - bioinformatics
+  - dereplication
+  - next-generation sequencing
+license: MIT
