@@ -8,11 +8,20 @@ const NimblePkgVersion {.strdefine.} = "undef"
  
 const version = if NimblePkgVersion == "undef": "<preprelease>"
                 else: NimblePkgVersion
-const minSeqLen = 18
-var verbose = false
+
+var
+  verbose = false
+  debug = false
   
 type
-    mergeCfg = tuple[join: bool, minId: float, minOverlap, maxOverlap, minorf: int, scanreverse: bool]
+    mergeCfg = tuple[join: bool, 
+      minId: float, 
+      minOverlap, 
+      maxOverlap, 
+      minorf: int, 
+      scanreverse: bool,
+      code: int,
+      minreadlength: int]
 
 proc length(self:FastxRecord): int = 
   ## returns length of sequence
@@ -57,7 +66,8 @@ proc num2kmer*(num, klen:int):string =
   kmer
 
 proc translate*(self:FastxRecord, code = 1): FastxRecord = 
-  ## translates a nucleotide sequence with the given genetic code number: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi for codes
+  ## translates a nucleotide sequence with the given genetic code number: 
+  ##    https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi for codes
   var codeMap = 
     ["FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
@@ -101,29 +111,35 @@ template echoVerbose(things: varargs[string, `$`]) =
   if verbose == true:
     stderr.writeLine(things)
  
+template db(things: varargs[string, `$`]) =
+  if debug == true:
+  
+    stderr.writeLine(things)
+ 
  
 
-proc translateAll(input: FastxRecord, minOrfSize=10, scanReverse=false): seq[FastxRecord] =
+proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
   var
     rawprots : seq[FastxRecord]
     seqs = @[input]
-
-  if scanReverse == true:
+  db("Translating: " , input.name, " min=", opts.minorf)
+  if opts.scanreverse == true:
     seqs.add(input.revcompl()) 
 
   # First translate all the frames
   for sequence in seqs:
-    if len(sequence.seq) < minSeqLen:
+    if len(sequence.seq) < opts.minreadlength:
+      
       break
     for frame in @[0, 1, 2]:
       let
         dna = sequence.seq[frame .. ^1]
       var
         obj : FastxRecord
-      obj.name = if scanReverse == false or sequence == input: "+" &  $frame
+      obj.name = if opts.scanreverse == false or sequence == input: "+" &  $frame
                 else: "-" & $frame
       obj.seq = dna
-      obj.seq = obj.translate().seq 
+      obj.seq = obj.translate(opts.code).seq 
       rawprots.add( obj )
   
   # Then split on STOP codons
@@ -134,19 +150,22 @@ proc translateAll(input: FastxRecord, minOrfSize=10, scanReverse=false): seq[Fas
      
 
     for i, aa in translatedRecord.seq:
+      #db("i=", i, " aa=", aa, " orf=", orf, " len=", len(translatedRecord.seq))
       if aa == '*' or i == len(translatedRecord.seq) - 1:
-        if len(orf) >= minOrfSize:
-          orf = translatedRecord.seq[start ..< i]
+        
+        orf = translatedRecord.seq[start .. i]
+        if len(orf) >= opts.minorf:
+           
           var
             obj : FastxRecord
+          db( " ORF: ", $i)
           obj.name = translatedRecord.name & " start=" & $start
           obj.seq = orf
           result.add( obj )
            
         start = i + 1
         orf = ""
-      else:
-        orf &= $aa
+      
 
 #[      
   for translatedseq in rawprots:
@@ -221,10 +240,10 @@ proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
       joined = true
 
   if joined == true:
-    orfs.add( translateAll(s1, opts.minorf, opts.scanreverse) )
+    orfs.add( translateAll(s1, opts) )
   else:
-    orfs.add( translateAll(R1, opts.minorf, opts.scanreverse))
-    orfs.add( translateAll(R2, opts.minorf, opts.scanreverse))
+    orfs.add( translateAll(R1, opts))
+    orfs.add( translateAll(R2, opts))
   
   for peptide in orfs:
     counter += 1
@@ -237,7 +256,7 @@ proc processSingle(R1: FastxRecord, opts: mergeCfg): string =
     orfs: seq[FastxRecord]
     counter = 0
   
-  orfs.add( translateAll(R1, opts.minorf, opts.scanreverse))
+  orfs.add( translateAll(R1, opts))
   
   for peptide in orfs:
     counter += 1
@@ -260,7 +279,36 @@ proc parseArraySingle(pool: seq[FastxRecord], opts: mergeCfg): string =
     except:
       result &= processSingle(pool[i], opts) 
       quit()
-   
+  
+
+proc printCodes() =
+  echo """NCBI Codes: 
+    1.  The Standard Code
+    2.  The Vertebrate Mitochondrial Code
+    3.  The Yeast Mitochondrial Code
+    4.  The Mold, Protozoan, and Coelenterate Mitochondrial Code and the Mycoplasma/Spiroplasma Code
+    5.  The Invertebrate Mitochondrial Code
+    6.  The Ciliate, Dasycladacean and Hexamita Nuclear Code
+    9.  The Echinoderm and Flatworm Mitochondrial Code
+    10. The Euplotid Nuclear Code
+    11. The Bacterial, Archaeal and Plant Plastid Code
+    12. The Alternative Yeast Nuclear Code
+    13. The Ascidian Mitochondrial Code
+    14. The Alternative Flatworm Mitochondrial Code
+    16. Chlorophycean Mitochondrial Code
+    21. Trematode Mitochondrial Code
+    22. Scenedesmus obliquus Mitochondrial Code
+    23. Thraustochytrium Mitochondrial Code
+    24. Rhabdopleuridae Mitochondrial Code
+    25. Candidate Division SR1 and Gracilibacteria Code
+    26. Pachysolen tannophilus Nuclear Code
+    27. Karyorelict Nuclear Code
+    28. Condylostoma Nuclear Code
+    29. Mesodinium Nuclear Code
+    30. Peritrich Nuclear Code
+    31. Blastocrithidia Nuclear Code
+    33. Cephalodiscidae Mitochondrial UAA-Tyr Code"""
+
 proc main(argv: var seq[string]): int =
   let args =  docopt("""
   fu-orf $version
@@ -280,32 +328,39 @@ proc main(argv: var seq[string]): int =
     -m, --min-size INT     Minimum ORF size (aa) [default: 25]
     -p, --prefix STRING    Rename reads using this prefix
     -r, --scan-reverse     Also scan reverse complemented sequences
+    -c, --code INT         NCBI Genetic code to use [default: 1]
+    --min-read-len INT     Minimum read length to process [default: 25]
   
   Paired-end optoins:
+    -j, --join             Attempt Paired-End joining
     --min-overlap INT      Minimum PE overlap [default: 12]
     --max-overlap INT      Maximum PE overlap [default: 200]
     --min-identity FLOAT   Minimum sequence identity in overlap [default: 0.80]
-    -j, --join             Attempt Paired-End joining
   
   Other options:
     --pool-size INT        Size of the sequences array to be processed
                            by each working thread [default: 250]
     --verbose              Print verbose log
+    --debug                Print debug log  
     --help                 Show help
   """, version=version, argv=argv)
+
   var
     fileR1, fileR2: string
     minOrfSize, counter: int
     mergeOptions: mergeCfg
-    #respCount = 0
+    minreadlen: int
     poolSize : int
     prefix : string
     singleEnd = true
+    code: int
      
-
+  debug = args["--debug"]
   try:
     fileR1 = $args["--R1"]
     fileR2 = $args["--R2"]
+    code = parseInt($args["--code"])
+    minreadlen = parseInt($args["--min-read-len"])
     minOrfSize = parseInt($args["--min-size"])
     verbose = args["--verbose"]
     poolSize = parseInt($args["--pool-size"])
@@ -315,12 +370,23 @@ proc main(argv: var seq[string]): int =
       minOverlap: parseInt($args["--min-overlap"]), 
       maxOverlap: parseInt($args["--max-overlap"]), 
       minorf: minOrfSize, 
-      scanreverse: args["--scan-reverse"] or false)
+      scanreverse: args["--scan-reverse"] or false,
+      code: code,
+      minreadlength: minreadlen)
   except:
     stderr.writeLine("Use fu-orf --help")
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
     quit(0)
  
+  let
+    validCodes = @[1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33]
+  
+  if not validCodes.contains(code):
+    printCodes()
+    stderr.writeLine("Invalid genetic code: ", code)
+    stderr.writeLine("Valid codes: ", validCodes)
+    quit(1)
+
   echoVerbose("SeqFu ORF")
 #[
     if len(fileR1) == 0:
