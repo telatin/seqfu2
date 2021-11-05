@@ -23,7 +23,7 @@ If invoked without parameters, *SeqFu* will print the list of subprograms:
 
 ```text
 SeqFu - Sequence Fastx Utilities
-version: {VERSION}
+version: 1.8.5
 
   · count [cnt]         : count FASTA/FASTQ reads, pair-end aware
   · deinterleave [dei]  : deinterleave FASTQ
@@ -43,8 +43,8 @@ version: {VERSION}
   · tail                : view last sequences
   · view                : view sequences with colored quality and oligo matches
 
-Add --help after each command to print usage
-
+Type 'seqfu version' or 'seqfu citation' to print the version and paper, respectively.
+Add --help after each command to print its usage.
 ```
 
 ## Subprograms
