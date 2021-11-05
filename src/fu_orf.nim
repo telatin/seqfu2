@@ -153,7 +153,9 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
       #db("i=", i, " aa=", aa, " orf=", orf, " len=", len(translatedRecord.seq))
       if aa == '*' or i == len(translatedRecord.seq) - 1:
         
-        orf = translatedRecord.seq[start .. i]
+        orf = if aa == '*': translatedRecord.seq[start ..< i]
+              else: translatedRecord.seq[start .. i]
+        db(" orf=",orf)
         if len(orf) >= opts.minorf:
            
           var
@@ -282,36 +284,39 @@ proc parseArraySingle(pool: seq[FastxRecord], opts: mergeCfg): string =
   
 
 proc printCodes() =
-  echo """NCBI Codes: 
-    1.  The Standard Code
-    2.  The Vertebrate Mitochondrial Code
-    3.  The Yeast Mitochondrial Code
-    4.  The Mold, Protozoan, and Coelenterate Mitochondrial Code and the Mycoplasma/Spiroplasma Code
-    5.  The Invertebrate Mitochondrial Code
-    6.  The Ciliate, Dasycladacean and Hexamita Nuclear Code
-    9.  The Echinoderm and Flatworm Mitochondrial Code
-    10. The Euplotid Nuclear Code
-    11. The Bacterial, Archaeal and Plant Plastid Code
-    12. The Alternative Yeast Nuclear Code
-    13. The Ascidian Mitochondrial Code
-    14. The Alternative Flatworm Mitochondrial Code
-    16. Chlorophycean Mitochondrial Code
-    21. Trematode Mitochondrial Code
-    22. Scenedesmus obliquus Mitochondrial Code
-    23. Thraustochytrium Mitochondrial Code
-    24. Rhabdopleuridae Mitochondrial Code
-    25. Candidate Division SR1 and Gracilibacteria Code
-    26. Pachysolen tannophilus Nuclear Code
-    27. Karyorelict Nuclear Code
-    28. Condylostoma Nuclear Code
-    29. Mesodinium Nuclear Code
-    30. Peritrich Nuclear Code
-    31. Blastocrithidia Nuclear Code
-    33. Cephalodiscidae Mitochondrial UAA-Tyr Code"""
+  echo """NCBI Genetics Codes: 
+
+  1.  The Standard Code
+  2.  The Vertebrate Mitochondrial Code
+  3.  The Yeast Mitochondrial Code
+  4.  The Mold, Protozoan, and Coelenterate Mitochondrial Code and the Mycoplasma/Spiroplasma Code
+  5.  The Invertebrate Mitochondrial Code
+  6.  The Ciliate, Dasycladacean and Hexamita Nuclear Code
+  9.  The Echinoderm and Flatworm Mitochondrial Code
+  10. The Euplotid Nuclear Code
+  11. The Bacterial, Archaeal and Plant Plastid Code
+  12. The Alternative Yeast Nuclear Code
+  13. The Ascidian Mitochondrial Code
+  14. The Alternative Flatworm Mitochondrial Code
+  16. Chlorophycean Mitochondrial Code
+  21. Trematode Mitochondrial Code
+  22. Scenedesmus obliquus Mitochondrial Code
+  23. Thraustochytrium Mitochondrial Code
+  24. Rhabdopleuridae Mitochondrial Code
+  25. Candidate Division SR1 and Gracilibacteria Code
+  26. Pachysolen tannophilus Nuclear Code
+  27. Karyorelict Nuclear Code
+  28. Condylostoma Nuclear Code
+  29. Mesodinium Nuclear Code
+  30. Peritrich Nuclear Code
+  31. Blastocrithidia Nuclear Code
+  33. Cephalodiscidae Mitochondrial UAA-Tyr Code
+    
+See also: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"""
 
 proc main(argv: var seq[string]): int =
   let args =  docopt("""
-  fu-orf $version
+  fu-orf
  
   Extract ORFs from Paired-End reads.
 
@@ -319,30 +324,32 @@ proc main(argv: var seq[string]): int =
   fu-orf [options] <InputFile>  
   fu-orf [options] -1 File_R1.fq
   fu-orf [options] -1 File_R1.fq -2 File_R2.fq
+  fu-orf --help | --codes
   
   Input files:
-    -1, --R1 FILE          First paired end file
-    -2, --R2 FILE          Second paired end file
+    -1, --R1 FILE           First paired end file
+    -2, --R2 FILE           Second paired end file
 
   ORF Finding and Output options:
-    -m, --min-size INT     Minimum ORF size (aa) [default: 25]
-    -p, --prefix STRING    Rename reads using this prefix
-    -r, --scan-reverse     Also scan reverse complemented sequences
-    -c, --code INT         NCBI Genetic code to use [default: 1]
-    --min-read-len INT     Minimum read length to process [default: 25]
+    -m, --min-size INT      Minimum ORF size (aa) [default: 25]
+    -p, --prefix STRING     Rename reads using this prefix
+    -r, --scan-reverse      Also scan reverse complemented sequences
+    -c, --code INT          NCBI Genetic code to use [default: 1]
+    -l, --min-read-len INT  Minimum read length to process [default: 25]
   
   Paired-end optoins:
-    -j, --join             Attempt Paired-End joining
-    --min-overlap INT      Minimum PE overlap [default: 12]
-    --max-overlap INT      Maximum PE overlap [default: 200]
-    --min-identity FLOAT   Minimum sequence identity in overlap [default: 0.80]
+    -j, --join              Attempt Paired-End joining
+    --min-overlap INT       Minimum PE overlap [default: 12]
+    --max-overlap INT       Maximum PE overlap [default: 200]
+    --min-identity FLOAT    Minimum sequence identity in overlap [default: 0.80]
   
   Other options:
-    --pool-size INT        Size of the sequences array to be processed
-                           by each working thread [default: 250]
-    --verbose              Print verbose log
-    --debug                Print debug log  
-    --help                 Show help
+    --codes                 Print NCBI genetic codes and exit
+    --pool-size INT         Size of the sequences array to be processed
+                            by each working thread [default: 250]
+    --verbose               Print verbose log
+    --debug                 Print debug log  
+    --help                  Show help
   """, version=version, argv=argv)
 
   var
@@ -378,6 +385,12 @@ proc main(argv: var seq[string]): int =
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
     quit(0)
  
+  if args["--codes"]:
+    echo "SeqFu ORF"
+    echo "--------------------------------------------------------"
+    printCodes()
+    quit(0)
+
   let
     validCodes = @[1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33]
   

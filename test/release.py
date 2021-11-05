@@ -127,9 +127,11 @@ def init_markdown(file, release, changes, bindir):
   template = f"""# {programName} {release}
 
 ### Changes
+
 {changes}
 
 ### Splash screen
+
 ```text
 {splash}
 ```
