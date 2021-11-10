@@ -100,7 +100,7 @@ proc main(args: var seq[string]): int =
     # If the first argument is either --version or version, print the version
     echo(version())
     0
-  elif len(args) == 1 and (args[0] == "--cite" or args[0] == "cite"):
+  elif len(args) == 1 and (args[0] == "--cite" or args[0] == "cite" or args[0] == "--citation"):
     echo "Telatin A, Fariselli P, Birolo G."
     echo "SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files."
     echo "Bioengineering 2021, 8, 59. doi.org/10.3390/bioengineering8050059"
@@ -131,7 +131,7 @@ proc main(args: var seq[string]): int =
       echo "  ", format("· $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
     
     
-    echo "\nAdd --help after each command to print usage"
+    echo "\nType 'seqfu version' or 'seqfu citation' to print the version and paper, respectively.\nAdd --help after each command to print its usage."
     if len(args) > 0 and args[0] != "--help":
       echo "Unknown subprogram: ", args[0]
       1
