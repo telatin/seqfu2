@@ -29,6 +29,7 @@ include ./fastx_cat
 include ./fastx_metadata
 include ./fastx_tabulate
 
+include ./fu_rotate
 
 # Experimental
 include ./fastx_stats2
@@ -69,7 +70,10 @@ var progs = {
        "tabulate": fastx_tabulate,
             "tab": fastx_tabulate,
        "metadata": fastx_metadata,
-        "met": fastx_metadata   
+        "met": fastx_metadata,
+      "rotate": fastx_rotate,
+        "rot": fastx_rotate,
+        "restart": fastx_rotate,
 }.toTable
 
 proc main(args: var seq[string]): int =
@@ -82,6 +86,7 @@ proc main(args: var seq[string]): int =
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
+               "rotate [rot]"      : "rotate a sequence with a new start position",
                "sort [srt]"        : "sort sequences by size (uniques)",
                "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
                "list [lst]"        : "print sequences from a list of names",
