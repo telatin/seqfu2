@@ -11,7 +11,7 @@ import ./stats_utils
 
 proc fastx_stats_v2(argv: var seq[string]): int =
   let args = docopt("""
-Usage: stats [options] [<inputfile> ...]
+Usage: stats2 [options] [<inputfile> ...]
 
 Options:
   -a, --abs-path         Print absolute paths

@@ -257,10 +257,10 @@ if __name__ == "__main__":
     eprint(f"Error in {utilManPage}: {e}")
     quit()
   
-  print_as_json(splashes, os.path.join(release_dir, f"{new_tag}.splashes.json"))
+  #print_as_json(splashes, os.path.join(release_dir, f"{new_tag}.splashes.json"))
 
   # Generate new release document
-  if not os.path.exists(release_notes) or args.delete:
+  if False:# and not os.path.exists(release_notes) or args.delete:
     eprint(f"Generating new page: {release_notes}")
     splash = get_output(bin)
 

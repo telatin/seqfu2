@@ -1,10 +1,13 @@
 ---
 sort: 19
 ---
+
 # seqfu rotate
 
 Rotate a sequence setting a new starting position, using 
-a new position or an oligonucleotide
+a new position or an oligonucleotide.
+
+Introduced with SeqFu 1.8.6.
 
 ```text
 sage:
