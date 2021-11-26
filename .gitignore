@@ -1,10 +1,9 @@
 *.dmp
 tax/*
 tax
-bin/*
+./bin/*
 bin/*.zip
 .DS_Store
-bin/*
 data/benchmark/
 tradis
 releases/zips/*zip
