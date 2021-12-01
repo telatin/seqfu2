@@ -6,50 +6,53 @@ BIN=./bin
 SOURCE=./src
 VERSION := $(shell grep version seqfu.nimble  | grep  -o "[0-9]\\+\.[0-9]\.[0-9]\\+")
 NIMPARAM :=  --gc:arc -d:NimblePkgVersion=$(VERSION) -d:release --opt:speed 
-TARGETS=$(BIN)/seqfu $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-homocomp $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck  $(BIN)/fu-homocomp 
+TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-homocomp $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck  $(BIN)/fu-homocomp 
 
 all: $(TARGETS)
 
-bin/seqfu: src/sfu.nim
+$(BIN)/seqfu: src/sfu.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-primers: src/fu_primers.nim
+$(BIN)/fu-primers: src/fu_primers.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-shred: src/fu_shred.nim
+$(BIN)/fu-shred: src/fu_shred.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-nanotags: src/fu_nanotags.nim
+$(BIN)/fu-nanotags: src/fu_nanotags.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-orf: src/fu_orf.nim
+$(BIN)/fu-orf: src/fu_orf.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-sw: src/fu_sw.nim
+$(BIN)/fu-sw: src/fu_sw.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-homocomp: src/fu_homocomp.nim
+$(BIN)/fu-homocomp: src/fu_homocomp.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-multirelabel: src/fu_multirelabel.nim
+$(BIN)/fu-multirelabel: src/fu_multirelabel.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-index: src/fu_index.nim
+$(BIN)/fu-index: src/fu_index.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-cov: src/fu_cov.nim
+$(BIN)/fu-cov: src/fu_cov.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-virfilter: src/fu_virfilter.nim
+$(BIN)/fu-msa: src/fu_msa.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-tabcheck: src/fu_tabcheck.nim
+$(BIN)/fu-virfilter: src/fu_virfilter.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/fu-16Sregion: src/dadaist2_region.nim
+$(BIN)/fu-tabcheck: src/fu_tabcheck.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-bin/dadaist2-mergeseqs: src/dadaist2_mergeseqs.nim
+$(BIN)/fu-16Sregion: src/dadaist2_region.nim
+	nim c $(NIMPARAM) --out:$@ $<
+
+$(BIN)/dadaist2-mergeseqs: src/dadaist2_mergeseqs.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
 

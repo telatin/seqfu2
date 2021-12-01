@@ -1,7 +1,7 @@
 *.dmp
 tax/*
 tax
-./bin/*
+bin/*
 bin/*.zip
 .DS_Store
 data/benchmark/
