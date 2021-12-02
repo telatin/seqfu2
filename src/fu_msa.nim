@@ -1,21 +1,23 @@
-# Simple example that prints out the size of the terminal window and
-# demonstrates the basic structure of a full-screen app.
-
 import os, strformat, strutils
 import illwill
 import readfq
 import docopt
 import tables
-import std/rdstdin
+ 
 type
+  # Color scheme for the MSA
   ColorType = enum
     base, match, both, none
  
+  # The screen coordinates
   screenCoord = tuple
     x, y: int
+  
+  # MSA coordinates: index of first base in the MSA, and the index of the first base in the sequence
   seqCoord = tuple
     seqIndex, baseIndex: int
 
+  # All the sequences are stored in an object
   msa = object 
     seqs: seq[string]
     names: seq[string]
@@ -24,9 +26,9 @@ type
     consensus: string
     common: string
 
-
+  # All the settings for "rendering" an MSA
   coordinates = object
-    firstseq: int
+    firstseq: int           # <- this could be a coordinate tuple, but it wasnt at the beginning
     firstbase: int
     colortype: ColorType
     showconsensus: bool
@@ -36,12 +38,21 @@ type
     click_x, click_y: int
     exit_x, exit_y: int
 
-proc exitProc() {.noconv.} =
-  
+let
+  noCoord : seqCoord = (seqIndex: -1, baseIndex: -1)
+
+proc exitProc(c: seqCoord = noCoord)   =
   illwillDeinit()
   showCursor()
-  echo "Bye bye!"
+  if c.seqIndex > -1:
+    echo "Seq:" & $(c.seqIndex) & ":" & $(c.baseIndex)
   quit(0)
+
+proc exitDefProc {.noconv.} =
+  illwillDeinit()
+  showCursor()
+  echo "Aborted. Exit with Q/Esc to print coordinates."
+  quit(0)  
 
 proc RotateColorType(c: var coordinates) =
   case c.colortype
@@ -411,7 +422,7 @@ proc main() =
     )
 
   illwillInit(fullscreen=true, mouse=true)
-  setControlCHook(exitProc)
+  setControlCHook(exitDefProc)
   hideCursor()
 
   drawSeqs(msa, coord)
@@ -421,6 +432,8 @@ proc main() =
       key = getKey()
       blockSize = parseInt($args["--jumpsize"])
     
+    let
+      c : seqCoord = (seqIndex: coord.firstseq, baseIndex: coord.firstbase)
     
     if readTerm == true:
       if key == Key.Escape:
@@ -446,8 +459,10 @@ proc main() =
         coord.message = "/" & query.toString()
         drawSeqs(msa, coord)
       continue
+    
     case key
-    of Key.Escape, Key.Q: exitProc()
+ 
+    of Key.Escape, Key.Q: exitProc(c)
 
     # SCROLL LEFT
     of Key.Left:
