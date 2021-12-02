@@ -45,7 +45,7 @@ Usage:
 
 #### Horizontal scrolling
 
-* :left_arrow:, :right_arrow: : scroll by one nucleotide
+* :arrow_left:, :arrow_up: : scroll by one nucleotide
 * `K`, `L`: scroll left and right respectively, by 10 nucleotides
 * `Shift + K`, `Shift + L`: scroll left and right respectively, by 100 nucleotides
 * `End`: Move to sequence end
