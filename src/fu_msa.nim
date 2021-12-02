@@ -6,11 +6,15 @@ import illwill
 import readfq
 import docopt
 import tables
-
+import std/rdstdin
 type
   ColorType = enum
     base, match, both, none
  
+  screenCoord = tuple
+    x, y: int
+  seqCoord = tuple
+    seqIndex, baseIndex: int
 
   msa = object 
     seqs: seq[string]
@@ -51,6 +55,31 @@ proc RotateColorType(c: var coordinates) =
   of none:
     c.colortype = base
 
+proc toString(a: seq[Key]): string =
+  let
+    convert = {"One": "1", 
+      "Two": "2",
+      "Three": "3",
+      "Four": "4",
+      "Five": "5",
+      "Six": "6",
+      "Seven" : "7",
+      "Eight": "8",
+      "Nine": "9",
+      "Zero": "0",
+      "Colon": ":",
+      "Hash": "#",
+      "At": "@"}.toTable
+  for key in a:
+    let keyString = $key
+    if len(keyString) == 1:
+      result &= keyString
+    elif keyString[0 .. 4] == "Shift":
+      result &= keyString[^1]
+    elif keyString in convert:
+      result &= convert[keyString]
+
+
 proc `$`(t: ColorType): string =
   case t
   of base:
@@ -78,8 +107,8 @@ proc readMSA(f: string): msa =
       stderr.writeLine("ERROR: Sequence length mismatch: ", record.name, "is", len(record.sequence), "but previous sequences have length", length)
   result.seqs = seqs
   result.names = names
-  result.common = "X".repeat(length)
-  result.consensus = "X".repeat(length)
+  result.common = "?".repeat(length)
+  result.consensus = "?".repeat(length)
 
   let
     ths = int(float(len(seqs) / 2))
@@ -131,7 +160,7 @@ proc writeSeq(tb: var TerminalBuffer, s: string, bg: seq[bool], line, start: int
       of 'A':
         fgColor = fgRed
       of 'C':
-        fgColor = fgBlue
+        fgColor = fgCyan
       of 'G':
         fgColor = fgGreen
       of 'T':
@@ -139,12 +168,10 @@ proc writeSeq(tb: var TerminalBuffer, s: string, bg: seq[bool], line, start: int
           fgColor = fgYellow
         elif bg[i] == true:
           fgColor = fgBlack
-      of '-':
-        fgColor = fgMagenta
       else:
         fgColor = fgWhite
     
-    tb.write(start + 1 + i, line, bgColor, fgColor, $c, fgWhite, bgBlack)
+    tb.write(start + 1 + i, line, styleBright, bgColor, fgColor, $c, fgWhite, bgBlack)
 
 proc getRuler(start, width: int): string =
   var
@@ -161,31 +188,71 @@ proc getRuler(start, width: int): string =
       span = 0
       result &= " "
     pos += 1 + span
+ 
 
-  
+proc getStartingHighlight(startPos, seqWidth, padding, totalWidth: int): screenCoord =
+  let
+    # What % of the sequence is visible?
+    seqVisRatio = (totalWidth - padding) / seqWidth
+    barWidth = int(seqVisRatio * float(totalWidth - padding))
+    x = min(100.0, (100 * float(startPos) / float(seqWidth + totalWidth - padding)))
+    #y = min(100.0, (100 * float(startPos + totalWidth - padding) / float(seqWidth + totalWidth - padding)) )
+
+  result.x = min( int( float(totalWidth) *  (x / float(100)) )  + padding, totalWidth - 2)
+  result.y = if seqWidth - startPos < totalWidth - padding: totalWidth
+             else: min(totalWidth, padding + result.x + barWidth)
+
+proc searchSeq(MSA: msa, query: string): seqCoord  =
+  result.seqIndex = -1
+  result.baseIndex= -1
+
+  if query[0] == ':':
+    # Jump
+    try:
+      result.seqIndex = parseInt(query[1 .. ^1])
+      return
+    except:
+      return
+  elif query[0] == '#':
+    # Search by sequence
+    for i, sequence in MSA.seqs:
+      let pos = find(sequence.toUpperAscii(), query[1 .. ^1])
+      if pos != -1:
+        result.baseIndex = pos
+        return
+    return
+  else:
+    # Search string
+    for i, sequenceName in MSA.names:
+      if query in sequenceName.toUpperAscii():
+        result.seqIndex = i
+        return
+  return
+
 proc drawSeqs(MSA: msa, coords: coordinates) =
   let
     MAX_LEN = coords.labelwidth
-    spacer = " ".repeat(MAX_LEN)
+    #spacer = " ".repeat(MAX_LEN)
   var tb = newTerminalBuffer(terminalWidth(), terminalHeight())
   
-  tb.setForegroundColor(fgWhite)
+  tb.setForegroundColor(fgWhite, bright=true)
   tb.setBackgroundColor(bgBlack)
   # Title
-  tb.setForegroundColor(illwill.ForegroundColor.fgGreen, bright=true)
+  tb.setForegroundColor(fgGreen, bright=true)
   
   # First two lines for title
   let
+    startHl = getStartingHighlight(coords.firstbase, len(MSA.consensus), coords.labelwidth, tb.width - 1)
     title = "SeqFu MSAview [BETA]"
-    mouse = if coords.exit_x > 0: fmt"{coords.click_x},{coords.click_y} {coords.exit_x},{coords.exit_y}"
-            else: ""  # fmt"{coords.click_x},{coords.click_y}"  # fmt"{coords.click_x},{coords.click_y} {coords.exit_x},{coords.exit_y}"
-    info  = fmt"  Screen:{tb.width}x{tb.height}  Color:{coords.colortype} {coords.message}"
-    
-    endspace = " ".repeat(tb.width - len(title) - len(info) - 2 - len(mouse))
-  tb.write(1, 1, title, fgWhite, info, endspace, mouse)
-  tb.setForegroundColor(illwill.ForegroundColor.fgCyan)
-  let ruler = getRuler(coords.firstbase, tb.width - MAX_LEN)
-  tb.write(1, 2, fmt"{spacer}{ruler}")
+
+    info  = fmt"  Seq:{coords.firstseq}:{coords.firstbase}  Color:{coords.colortype}"
+    endspace = " ".repeat(tb.width - len(title) - len(info) - 2 - len(coords.message))
+    rulerText = getRuler(coords.firstbase, tb.width - MAX_LEN + 2)
+  tb.write(1, 1, title, fgWhite, info, endspace, coords.message)
+  #tb.write(1, 2, fmt"{spacer}{rulerText}")
+  tb.setForegroundColor(fgCyan)
+  
+  
 
   tb.resetAttributes()
  
@@ -196,25 +263,40 @@ proc drawSeqs(MSA: msa, coords: coordinates) =
   # First line is consensus
   tb.setForegroundColor(fgGreen, bright=true)
   tb.setBackgroundColor(bgBlack) 
+
+
   let
     name = if coords.showconsensus == true: "Consensus"
            else: "Majority"
     nameSpacer = " ".repeat(MAX_LEN - len(name))
-  tb.write(1, offset - 1,   fgWhite, fmt"{name}{nameSpacer} ")
-  for screenPos in MAX_LEN + 1 ..< tb.width - 1:
-    let basePos = screenPos - (MAX_LEN + 1 ) + coords.firstbase
+  tb.write(1, offset - 1,   fgRed, fmt"{name}{nameSpacer} ")
+
+  # Draw consensus and ruler (starting from MAX_LEN (seq label))
+  for screenPos in MAX_LEN + 1 ..< tb.width :
+    let
+      basePos = screenPos - (MAX_LEN + 1 ) + coords.firstbase
+      rulerBg = if screenPos > startHl.x and screenPos < startHl.y: bgBlue
+           else: bgBlack
+
+    # Draw ruler
+    tb.write(screenPos, 2, fgWhite, rulerBg, fmt"{rulerText[screenPos - (MAX_LEN + 1)]}")
+
+    # Draw consensus
     if basePos < len(MSA.consensus):
       let
         base = if coords.showconsensus == true: MSA.consensus[basePos]
               else: MSA.common[basePos]
         color = if coords.showconsensus == true: fgWhite
-                else: fgCyan
-      tb.write(screenPos, offset - 1,   color, fmt"{base}")
+                elif MSA.matches[basePos] == true: fgWhite          
+                elif base == '.': fgBlue
+                else: fgGreen
+      
+      tb.write(screenPos, offset - 1, bgBlack, color, styleBright, fmt"{base}")
     else:
-      tb.write(screenPos, offset - 1,    fmt" ")
+      tb.write(screenPos, offset - 1, bgBlack,        fmt" ")
 
 
-  # Draw sequences
+  # Draw sequences starting from line "offset" till the end of the screen - 1
   for seqIndex in coords.firstseq ..< min(coords.firstseq + seqNum, len(MSA.seqs)):
     let
       name = (MSA.names[seqIndex])[0 ..< min(len(MSA.names[seqIndex]), MAX_LEN)]
@@ -228,12 +310,14 @@ proc drawSeqs(MSA: msa, coords: coordinates) =
             seqIndex - coords.firstseq + offset,
             MAX_LEN,
             coords  )     
-    #tb.write(1, seqIndex + 20, $MSA.matches[coords.firstbase ..< min(coords.firstbase + tb.width - MAX_LEN - 4, len(MSA.seqs[seqIndex]))])
-
-  # Fill black lines
+  
+  # Fill black lines when there are less sequences than the screen can display
   for index in min(coords.firstseq + seqNum, len(MSA.seqs)) ..< coords.firstseq + seqNum:
     tb.write(1, index - coords.firstseq + offset, bgBlack, fgWhite, " ".repeat(tb.width - 2))
+  
+  # Top rectangle (title, ruler)
   tb.drawRect(0, 0, tb.width-1, 3)
+  # Bottom rectangle (consensus, sequences)
   tb.drawRect(0, 4, tb.width-1, tb.height-1)   
   tb.display()
  
@@ -275,6 +359,9 @@ proc main() =
     -m, --mouse             Enable mouse
     -n, --norefresh         Disable autorefresh
     -w, --label-width INT   Sequence label width [default: 20]
+    -s, --seqindex INT      Start visualization at this sequence [default: 0]
+    -p, --seqpos INT        Start visualization at this nucleotide [default: 0]
+    -j, --jumpsize INT      Jump size (big jump is 10X) [default: 10]
 
   Keys:
     Scroll Horizontally     Left and Right arrow
@@ -291,6 +378,10 @@ proc main() =
     Rotate color scheme     Tab
     Refresh screen          F5
     Resize seq labels       -,+
+    Search                  / (seqname, ":INT", "#SEQ")
+    Quit                    Q, CtrlC
+
+    More documentation online at https://telatin.github.io/seqfu2/
   """, version="1.0", argv=commandLineParams())
   
   if not fileExists($args["<MSAFILE>"]):
@@ -299,15 +390,19 @@ proc main() =
   
   let
     msa = readMSA($args["<MSAFILE>"])
-
+    optFirstBase = parseInt($args["--seqpos"])
+    optFirstSeq  = parseInt($args["--seqindex"])
   var
-    help = false
+    readTerm = false
+    query = newSeq[Key]()
     autorefresh = not bool(args["--norefresh"])
-    coord  = coordinates(firstseq: 0, 
-      firstbase: 0, 
+    help = false
+
+    coord  = coordinates(firstseq: optFirstSeq, 
+      firstbase: optFirstBase, 
       colortype: base, 
       labelwidth: parseInt($args["--label-width"]),
-      message: "[Hor scroll: L,K, ShiftL, ShiftK; Vert: A,Z...]",
+      message: "[Help: H|Hor scroll: L,K|Vert: A,Z...]",
       mouse: bool(args["--mouse"]),
       click_x: 0,
       click_y: 0,
@@ -324,39 +419,71 @@ proc main() =
   while true:
     var
       key = getKey()
-      blockSize = 10
+      blockSize = parseInt($args["--jumpsize"])
+    
+    
+    if readTerm == true:
+      if key == Key.Escape:
+        readTerm = false
+      elif key == Key.Enter:
+        readTerm = false
+        coord.message = "Not found"
+        # Do something
+        let c = searchSeq(msa, query.toString())
+        
+        if c.seqIndex > 0:
+          coord.message = "Moving to: " & $(c.seqIndex)
+          coord.firstseq = c.seqIndex
+        elif c.baseIndex > 0:
+          coord.message = "Motif found at " & $(c.baseIndex)
+          coord.firstbase = c.baseIndex
+
+        query.setlen(0)
+        drawSeqs(msa, coord)
+
+      else:
+        query.add(key)
+        coord.message = "/" & query.toString()
+        drawSeqs(msa, coord)
+      continue
     case key
     of Key.Escape, Key.Q: exitProc()
 
     # SCROLL LEFT
     of Key.Left:
+      coord.message = "[Scroll -1]"
       if coord.firstbase >= 1:
         coord.firstbase -= 1
       else:
         coord.firstbase = 0
       drawSeqs(msa, coord)
     of Key.Right:
+      coord.message = "[Scroll +1]"
       if coord.firstbase <= len(msa.seqs[0]) - 1:
         coord.firstbase += 1
       drawSeqs(msa, coord)
     of Key.K:
+      coord.message = "[Scroll left]"
       if coord.firstbase >= blockSize:
         coord.firstbase -= blockSize
       else:
         coord.firstbase = 0
       drawSeqs(msa, coord)      
     of Key.L:
+      coord.message = "[Scroll right]"
       if coord.firstbase <= len(msa.seqs[0]) - blockSize - 1:
         coord.firstbase += blockSize
       drawSeqs(msa, coord)  
 
     of Key.CtrlK, Key.ShiftK:
+      coord.message = "[Big scroll left]"
       if coord.firstbase >= 10*blockSize:
         coord.firstbase -= 10*blockSize
       else:
         coord.firstbase = 0
       drawSeqs(msa, coord)      
     of Key.CtrlL, Key.ShiftL:
+      coord.message = "[Big scroll right]"
       if coord.firstbase <= len(msa.seqs[0]) - 10*blockSize:
         coord.firstbase += 10*blockSize
       else:
@@ -371,34 +498,42 @@ proc main() =
 
     of Key.Two:
       # Fifty Percent
+      coord.message = "[20%]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 2) ))
       drawSeqs(msa, coord)  
     of Key.Three:
       # Fifty Percent
+      coord.message = "[30%]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 3) ))
       drawSeqs(msa, coord)  
     of Key.Four:
       # Fifty Percent
+      coord.message = "[40%]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 4) ))
       drawSeqs(msa, coord)  
     of Key.Five:
       # Fifty Percent
+      coord.message = "[Middle]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 5) ))
       drawSeqs(msa, coord)  
     of Key.Six:
       # Fifty Percent
+      coord.message = "[60%]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 6) ))
       drawSeqs(msa, coord)  
     of Key.Seven:
       # Fifty Percent
+      coord.message = "[70%]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 7) ))
       drawSeqs(msa, coord)  
     of Key.Eight:
       # Fifty Percent
+      coord.message = "[80%]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 8) ))
       drawSeqs(msa, coord)  
     of Key.Nine:
       # Fifty Percent
+      coord.message = "[90%]"
       coord.firstbase = int(float(len(msa.seqs[0])) / (float(10 / 9) ))
       drawSeqs(msa, coord)   
  
@@ -410,6 +545,7 @@ proc main() =
 
     of Key.Up, Key.A:
       # Sequence UP
+      coord.message = "[Scroll up]"
       if coord.firstseq >= 1:
         coord.firstseq -= 1
         drawSeqs(msa, coord)
@@ -437,6 +573,7 @@ proc main() =
       RotateColorType(coord)
       drawSeqs(msa, coord)
     of Key.Space:
+      coord.message = "[Toggle consensus]"
       coord.showconsensus = not coord.showconsensus
       drawSeqs(msa, coord)
     of Key.F5, Key.R:
@@ -468,6 +605,11 @@ proc main() =
         coord.labelwidth += 1
         drawSeqs(msa, coord)
 
+    of Key.Slash:
+      readTerm = true
+      coord.message = "Query: "
+      drawSeqs(msa, coord)
+      
     of Key.Mouse:
       if coord.mouse == false:
         continue
@@ -479,7 +621,7 @@ proc main() =
           coord.click_y = mi.y
         else: discard
       elif mi.action == MouseButtonAction.mbaReleased:
-        coord.message = fmt"[Clicked, resetting start base to {mi.x - coord.labelwidth}]"
+        coord.message = fmt"[Clicked, shifting {mi.x - coord.labelwidth}]"
         if mi.x < coord.labelwidth:
           # Scroll left
           if coord.firstbase - (coord.labelwidth - mi.x) >= 0:
