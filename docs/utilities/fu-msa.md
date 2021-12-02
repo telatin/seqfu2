@@ -2,15 +2,15 @@
 sort: 13
 ---
 
-
 # fu-msa
 
 ```note
 Preliminary version
 ```
 
-Interactive multiple sequence alignment viewer.
+Interactive **multiple sequence alignment** viewer from the Command Line.
 
+![Multiple sequence aligner]({{site.baseurl}}/img/msa.png)
 
 ```text
 Usage:
