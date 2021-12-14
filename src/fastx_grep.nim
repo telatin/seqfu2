@@ -15,6 +15,11 @@ Options:
   -n, --name STRING      String required in the sequence name
   -r, --regex PATTERN    Pattern to be matched in sequence name
   -c, --comment          Also search -n and -r in the comment
+  -f, --full             The string or pattern covers the whole name
+                         (mainly used without -c)
+  -w, --word             The string or pattern is a whole word
+                         (only effective with -c, as names do not contain spaces)
+  -i, --ignore-case      Ignore case when matching names (is already enabled with regexes)
   -o, --oligo IUPAC      Oligonucleotide required in the sequence,
                          using ambiguous bases and reverse complement
   -A, --append-pos       Append matching positions to the sequence comment
@@ -32,6 +37,15 @@ Options:
       matchThs = 1.0
       maxMismatches = 0
       minMatches = 2
+    let
+      matchIgnoreCase = bool(args["--ignore-case"])
+      optRegexString = $args["--regex"]
+      optQueryString = if matchIgnoreCase: ($args["--name"]).toUpperAscii()
+                       else: $args["--name"]
+      
+      matchComment = bool(args["--comment"])
+      matchWord = bool(args["--word"])
+      matchFull = bool(args["--full"])
 
     
     try:
@@ -64,28 +78,64 @@ Options:
       var 
         f = xopen[GzFile](filename)
         r: FastxRecord
-        pattern = ".*" & $args["--regex"]
+        pattern = if matchFull: optRegexString
+                  elif matchWord: "\\b" & optRegexString & "\\b"
+                  else: ".*" & optRegexString & ".*"
         
       defer: f.close()
       
       if args["--verbose"]:
-        if $args["--name"] != "nil":
-          stderr.writeLine("Name contains: ", $args["--name"])
+        if optQueryString != "nil":
+          stderr.writeLine("Name contains: ", optQueryString)
         
-        if $args["--regex"] != "nil":
-          stderr.writeLine("Name matches: ", $args["--regex"])
+        if optRegexString != "nil":
+          stderr.writeLine("Name matches: ", optRegexString)
 
       while f.readFastx(r):
         var pass = 1
         var matches : seq[string]
 
-        let name = if args["--comment"]: r.name & " " & r.comment
-                   else: r.name
-
-        if $args["--name"] != "nil" and rfind(name, $args["--name"]) < 0:
-          pass = 0
+        let readName = if matchIgnoreCase: (r.name).toUpperAscii()
+                       else: r.name
         
-        if $args["--regex"] != "nil" and not match(name, re(pattern, flags={reIgnoreCase}), matches):
+        let readComment = if matchIgnoreCase: (r.comment).toUpperAscii()
+                          else: r.comment
+      
+        let qualifiedName = if matchComment: readName & "\t" & readComment
+                            else: readName
+        
+
+        ### -n STRING [-c, -w, -f]
+        if optQueryString != "nil":
+          # Also search in comment
+          if matchComment:
+            if matchFull:
+              # the string should be equal to the whole name (-c useless?) or the comment (weird but ok)
+              if optQueryString != readName and optQueryString != readComment:
+                pass = 0
+            elif matchWord:
+              # Check a word inside the comment, or the whole name (cant have spaces)
+              if optQueryString != readName and rfind(readComment, optQueryString) < 0:
+                pass = 0
+            else:
+              # Check for a string inside read name or comment
+              if rfind(readName, optQueryString) < 0 and rfind(readComment, optQueryString) < 0:
+                pass = 0
+          
+          # Search only in name
+          else:
+            if matchFull:
+              # the string should be equal to the whole name
+              if optQueryString != readName:
+                pass = 0
+            else:
+              # Check for a string inside read name (word or not does not change here)
+              if rfind(readName, optQueryString) < 0:
+                pass = 0
+          
+            
+        ## REGEX
+        if optRegexString != "nil" and not match(readName, re(pattern, flags={reIgnoreCase}), matches):
           pass = 0
 
         if $args["--oligo"] != "nil":

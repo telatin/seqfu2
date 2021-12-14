@@ -227,9 +227,9 @@ proc revcompl*(s: FastxRecord): FastxRecord =
   result.seq     = revcompl(s.seq)
 
 
-proc charToQual*(c: char): int =
+proc charToQual*(c: char, offset = 33): int =
   ## returns Illumina quality score for a given character
-  c.ord - 33
+  c.ord - offset
 
 proc getBasename*(filename: string): string =
   let  fileParse = splitFile(filename)

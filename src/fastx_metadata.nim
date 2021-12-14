@@ -85,6 +85,7 @@ proc printLotus(samples: seq[sample]) =
     echo s.name, "\t", files
 
 proc printIrida(samples: seq[sample], p: int) =
+  echo "[Data]"
   echo "Sample_Name,Project_ID,File_Forward,File_Reverse"
   for s in samples:
     echo s.name, ",", p, ",", s.file1, ",", s.file2
@@ -177,7 +178,7 @@ proc fastx_metadata(argv: var seq[string]): int =
 
 
     let args = docopt("""
-Usage: metadata [options] [<dir> ...]
+Usage: metadata [options] [<dir>...]
 
 Prepare mapping files from directory containing FASTQ files
 

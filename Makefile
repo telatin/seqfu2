@@ -10,6 +10,9 @@ TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $
 
 all: $(TARGETS)
 
+src/sfu.nim: ./src/fast*
+	touch $@ 
+
 $(BIN)/seqfu: src/sfu.nim
 	nim c $(NIMPARAM) --out:$@ $<
 

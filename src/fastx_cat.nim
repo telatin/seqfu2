@@ -3,6 +3,16 @@ import tables, strutils
 from os import fileExists, lastPathPart
 import docopt
 import ./seqfu_utils
+import math
+
+proc get_ee(s: string): float =
+  
+  # Requires math
+  for c in s:
+    let
+      Q = charToQual(c)
+      P = pow(10, ((-1 * Q) / 10))
+    result += P
 
 
 proc fastx_cat(argv: var seq[string]): int =
@@ -33,10 +43,14 @@ Sequence comments:
   --add-gc               Add 'gc=%GC' to the comments
   --add-initial-gc       Add 'original_gc=%GC' to the comments
   --add-name             Add 'original_name=INITIAL_NAME' to the comments
+  --add-ee               Add 'ee=EXPECTED_ERROR' to the comments
+  --add-initial-ee       Add 'original_ee=EXPECTED_ERROR' to the comments
 
 Filtering:
+  -n, --max-ns INT       Discard sequences with more than INT Ns [default: -1]
   -m, --min-len INT      Discard sequences shorter than INT [default: 1]
   -x, --max-len INT      Discard sequences longer than INT, 0 to ignore [default: 0]
+  --max-ee FLOAT         Discard sequences with higher than FLOAT expected error [default: -1.0]
   --trim-front INT       Trim INT base from the start of the sequence [default: 0]
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
   --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
@@ -60,6 +74,7 @@ Output:
 
     let
       GC_DECIMAL_DIGITS = 2
+      EE_DECIMAL_DIGITS = 4
 
     var
       appendToName: string
@@ -76,6 +91,8 @@ Output:
       trimFront, trimEnd: int
       truncate: int
       basenameSeparatorString: string
+      maxNs: int
+      maxEe: float
 
     try:
       appendToName = $args["--append"]
@@ -93,7 +110,8 @@ Output:
       truncate  = parseInt($args["--truncate"])
       splitChar = $args["--split"]
       splitPart = parseInt($args["--part"]) - 1
-
+      maxNs = parseInt($args["--max-ns"])
+      maxEe = parseFloat($args["--max-ee"])
     except Exception as e:
       stderr.writeLine("Error: unexpected parameter value. ", e.msg)
       quit(1)
@@ -157,6 +175,8 @@ Output:
             r.comment &= $args["--comment-sep"] & "initial_len=" & $(len(r.seq))
           if args["--add-initial-gc"]:
             r.comment &= $args["--comment-sep"] & "initial_gc=" & get_gc(r.seq).formatFloat(ffDecimal, GC_DECIMAL_DIGITS)
+          if args["--add-initial-ee"]:
+            r.comment &= $args["--comment-sep"] & "initial_ee=" & get_ee(r.qual).formatFloat(ffDecimal, EE_DECIMAL_DIGITS)
 
           ## TRIM FRONT / TAIL
           if trimFront > 0 or trimEnd > 0:
@@ -179,6 +199,14 @@ Output:
             wrongLenCount += 1
             continue 
           
+          ## Check for Ns
+          if maxNs >= 0 and r.seq.count("N") >= maxNs:
+            continue
+
+          ## Check for EEs
+          if maxEe >= 0.0 and get_ee(r.qual) > maxEe:
+            continue
+
           # Checkpoint: sequence survived
           totalPrintedSeqs   += 1
 
@@ -254,6 +282,9 @@ Output:
 
           if args["--add-name"]:
             r.comment &= $args["--comment-sep"] & "original_name=" & original_name
+
+          if args["--add-ee"]:
+            r.comment &= $args["--comment-sep"] & "ee=" & get_ee(r.qual).formatFloat(ffDecimal, EE_DECIMAL_DIGITS)
 
           # Print output
           if formatList:
