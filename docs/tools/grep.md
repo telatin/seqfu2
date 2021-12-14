@@ -17,9 +17,14 @@ Options:
   -n, --name STRING      String required in the sequence name
   -r, --regex PATTERN    Pattern to be matched in sequence name
   -c, --comment          Also search -n and -r in the comment
-  -c, --comment STRING   String required in the sequence comment
+  -f, --full             The string or pattern covers the whole name
+                         (mainly used without -c)
+  -w, --word             The string or pattern is a whole word
+                         (only effective with -c, as names do not contain spaces)
+  -i, --ignore-case      Ignore case when matching names (is already enabled with regexes)
   -o, --oligo IUPAC      Oligonucleotide required in the sequence,
                          using ambiguous bases and reverse complement
+  -A, --append-pos       Append matching positions to the sequence comment
   --max-mismatches INT   Maximum mismatches allowed [default: 0]
   --min-matches INT      Minimum number of matches [default: oligo-length]
   -v, --verbose          Verbose output

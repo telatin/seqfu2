@@ -16,11 +16,12 @@ Options:
 Sequence name:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -z, --strip-name       Remove the original sequence name
-  -b, --basename         Prepend file basename to the sequence name
   -a, --append STRING    Append this string to the sequence name [default: ]
+  --sep STRING           Sequence name fields separator [default: _]
+
+  -b, --basename         Prepend file basename to the sequence name (before prefix)
   --split CHAR           Split basename at this char [default: .]
   --part INT             After splitting the basename, take this part [default: 1]
-  --sep STRING           Sequence name fields separator [default: _]
   --basename-sep STRING  Separate basename from the rest with this [default: _]
 
 Sequence comments:
@@ -31,10 +32,14 @@ Sequence comments:
   --add-gc               Add 'gc=%GC' to the comments
   --add-initial-gc       Add 'original_gc=%GC' to the comments
   --add-name             Add 'original_name=INITIAL_NAME' to the comments
+  --add-ee               Add 'ee=EXPECTED_ERROR' to the comments
+  --add-initial-ee       Add 'original_ee=EXPECTED_ERROR' to the comments
 
 Filtering:
+  -n, --max-ns INT       Discard sequences with more than INT Ns [default: -1]
   -m, --min-len INT      Discard sequences shorter than INT [default: 1]
   -x, --max-len INT      Discard sequences longer than INT, 0 to ignore [default: 0]
+  --max-ee FLOAT         Discard sequences with higher than FLOAT expected error [default: -1.0]
   --trim-front INT       Trim INT base from the start of the sequence [default: 0]
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
   --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
