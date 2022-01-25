@@ -329,10 +329,16 @@ LOCAL_RELEASE=$(grep version "$DIR/../seqfu.nimble"  | cut -f 2 -d = | sed 's/["
 GH_RELEASE=$(curl -s https://api.github.com/repos/telatin/seqfu2/releases/latest  | perl -nE 'my ($tag, $val) = split /:/, $_; if ($tag=~/tag_name/) { my @tag = split /"/, $val; for my $i (@tag) { $i =~s/[^0-9.]//g; say $i if (length($i) > 2); } }')
 
 if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
-  echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  echo "[PRERELEASE WARNING]: Local $LOCAL_RELEASE matches remote $GH_RELEASE"
-  echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ERRORS=$((ERRORS+1))
+  echo " ****************************************************************************"
+  echo " Local $LOCAL_RELEASE matches remote $GH_RELEASE"
+  echo " Set RELEASE=1 to make this warning fatal (e.g. when preparing a new release)"
+  echo " ****************************************************************************"
+  echo
+  if [[ $RELEASE == 1 ]];
+  then
+   echo "ERROR: Release matches last version on GitHub"
+   ERRORS=$((ERRORS+1))
+  fi
 else
   echo "OK:  $LOCAL_RELEASE != $GH_RELEASE (remote)"
   PASS=$((PASS+1))
