@@ -1,0 +1,6 @@
+| Enzyme   | Source                      | Recognition sequence   |   Cut | Isoschizomers                                                |
+|:---------|:----------------------------|:-----------------------|------:|:-------------------------------------------------------------|
+| OfoI     | Oscillatoria foreaui A-1340 | CYCGRG                 |     1 | AquI, AvaI, Bse15I, BspLU4I, Eco27kI, Nli3877I, PlaAI, PunAI |
+| OkrAI    | Oceanospirillum kriegii     | GGATCC                 |     1 | BamHI, Bce751I, BnaI, Bsp98I, BstI, OkrAI, SolI, Uba4009I    |
+| OliI     | Oceanospirillum linum 4-5D  | CACN4GTG               |     5 | AleI                                                         |
+| OxaNI    | Oerskovia xanthineolytica N | CCTNAGG                |     2 | AocI, BliHKI, BspR7I, CvnI, Lmu60I, OxaNI, SauI, SshAI       |

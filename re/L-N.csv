@@ -1,0 +1,11 @@
+Enzyme,Source,Recognition sequence,Cut,Isoschizomers
+LcaI,Lactobacillus casei,ATCGAT,2,"BdiI, Bli41I, Bsa29I, BscI, Bsp106I, BspDI, Bst28I, LplI, PgaI, ZhoI"
+LlaAI,Lactococcus lactis cremoris W9,GATC,1,"Bme12I, Bsp67I, BstENII, ChaI, FnuEI, MgoI, NphI, RalF40I"
+LlaBI,Lactococcus lactis cremoris W56,CTRYAG,1,
+LlaCI,Lactococcus lactis W15,AAGCTT,1,
+LlaG2I,Lactococcus lactis cremoris,GCTAGC,1,"AceII, AsuNHI, BmtI,  BspOI, NheI, PstNHI"
+Lmu60I,Listeria murrayi 60,CCTNAGG,2,"AocI, AxyI, BspR7I, CvnI, Lmu60I, MstII, SauI, SshAI"
+LplI,Lactobacillus plantarum,ATCGAT,2,"BanIII, BbvAII, BdiI, Bsa29I, BscI, BstNZ169I, ClaI, LcaI, PgaI"
+LpnI,Legionella pneumophila,RGCGCY,3,"AccB2I,  BfoI, Bme142I, Bsp143II, BstH2I, HaeII"
+LspI,Lactobacillus sp.,TTCGAA,2,"Asp10HI, BimI, BsiCI, BstBI, Csp45I, PlaII, PpaAI, Ssp1I"
+LweI,Listeria welshimeri RFL131,GCATC,8,
