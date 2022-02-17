@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Extract enzyme table from wikipedia page
+Extract enzyme table from wikipedia page.
+Input: a text file with the list of Enzyme tables URLs
 """
-#lxml
+#Note: requires lxml
 import pandas as pd
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
@@ -40,9 +41,16 @@ def cutPosition(string):
     else:
         return -1
 
-def getTable(url, class_attributes=[], columnName="Enzyme"):
+def getTable(url, class_attributes=None, columnName="Enzyme"):
+    if class_attributes is None:
+        class_attributes = []
+
     # Get the page from url
-    page = BeautifulSoup(urlopen(url), "html.parser")
+    if url.lower().startswith("http"):
+        page = BeautifulSoup(urlopen(url), "html.parser") #nosec - was checked above
+    else:
+        raise ValueError("url must start with http")
+    
     # Select tables containing all attributes in the list class_attributes
     tables = page.find_all("table", class_=class_attributes)
     
@@ -109,9 +117,9 @@ if __name__ == "__main__":
         urls = f.readlines()
     dataframes = []
     for url in urls:
-        
-        if not url.startswith("http"):
+        if not url.lower().startswith("http"):
             continue
+
         basename = os.path.basename(url)
         # Strip after "#"
         if "#" in basename:

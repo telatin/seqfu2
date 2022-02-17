@@ -1,3 +1,4 @@
+#!/bin/bash
 ROTATE=$("$BINDIR"/seqfu rotate -i 14 "$FILES"/homopolymer.fa| grep -v '^>')
 FORROT=$("$BINDIR"/seqfu rotate -m AAAAAAAAAAC "$FILES"/homopolymer.fa| grep -v '^>')
 REVROT=$("$BINDIR"/seqfu rotate -r -m GTTTTTTT "$FILES"/homopolymer.fa| grep -v '^>')

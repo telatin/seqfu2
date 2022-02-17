@@ -1,3 +1,4 @@
+#!/bin/bash
 ORFFOR=$("$BINDIR"/fu-orf "$FILES"/orf.fa.gz --min-size 500 | grep ">" | wc -l)
 ORFREV=$("$BINDIR"/fu-orf "$FILES"/orf.fa.gz --min-size 500  --scan-reverse | grep ">" | wc -l)
 

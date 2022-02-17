@@ -1,3 +1,4 @@
+#!/bin/bash
 NATIVE=$(grep -v ">" "$FILES"/homopolymer.fa| wc -c)
 COMPRESSED=$("$BINDIR"/fu-homocomp "$FILES"/homopolymer.fa | grep -v ">" | wc -c)
 
