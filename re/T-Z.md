@@ -41,6 +41,7 @@
 | Uur960I       | Ureaplasma urealyticum 960        | GCNGC                  |     2 |                                                                    |
 | Vha464I       | Vibrio harveyi 464                | CTTAAG                 |     1 |                                                                    |
 | VneI          | Vibrio nereis 18                  | GTGCAC                 |     1 | Alw44I, ApaLI, SnoI                                                |
+| VpaK32I       | Vibrio parahaemolyticus 4387-61   | GCTCTTC                |     8 |                                                                    |
 | VpaK11AI      | Vibrio parahaemolyticus 1743      | GGWCC                  |     1 | Bme216I, CauI, EagMI, FdiI, HgiBI, HgiHIII, SinI, VpaK11BI         |
 | VpaK11BI      | Vibrio parahaemolyticus 1743-1    | GGWCC                  |     1 | BsrAI, CauI, EagMI, FdiI, HgiBI, HgiJI, SinI, VpaK11AI             |
 | VspI          | Vibrio sp. 343                    | ATTAAT                 |     2 | AseI, AsnI, BpoAI, PshBI, Sru4DI                                   |
@@ -60,6 +61,7 @@
 | XorII         | Xanthomonas oryzae                | CGATCG                 |     4 | Afa16RI, BspCI, EagBI, ErhB9I, MvrI, Ple19I, PvuI, RshI            |
 | XpaI          | Xanthomonas papavericola          | CTCGAG                 |     1 | BssHI, MavI, PanI, SauLPII, Sbi68I, Sol10179I, StrI, XhoI          |
 | XspI          | Xanthomonas sp. YK1               | CTAG                   |     1 |                                                                    |
+| YenI          | Yersinia enterocolitica 08 A2635  | CTGCAG                 |     5 | Asp713I, BsuBI, CfrA4I, Ecl37kI, Psp23I, PstI, SalPI, SflI, Sst12I |
 | ZanI          | Zymomonas anaerobia               | CCWGG                  |     2 | ApaORI, BseBI, BspNI, BstNI, Bst2UI, CthII, EcoRII, MvaI, SspAI    |
 | ZhoI          | Zymomonas holcicola               | ATCGAT                 |     2 | BanIII, BbvAII, BscI, BspJI, ClaI, LcaI, PgaI, SpmI, Ssp27144I     |
 | ZraI          | Zoogloea ramigera 11              | GACGTC                 |     3 | AatII, Ssp5230I                                                    |

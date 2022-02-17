@@ -6,6 +6,7 @@
 | GdiI      | Gluconobacter dioxyacetonicus  | AGGCCT                 |     3 | AatI, AspMI, Eco147I, PceI, SarI, Sru30DI, SseBI, SteI, StuI          |
 | GdiII     | Gluconobacter dioxyacetonicus  | CGGCCR                 |     1 |                                                                       |
 | GstI      | Geobacillus stearothermophilus | GGATCC                 |     1 |                                                                       |
+| GsuI      | Gluconobacter suboxydans H-15T | CTGGAG                 |    13 |                                                                       |
 | HacI      | Halococcus acetoinfaciens      | GATC                   |     1 | Bme12I, Bsp67I, BstENII, CcyI, FnuEI, MgoI, NphI, Sau3AI              |
 | HaeI      | Haemophilus aegyptius          | WGGCCW                 |     3 |                                                                       |
 | HaeII     | Haemophilus aegypticus         | RGCGCY                 |     5 | AccB2I,  BfoI, Bme142I, Bsp143II, BstH2I, LpnI                        |
@@ -67,6 +68,7 @@
 | Hsp92II   | Haemophilus sp. 92             | CATG                   |     4 |                                                                       |
 | HspAI     | Haemophilus sp. A              | GCGC                   |     1 | AspLEI, BspLAI, BstHHI, FnuDIII, HhaI, Hin6I, HinP1I, HsoI, SciNI     |
 | HsuI      | Haemophilus suis               | AAGCTT                 |     1 |                                                                       |
+| ItaI      | Ilyobcater tartaricus          | GCNGC                  |     2 |                                                                       |
 | KasI      | Kluyvera ascorbata             | GGCGCC                 |     1 |                                                                       |
 | Kaz48kI   | Klebsiella azeanae             | RGGNCCY                |     5 |                                                                       |
 | KoxII     | Klebsiella oxytoca             | GRGCYC                 |     5 |                                                                       |

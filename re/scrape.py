@@ -98,11 +98,9 @@ def urlToDf(url):
         df["Cut"] = df["Cut"].apply(cutPosition)
         # Drop rows where "Cut" is -1
         df = df[df["Cut"] != -1]
-
-        # Remove rows where Cut > len(Recognition sequence)
-        df = df[df["Cut"] <= len(df["Recognition sequence"])]
-        
+    
         dfs.append(df)
+
     df = pd.concat(dfs)
     return df
 
