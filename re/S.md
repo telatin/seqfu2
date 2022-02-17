@@ -32,7 +32,6 @@
 | SciNI     | Spiroplasma citri ASP2                 | GCGC                   |     1 | BspLAI, BstHHI, CfoI, FnuDIII, HhaI, Hin6I, HinP1I, HsoI, HspAI        |
 | ScrFI     | Streptococcus cremoris F               | CCNGG                  |     2 |                                                                        |
 | SdaI      | Streptomyces diastaticus Ng7-324       | CCTGCAGG               |     6 |                                                                        |
-| SdiI      | Streptomyces diastaticus               | GGCCN5GGCC             |     8 |                                                                        |
 | SduI      | Streptococcus durans RFL3              | GDGCHC                 |     5 | AocII, BmyI, BsoCI, Bsp1286I, BspLS2I, MhlI, NspII                     |
 | SecI      | Synechocystis sp. 6701                 | CCNNGG                 |     1 |                                                                        |
 | SelI      | Synechococcus elongatus                | CGCG                   |     1 | AccII, Bsh1236I, Bsp123I, Bsp50I, BstFNI, BstUI, BtkI, Csp68KVI        |
@@ -46,7 +45,6 @@
 | SfaNI     | Streptococcus faecalis ND547           | GCATC                  |     8 |                                                                        |
 | SfcI      | Streptococcus faecium                  | CTRYAG                 |     1 |                                                                        |
 | SfeI      | Streptococcus faecalis                 | CTRYAG                 |     1 |                                                                        |
-| SfiI      | Streptomyces fimbriatus                | GGCCN5GGCC             |     8 |                                                                        |
 | SflI      | Streptoverticillium flavopersicum      | CTGCAG                 |     5 | ApiI, BspMAI, BsuBI, CfrA4I, Psp23I, PstI, Sag23I, Srl5DI, YenI        |
 | SfoI      | Serratia fonticola                     | GGCGCC                 |     3 |                                                                        |
 | Sfr274I   | Streptomyces fradiae 274               | CTCGAG                 |     1 | AbrI, BluI, BssHI, MavI, Sau3239I, Sol10179I, StrI, TliI               |
@@ -62,7 +60,6 @@
 | Slu1777I  | Streptomyces lusitanus 1777            | GCCGGC                 |     3 |                                                                        |
 | SmaI      | Serratia marcescens Sb                 | CCCGGG                 |     3 | AhyI, CfrJ4I, EaeAI, EclRI, Pac25I, PspAI, TspMI, XcyI, XmaI, XmaCI    |
 | SmiI      | Streptococcus milleri S                | ATTTAAAT               |     4 |                                                                        |
-| SmiMI     | Sphingobacterium mizutae M             | CAYN4RTG               |     5 |                                                                        |
 | SmlI      | Stenotrophomonas maltophilia           | CTYRAG                 |     1 |                                                                        |
 | SmuI      | Sphingobacterium multivorum RFL21      | CCCGC                  |     9 |                                                                        |
 | SmuEI     | Streptococcus mutans E                 | GGWCC                  |     1 | Bme216I, CauI, EagMI, FdiI, HgiBI, HgiHIII, Psp03I, VpaK11BI           |

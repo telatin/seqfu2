@@ -1,7 +1,6 @@
 | Enzyme   | Source                          | Recognition sequence   |   Cut | Isoschizomers                                                                                         |
 |:---------|:--------------------------------|:-----------------------|------:|:------------------------------------------------------------------------------------------------------|
 | Bac36I   | Bacillus alcalophilus 36        | GGNCC                  |     1 | AspS9I, AvcI, BavAII, Bce22I, Bsp1894I, Bsu54I, FmuI, NspIV                                           |
-| BaeI     | Bacillus sphaericus             | ACN4GTAYC              |    17 | — None on May 2010 —                                                                                  |
 | BalI     | Brevibacterium albidum          | TGGCCA                 |     3 |                                                                                                       |
 | Bal228I  | Bacillus alcalophilus 228       | GGNCC                  |     1 | AspS9I, AvcI, BavAII, BshKI, Bsp1894I, Bsu54I, FmuI, NspIV                                            |
 | BamHI    | Bacillus amyloliquefaciens H    | GGATCC                 |     1 | AccEBI, AliI, ApaCI, AsiI, Bce751I, Bsp98I, Bsp4009I, BspAAIII, CelI, Nsp29132II, NspSAIV, SolI, SurI |
@@ -10,7 +9,6 @@
 | BanII    | Bacillus aneurinolyticus        | GRGCYC                 |     5 |                                                                                                       |
 | BanIII   | Bacillus aneurinolyticus        | ATCGAT                 |     2 | AagI, BavCI, Bsa29I, BseCI, BspDI, Bsu15I, BsuTUI, ClaI                                               |
 | BanAI    | Bacillus anthracis              | GGCC                   |     2 |                                                                                                       |
-| BasI     | Bacillus sp.                    | CCAN5TGG               |     7 | AccB7I, AcpII, Asp10HII, Esp1396I, PflBI, PflMI, Van91I                                               |
 | BauI     | Bacillus aquaemaris RFL1        | CACGAG                 |     1 |                                                                                                       |
 | BavI     | Bacillus alvei                  | CAGCTG                 |     3 |                                                                                                       |
 | BavAI    | Bacillus alvei A                | CAGCTG                 |     3 |                                                                                                       |
@@ -30,23 +28,19 @@
 | BbvII    | Bacillus brevis 80              | GAAGAC                 |     8 |                                                                                                       |
 | Bbv12I   | Bacillus brevis 12              | GWGCWC                 |     5 | Alw21I, AspHI, Bsh45I, BsiHKAI, HgiAI,  HpyF46II, MspV281I                                            |
 | Bbv16II  | Bacillus brevis 16              | GAAGAC                 |     8 |                                                                                                       |
-| BbvAI    | Bacillus brevis A               | GAAN4TTC               |     5 | Asp700I, MroXI, PdmI, XmnI                                                                            |
 | BbvAII   | Bacillus brevis A               | ATCGAT                 |     2 | BavCI, Bci29I, Bli86I, BseCI, BspZEI, Bsu15I, ClaI, Rme21I                                            |
 | BbvAIII  | Bacillus brevis A               | TCCGGA                 |     1 | AccIII, Aor13HI, BlfI, BseAI, Bsp13I, BspEI, Bsu23I, Kpn2I                                            |
 | BbvBI    | Bacillus brevis B               | GGYRCC                 |     1 | BanI, BshNI, BspT107I, Eco64I, HgiCI, HgiHI, MspB4I, PfaAI                                            |
 | BbvCI    | Bacillus brevis                 | CCTCAGC                |     2 | AbeI                                                                                                  |
 | Bca77I   | Bacillus caldolyticus           | WCCGGW                 |     1 |                                                                                                       |
 | BccI     | Bacteroides caccae              | CCATC                  |     9 |                                                                                                       |
-| Bce4I    | Bacillus cereus B4              | GCN7GC                 |     7 |                                                                                                       |
 | Bce22I   | Bacillus cereus 22              | GGNCC                  |     1 | AspS9I, Bac36I, BavAII, BshKI, BspBII, CcuI, FmuI, Pde12I                                             |
 | Bce83I   | Bacillus cereus 83              | CTTGAG                 |    12 |                                                                                                       |
 | Bce243I  | Bacillus cereus                 | GATC                   |     1 | Bfi57I, Bsp143I, BspJI, BstMBI, CviAI, Kzo9I, NdeII, Sth368I                                          |
 | Bce751I  | Bacillus cereus 751             | GGATCC                 |     1 | BamHI, Bce751I, BnaI, Bsp98I, Bsp4009I, BstI, NspSAIV, Pfl8I                                          |
 | BceAI    | Bacillus cereus 1315            | ACGGC                  |     9 |                                                                                                       |
 | BceBI    | Bacillus cereus 1323            | CGCG                   |     2 | AccII, Bsh1236I, BtkI, Csp68KVI, FalII, FauBII, FnuDII, SelI, ThaI                                    |
-| BceCI    | Bacillus cereus 1195            | GCN7GC                 |     7 |                                                                                                       |
 | BcefI    | Bacillus cereus fluorescens     | ACGGC                  |    10 |                                                                                                       |
-| BcgI     | Bacillus coagulans              | CGAN6TGC               |    13 |                                                                                                       |
 | Bci29I   | Bacillus circulans 29           | ATCGAT                 |     2 | BavCI, BciBI, Bli86I, BseCI, BspZEI, Bsu15I, ClaI, Rme21I                                             |
 | BciBI    | Bacillus circulans B            | ATCGAT                 |     2 | BavCI, BcmI, Bli86I, BseCI, BspZEI, Bsu15I, ClaI, Rme21I                                              |
 | BciBII   | Bacillus circulans B            | CCWGG                  |     2 | AjnI, ApyI, BptI, Bst1I, BstOI, BstM6I, Bst2UI, EcoRII, MvaI                                          |

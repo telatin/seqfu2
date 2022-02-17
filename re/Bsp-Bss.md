@@ -3,7 +3,6 @@
 | Bsp6I      | Bacillus sp. RFL6                   | GCNGC                  |     2 |                                                                        |
 | Bsp13I     | Bacillus sp. 13                     | TCCGGA                 |     1 | AccIII, BbvAIII, BlfI, BsiMI, BspMII, Bsu23I, Kpn2I, PinBII            |
 | Bsp19I     | Bacillus sp. 19                     | CCATGG                 |     1 |                                                                        |
-| Bsp24I     | Bacillus sp. 24                     | GACN6TGG               |    16 |                                                                        |
 | Bsp50I     | Bacillus sp. RFL50                  | CGCG                   |     2 | BceBI, Bsh1236I, BstFNI, BstUI, Bsu1532I, FalII, FnuDII, MvnI, ThaI    |
 | Bsp63I     | Bacillus sphaericus 63              | CTGCAG                 |     5 | AjoI, Asp713I, BloHII, MhaAI, Pfl21I, PstI, SalPI, SflI, Sst12I, YenI  |
 | Bsp67I     | Bacillus sphaericus 67              | GATC                   |     1 | AspMDI, Bsp143I, BspJI, BtkII, DpnII, LlaAI, NlaII, SsiBI              |
@@ -67,7 +66,6 @@
 | BspMKI     | Bacillus sp. MKI                    | GTCGAC                 |     1 |                                                                        |
 | BspNI      | Bacillus sp. N                      | CCWGG                  |     2 | AglI, BseBI, Bse17I, Bst2I, CbrI, CthII, EcoRII, MvaI, SspAI, TaqXI    |
 | BspO4I     | Bacillus sp. O-4                    | CAGCTG                 |     3 |                                                                        |
-| BspOVI     | Bacillus sp. OV                     | GACN5GTC               |     6 | AhdI, AspEI,  BmeRI, DriI, Eam1105I, EclHKI, NruGI                     |
 | BspOVII    | Bacillus sp. OV                     | ATCGAT                 |     2 | BanIII, BavCI, BciBI, BcmI, Bli86I, BliRI, BspJII, BstNZ169I, SpmI     |
 | BspPI      | Bacillus sp. d 1-34                 | GGATC                  |     9 | AclWI, AlwI, BinI,  BsrWI, BstH9I,  Bst31TI, Bth617I, EacI             |
 | BspRI      | Bacillus sphaericus R               | GGCC                   |     2 |                                                                        |
@@ -78,7 +76,23 @@
 | BspT107I   | Bacillus sp. T107                   | GGYRCC                 |     1 | AccB1I, BanI, BbvBI, Eco64I, HgiCI, HgiHI, MspB4I, PfaAI               |
 | BspTNI     | Bacillus sp. TN                     | GGTCTC                 |     7 |                                                                        |
 | BspTS514I  | Bacillus sp. TS514                  | GAAGAC                 |     8 |                                                                        |
-| BspWI      | Bacillus sp. 3456                   | GCN7GC                 |     7 |                                                                        |
 | BspXI      | Bacillus sphaericus X               | ATCGAT                 |     2 | BliAI, BliRI, BscI, Bst28I, Bsu15I, LcaI, PgaI, Ssp27144I, ZhoI        |
 | BspXII     | Bacillus sphaericus X               | TGATCA                 |     1 | AbaI, BclI, BsiQI, BstT7I, FbaI, Ksp22I,  ParI                         |
 | BspZEI     | Bacillus sp. ZE                     | ATCGAT                 |     2 | Bsa29I, BseCI, BspDI, BspXI, Bst28I, BstNZ169I, BsuTUI, LplI           |
+| BsrI       | Bacillus stearothermophilus         | ACTGG                  |     6 |                                                                        |
+| BsrAI      | Bacillus stearothermophilus CPW7    | GGWCC                  |     1 | BamNxI, BcuAI, Csp68KI, Eco47I, FssI, HgiCII, HgiJI, SinI              |
+| BsrBI      | Bacillus stearothermophilus CPW193  | CCGCTC                 |     3 | AccBSI, BstD102I, Bst31NI, MbiI                                        |
+| BsrDI      | Bacillus stearothermophilus D70     | GCAATG                 |     8 |                                                                        |
+| BsrFI      | Bacillus stearothermophilus CPW16   | RCCGGY                 |     1 |                                                                        |
+| BsrGI      | Bacillus stearothermophilus GR75    | TGTACA                 |     1 | AauI,  BsmRI, Bsp1407I, BstAUI, Ssp4800I, SspBI                        |
+| BsrSI      | Bacillus stearothermophilus CPW19   | ACTGG                  |     6 |                                                                        |
+| BssAI      | Bacillus sp.                        | RCCGGY                 |     1 |                                                                        |
+| BssECI     | Bacillus stearothermophilus EC      | CCNNGG                 |     1 |                                                                        |
+| BssHI      | Bacillus stearothermophilus H3      | CTCGAG                 |     1 | AbrI, BluI, BstVI, PanI, SauLPII, SciI, SlaI, StrI, TliI               |
+| BssHII     | Bacillus stearothermophilus H3      | GCGCGC                 |     1 |                                                                        |
+| BssIMI     | Bacillus stearothermophilus IM      | GGGTC                  |     2 |                                                                        |
+| BssKI      | Bacillus stearothermophilus TBI     | CCNGG                  |     1 |                                                                        |
+| BssNAI     | Bacillus stearothermophilus NA      | GTATAC                 |     3 |                                                                        |
+| BssNI      | Bacillus sphaericus KTN             | GRCGYC                 |     2 | AcyI, AhaII, AosII, AstWI, AsuIII, BsaHI, HgiI, Hsp92I, Msp17I         |
+| BssSI      | Bacillus stearothermophilus S719    | CACGAG                 |     1 |                                                                        |
+| BssT1I     | Bacillus stearothermophilus T1      | CCWWGG                 |     1 |                                                                        |

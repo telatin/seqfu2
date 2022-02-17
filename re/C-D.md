@@ -32,8 +32,6 @@
 | CfuI      | Caulobacter fusiformis BC-25       | GATC                   |     2 |                                                                       |
 | CfuII     | Caulobacter fusiformis BC-25       | CTGCAG                 |     5 | AjoI, AliAJI, CfuII, HalII, PaePI, Psp23I, PstI, SalPI, Srl5DI, YenI  |
 | ChaI      | Corynebacterium halofytica         | GATC                   |     4 | BfuCI, Bsp2095I, BspKT6I BtkII, FnuCI, MboI, NmeCI, SsiAI             |
-| CjeI      | Campylobacter jejuni P37           | CCAN6GT                |    16 | — None on May 2010 —                                                  |
-| CjePI     | Campylobacter jejuni P116          | CCAN7TC                |    16 | — None on May 2010 —                                                  |
 | ClaI      | Caryophanon latum L                | ATCGAT                 |     2 | AagI, BanIII, BavCI, Bsa29I, BseCI, BspDI, Bsu15I, BsuTUI             |
 | CltI      | Caryophanon latum                  | GGCC                   |     2 |                                                                       |
 | CpfI      | Clostridium perfringens            | GATC                   |     1 | AspMDI, Bsp67I, Bst19II, CcyI, FnuCI, MboI, NphI, SauMI               |
@@ -46,7 +44,6 @@
 | Csp45I    | Clostridium sporogenes             | TTCGAA                 |     2 | Asp10HI, Bim19I, BsiCI, BspT104I, FspII, LspI, NspV, SspRFI           |
 | CspAI     | Corynebacterium sp. 301            | ACCGGT                 |     1 | AgeI, AsiAI,  AsiGI, BshTI CsiAI, PinAI                               |
 | CspBI     | Corynebacterium sp. B              | GCGGCCGC               |     2 |                                                                       |
-| CspCI     | Citrobacter sp. 2144               | CAAN4NGTGG             |    15 | — None on May 2010 —                                                  |
 | Csp68KI   | Cyanothece sp. BH68K               | GGWCC                  |     1 | BamNxI, BcuAI, BsrAI, Eco47I, FspMSI, HgiCII, Kzo49I, SmuEI           |
 | Csp68KII  | Cyanothece sp. BH68K               | TTCGAA                 |     2 | Asp10HI, Bim19I, BsiCI, BstBI, Csp45I, LspI, PlaII, SviI              |
 | Csp68KIII | Cyanothece sp. BH68K               | ATGCAT                 |     5 | BfrBI, EcoT22I, Mph1103I, NsiI, PinBI, Ppu10I, SspD5II, Zsp2I         |
@@ -64,3 +61,16 @@
 | CviRII    | Chlorella NC64A (XZ-6E)            | GTAC                   |     1 | AfaI, Csp6I, CviQI, HpyBI, PabI, PlaAII, RsaI, RsaNI,                 |
 | CviTI     | Chlorella NC64A (CA-1A)            | RGCY                   |     2 |                                                                       |
 | CvnI      | Chromatium vinosum                 | CCTNAGG                |     2 | AocI, AxyI, Bse21I, Bsu36I, Eco81I, MstII, SauI, SshAI                |
+| DdeI      | Desulfovibrio desulfuricans        | CTNAG                  |     1 |                                                                       |
+| DmaI      | Deleya marina                      | CAGCTG                 |     3 |                                                                       |
+| DpaI      | Deleya pacifica                    | AGTACT                 |     3 | Acc113I, AssI,  BmcAI, Bpa34I, Eco255I, RflFII, ScaI, ZrmI            |
+| DpnI      | Diplococcus pneumoniae G41         | GATC                   |     2 |                                                                       |
+| DpnII     | Diplococcus pneumoniae G41         | GATC                   |     1 | AspMDI, Bsp105I, BspFI, BstMBI, CpfI, Kzo9I, NdeII, Sth368I           |
+| DraI      | Deinococcus radiophilus            | TTTAAA                 |     3 | AhaIII, PauAII, SruI                                                  |
+| DraII     | Deinococcus radiophilus            | RGGNCCY                |     2 |                                                                       |
+| DraIII    | Deinococcus radiophilus            | CACNNNGTG              |     6 | AdeI, BstIZ316I                                                       |
+| DsaI      | Dactylococcopsis salina            | CCRYGG                 |     1 |                                                                       |
+| DsaII     | Dactylococcopsis salina            | GGCC                   |     2 |                                                                       |
+| DsaIII    | Dactylococcopsis salina            | RGATCY                 |     1 |                                                                       |
+| DsaIV     | Dactylococcopsis salina            | GGWCC                  |     1 | BamNxI, BcuAI, BsrAI, Eco47I, FspMSI, HgiEI, Kzo49I, SmuEI            |
+| DsaV      | Dactylococcopsis salina            | CCNGG                  |     1 |                                                                       |

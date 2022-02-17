@@ -17,11 +17,17 @@ def siteString(site):
     if type(site) != str:
         return ""
     
+
+
     # Extract the string from "5'" to "3'"
     regex = "5'(.*?)3'"
     # Find the cutsite
     cutsite = re.search(regex, site).group(1)
     # Strip leadingnad trailing whitespaces
+       
+    if re.search("\d", cutsite):
+        print(f"Warning: {cutsite} site contains a number", file=sys.stderr)
+        return ""
     return cutsite.strip()
 
 def cutPosition(string):
@@ -34,16 +40,16 @@ def cutPosition(string):
     else:
         return -1
 
-def getTable(url, class_attributes=[]):
+def getTable(url, class_attributes=[], columnName="Enzyme"):
     # Get the page from url
     page = BeautifulSoup(urlopen(url), "html.parser")
     # Select tables containing all attributes in the list class_attributes
     tables = page.find_all("table", class_=class_attributes)
-    columnName = "Enzyme"
+    
     # Select the table from tables having columnName as column name
-    table = [table for table in tables if columnName in table.find_all("tr")[0].text]
+    tables = [table for table in tables if columnName in table.find_all("tr")[0].text]
     # Return the table
-    return table
+    return tables
 
 def htmlTableToDataFrame(table):
     # Create a dataframe from the table
@@ -60,29 +66,36 @@ def htmlTableToDataFrame(table):
 
 def urlToDf(url):
     
-    table = getTable(url, ["sortable"])
-    df = htmlTableToDataFrame(table[0])
-    # From the first column strip the pattern "\[.*\]"
-    df.index = df.index.str.replace("\[.*\]", "")
-    
-    # Columns to remove
-    colToRemove = ["PDB code" ]
-    
-    # Check if colToRemove are in the dataframe
-    for col in colToRemove:
-        if col in df.columns:
-            df = df.drop(col, axis=1)
+    tables = getTable(url, ["sortable"], "Enzyme")
+    dfs = []
+    for table in tables:
+        df = htmlTableToDataFrame(table)
+        # From the first column strip the pattern "\[.*\]"
+        df.index = df.index.str.replace("\[.*\]", "")
+        
+        # Columns to remove
+        colToRemove = ["PDB code"]
+        
+        # Check if colToRemove are in the dataframe
+        for col in colToRemove:
+            if col in df.columns:
+                df = df.drop(col, axis=1)
 
-    # Replace column "Recognition sequence" with siteString()
-    df["Recognition sequence"] = df["Recognition sequence"].apply(siteString)
-    # Remove rows where "Recognition sequence" is empty
-    df = df[df["Recognition sequence"] != ""]
+        # Replace column "Recognition sequence" with siteString()
+        df["Recognition sequence"] = df["Recognition sequence"].apply(siteString)
+        # Remove rows where "Recognition sequence" is empty
+        df = df[df["Recognition sequence"] != ""]
 
-    # Replace "Cut" with cutPosition()
-    df["Cut"] = df["Cut"].apply(cutPosition)
-    # Drop rows where "Cut" is -1
-    df = df[df["Cut"] != -1]
+        # Replace "Cut" with cutPosition()
+        df["Cut"] = df["Cut"].apply(cutPosition)
+        # Drop rows where "Cut" is -1
+        df = df[df["Cut"] != -1]
 
+        # Remove rows where Cut > len(Recognition sequence)
+        df = df[df["Cut"] <= len(df["Recognition sequence"])]
+        
+        dfs.append(df)
+    df = pd.concat(dfs)
     return df
 
 if __name__ == "__main__":
