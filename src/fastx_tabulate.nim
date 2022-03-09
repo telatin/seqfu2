@@ -93,6 +93,7 @@ Options:
       line = file.readLine()
       let fields = line.split(fieldSeparator)
       if len(fields) == 3:
+        # FASTA: Name, comment, sequence
         let
           name = fields[0]
           comment = if len(fields[1]) > 0 : commentSeparator & fields[1]
@@ -100,14 +101,17 @@ Options:
           sequence = fields[2]
         echo '>', name, comment, "\n", sequence
       elif len(fields) == 4:
-        # FASTA or FASTQ-se
+        # FASTQ-se
         let
           name = fields[0]
           comment = if len(fields[1]) > 0 : commentSeparator & fields[1]
                     else: ""
           sequence = fields[2]
           quality  = fields[3]
-        echo '>', name, comment, "\n", sequence, "\n+\n", quality
+        if len(sequence) != len(quality):
+          stderr.writeLine("ERROR: Sequence and quality are not the same length at ", name)
+          quit(1)
+        echo '@', name, comment, "\n", sequence, "\n+\n", quality
       elif len(fields) == 8:
         # FASTQ-PE
         let
@@ -123,7 +127,7 @@ Options:
           qual2 = fields[7]
         
         if len(seq1) != len(seq2) or len(qual1) != len(seq1) or len(qual1) != len(qual2):
-          stderr.writeLine("ERROR: Unequal sequence/quality lengths for paired reads.\n")
+          stderr.writeLine("ERROR: Unequal sequence/quality lengths for paired reads:" , name1, " and ", name2)
           quit(1)
         else:
           echo '@', name1, comm1, "\n", seq1, "\n+\n", qual1, "\n@", name2, comm2, "\n", seq1, "\n+\n", qual2
