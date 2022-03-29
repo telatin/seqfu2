@@ -180,19 +180,35 @@ Output:
 
           ## TRIM FRONT / TAIL
           if trimFront > 0 or trimEnd > 0:
-            r.seq = r.seq[trimFront .. ^trimEnd]
-            if len(r.qual) > 0:
-              r.qual = r.qual[trimFront .. ^trimEnd]
+            try:
+              r.seq = r.seq[trimFront .. ^trimEnd]
+              if len(r.qual) > 0:
+                r.qual = r.qual[trimFront .. ^trimEnd]
+            except Exception:
+              if verbose:
+                stderr.writeLine("WARNING: Trimming sequence failed: ", r.name, " len=", len(r.seq))
+              continue
           
           ## TRUNCATE
-          if truncate > 0:
-            r.seq = r.seq[0 .. truncate-1]
-            if len(r.qual) > 0:
-              r.qual = r.qual[0 .. truncate-1]
-          elif truncate < 0:
-            r.seq = r.seq[^(truncate * -1) .. ^1]
-            if len(r.qual) > 0:
-              r.qual = r.qual[^(truncate * -1) .. ^1]
+          ## Keep only the first INT bases, 0 to ignore 
+          if truncate > 0 and abs(truncate) <= len(r.seq):
+            try:
+              r.seq = r.seq[0 .. truncate-1]
+              if len(r.qual) > 0:
+                r.qual = r.qual[0 .. truncate-1]
+            except Exception:
+              if verbose:
+                stderr.writeLine("WARNING: Truncating sequence failed: ", r.name, " len=", len(r.seq))
+              continue
+          elif truncate < 0 and abs(truncate) <= len(r.seq):
+            try:
+              r.seq = r.seq[^(truncate * -1) .. ^1]
+              if len(r.qual) > 0:
+                r.qual = r.qual[^(truncate * -1) .. ^1]
+            except Exception:
+              if verbose:
+                stderr.writeLine("WARNING: Truncating sequence failed: ", r.name, " len=", len(r.seq))
+              continue
 
           ## DISCARD BY LEN [after trimming/truncating]  
           if len(r.seq) < minSeqLen or (maxSeqLen > 0 and len(r.seq) > maxSeqLen):
@@ -240,12 +256,13 @@ Output:
             else:
               baseNamePrefix = lastPathPart(filename)  
 
-            if not args["--strip-name"] or prefix != "":
-              baseNamePrefix &= basenameSeparatorString
+            #if not args["--strip-name"]:
+            baseNamePrefix &= basenameSeparatorString
             newName = baseNamePrefix 
 
+
           # Prepare sequence name
-          if prefix != "":
+          if prefix != "" or (args["--strip-name"] and not args["--prefix"]):
             # PREFIX to be added 
             if printBasename:
               seqNumber = $currentPrintedSeqs
@@ -253,9 +270,13 @@ Output:
               seqNumber = $totalPrintedSeqs
 
             if args["--strip-name"]:
-              newName &= prefix & separator & seqNumber
+              #if len(prefix) > 0:
+              #  prefix &= separator
+              newName &= prefix & seqNumber
             else:
-              newName &= prefix & separator & original_name #& separator & seqNumber
+              #if len(prefix) > 0:
+              #  prefix &= separator
+              newName &= prefix & original_name #& separator & seqNumber
           else:
               if printBasename:
                 if not args["--strip-name"]:
@@ -269,6 +290,7 @@ Output:
           # Append suffix to name
           if appendSuffixToName:
             newName &= appendToName
+
 
           # Replace name if needed
           r.name = newName
