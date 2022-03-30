@@ -270,7 +270,7 @@ else
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $("$BIN" cat -z -p test "$iMini" | head -n 1) == ">test_1 comment" ]]; then
+if [[ $("$BIN" cat -z -p test_ "$iMini" | head -n 1) == ">test_1 comment" ]]; then
   echo "OK: cat: prefix"
   PASS=$((PASS+1))
 else
