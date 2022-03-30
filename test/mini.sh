@@ -2,7 +2,6 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-
 BINDIR="$DIR/../bin/"
 BIN="$BINDIR"/seqfu
 FILES="$DIR"/../data/
@@ -32,7 +31,14 @@ done
 # Check version
 
 VERSION=$("$BIN" version)
-grep $VERSION $DIR/../seqfu.nimble
+if [[ $VERSION == "" ]];
+then
+  echo "Version not found"
+  ERRORS=$((ERRORS+1))
+else
+  grep $VERSION $DIR/../seqfu.nimble
+fi
+
 
 # Dereiplicate
 if [[ $("$BIN" derep "$iAmpli"  | grep -c '>') -eq "18664" ]]; then

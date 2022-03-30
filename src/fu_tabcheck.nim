@@ -19,14 +19,16 @@ type
     sep: string
     errormsg: string
 
-proc `$`(s: checkResult): string =
+proc toString(s: checkResult, withHeader=false): string =
   if s.valid:
     result &= "Pass\t"
   else:
     result &= "Error"
     return
   
-  result &= $(s.columns) & "\t" & $(s.records) & "\tseparator=" & s.sep
+  let sepStr = if not withHeader: "separator="
+                else: ""
+  result &= $(s.columns) & "\t" & $(s.records) & "\t" & sepStr & s.sep
 
 proc checkFile(f: string, sep: char, header: char): checkResult =
   var parser: CsvParser
@@ -79,6 +81,7 @@ proc main(): int =
     -s --separator CHAR   Character separating the values, 'tab' for tab and 'auto'
                           to try tab or commas [default: auto]
     -c --comment CHAR     Comment/Header char [default: #]
+    --header              Print a header to the report
     --verbose             Enable verbose mode
   """, version=version, argv=commandLineParams())
 
@@ -98,6 +101,7 @@ proc main(): int =
 
   let
     separators = sepList
+    printHeader = bool(args["--header"])
   
   if args["--verbose"]:
     stderr.writeLine("Separator: ", separators)
@@ -107,6 +111,9 @@ proc main(): int =
   var
     okFiles = 0
     badFiles = 0
+
+  if printHeader:
+    echo "File\tPassQC\tColumns\tRows\tSeparator"
   for file in @(args["<FILE>"]):
     var
       bestFile: checkResult
@@ -125,7 +132,7 @@ proc main(): int =
       okFiles += 1
     else:
       badFiles += 1
-    echo file, "\t", bestFile
+    echo file, "\t", bestFile.toString(printHeader)
   if args["--verbose"]:
     stderr.writeLine(okFiles, " valid. ", badFiles, " non-valid files.")
   

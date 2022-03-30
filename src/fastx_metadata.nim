@@ -165,6 +165,29 @@ proc printDadaist(samples: seq[sample]) =
     
     echo s.name, path, counts
 
+proc printMetaphage(samples: seq[sample], splitStr = "_", pick = 0) =
+  let headerCounts = if addCounts: ",Counts"
+                     else: ""
+
+
+  echo "Sample", ",", "Treatment", ",", "Files", headerCounts
+  for s in samples:
+    var condition = "Cond"
+    try:
+      let splittedID = (s.name).split(splitStr)
+      let part = if len(splittedID) > pick: splittedID[pick]
+                 else: splittedID[0]
+      condition = part
+    except:
+      condition = "Cond"
+
+    let condStr = "," & condition
+    let counts = if addCounts: "," & $s.count
+                 else: ""
+    let path = if isPe > 0: "," & joinPath(s.path, s.file1) & ";" & joinPath(s.path, s.file2)
+               else: "," & joinPath(s.path, s.file1)
+    
+    echo s.name, condStr, path, counts
 
 proc fastx_metadata(argv: var seq[string]): int =
     let validFormats = {
@@ -174,6 +197,7 @@ proc fastx_metadata(argv: var seq[string]): int =
       "dadaist": "Dadaist2 metadata file",
       "lotus": "lOTUs mappint file",
       "irida": "IRIDA uploader file",
+      "metaphage": "Metaphage metadata file",
     }.toTable
 
 
@@ -186,13 +210,20 @@ Options:
   -1, --for-tag STR      String found in filename of forward reads [default: _R1]
   -2, --rev-tag STR      String found in filename of forward reads [default: _R2]
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
-  -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2, irida [default: manifest]
-  -P, --project INT      Project ID (only for irida)
   --pos INT...           Which part of the filename is the Sample ID [default: 1]
+
+  -f, --format TYPE      Output format: dadaist, irida, manifest, metaphage, qiime1, qiime2  [default: manifest]
   --pe                   Enforce paired-end reads (not supported)
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column
   -t, --threads INT      Number of simultaneously opened files [default: 2]
+
+  FORMAT SPECIFIC OPTIONS
+  -P, --project INT      Project ID (only for irida)
+  --meta-split STR       Separator in the SampleID to extract metadata, used in MetaPhage [default: _]
+  --meta-part INT        Which part of the SampleID to extract metadata, used in MetaPhage [default: 1]
+  --meta-default STR     Default value for metadata, used in MetaPhage [default: Cond]
+
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
@@ -206,9 +237,13 @@ Options:
       posList: seq[Value]
       threads: int
       projectID = 0
+      metaDefault = $args["--meta-default"]
+      metaSplit = $args["--meta-split"]
+      metaPart  = 0
     try:
       projectID = if args["--project"]: parseInt($args["--project"])
                   else: 0
+      metaPart = parseInt($args["--meta-part"]) - 1
       outFmt = $args["--format"]
       forTag = $args["--for-tag"]
       revTag = $args["--rev-tag"]
@@ -233,16 +268,20 @@ Options:
 
     # Parameters validation: input dir
     if len(args["<dir>"]) == 0:
-      stderr.writeLine("SeqFu tabulate\nERROR: Specify (at least) one input directory. Use --help for more info.")
+      stderr.writeLine("SeqFu metadata\nERROR: Specify (at least) one input directory. Use --help for more info.")
       quit(0)
 
     # Parameters validation: valid formats
     if outFmt notin validFormats:
-      stderr.writeLine("SeqFu tabulate\nERROR: Invalid format (", outFmt, "). Accepted formats:")
+      stderr.writeLine("SeqFu metadata\nERROR: Invalid format (", outFmt, "). Accepted formats:")
       for key, desc in validFormats.pairs:
         stderr.writeLine(" - ", key, " (", desc, ")")
       quit(1)
 
+    # Parameters validation: --meta-part
+    if metaPart < 0:
+      stderr.writeLine("SeqFu metadata\nERROR: Invalid value for --meta-part. It must be > 1.")
+      quit(1)
 
     for dir in args["<dir>"]:
       if not  dirExists(dir):
@@ -317,6 +356,8 @@ Options:
         printManifest(samples)
       of "dadaist":
         printDadaist(samples)
+      of "metaphage":
+        printMetaphage(samples, metaSplit, metaPart)
       of "qiime1":
         printQiime1(samples)
       of "qiime2":
