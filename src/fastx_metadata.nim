@@ -165,21 +165,24 @@ proc printDadaist(samples: seq[sample]) =
     
     echo s.name, path, counts
 
-proc printMetaphage(samples: seq[sample], splitStr = "_", pick = 0) =
+proc printMetaphage(samples: seq[sample], splitStr = "_", pick = 0, defaultStr = "Cond") =
   let headerCounts = if addCounts: ",Counts"
                      else: ""
 
 
   echo "Sample", ",", "Treatment", ",", "Files", headerCounts
   for s in samples:
-    var condition = "Cond"
-    try:
-      let splittedID = (s.name).split(splitStr)
-      let part = if len(splittedID) > pick: splittedID[pick]
-                 else: splittedID[0]
-      condition = part
-    except:
-      condition = "Cond"
+    var condition = defaultStr
+    if splitStr in s.name:
+      try:
+        let splittedID = (s.name).split(splitStr)
+        let part = if len(splittedID) > pick: splittedID[pick]
+                  else: splittedID[0]
+        condition = part
+      except:
+        condition = defaultStr
+    else:
+      condition = defaultStr
 
     let condStr = "," & condition
     let counts = if addCounts: "," & $s.count
@@ -357,7 +360,7 @@ Options:
       of "dadaist":
         printDadaist(samples)
       of "metaphage":
-        printMetaphage(samples, metaSplit, metaPart)
+        printMetaphage(samples, metaSplit, metaPart, metaDefault)
       of "qiime1":
         printQiime1(samples)
       of "qiime2":
