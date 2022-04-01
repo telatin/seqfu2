@@ -8,7 +8,7 @@ will produce a metadata file extracting the ID from the filename
 and optionally adding the file paths or read counts.
 
 ```
-Usage: metadata [options] [<dir> ...]
+Usage: metadata [options] [<dir>...]
 
 Prepare mapping files from directory containing FASTQ files
 
@@ -16,27 +16,37 @@ Options:
   -1, --for-tag STR      String found in filename of forward reads [default: _R1]
   -2, --rev-tag STR      String found in filename of forward reads [default: _R2]
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
-  -f, --format TYPE      Output format: dadaist, manifest, qiime1, qiime2, irida [default: manifest]
-  -P, --project INT      Project ID (only for irida)
   --pos INT...           Which part of the filename is the Sample ID [default: 1]
+
+  -f, --format TYPE      Output format: dadaist, irida, manifest, metaphage, qiime1, qiime2  [default: manifest]
   --pe                   Enforce paired-end reads (not supported)
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column
   -t, --threads INT      Number of simultaneously opened files [default: 2]
+
+  FORMAT SPECIFIC OPTIONS
+  -P, --project INT      Project ID (only for irida)
+  --meta-split STR       Separator in the SampleID to extract metadata, used in MetaPhage [default: _]
+  --meta-part INT        Which part of the SampleID to extract metadata, used in MetaPhage [default: 1]
+  --meta-default STR     Default value for metadata, used in MetaPhage [default: Cond]
+
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
 
 ## Output formats
+
 * manifest (used as import manifest for [Qiime2](https://qiime2.org/) artifacts)
 * qiime1, qiime2 (forward-compatible [qiime1](http://qiime.org/) mapping file; a dedicated [Qiime2](https://qiime2.org/) metadata file is under development)
 * dadaist ([Dadaist2](quadram-institute-bioscience.github.io/dadaist2) compatible metadata)
 * lotus ([Lotus](http://lotus2.earlham.ac.uk/) mapping file - tested with Lotus1)
 * irida ([IRIDA uploader](https://github.com/phac-nml/irida-uploader) sample sheet. Requires `-P PROJECTID`)
+* metaphage ([MetaPhage](https://mattiapandolfovr.github.io/MetaPhage), use `--meta-split`, `--meta-part` and `--meta-default` to customize a Treatment column)
 
 ## Examples
 
 ### Manifest
+
 ```
 seqfu metadata ./MiSeq_SOP/
 ```
@@ -73,7 +83,9 @@ Note that `-f qiime2` will add a second header line.
 ```
 seqfu metadata MiSeq_SOP -f qiime1 --add-path --counts
 ```
+
 Output:
+
 ```
 #SampleID	Counts	Paths
 F3D0	7793	F3D0_S188_L001_R1_001.fastq.gz,F3D0_S188_L001_R2_001.fastq.gz
