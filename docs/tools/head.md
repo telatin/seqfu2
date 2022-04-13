@@ -30,6 +30,7 @@ Output:
   --fastq                Force FASTQ output
   --sep STRING           Sequence name fields separator [default: _]
   -q, --fastq-qual INT   FASTQ default quality [default: 33]```
+```
 
 ## Example
 
