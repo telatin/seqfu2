@@ -84,7 +84,7 @@ wget ftp://ftp.ensembl.org/pub/release-84/fasta/homo_sapiens/dna/Homo_sapiens.GR
 FILE1=Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz
 FILE2=Gastrointestinal_tract.nuc.fsa
 
-for FILE in FILE1 FILE2; do
+for FILE in $FILE1 $FILE2; do
   hyperfine --export-markdown stat_$(basename $FILE | cut -f1 -d.).md --warmup 1 --min-runs 3 \
     "seqfu stats $FILE" \
     "seqkit stats $FILE" \
