@@ -5,7 +5,7 @@ description   = "SeqFu command-line tools"
 license       = "MIT"
 
 # Dependencies
-requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argparse",  "colorize", "neo", "zip", "datamancer", "illwill"
+requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argparse",  "colorize", "neo", "zip", "datamancer", "illwill=0.2.0"
 
 srcDir = "src"
 binDir = "bin" 
