@@ -31,4 +31,4 @@ jobs:
         uses: skynet-core/nim@v1.2
         with:
           # Command to run
-          command: sudo apk add zlib-dev && nim --version && nimble build --verbose --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y
+          command: sudo apk add zlib-dev && nim --version && nimble --version && nimble build --verbose --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && ls -ltr bin/
