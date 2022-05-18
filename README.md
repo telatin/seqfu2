@@ -39,7 +39,7 @@ The full documentation is available at:
 
 ```
 SeqFu - Sequence Fastx Utilities
-version: 1.8.6
+version: 1.10.0
 
   · count [cnt]         : count FASTA/FASTQ reads, pair-end aware
   · deinterleave [dei]  : deinterleave FASTQ
@@ -60,6 +60,6 @@ version: 1.8.6
   · tail                : view last sequences
   · view                : view sequences with colored quality and oligo matches
 
-Type 'seqfu version' or 'seqfu citation' to print the version and paper, respectively.
+Type 'seqfu version' or 'seqfu cite' to print the version and paper, respectively.
 Add --help after each command to print its usage.
 ```
