@@ -12,3 +12,9 @@ long
 noise
 reclean.sh
 .vscode/
+Gastrointestinal_tract.nuc.fsa
+Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz
+stat_FILE1.md
+stat_FILE2.md
+stat_Gastrointestinal_tract.md
+stat_Homo_sapiens.md
