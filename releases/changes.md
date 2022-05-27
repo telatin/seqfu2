@@ -1,0 +1,1 @@
+* **bugfix** Seqfu tabulate `-d` (detabulate) was too stringent in requiring forward and reverse reads to have the same length :facepalm:

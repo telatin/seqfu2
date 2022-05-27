@@ -126,7 +126,8 @@ Options:
           seq2  = fields[6]
           qual2 = fields[7]
         
-        if len(seq1) != len(seq2) or len(qual1) != len(seq1) or len(qual1) != len(qual2):
+        if  len(qual1) != len(seq1) or len(qual2) != len(seq2):
+          # 1.10.1 - relaxed if: paired ends can be of different lengths
           stderr.writeLine("ERROR: Unequal sequence/quality lengths for paired reads:" , name1, " and ", name2)
           quit(1)
         else:
