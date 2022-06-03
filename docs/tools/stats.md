@@ -3,6 +3,9 @@ sort: 4
 ---
 # seqfu stats
 
+```note
+Improved with sorting and JSON output in SeqFu 1.11. The legacy version is available via *seqfu oldstats*
+```
 *stats*  is one of the core subprograms of *SeqFu*.
 
 ```text
@@ -12,8 +15,13 @@ Options:
   -a, --abs-path         Print absolute paths
   -b, --basename         Print only filenames
   -n, --nice             Print nice terminal table
-  --csv                  Separate with commas (default: tabs)
+  -j, --json             Print json (experimental)
+  --csv                  Separate output by commas instead of tabs
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
+  --precision INT        Number of decimal places to round to [default: 2]
+  --sort KEY             Sort by KEY from: filename, counts, n50, tot, avg, min, max
+                         descending for values, ascending for filenames [default: filename]
+  -r, --reverse          Reverse sort order
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
@@ -22,6 +30,7 @@ Options:
 ### Example output
 
 Output is a TSV text with three columns (or CSV using  `--csv`):
+
 ```text
 File,#Seq,Sum,Avg,N50,N75,N90,Min,Max
 data/filt.fa.gz,78730,24299931,308.6,316,316,220,180,485

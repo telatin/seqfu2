@@ -326,7 +326,8 @@ separator "\n Checking docs"
 for SUB in utilities tools;
 do
   echo " - Utilities sort order in $SUB"
-   grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | grep -v README | \
+  # Note: perl not installed in Github CI
+   perl --version >/dev/null && grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | grep -v README | \
    cut -f 2,3 -d : | \
    sort | uniq -c | perl -mTerm::ANSIColor -ne  '
    if ($_=~/^\s*(\S)/)
