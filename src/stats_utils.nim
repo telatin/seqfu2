@@ -5,10 +5,23 @@ import algorithm
 ## Seqfu Stats
 
 type
-  FastxStats*   = tuple[count, sum, min, max, n25, n50, n75, n90: int, auN, avg: float]
+  FastxStats*   = tuple[filename: string, count, sum, min, max, n25, n50, n75, n90: int, auN, avg: float]
 
+proc toTable*(s: FastxStats): Table[string, string] =
+  result["Filename"] = s.filename
+  result["Total"] = $s.sum
+  result["Count"] = $s.count
+  result["Min"] = $s.min
+  result["Max"] = $s.max
+  result["N25"] = $s.n25
+  result["N50"] = $s.n50
+  result["N75"] = $s.n75
+  result["N90"] = $s.n90
+  result["Avg"] = $s.avg
+  result["AuN"] = $s.auN
 
 proc getFastxStats*(filename: string): FastxStats {.discardable.} =
+  result.filename = filename
   var
     totalBases = 0
     nseq  = 0
@@ -68,17 +81,7 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
       result.n75 = ctgLen
     if (result.n90 == 0)  and (float(accum) >=  float( totalBases)  * float((100 - 90) / 100) )  :
       result.n90 = ctgLen
-  #[
-    for index in nIndexes:
-      if index in nArray:
-        # was already calculated... skip
-        continue
-      let
-        quote = float(totalBases) * float((100 - index) / 100)
-      if float(accum) >= quote:
-        nArray[index] = ctgLen
-        iArray[index] = i
-  ]#
+
 
   result.auN = auN
   result.count = nseq

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export SEQFU_QUIET=1
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 BINDIR="$DIR/../bin/"
@@ -13,18 +13,31 @@ iAmpli="$FILES"/filt.fa.gz
 iSort="$FILES"/sort.fa
 iMini="$FILES"/target.fa
 
+OK='\033[0;32mOK\033[0m'
+FAIL='\033[0;31mFAIL\033[0m'
+STAR='\033[1;34m*\033[0m'
 ERRORS=0
-echo "# Minimal test suite"
-echo "---------------------------------------"
 
+
+function separator {
+  # if length $1 > 0; then
+  #   echo -e "\n$1\n"
+  if [[ $1 ]]; then
+    echo -e "\033[0;36m $1 \033[0m"
+  fi
+  CYAN_BAR='\033[0;36m ======================================== \033[0m'
+  echo -e "$CYAN_BAR"
+}
+
+separator "Minimal test suite"
 # Binary works
 "$BIN" > /dev/null || { echo "Binary not working: $BIN"; exit 1; }
-echo "OK: Binary running"
+echo -e "$OK: Binary running"
 
 for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave count;
 do
   BINCOUNT=$((BINCOUNT+1))
-  echo " $BINCOUNT. $MOD"
+  echo -e " $STAR $BINCOUNT. $MOD"
   "$BIN" "$MOD" --help >/dev/null  2>&1 || {  echo "Help for $MOD returned non-zero"; exit 1; }
 done
 
@@ -42,51 +55,51 @@ fi
 
 # Dereiplicate
 if [[ $("$BIN" derep "$iAmpli"  | grep -c '>') -eq "18664" ]]; then
-	echo "OK: Dereplicate"
+	echo -e "$OK: Dereplicate"
   PASS=$((PASS+1))
 else
-	echo "ERR: Dereplicate didnt return 18664 seqs"
+	echo -e "$FAIL: Dereplicate didnt return 18664 seqs"
 	ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" derep "$iAmpli" -m 10000 2>/dev/null | grep -c '>') -eq "1" ]]; then
-	echo "OK: Dereplicate, min size"
+	echo -e "$OK: Dereplicate, min size"
   PASS=$((PASS+1))
 else
-	echo "ERR: Dereplicate, min size"
+	echo -e "$FAIL: Dereplicate, min size"
 	ERRORS=$((ERRORS+1))
 fi
 
 # Grep
 if [[ $("$BIN" grep -n seq.1 "$FILES"/comm.fa  | grep -c '>') -eq "1" ]]; then
-	echo "OK: grep, name"
+	echo -e "$OK: grep, name"
   PASS=$((PASS+1))
 else
-	echo "ERR: grep, name"
+	echo -e "$FAIL: grep, name"
 	ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" grep -c -n size=3 "$FILES"/comm.fa  | grep -c '>') -eq "1" ]]; then
-	echo "OK: grep, size"
+	echo -e "$OK: grep, size"
   PASS=$((PASS+1))
 else
-	echo "ERR: grep, size"
+	echo -e "$FAIL: grep, size"
 	ERRORS=$((ERRORS+1))
 fi
 
 # List
 if [[ $("$BIN" list "$FILES"/prot.list "$FILES"/prot.faa  | grep -c '>') -eq "5" ]]; then
-	echo "OK: list, default"
+	echo -e "$OK: list, default"
   PASS=$((PASS+1))
 else
-	echo "ERR: list, default not 5"
+	echo -e "$FAIL: list, default not 5"
 	ERRORS=$((ERRORS+1))
 fi
 if [[ $("$BIN" list -c "$FILES"/prot.list "$FILES"/prot.faa  | grep -c '>') -eq "4" ]]; then
-	echo "OK: list, with comments"
+	echo -e "$OK: list, with comments"
   PASS=$((PASS+1))
 else
-	echo "ERR: list, with comments not 4"
+	echo -e "$FAIL: list, with comments not 4"
 	ERRORS=$((ERRORS+1))
 fi
 
@@ -96,75 +109,75 @@ if [[ -e "$HOMO" ]]; then
   ORIGINAL=$(grep . "$FILES"/homopolymer.fq | wc -c)
   COMPRESSED=$($HOMO "$FILES"/homopolymer.fq | wc -c )
   if [[ $ORIGINAL -gt $COMPRESSED ]]; then
-    echo "OK: homopolymer pass $ORIGINAL > $COMPRESSED"
+    echo -e "$OK: homopolymer pass $ORIGINAL > $COMPRESSED"
     PASS=$((PASS+1))
   else
-    echo "ERR: homopolymer failed $ORIGINAL original length, $COMPRESSED compressed length"
+    echo -e "$FAIL: homopolymer failed $ORIGINAL original length, $COMPRESSED compressed length"
     ERRORS=$((ERRORS+1))
   fi
 fi
 
 # Interleave
 if [[ $("$BIN" ilv -1 "$iPair1" -2 "$iPair2" | wc -l) == $(cat "$iPair1" "$iPair2" | gzip -d | wc -l ) ]]; then
-	echo "OK: Interleave"
+	echo -e "$OK: Interleave"
   PASS=$((PASS+1))
 else
-	echo "ERR: Interleave differs cat/wc"
+	echo -e "$FAIL: Interleave differs cat/wc"
 	ERRORS=$((ERRORS+1))
 fi
 
 # Deinterleave
 "$BIN" dei "$iInterleaved" -o testtmp
 if [[ $(grep . testtmp_R{1,2}.fq | wc -l) == $(gzip -dc "$iInterleaved" | wc -l ) ]]; then
-	echo "OK: Deinterleave"
+	echo -e "$OK: Deinterleave"
   PASS=$((PASS+1))
 else
-	echo "ERR: Deinterleave   "
+	echo -e "$FAIL: Deinterleave   "
 	ERRORS=$((ERRORS+1))
 fi
 rm testtmp_*
 
 # Count
 if [[ $("$BIN" count "$iAmpli" | cut -f 2) == $(gzip -dc "$iAmpli" | grep -c '>' ) ]]; then
-	echo "OK: Count"
+	echo -e "$OK: Count"
   PASS=$((PASS+1))
 else
-	echo "ERR: Count \"$BIN\" count \"$iAmpli\": differs grep/wc"
+	echo -e "$FAIL: Count \"$BIN\" count \"$iAmpli\": differs grep/wc"
 	ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" count "$iPair1"  "$iPair2" | wc -l) -eq 1 ]]; then
-	echo "OK: Count pairs"
+	echo -e "$OK: Count pairs"
   PASS=$((PASS+1))
 else
-	echo "ERR: Count pairs"
+	echo -e "$FAIL: Count pairs"
 	ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" count -u "$iPair1"  "$iPair2" | wc -l) -eq 2 ]]; then
-	echo "OK: Count pairs, split"
+	echo -e "$OK: Count pairs, split"
   PASS=$((PASS+1))
 else
-	echo "ERR: Count pairs, split"
+	echo -e "$FAIL: Count pairs, split"
 	ERRORS=$((ERRORS+1))
 fi
 
 
 ## Sort by size (asc)
 if [[ $("$BIN" sort --asc "$iSort" | head -n 1| cut -c 2-6) -eq 'short' ]]; then
-  echo "OK: Sort by size"
+  echo -e "$OK: Sort by size"
   PASS=$((PASS+1))
 else
-  echo "ERR: Sort by size failed"
+  echo -e "$FAIL: Sort by size failed"
   ERRORS=$((ERRORS+1))
 fi
 
 ## Head 
 if [[ $("$BIN" head -n 1 "$iInterleaved" | wc -l) -eq 4 ]]; then
-  echo "OK: Head 1 sequence"
+  echo -e "$OK: Head 1 sequence"
   PASS=$((PASS+1))
 else
-  echo "ERR: Head failed"
+  echo -e "$FAIL: Head failed"
   ERRORS=$((ERRORS+1))
 fi
 
@@ -172,10 +185,10 @@ fi
 
 ## Tail 
 if [[ $("$BIN" tail -n 1 "$iInterleaved" | wc -l) -eq 4 ]]; then
-  echo "OK: tail 1 sequence"
+  echo -e "$OK: tail 1 sequence"
   PASS=$((PASS+1))
 else
-  echo "ERR: Tail failed"
+  echo -e "$FAIL: Tail failed"
   ERRORS=$((ERRORS+1))
 fi
 
@@ -183,10 +196,10 @@ fi
 
 ##QUal
 if [[ $("$BIN" qual  "$iInterleaved" | grep 'Illumina-1.8' | wc -l ) -eq 1 ]]; then
-  echo "OK: qual tested"
+  echo -e "$OK: qual tested"
   PASS=$((PASS+1))
 else
-  echo "ERR: qual failed"
+  echo -e "$FAIL: qual failed"
   ERRORS=$((ERRORS+1))
 fi
 
@@ -195,104 +208,104 @@ fi
 # Seqfu ORF
 ORF1=$("$BINDIR"/fu-orf -1 "$iPair1" -m 29 -r | grep -c '>')
 if [[ $ORF1 -eq 20 ]]; then
-  echo "OK: fu-orf [-1] tested"
+  echo -e "$OK: fu-orf [-1] tested"
   PASS=$((PASS+1))
 else
-  echo "ERR: fu-orf [-1] test failed: $ORF1 != 20"
+  echo -e "$FAIL: fu-orf [-1] test failed: $ORF1 != 20"
   ERRORS=$((ERRORS+1))
 fi
 
 ORFSE=$("$BINDIR"/fu-orf "$iPair1" -m 29 -r  | grep -c '>')
 if [[ $ORFSE -eq 20 ]]; then
-  echo "OK: fu-orf [Single] tested"
+  echo -e "$OK: fu-orf [Single] tested"
   PASS=$((PASS+1))
 else
-  echo "ERR: fu-orf [Single] test failed: $ORFSE != 20"
+  echo -e "$FAIL: fu-orf [Single] test failed: $ORFSE != 20"
   ERRORS=$((ERRORS+1))
 fi
 
 ORF2=$("$BINDIR"/fu-orf -r -m 29 -1 "$iPair1" -2 "$iPair2" | grep -c '>')
 if [[ $ORF2 -gt 4 ]]; then
-  echo "OK: fu-orf [Paired] tested"
+  echo -e "$OK: fu-orf [Paired] tested"
   PASS=$((PASS+1))
 else
-  echo "ERR: fu-orf [Paired] test failed: $ORF2 != 5"
+  echo -e "$FAIL: fu-orf [Paired] test failed: $ORF2 != 5"
   ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BINDIR"/fu-sw -q "$FILES"/query.fa -t "$FILES"/target.fa | grep -c 'Score') -eq 2 ]]; then
-  echo "OK: fu-sw tested"
+  echo -e "$OK: fu-sw tested"
   PASS=$((PASS+1))
 else
-  echo "ERR: fu-sw test failed: != 2"
+  echo -e "$FAIL: fu-sw test failed: != 2"
   ERRORS=$((ERRORS+1))
 fi
 ## STREAMING
 
 if [[ $( gzip -dc  "$iInterleaved" | "$BIN" head -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
-  echo "OK: Head 1 sequence (stream)"
+  echo -e "$OK: Head 1 sequence (stream)"
   PASS=$((PASS+1))
 else
-  echo "ERR: Head failed"
+  echo -e "$FAIL: Head failed"
   ERRORS=$((ERRORS+1))
 fi
 
 if [[ $(gzip -dc  "$iInterleaved" | "$BIN" tail -n 1 2>/dev/null | wc -l) -eq 4 ]]; then
-  echo "OK: tail 1 sequence (stream)"
+  echo -e "$OK: tail 1 sequence (stream)"
   PASS=$((PASS+1))
 else
-  echo "ERR: tail failed"
+  echo -e "$FAIL: tail failed"
   ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" head -n 6  "$iInterleaved" | "$BIN" tail -n 2 2>/dev/null | wc -l) -eq 8 ]]; then
-  echo "OK: head/tail 1 sequence (stream)"
+  echo -e "$OK: head/tail 1 sequence (stream)"
   PASS=$((PASS+1))
 else
-  echo "ERR: head/tail failed"
+  echo -e "$FAIL: head/tail failed"
   ERRORS=$((ERRORS+1))
 fi
 
 # CAT
 if [[ $("$BIN" cat "$iMini" | head -n 1) == ">ecoli comment" ]]; then
-  echo "OK: cat: default"
+  echo -e "$OK: cat: default"
   PASS=$((PASS+1))
 else
-  echo "ERR: cat: default"
+  echo -e "$FAIL: cat: default"
   ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" cat "$iMini" -s | head -n 1) == ">ecoli" ]]; then
-  echo "OK: cat: strip comment"
+  echo -e "$OK: cat: strip comment"
   PASS=$((PASS+1))
 else
-  echo "ERR: cat: strip comment"
+  echo -e "$FAIL: cat: strip comment"
   ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" cat -z -p test_ "$iMini" | head -n 1) == ">test_1 comment" ]]; then
-  echo "OK: cat: prefix"
+  echo -e "$OK: cat: prefix"
   PASS=$((PASS+1))
 else
-  echo "ERR: cat: prefix not found"
+  echo -e "$FAIL: cat: prefix not found"
   ERRORS=$((ERRORS+1))
 fi
 
 if [[ $("$BIN" cat -b "$iMini" -s | head -n 1) != ">target_ecoli" ]]; then
-  echo "ERR: cat: basename not added"
+  echo -e "$FAIL: cat: basename not added"
   ERRORS=$((ERRORS+1))
 else
-  echo "OK: cat: added basename"
+  echo -e "$OK: cat: added basename"
   PASS=$((PASS+1))
 fi
 
 ## fu-cov
 TOTFILT=$("$BINDIR"/fu-cov "$FILES/ctgs.fa.gz" -c 100 -x 200 2>/dev/null | grep -c '>')
 if [[ $((TOTFILT+0)) -eq 1 ]]; then
-  echo "OK: fu-cov"
+  echo -e "$OK: fu-cov"
   PASS=$((PASS+1))
 else
-  echo "ERR: fu-cov was supposed to select 1 sequence, $TOTFILT found "
+  echo -e "$FAIL: fu-cov was supposed to select 1 sequence, $TOTFILT found "
   ERRORS=$((ERRORS+1))
 fi
  
@@ -301,14 +314,14 @@ for TEST in "$DIR"/test-*.sh;
 do
   BASE=$(basename "$TEST"  | cut -f 1 -d .)
   if [[ -e $TEST ]]; then
-    echo " - Tests for: '$BASE'";
+    echo ""
+    separator " Testing module: $(basename $TEST .sh | cut -f 2 -d - )"
     source "$TEST"
   fi
 done
 
 ## Check docs
-echo ""
-echo "# CHECKING DOCS"
+separator "\n Checking docs"
 
 for SUB in utilities tools;
 do
@@ -329,8 +342,7 @@ do
 done
 
 ## Check release
-echo ""
-echo "# Checking release"
+separator "\n Checking release (GitHub)"
 LOCAL_RELEASE=$(grep version "$DIR/../seqfu.nimble"  | cut -f 2 -d = | sed 's/[" ]//g')
 GH_RELEASE=$(curl -s https://api.github.com/repos/telatin/seqfu2/releases/latest  | perl -nE 'my ($tag, $val) = split /:/, $_; if ($tag=~/tag_name/) { my @tag = split /"/, $val; for my $i (@tag) { $i =~s/[^0-9.]//g; say $i if (length($i) > 2); } }')
 
@@ -342,21 +354,21 @@ if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
   echo
   if [[ $RELEASE == 1 ]];
   then
-   echo "ERROR: Release matches last version on GitHub"
+   echo -e "$FAIL: Release matches last version on GitHub"
    ERRORS=$((ERRORS+1))
   fi
 else
-  echo "OK:  $LOCAL_RELEASE != $GH_RELEASE (remote)"
+  echo -e "$OK:  $LOCAL_RELEASE != $GH_RELEASE (remote)"
   PASS=$((PASS+1))
 fi
 
 
 
 ### Check failures
-echo "---------------------------------------"
+separator
 if  [[ $ERRORS -gt 0 ]]; then
-	echo "FAIL: $ERRORS test failed."
+	echo -e "$FAIL: $ERRORS test failed ($PASS passed)"
 	exit 1
 else
-	echo "PASS ($PASS tests)"
+	echo -e "$OK: All $PASS tests passed"
 fi

@@ -49,9 +49,9 @@ var progs = {
        "cnt": fastx_count_threads,      # Experimental     
          "count": fastx_count_threads,  # Experimental
        "st" : fastx_stats,            
-         "stats": fastx_stats,
-         "stat": fastx_stats,
-       "stats2": fastx_stats_v2,        # Experimental
+         "stats": fastx_stats_v2,
+         "stat": fastx_stats_v2,
+       "oldstats": fastx_stats,        # Experimental
        "list": fastx_list,              # Experimental
         "lst": fastx_list,              # Experimental
        "count-legacy": fastx_count, 
