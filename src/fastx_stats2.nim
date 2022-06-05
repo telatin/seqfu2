@@ -215,7 +215,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
     if printBasename:
       stats.filename = getBasename(stats.filename)
     elif printAbs:
-      stats.filename =  absolutePath(stats.filename)
+      stats.filename = absolutePath(stats.filename)
 
     statsList.add(stats)
     var 
@@ -233,11 +233,18 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
     else:
       echo statsSeq.join(sep)
     
-    ]#
+  ]#
     
   
   # Sort
-  let sortKey = ($args["--sort-by"]).toLower();
+  let
+    sortKey = ($args["--sort-by"]).toLower()
+    validKeys = @["none", "n50", "n75", "n90", "min", "max", "sum", "count", "avg", "filename", "counts", "tot", "mean"]
+
+  if sortKey notin validKeys:
+    stderr.writeLine("ERROR: Invalid sort key: ", sortKey)
+    
+
   if  sortKey == "n50":
     if reverse:
       sort(statsList, proc(a, b: FastxStats): int =
@@ -249,7 +256,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
         if a.n50 > b.n50: return -1
         else: return 1
       )
-  if  sortKey == "n75":
+  elif  sortKey == "n75":
     if reverse:
       sort(statsList, proc(a, b: FastxStats): int =
         if a.n75 < b.n75: return -1
@@ -260,7 +267,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
         if a.n75 > b.n75: return -1
         else: return 1
       )
-  if  sortKey == "n90":
+  elif  sortKey == "n90":
     if reverse:
       sort(statsList, proc(a, b: FastxStats): int =
         if a.n90 < b.n90: return -1
@@ -337,7 +344,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
         if a.filename < b.filename: return -1
         else: return 1
       )
-  if  sortKey == "aun":
+  elif  sortKey == "aun":
     if reverse:
       sort(statsList, proc(a, b: FastxStats): int =
         if a.aun < b.aun: return -1

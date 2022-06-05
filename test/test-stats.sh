@@ -80,12 +80,20 @@ else
     echo -e "$FAIL: [stats] Checking MultiQC output expecting 39 lines: <$WC2>"
     ERRORS=$((ERRORS+1))
 fi
+
+if [[ $WC == 1 ]]; then
+    echo -e "$OK: [stats] Experimental JSON output on 1 line: <$WC>"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: [stats] Experimental JSON output on 1 line: <$WC>"
+    ERRORS=$((ERRORS+1))
+fi
 # Multi file 
 
 # Default sort
 "$BINDIR"/seqfu stats --basename  $iAmpli $iSort $iMini > $TMP
 # Sort by N50 descending
- "$BINDIR"/seqfu stats --basename  --sort N50 --reverse $iAmpli $iSort $iMini > $TMP2
+"$BINDIR"/seqfu stats --basename  --sort n50 --reverse $iAmpli $iSort $iMini > $TMP2
 
 FILT=$(cat $TMP | head -n 2 | tail -n 1 | cut -f 1)
 MSG="[stats] Checking default starting  by 'filt': <$FILT>"
@@ -104,5 +112,49 @@ if [[ $FILT == "sort" ]];  then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+#/////
+
+LIST="$FILES/prot.faa $FILES/prot2.faa $FILES/test.fa $FILES/test.fasta $FILES/test.fastq $FILES/test2.fastq $FILES/test_4.fa.gz"
+"$BINDIR"/seqfu stats -a  $LIST | grep -v "Total bp" > $TMP
+
+MSG="Check absolute paths"
+if [[ $(grep ^/ $TMP | cut -c 1 | sort | head -n 1 ) == "/" ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG: "
+    ERRORS=$((ERRORS+1))
+fi
+
+MSG="Check sort orded when not specified"
+
+if [[ $(basename $(head -n 1 $TMP | cut -f 1 ) ) == "prot.faa" ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG: $(basename $(head -n 1 $TMP | cut -f 1 ) )"
+    ERRORS=$((ERRORS+1))
+fi
+
+"$BINDIR"/seqfu stats -a  $LIST --sort tot | grep -v "Total bp" > $TMP
+MSG="Check sort: tot seq sorted at 3300"
+if [[ $(head -n 1 $TMP | cut -f 3 ) == 3300 ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG:$(head -n 1 $TMP | cut -f 3 ) "
+    ERRORS=$((ERRORS+1))
+fi
+
+"$BINDIR"/seqfu stats -a  $LIST --sort tot --reverse | grep -v "Total bp" > $TMP
+MSG="Check reverse sort: tot seq sorted at 3300"
+if [[ $(tail -n 1 $TMP | cut -f 3 ) == 3300 ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG:$(head -n 1 $TMP | cut -f 3 ) "
     ERRORS=$((ERRORS+1))
 fi
