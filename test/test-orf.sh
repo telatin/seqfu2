@@ -7,7 +7,6 @@ if [[ $ORFFOR -eq 1 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: Expected ONE large ORF found in forward mode [found: $ORFFOR]"
-    FAIL=$((FAIL+1))
     ERRORS=$((ERRORS+1))
 fi
 if [[ $ORFREV -eq  2 ]]; then
@@ -15,7 +14,6 @@ if [[ $ORFREV -eq  2 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: Expected Two large ORFs found in forward/reverse mode [found: $ORFREV]"
-    FAIL=$((FAIL+1))
     ERRORS=$((ERRORS+1))
 fi
 

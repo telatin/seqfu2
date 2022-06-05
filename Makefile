@@ -4,13 +4,14 @@
 
 BIN=./bin
 SOURCE=./src
+DATA=./data
 VERSION := $(shell grep version seqfu.nimble  | grep  -o "[0-9]\\+\.[0-9]\\+\.[0-9]\\+")
 NIMPARAM :=  --gc:arc -d:NimblePkgVersion=$(VERSION) -d:release --opt:speed 
 TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-homocomp $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck  $(BIN)/fu-homocomp 
 
 all: $(TARGETS)
 
-src/sfu.nim: ./src/fast*
+src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim
 	touch $@ 
 
 $(BIN)/seqfu: src/sfu.nim
@@ -58,10 +59,13 @@ $(BIN)/fu-16Sregion: src/dadaist2_region.nim
 $(BIN)/dadaist2-mergeseqs: src/dadaist2_mergeseqs.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
-
-
-
-
+multiqc: $(BIN)/seqfu
+	mkdir -p temp-mqc
+	$(BIN)/seqfu stats $(DATA)/filt.fa.gz $(DATA)/orf.fa.gz --multiqc temp-mqc/stats_mqc.txt
+	multiqc -f -o multiqc/ temp-mqc
+	rm -rf temp-mqc
+	open "multiqc/multiqc_report.html"
+	
 build:
 	nimble build
 

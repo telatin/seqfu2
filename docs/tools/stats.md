@@ -19,13 +19,26 @@ Options:
   --csv                  Separate output by commas instead of tabs
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
   --precision INT        Number of decimal places to round to [default: 2]
-  --sort KEY             Sort by KEY from: filename, counts, n50, tot, avg, min, max
-                         descending for values, ascending for filenames [default: filename]
+  -s, --sort-by KEY      Sort by KEY from: filename, counts, n50, tot, avg, min, max
+                         descending for values, ascending for filenames [default: none]
   -r, --reverse          Reverse sort order
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
+### Sorting
 
+To sort by filename (ascending alphabetical order) add `--sort filename`.
+Numerical values are sorted from the largest (descending), supported values are:
+* *n50*, *n75* or *N90*
+* *count* or *counts* (number of reads)
+* *sum* or *tot* (total bases)
+* *min* or *minimum* (minimum length)
+* *max* or *maximum* (maximum length)
+* *avg* or *mean* (average length)
+* *aun* (area under the Nx curve)
+
+**NOTE** Specifying an invalid key will result in unsorted results with a warning,
+but in future releases this might throw an error.
  
 ### Example output
 
@@ -57,6 +70,14 @@ After coolecting all the MultiQC files in a directory, using `multiqc -f .` will
 MultiQC itself can be installed via Bioconda with `conda install -y -c bioconda multiqc`.
 
 To understand how to use MultiQC, if you never did so, check their excellent [documentation](https://multiqc.info).
+
+## Legacy
+
+The pre 1.11 version of the statistics has been made available via `seqfu oldstats`.
+There are no breaking changes at the moment, and an expanded set of tests ensures
+the compatibility not only of the metrics (unchanged) but also of the output (now
+supporting sorting options).
+
 
 ## Benchmark
 

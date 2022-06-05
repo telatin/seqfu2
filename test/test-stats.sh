@@ -15,7 +15,7 @@ if [[ $WC == 2 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 
 
@@ -25,7 +25,7 @@ if [[ $SEQS == 78730 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 
 MSG="[stats] Checking normal output expecting total bases 24299931: <$TOT>"
@@ -34,7 +34,7 @@ if [[ $TOT == 24299931 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 
 MSG="[stats] Checking normal N50 to be 316: <$N50>"
@@ -43,7 +43,7 @@ if [[ $N50 == 316 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 
 CSV=$("$BINDIR"/seqfu stats --basename --csv $iAmpli > $TMP)
@@ -54,7 +54,7 @@ if [[ $N50 == 316 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 
 # Nice output
@@ -65,7 +65,7 @@ if [[ $WC == 5 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: [stats] Checking nice output expecting 5 lines: <$WC>"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 
 # Json 
@@ -78,7 +78,7 @@ if [[ $WC2 == 36 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: [stats] Checking MultiQC output expecting 36 lines: <$WC2>"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 # Multi file 
 
@@ -94,7 +94,7 @@ if [[ $FILT == "filt" ]];  then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi
 
 FILT=$(cat $TMP2 | head -n 2 |tail -n 1 | cut -f 1)
@@ -104,5 +104,5 @@ if [[ $FILT == "sort" ]];  then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
-    FAIL=$((FAIL+1))
+    ERRORS=$((ERRORS+1))
 fi

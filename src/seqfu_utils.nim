@@ -1,4 +1,6 @@
-import klib, readfq
+import klib
+import readfq
+import strformat, math
 import strutils
 import os
 import tables
@@ -23,6 +25,76 @@ type
     strand: string
     isRev: bool
  
+type
+  nucleoCount* = tuple
+    at: int
+    gc: int
+    n: int
+    tot: int
+
+template print*(s: varargs[string, `$`]) =
+  for x in s:
+    stdout.write x
+
+proc fmtFloat*(value      : float,
+               decimals   : int,
+               format     : string = "",
+               thousandSep: string = ",",
+               decimalSep : string = "."): string =
+    if value != value:
+        return "NaN"
+    elif value == Inf:
+        return "Inf"
+    elif value == NegInf:
+        return "-Inf"
+    
+    let
+        forceSign  = format.find('s') >= 0
+        thousands  = format.find('t') >= 0
+        removeZero = format.find('z') >= 0
+    
+    var valueStr = ""
+    
+    if decimals >= 0:
+        valueStr.formatValue(round(value, decimals), "." & $decimals & "f")
+    else:
+        valueStr = $value
+    
+    if valueStr[0] == '-':
+        valueStr = valueStr[1 .. ^1]
+    
+    let
+        period  = valueStr.find('.')
+        negZero = 1.0 / value == NegInf
+        sign    = if value < 0.0 or negZero: "-" elif forceSign: "+" else: ""
+    
+    var
+        integer    = ""
+        integerTmp = valueStr[0 .. period - 1]
+        decimal    = decimalSep & valueStr[period + 1 .. ^1]
+    
+    if thousands:
+        while true:
+            if integerTmp.len > 3:
+                integer = thousandSep & integerTmp[^3 .. ^1] & integer
+                integerTmp = integerTmp[0 .. ^4]
+            else:
+                integer = integerTmp & integer
+                
+                break
+    else:
+        integer = integerTmp
+    
+    while removeZero:
+        if decimal[^1] == '0':
+            decimal = decimal[0 .. ^2]
+        else:
+            break
+    
+    if decimal == decimalSep:
+        decimal = ""
+    
+    return sign & integer & decimal
 
 proc splitPosWithPattern(s, p: string): int =
   for i in 0 ..< len(s) - len(p) - 1:
@@ -85,14 +157,25 @@ proc printFastxRecord*(s: FastxRecord): string =
 
 
 proc count_gc*(s: string): int =
-
   let
-    upper_seq = toUpperAscii(s)
-  
+    upper_seq = toUpperAscii(s)  
   for c in upper_seq:
     if c == 'G' or c == 'C':
       result += 1
 
+proc count_all*(s: string): nucleoCount =
+  let
+    upper_seq = toUpperAscii(s)  
+  for c in upper_seq:
+    if c == 'A' or c == 'T' or c == 'U':
+      result.at += 1
+    elif c == 'G' or c == 'C':
+      result.gc += 1
+    elif c == 'N':
+      result.n += 1
+
+    result.tot = result.at + result.gc
+    
 proc get_gc*(s: string): float =
   var 
     gc_count = 0

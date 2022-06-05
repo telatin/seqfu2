@@ -18,3 +18,6 @@ stat_FILE1.md
 stat_FILE2.md
 stat_Gastrointestinal_tract.md
 stat_Homo_sapiens.md
+multiqc/*
+noise/
+.vscode/

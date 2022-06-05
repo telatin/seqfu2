@@ -7,7 +7,83 @@ import ./seqfu_utils
 import ./stats_utils 
 import algorithm
 
+type
+  statsOptions = tuple[
+    absolute: bool,
+    basename: bool,
+    precision: int,
+    thousands: bool,
+    header: bool, 
+    gc: bool, 
+    scaffolds: bool, 
+    delim: string, 
+    fields: seq[string]
+  ]
 
+
+proc toSequence(s: FastxStats, o: statsOptions): seq[string] =
+  var
+    fields : seq[string]
+    fmt = if o.thousands: "t"
+          else: ""
+  fields.add(s.filename)
+  fields.add(fmtFloat(float(s.count), 0, fmt))
+  fields.add(fmtFloat(float(s.sum),0, fmt))
+  fields.add(fmtFloat(float(s.avg), o.precision, fmt))
+  fields.add(fmtFloat(float(s.n50), 0, fmt))
+  fields.add(fmtFloat(float(s.n75), 0, fmt))
+  fields.add(fmtFloat(float(s.n90), 0, fmt))
+  fields.add(fmtFloat(float(s.auN), o.precision, fmt))
+  fields.add(fmtFloat(float(s.min), 0, fmt))
+  fields.add(fmtFloat(float(s.max), 0, fmt))
+  if o.gc:
+    fields.add(fmtFloat(float(s.gc), o.precision, fmt))
+  
+  return fields
+
+proc toDelimitedString(s: seq[string], o: statsOptions): string =
+  return join(s, o.delim)
+
+proc toDelimitedString(s: FastxStats, o: statsOptions): string =
+  return join(s.toSequence(o), o.delim)
+
+proc display_nice(statsList: seq[FastxStats], opt: statsOptions) =
+  var
+    header = @["File", "#Seq", "Total bp", "Avg", "N50", "N75", "N90", "auN", "Min", "Max"]
+
+  if opt.gc:
+    header.add("%GC")
+  
+  let
+    outputTable = newUnicodeTable()
+   
+  outputTable.separateRows = false
+  outputTable.setHeaders(header)
+
+  for stats in statsList:
+      let
+        #statsSeq = @[$stats.filename, $stats.count, $stats.sum, stats.avg.formatFloat(ffDecimal, opt.precision), $stats.n50, $stats.n75, $stats.n90, $stats.auN.formatFloat(ffDecimal, opt.precision), $stats.min, $stats.max]
+        statsSeq = stats.toSequence(opt)
+      outputTable.addRow(statsSeq)
+      
+    
+  outputTable.printTable()
+   
+proc display_delimited(statsList: seq[FastxStats], opt: statsOptions): string =
+  var
+    header = @["File", "#Seq", "Total bp", "Avg", "N50", "N75", "N90", "auN", "Min", "Max"]
+
+  if opt.gc:
+    header.add("%GC")
+
+  if opt.header:
+    result &= join(header, opt.delim) & "\n"
+
+  for stat in statsList:
+    if stat.count > 0:
+      result &= stat.toDelimitedString(opt)  & "\n"
+  
+    
 
 proc fastx_stats_v2(argv: var seq[string]): int =
   let args = docopt("""
@@ -18,12 +94,14 @@ Options:
   -b, --basename         Print only filenames
   -n, --nice             Print nice terminal table
   -j, --json             Print json (experimental)
+  -s, --sort-by KEY      Sort by KEY from: filename, counts, n50, tot, avg, min, max
+                         descending for values, ascending for filenames [default: none]
+  -r, --reverse          Reverse sort order
+  -t, --thousands        Add thousands separator
   --csv                  Separate output by commas instead of tabs
+  --gc                   Also print %GC
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
   --precision INT        Number of decimal places to round to [default: 2]
-  --sort KEY             Sort by KEY from: filename, counts, n50, tot, avg, min, max
-                         descending for values, ascending for filenames [default: filename]
-  -r, --reverse          Reverse sort order
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
@@ -34,13 +112,13 @@ Options:
 
   let
     reverse = bool(args["--reverse"])
-    printBasename = args["--basename"]
+    printBasename = bool(args["--basename"])
     printAbs = bool(args["--abs-path"])
     nice     = bool(  args["--nice"] )
     printJson = bool(args["--json"])
     multiQCheader = """# plot_type: 'table'
-# section_name: 'SeqFu statistics'
-# description: 'Statistics on sequence lengths of a set of samples'
+# section_name: 'SeqFu stats'
+# description: 'Statistics on sequence lengths of a set of FASTA/FASTQ files, generated with <a href="https://telatin.github.io/seqfu2">SeqFu """ & version() & """</a>'
 # pconfig:
 #     namespace: 'Cust Data'
 # headers:
@@ -72,7 +150,10 @@ Options:
 #     col9:
 #         title: 'auN'
 #         description: 'Area under the Nx curve'
-Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
+#     col10:
+#         title: 'GC'
+#         description: 'Relative GC content (excluding Ns)'
+Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
 """
   if nice and printJson:
     stderr.writeLine("ERROR: --nice and --json are mutually exclusive")
@@ -93,7 +174,21 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
   if args["--csv"]:
     sep = ","
 
-  
+
+
+
+  let
+    opt : statsOptions = (
+      absolute: printAbs,
+      basename: printBasename,
+      precision: sfuPrecision,
+      thousands: bool(args["--thousands"]),
+      header: true,
+      gc: bool(args["--gc"]),
+      scaffolds: false,
+      delim: sep,
+      fields: @[]
+    )
     
 
   if args["<inputfile>"].len() == 0:
@@ -105,16 +200,9 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
       files.add(file)
 
 
-  let
-    outputTable = newUnicodeTable()
-    headerFields = @["File", "#Seq", "Total bp","Avg", "N50", "N75", "N90", "auN", "Min", "Max"]
   
-  
-  if nice:
-    outputTable.separateRows = false
-    outputTable.setHeaders(headerFields)
-  elif not printJson:
-    echo headerFields.join(sep)
+  #elif not printJson:
+  # echo headerFields.join(sep)
 
   for filename in files:
     if filename != "-"  and not fileExists(filename):
@@ -130,6 +218,12 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
       stats.filename =  absolutePath(stats.filename)
 
     statsList.add(stats)
+    var 
+      optqc = opt
+    optqc.thousands = false
+    optqc.precision = 7
+    optqc.gc = true
+    multiQCreport &= stats.toSequence(optqc).join("\t") & "\n"
     #[
     let
       statsSeq = @[$rendername, $stats.count, $stats.sum, stats.avg.formatFloat(ffDecimal, sfuPrecision), $stats.n50, $stats.n75, $stats.n90, $stats.auN.formatFloat(ffDecimal, sfuPrecision), $stats.min, $stats.max]
@@ -138,11 +232,12 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
       outputTable.addRow(statsSeq)
     else:
       echo statsSeq.join(sep)
-    multiQCreport &= statsSeq.join("\t") & "\n"
+    
     ]#
+    
   
   # Sort
-  let sortKey = ($args["--sort"]).toLower();
+  let sortKey = ($args["--sort-by"]).toLower();
   if  sortKey == "n50":
     if reverse:
       sort(statsList, proc(a, b: FastxStats): int =
@@ -152,6 +247,28 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
     else:
       sort(statsList, proc(a, b: FastxStats): int =
         if a.n50 > b.n50: return -1
+        else: return 1
+      )
+  if  sortKey == "n75":
+    if reverse:
+      sort(statsList, proc(a, b: FastxStats): int =
+        if a.n75 < b.n75: return -1
+        else: return 1
+      )
+    else:
+      sort(statsList, proc(a, b: FastxStats): int =
+        if a.n75 > b.n75: return -1
+        else: return 1
+      )
+  if  sortKey == "n90":
+    if reverse:
+      sort(statsList, proc(a, b: FastxStats): int =
+        if a.n90 < b.n90: return -1
+        else: return 1
+      )
+    else:
+      sort(statsList, proc(a, b: FastxStats): int =
+        if a.n90 > b.n90: return -1
         else: return 1
       )
   elif sortKey == "count" or sortKey == "counts":
@@ -220,10 +337,36 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
         if a.filename < b.filename: return -1
         else: return 1
       )
+  if  sortKey == "aun":
+    if reverse:
+      sort(statsList, proc(a, b: FastxStats): int =
+        if a.aun < b.aun: return -1
+        else: return 1
+      )
+    else:
+      sort(statsList, proc(a, b: FastxStats): int =
+        if a.aun > b.aun: return -1
+        else: return 1
+      )
+  elif sortKey == "none":
+    if reverse:
+      # Reverse the list
+      statsList.reverse()
   else:
     stderr.writeLine("WARNING: sort key <", sortKey, "> not recognized. Not sorting.")
 
-  
+  if printJson:
+    var
+      jsonList: seq[Table[string,string]]
+    for i in statsList:
+      jsonList.add(i.toTable())
+    let jsonString = $jsonList
+    echo jsonString[1 .. ^1]
+  elif nice:
+    display_nice(statsList, opt)
+  else:
+    print display_delimited(statsList, opt)
+  #[
   for stats in statsList:
     let
       statsSeq = @[$stats.filename, $stats.count, $stats.sum, stats.avg.formatFloat(ffDecimal, sfuPrecision), $stats.n50, $stats.n75, $stats.n90, $stats.auN.formatFloat(ffDecimal, sfuPrecision), $stats.min, $stats.max]
@@ -245,6 +388,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
     let jsonString = $jsonList
     echo jsonString[1 .. ^1]
   
+  ]#
 
   # Save also MultiQC table
   if $args["--multiqc"] != "nil":

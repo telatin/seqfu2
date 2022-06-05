@@ -2,10 +2,11 @@ import sequtils
 import tables
 import readfq
 import algorithm
+import seqfu_utils
 ## Seqfu Stats
 
 type
-  FastxStats*   = tuple[filename: string, count, sum, min, max, n25, n50, n75, n90: int, auN, avg: float]
+  FastxStats*   = tuple[filename: string, count, sum, min, max, n25, n50, n75, n90: int, gc, auN, avg: float]
 
 proc toTable*(s: FastxStats): Table[string, string] =
   result["Filename"] = s.filename
@@ -19,6 +20,7 @@ proc toTable*(s: FastxStats): Table[string, string] =
   result["N90"] = $s.n90
   result["Avg"] = $s.avg
   result["AuN"] = $s.auN
+  result["gc"] = $s.gc
 
 proc getFastxStats*(filename: string): FastxStats {.discardable.} =
   result.filename = filename
@@ -26,7 +28,8 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
     totalBases = 0
     nseq  = 0
     ctgSizes = initOrderedTable[int, int]()
-
+    gc = 0
+    realLen = 0
     accum = 0
     auN    : float
     i      = 0
@@ -34,6 +37,9 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
   try:
     for r in readfq(filename):
       var ctgLen = len(r.sequence)
+      let nucleotides = count_all(r.sequence)
+      gc += nucleotides.gc
+      realLen += nucleotides.tot
       if not (ctgLen in ctgSizes):
         ctgSizes[ctgLen] = 1
       else:
@@ -56,12 +62,11 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
       if a < b: return -1
       else: return 1
   )
+
   result.max = ctgSizesKeys[^1]
   result.min = ctgSizesKeys[0]
   result.auN = 0.0
-  # calculate thresholds
-  #for index in nIndexes:
-  #  let quote = float(total) * float((100 - index) / 100)
+  result.gc = float(gc) / float(realLen)
 
   for ctgLen in ctgSizesKeys:
 
