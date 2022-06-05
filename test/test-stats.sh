@@ -73,11 +73,11 @@ TMP2=$(mktemp)
 STATS=$("$BINDIR"/seqfu stats --basename --json --multiqc $TMP2 $iAmpli > $TMP)
 WC=$(cat "$TMP" | grep . | wc -l | grep -o '\d\+')
 WC2=$(cat "$TMP2" | grep . | wc -l | grep -o '\d\+')
-if [[ $WC2 == 36 ]]; then
-    echo -e "$OK: [stats] Checking MultiQC output expecting 36 lines: <$WC2>"
+if [[ $WC2 == 39 ]]; then
+    echo -e "$OK: [stats] Checking MultiQC output expecting 39 lines: <$WC2>"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: [stats] Checking MultiQC output expecting 36 lines: <$WC2>"
+    echo -e "$FAIL: [stats] Checking MultiQC output expecting 39 lines: <$WC2>"
     ERRORS=$((ERRORS+1))
 fi
 # Multi file 

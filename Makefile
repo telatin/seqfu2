@@ -70,7 +70,7 @@ multiqc: $(BIN)/seqfu
 build:
 	nimble build
 
-test:
+test: all
 	bash ./test/mini.sh
 
 clean:
