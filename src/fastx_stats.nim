@@ -89,7 +89,19 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
   let
     outputTable = newUnicodeTable()
     headerFields = @["File", "#Seq", "Total bp","Avg", "N50", "N75", "N90", "auN", "Min", "Max"]
-  
+  var
+    opt : statsOptions = (
+      absolute: bool(args["--abs-path"]),
+      basename: bool(args["--basename"]),
+      precision: 2,
+      thousands: false,
+      header: true,
+      gc: false,
+      scaffolds: false,
+      delim: sep,
+      fields: @[]
+    )
+    
   if nice:
     outputTable.separateRows = false
     outputTable.setHeaders(headerFields)
@@ -102,7 +114,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7  col8  col9
       continue
 
     var
-      stats = getFastxStats(filename)
+      stats = getFastxStats(filename, opt)
 
     var rendername = if printBasename: $getBasename(filename)
       else: filename

@@ -7,19 +7,6 @@ import ./seqfu_utils
 import ./stats_utils 
 import algorithm
 
-type
-  statsOptions = tuple[
-    absolute: bool,
-    basename: bool,
-    precision: int,
-    thousands: bool,
-    header: bool, 
-    gc: bool, 
-    scaffolds: bool, 
-    delim: string, 
-    fields: seq[string]
-  ]
-
 
 proc toSequence(s: FastxStats, o: statsOptions): seq[string] =
   var
@@ -210,7 +197,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
       continue
 
     var
-      stats = getFastxStats(filename)
+      stats = getFastxStats(filename, opt)
 
     if printBasename:
       stats.filename = getBasename(stats.filename)

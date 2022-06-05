@@ -8,6 +8,19 @@ import seqfu_utils
 type
   FastxStats*   = tuple[filename: string, count, sum, min, max, n25, n50, n75, n90: int, gc, auN, avg: float]
 
+type
+  statsOptions* = tuple[
+    absolute: bool,
+    basename: bool,
+    precision: int,
+    thousands: bool,
+    header: bool, 
+    gc: bool, 
+    scaffolds: bool, 
+    delim: string, 
+    fields: seq[string]
+  ]
+
 proc toTable*(s: FastxStats): Table[string, string] =
   result["Filename"] = s.filename
   result["Total"] = $s.sum
@@ -22,7 +35,7 @@ proc toTable*(s: FastxStats): Table[string, string] =
   result["AuN"] = $s.auN
   result["gc"] = $s.gc
 
-proc getFastxStats*(filename: string): FastxStats {.discardable.} =
+proc getFastxStats*(filename: string, o: statsOptions): FastxStats {.discardable.} =
   result.filename = filename
   var
     totalBases = 0
@@ -37,9 +50,11 @@ proc getFastxStats*(filename: string): FastxStats {.discardable.} =
   try:
     for r in readfq(filename):
       var ctgLen = len(r.sequence)
-      let nucleotides = count_all(r.sequence)
-      gc += nucleotides.gc
-      realLen += nucleotides.tot
+      if o.gc:
+        let nucleotides = count_all(r.sequence)
+        gc += nucleotides.gc
+        realLen += nucleotides.tot
+
       if not (ctgLen in ctgSizes):
         ctgSizes[ctgLen] = 1
       else:

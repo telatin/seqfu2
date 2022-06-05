@@ -2,14 +2,14 @@
 
 # Single file
 TMP=$(mktemp)
-STATS=$("$BINDIR"/seqfu stats --basename $iAmpli > $TMP)
+STATS=$("$BINDIR"/seqfu stats --basename "$iAmpli" > "$TMP")
 
 WC=$(cat "$TMP" | wc -l | grep -o '\d\+')
 SEQS=$(cat "$TMP" | tail -n 1 | cut -f 2)
 TOT=$(cat "$TMP" | tail -n 1 | cut -f 3)
 N50=$(cat "$TMP" | tail -n 1 | cut -f 5)
 
-MSG="Checking normal output expecting 2 lines: <$WC>"
+MSG="Checking normal output expecting 2 lines: <"$WC">"
 if [[ $WC == 2 ]]; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
@@ -20,7 +20,7 @@ fi
 
 
 MSG="Checking normal output expecting total seqs 78730: <$SEQS>"
-if [[ $SEQS == 78730 ]]; then
+if [[ "$SEQS" == 78730 ]]; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
 else
@@ -29,7 +29,7 @@ else
 fi
 
 MSG="Checking normal output expecting total bases 24299931: <$TOT>"
-if [[ $TOT == 24299931 ]]; then
+if [[ "$TOT" == 24299931 ]]; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
 else
@@ -60,7 +60,7 @@ fi
 # Nice output
 STATS=$("$BINDIR"/seqfu stats --basename --nice $iAmpli > $TMP)
 WC=$(cat "$TMP" | grep . | wc -l | grep -o '\d\+')
-if [[ $WC == 5 ]]; then
+if [[ "$WC" == 5 ]]; then
     echo -e "$OK: Checking nice output expecting 5 lines: <$WC>"
     PASS=$((PASS+1))
 else
@@ -70,10 +70,10 @@ fi
 
 # Json 
 TMP2=$(mktemp)
-STATS=$("$BINDIR"/seqfu stats --basename --json --multiqc $TMP2 $iAmpli > $TMP)
+STATS=$("$BINDIR"/seqfu stats --basename --json --multiqc "$TMP2" "$iAmpli" > "$TMP")
 WC=$(cat "$TMP" | grep . | wc -l | grep -o '\d\+')
 WC2=$(cat "$TMP2" | grep . | wc -l | grep -o '\d\+')
-if [[ $WC2 == 39 ]]; then
+if [[ "$WC2" == 39 ]]; then
     echo -e "$OK: Checking MultiQC output expecting 39 lines: <$WC2>"
     PASS=$((PASS+1))
 else
@@ -91,9 +91,9 @@ fi
 # Multi file 
 
 # Default sort
-"$BINDIR"/seqfu stats --basename  $iAmpli $iSort $iMini > $TMP
+"$BINDIR"/seqfu stats --basename  "$iAmpli" "$iSort" "$iMini" > "$TMP"
 # Sort by N50 descending
-"$BINDIR"/seqfu stats --basename  --sort n50 --reverse $iAmpli $iSort $iMini > $TMP2
+"$BINDIR"/seqfu stats --basename  --sort n50 --reverse  "$iAmpli" "$iSort" "$iMini" > "$TMP2"
 
 FILT=$(cat $TMP | head -n 2 | tail -n 1 | cut -f 1)
 MSG="Checking default starting  by 'filt': <$FILT>"
