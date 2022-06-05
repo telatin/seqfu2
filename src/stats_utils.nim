@@ -55,6 +55,7 @@ proc getFastxStats*(filename: string, o: statsOptions): FastxStats {.discardable
         gc += nucleotides.gc
         realLen += nucleotides.tot
 
+
       if not (ctgLen in ctgSizes):
         ctgSizes[ctgLen] = 1
       else:

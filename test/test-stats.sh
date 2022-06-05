@@ -117,11 +117,11 @@ fi
 
 #/////
 
-LIST="$FILES/prot.faa $FILES/prot2.faa $FILES/test.fa $FILES/test.fasta $FILES/test.fastq $FILES/test2.fastq $FILES/test_4.fa.gz"
-"$BINDIR"/seqfu stats -a  $LIST | grep -v "Total bp" > $TMP
+
+"$BINDIR"/seqfu stats -a "$FILES"/prot.faa "$FILES"/prot2.faa "$FILES"/test.fa "$FILES"/test.fasta "$FILES"/test.fastq "$FILES"/test2.fastq "$FILES"/test_4.fa.gz | grep -v "Total bp" > "$TMP"
 
 MSG="Check absolute paths"
-if [[ $(grep ^/ $TMP | cut -c 1 | sort | head -n 1 ) == "/" ]]; then
+if [[ $(grep ^/ "$TMP" | cut -c 1 | sort | head -n 1 ) == "/" ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
@@ -130,18 +130,18 @@ else
 fi
 
 MSG="Check sort orded when not specified"
-
-if [[ $(basename $(head -n 1 $TMP | cut -f 1 ) ) == "prot.faa" ]]; then
+A=$(basename $(head -n 1 "$TMP" | cut -f 1 ) )
+if [[ "$A" == "prot.faa" ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $(basename $(head -n 1 $TMP | cut -f 1 ) )"
+    echo -e "$FAIL: $MSG: $A"
     ERRORS=$((ERRORS+1))
 fi
 
-"$BINDIR"/seqfu stats -a  $LIST --sort tot | grep -v "Total bp" > $TMP
+"$BINDIR"/seqfu stats -a  --sort tot "$FILES"/prot.faa "$FILES"/prot2.faa "$FILES"/test.fa "$FILES"/test.fasta "$FILES"/test.fastq "$FILES"/test2.fastq "$FILES"/test_4.fa.gz | grep -v "Total bp" > "$TMP"
 MSG="Check sort: tot seq sorted at 3300"
-if [[ $(head -n 1 $TMP | cut -f 3 ) == 3300 ]]; then
+if [[ $(head -n 1 "$TMP" | cut -f 3 ) == 3300 ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
@@ -149,23 +149,23 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
-"$BINDIR"/seqfu stats -a  $LIST --sort tot --reverse | grep -v "Total bp" > $TMP
+"$BINDIR"/seqfu stats -a  --sort tot --reverse "$FILES"/prot.faa "$FILES"/prot2.faa "$FILES"/test.fa "$FILES"/test.fasta "$FILES"/test.fastq "$FILES"/test2.fastq "$FILES"/test_4.fa.gz | grep -v "Total bp" > "$TMP"
 MSG="Check reverse sort: tot seq sorted at 3300"
-if [[ $(tail -n 1 $TMP | cut -f 3 ) == 3300 ]]; then
+if [[ $(tail -n 1 "$TMP" | cut -f 3 ) == 3300 ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG:$(head -n 1 $TMP | cut -f 3 ) "
+    echo -e "$FAIL: $MSG:$(head -n 1 "$TMP" | cut -f 3 ) "
     ERRORS=$((ERRORS+1))
 fi
 
-"$BINDIR"/seqfu stats --gc $FILES/gc/1.fa | grep -v "Total bp" > $TMP
+"$BINDIR"/seqfu stats --gc $FILES/gc/1.fa | grep -v "Total bp" > "$TMP"
 MSG="%GC check at 1.00"
-if [[ $(cut -f 11 $TMP ) == 1.00 ]]; then
+if [[ $(cut -f 11 "$TMP" ) == 1.00 ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $(cut -f 11 $TMP ) "
+    echo -e "$FAIL: $MSG "
     ERRORS=$((ERRORS+1))
 fi
 
@@ -175,16 +175,16 @@ if [[ $(cut -f 11 $TMP ) == 0.00 ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $(cut -f 11 $TMP ) "
+    echo -e "$FAIL: $MSG  "
     ERRORS=$((ERRORS+1))
 fi
 
-"$BINDIR"/seqfu stats --gc $FILES/gc/3.fa | grep -v "Total bp" > $TMP
+"$BINDIR"/seqfu stats --gc $FILES/gc/3.fa | grep -v "Total bp" > "$TMP"
 MSG="%GC check at 0.50"
-if [[ $(cut -f 11 $TMP ) == 0.50 ]]; then
+if [[ $(cut -f 11 "$TMP" ) == 0.50 ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $(cut -f 11 $TMP ) "
+    echo -e "$FAIL: $MSG "
     ERRORS=$((ERRORS+1))
 fi
