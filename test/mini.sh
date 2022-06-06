@@ -313,11 +313,24 @@ echo ""
 for TEST in "$DIR"/test-*.sh;
 do
   BASE=$(basename "$TEST"  | cut -f 1 -d .)
+  PREVPASS=$PASS
+  PREVERR=$ERRORS
+
   if [[ -e $TEST ]]; then
     echo ""
     separator " Testing module: $(basename $TEST .sh | cut -f 2 -d - )"
     source "$TEST"
+
+    if [[ $ERRORS -gt $PREVERR ]];
+    then
+      echo -e "$FAIL: Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVFAIL)) failed"
+    else
+      echo -e "# Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVFAIL)) failed"
+    fi
   fi
+
+
+  
 done
 
 ## Check docs

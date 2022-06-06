@@ -50,6 +50,8 @@ proc getFastxStats*(filename: string, o: statsOptions): FastxStats {.discardable
   try:
     for r in readfq(filename):
       var ctgLen = len(r.sequence)
+
+      ## Only calculate %GC if requested
       if o.gc:
         let nucleotides = count_all(r.sequence)
         gc += nucleotides.gc
