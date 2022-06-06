@@ -1,5 +1,5 @@
-import readfq
-import tables, strutils, sequtils
+
+import tables, strutils
 import terminaltables
 from os import fileExists
 import docopt
@@ -11,11 +11,11 @@ import algorithm
 proc toSequence(s: FastxStats, o: statsOptions): seq[string] =
   var
     fields : seq[string]
-    fmt = if o.thousands: "t"
+    fmt = if o.thousands and o.delim != ",": "t"
           else: ""
   fields.add(s.filename)
   fields.add(fmtFloat(float(s.count), 0, fmt))
-  fields.add(fmtFloat(float(s.sum),0, fmt))
+  fields.add(fmtFloat(float(s.sum), 0, fmt))
   fields.add(fmtFloat(float(s.avg), o.precision, fmt))
   fields.add(fmtFloat(float(s.n50), 0, fmt))
   fields.add(fmtFloat(float(s.n75), 0, fmt))
@@ -80,11 +80,11 @@ Options:
   -a, --abs-path         Print absolute paths
   -b, --basename         Print only filenames
   -n, --nice             Print nice terminal table
-  -j, --json             Print json (experimental)
+  -j, --json             Print json (EXPERIMENTAL)
   -s, --sort-by KEY      Sort by KEY from: filename, counts, n50, tot, avg, min, max
                          descending for values, ascending for filenames [default: none]
   -r, --reverse          Reverse sort order
-  -t, --thousands        Add thousands separator
+  -t, --thousands        Add thousands separator (only tabbed/nice output)
   --csv                  Separate output by commas instead of tabs
   --gc                   Also print %GC
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
@@ -211,17 +211,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
     optqc.precision = 7
     optqc.gc = true
     multiQCreport &= stats.toSequence(optqc).join("\t") & "\n"
-    #[
-    let
-      statsSeq = @[$rendername, $stats.count, $stats.sum, stats.avg.formatFloat(ffDecimal, sfuPrecision), $stats.n50, $stats.n75, $stats.n90, $stats.auN.formatFloat(ffDecimal, sfuPrecision), $stats.min, $stats.max]
-
-    if nice:            
-      outputTable.addRow(statsSeq)
-    else:
-      echo statsSeq.join(sep)
-    
-  ]#
-    
+ 
   
   # Sort
   let
@@ -348,6 +338,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
       statsList.reverse()
   else:
     stderr.writeLine("WARNING: sort key <", sortKey, "> not recognized. Not sorting.")
+
 
   if printJson:
     var

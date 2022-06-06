@@ -159,32 +159,35 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
-"$BINDIR"/seqfu stats --gc $FILES/gc/1.fa | grep -v "Total bp" > "$TMP"
+"$BINDIR"/seqfu stats --gc "$FILES"/gc/1.fa | grep -v "Total bp" > "$TMP"
 MSG="%GC check at 1.00"
-if [[ $(cut -f 11 "$TMP" ) == 1.00 ]]; then
-   echo -e "$OK: $MSG"
+OUT=$(cut -f 11 "$TMP" )
+if [[ "$OUT" == 1.00 ]]; then
+   echo -e "$OK: $MSG: <$OUT>"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG "
+    echo -e "$FAIL: $MSG expected 1.00 got $OUT"
     ERRORS=$((ERRORS+1))
 fi
 
-"$BINDIR"/seqfu stats --gc $FILES/gc/2.fa | grep -v "Total bp" > $TMP
+"$BINDIR"/seqfu stats --gc "$FILES"/gc/2.fa | grep -v "Total bp" > "$TMP"
 MSG="%GC check at 0.00"
-if [[ $(cut -f 11 $TMP ) == 0.00 ]]; then
-   echo -e "$OK: $MSG"
+OUT=$(cut -f 11 "$TMP" )
+if [[ "$OUT" == 0.00 ]]; then
+   echo -e "$OK: $MSG: <$OUT>"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG  "
+    echo -e "$FAIL: $MSG expected 0.00 got $OUT"
     ERRORS=$((ERRORS+1))
 fi
 
-"$BINDIR"/seqfu stats --gc $FILES/gc/3.fa | grep -v "Total bp" > "$TMP"
+"$BINDIR"/seqfu stats --gc "$FILES"/gc/3.fa | grep -v "Total bp" > "$TMP"
 MSG="%GC check at 0.50"
-if [[ $(cut -f 11 "$TMP" ) == 0.50 ]]; then
-   echo -e "$OK: $MSG"
+OUT=$(cut -f 11 "$TMP" )
+if [[ "$OUT" == 0.50 ]]; then
+   echo -e "$OK: $MSG: <$OUT>"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG "
+    echo -e "$FAIL: $MSG expected 0.50 got $OUT"
     ERRORS=$((ERRORS+1))
 fi
