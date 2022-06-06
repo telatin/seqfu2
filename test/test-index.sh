@@ -2,7 +2,7 @@
 
 # Single file
 TMP=$(mktemp)
-STATS=$("$BINDIR"/fu-index "$iPair1" "$iPair2" > "$TMP")
+"$BINDIR"/fu-index "$iPair1" "$iPair2" > "$TMP"
 
 
 MSG="Checking output expecting 2 lines:"
@@ -12,7 +12,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
  
@@ -24,7 +24,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
  
@@ -35,7 +35,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
 
@@ -46,7 +46,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
 
@@ -58,7 +58,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
 
@@ -69,14 +69,13 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
 
 # ---
 
-STATS=$("$BINDIR"/fu-index "$iAmpli" > "$TMP")
-
+"$BINDIR"/fu-index "$iAmpli" > "$TMP"
 
 MSG="Checking output expecting 1 line:"
 EXP=1
@@ -85,7 +84,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
 
@@ -96,7 +95,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
 
@@ -107,14 +106,14 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
 
 
 # ---
 
-STATS=$("$BINDIR"/fu-index "$FILES"/mixed_index.fq.gz > "$TMP")
+"$BINDIR"/fu-index "$FILES"/mixed_index.fq.gz > "$TMP"
 MSG="Checking failed sample (ratio):"
 EXP="0.50"
 OBS=$(cat "$TMP" | cut -f 3 | sort | uniq)
@@ -122,6 +121,6 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)"
+    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
     ERRORS=$((ERRORS+1))
 fi
