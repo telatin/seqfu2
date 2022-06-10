@@ -12,7 +12,8 @@ which is supported from both **Linux** and **macOS**.
 If you have _conda_ installed ([how to install it](https://docs.conda.io/en/latest/miniconda.html)):
 
 ```bash
-conda install -c conda-forge -c bioconda seqfu
+# Ensure a recent version will be installed: 0.x is a very old and unsupported tool
+conda install -c conda-forge -c bioconda "seqfu>1.10"
 ```
 
 More info on [installing conda](https://telatin.github.io/microbiome-bioinformatics/Install-Miniconda/).
