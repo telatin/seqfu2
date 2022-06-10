@@ -15,25 +15,25 @@ sequences and to *count* and print *statistics* on sequence lengths.
 
 ---
 
-## Installation
+## 📦 Installation
 
 Seqfu can be easily installed via Miniconda:
 
 ```bash
-conda install -y -c bioconda seqfu
+conda install -y -c conda-forge -c bioconda "seqfu>1.10"
 ```
 
-## Citation
+## 📰 Citation
 
 Telatin A, Fariselli P, Birolo G.
 *SeqFu: A Suite of Utilities for the Robust
 and Reproducible Manipulation of Sequence Files*.
 Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
 
-## Full documentation
+## 📙 Full documentation
 
-The full documentation is available at:
-[telatin.github.io/seqfu2](https://telatin.github.io/seqfu2)
+ The full documentation is available at:
+[**telatin.github.io/seqfu2**](https://telatin.github.io/seqfu2)
 
 ## Splash screen
 
