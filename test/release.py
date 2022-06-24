@@ -213,6 +213,10 @@ if __name__ == "__main__":
   release_notes = f"{script_dir}/../docs/releases/{new_tag}.md"
   release_dir = f"{basedir}/releases/"
   
+  # Make directory ${release_dir}/zips if not exists
+  zip_dir = os.path.join(release_dir, "zips")
+  if not os.path.exists(zip_dir):
+    os.makedirs(zip_dir)
   # Prepare zip
   zipfile = f"{release_dir}/zips/{programName}-{new_tag}-{os_tag}.zip"
   binaries = ['zip', '-q', '-j', zipfile]
