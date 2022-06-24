@@ -34,6 +34,7 @@ separator "Minimal test suite"
 "$BIN" > /dev/null || { echo "Binary not working: $BIN"; exit 1; }
 echo -e "$OK: Binary running"
 
+BINCOUNT=0
 for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave count;
 do
   BINCOUNT=$((BINCOUNT+1))
@@ -52,7 +53,8 @@ else
   grep $VERSION $DIR/../seqfu.nimble
 fi
 
-
+PASS=0
+ERRORS=0
 # Dereiplicate
 if [[ $("$BIN" derep "$iAmpli"  | grep -c '>') -eq "18664" ]]; then
 	echo -e "$OK: Dereplicate"
@@ -164,11 +166,12 @@ fi
 
 
 ## Sort by size (asc)
-if [[ $("$BIN" sort --asc "$iSort" | head -n 1| cut -c 2-6) -eq 'short' ]]; then
+OUTPUT="$(""$BIN"" sort --asc ""$iSort"" | head -n 1| cut -c 2-6)"
+if [[ $OUTPUT == 'short' ]]; then
   echo -e "$OK: Sort by size"
   PASS=$((PASS+1))
 else
-  echo -e "$FAIL: Sort by size failed"
+  echo -e "$FAIL: Sort by size failed, exp short got '$OUTPUT'"
   ERRORS=$((ERRORS+1))
 fi
 
@@ -323,9 +326,9 @@ do
 
     if [[ $ERRORS -gt $PREVERR ]];
     then
-      echo -e "$FAIL: Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVFAIL)) failed"
+      echo -e "$FAIL: Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed"
     else
-      echo -e "# Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVFAIL)) failed"
+      echo -e "# Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed"
     fi
   fi
 

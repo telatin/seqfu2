@@ -7,12 +7,15 @@ TMP=$(mktemp)
 
 MSG="Checking output expecting 2 lines:"
 EXP=2
-OBS=$(cat "$TMP" | wc -l | grep -o '\d\+')
-if [[ "$OBS" == "$EXP" ]]; then
-    echo -e "$OK: $MSG: $EXP / $OBS"
+OBS=$(cat "$TMP" | wc -l)
+if [[ $OBS -eq $EXP ]]; then
+    echo -e "$OK: $MSG: exp=$EXP obs=$OBS"
     PASS=$((PASS+1))
 else
-    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
+    echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
+    cat "$TMP"
+    echo ---
+    cat "$TMP" | wc -l | '[[:digit:]]\+'
     ERRORS=$((ERRORS+1))
 fi
  
@@ -79,7 +82,7 @@ fi
 
 MSG="Checking output expecting 1 line:"
 EXP=1
-OBS=$(cat "$TMP" | wc -l | grep -o '\d\+')
+OBS=$(cat "$TMP" | wc -l)
 if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))

@@ -4,7 +4,7 @@
 TMP=$(mktemp)
 STATS=$("$BINDIR"/seqfu stats --basename "$iAmpli" > "$TMP")
 
-WC=$(cat "$TMP" | wc -l | grep -o '\d\+')
+WC=$(cat "$TMP" | wc -l | grep -o '[[:digit:]]\+')
 SEQS=$(cat "$TMP" | tail -n 1 | cut -f 2)
 TOT=$(cat "$TMP" | tail -n 1 | cut -f 3)
 N50=$(cat "$TMP" | tail -n 1 | cut -f 5)
@@ -59,7 +59,7 @@ fi
 
 # Nice output
 STATS=$("$BINDIR"/seqfu stats --basename --nice $iAmpli > $TMP)
-WC=$(cat "$TMP" | grep . | wc -l | grep -o '\d\+')
+WC=$(cat "$TMP" | grep . | wc -l | grep -o '[[:digit:]]\+')
 if [[ "$WC" == 5 ]]; then
     echo -e "$OK: Checking nice output expecting 5 lines: <$WC>"
     PASS=$((PASS+1))
@@ -71,8 +71,8 @@ fi
 # Json 
 TMP2=$(mktemp)
 STATS=$("$BINDIR"/seqfu stats --basename --json --multiqc "$TMP2" "$iAmpli" > "$TMP")
-WC=$(cat "$TMP" | grep . | wc -l | grep -o '\d\+')
-WC2=$(cat "$TMP2" | grep . | wc -l | grep -o '\d\+')
+WC=$(cat "$TMP" | grep . | wc -l | grep -o '[[:digit:]]\+')
+WC2=$(cat "$TMP2" | grep . | wc -l | grep -o '[[:digit:]]\+')
 if [[ "$WC2" == 39 ]]; then
     echo -e "$OK: Checking MultiQC output expecting 39 lines: <$WC2>"
     PASS=$((PASS+1))
