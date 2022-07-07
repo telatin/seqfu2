@@ -36,5 +36,6 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 [**telatin.github.io/seqfu2**](https://telatin.github.io/seqfu2)
 
 ## Splash screen
-
+![`ls -l`](docs/img/screenshot-ls.svg "list")
+![`find -name "seqfu*"`](docs/img/screenshot-find.svg "find")
 ![`./bin/seqfu`](docs/img/screenshot-seqfu.svg "SeqFu")
