@@ -1,4 +1,4 @@
-<svg class="rich-terminal" viewBox="0 0 1238 98.8" xmlns="http://www.w3.org/2000/svg">
+<svg class="rich-terminal" viewBox="0 0 2385 513.5999999999999" xmlns="http://www.w3.org/2000/svg">
     <!-- Generated with Rich https://www.textualize.io -->
     <style>
 
@@ -19,43 +19,111 @@
         font-weight: 700;
     }
 
-    .terminal-1433742629-matrix {
+    .terminal-1644571604-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-1433742629-title {
+    .terminal-1644571604-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-1433742629-r1 { fill: #c5c8c6 }
+    .terminal-1644571604-r1 { fill: #c5c8c6 }
     </style>
 
     <defs>
-    <clipPath id="terminal-1433742629-clip-terminal">
-      <rect x="0" y="0" width="1219.0" height="47.8" />
+    <clipPath id="terminal-1644571604-clip-terminal">
+      <rect x="0" y="0" width="2365.7999999999997" height="462.59999999999997" />
     </clipPath>
-    <clipPath id="terminal-1433742629-line-0">
-    <rect x="0" y="1.5" width="1220" height="24.65"/>
+    <clipPath id="terminal-1644571604-line-0">
+    <rect x="0" y="1.5" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-1">
+    <rect x="0" y="25.9" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-2">
+    <rect x="0" y="50.3" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-3">
+    <rect x="0" y="74.7" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-4">
+    <rect x="0" y="99.1" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-5">
+    <rect x="0" y="123.5" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-6">
+    <rect x="0" y="147.9" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-7">
+    <rect x="0" y="172.3" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-8">
+    <rect x="0" y="196.7" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-9">
+    <rect x="0" y="221.1" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-10">
+    <rect x="0" y="245.5" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-11">
+    <rect x="0" y="269.9" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-12">
+    <rect x="0" y="294.3" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-13">
+    <rect x="0" y="318.7" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-14">
+    <rect x="0" y="343.1" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-15">
+    <rect x="0" y="367.5" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-16">
+    <rect x="0" y="391.9" width="2366.8" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1644571604-line-17">
+    <rect x="0" y="416.3" width="2366.8" height="24.65"/>
             </clipPath>
     </defs>
 
-    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1236" height="96.8" rx="8"/><text class="terminal-1433742629-title" fill="#c5c8c6" text-anchor="middle" x="618" y="27">SeqFu</text>
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="2383" height="511.6" rx="8"/><text class="terminal-1644571604-title" fill="#c5c8c6" text-anchor="middle" x="1191" y="27">SeqFu</text>
             <g transform="translate(26,22)">
             <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
             <circle cx="22" cy="0" r="7" fill="#febc2e"/>
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
         
-    <g transform="translate(9, 41)" clip-path="url(#terminal-1433742629-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-1644571604-clip-terminal)">
     
-    <g class="terminal-1433742629-matrix">
-    <text class="terminal-1433742629-r1" x="0" y="20" textLength="256.2" clip-path="url(#terminal-1433742629-line-0)">$&#160;bash&#160;test/splash.sh</text><text class="terminal-1433742629-r1" x="1220" y="20" textLength="12.2" clip-path="url(#terminal-1433742629-line-0)">
-</text><text class="terminal-1433742629-r1" x="0" y="44.4" textLength="1220" clip-path="url(#terminal-1433742629-line-1)">test/splash.sh:&#160;line&#160;6:&#160;/home/runner/work/seqfu2/seqfu2/test/../bin/seqfu:&#160;No&#160;such&#160;file&#160;or&#160;directory</text><text class="terminal-1433742629-r1" x="1220" y="44.4" textLength="12.2" clip-path="url(#terminal-1433742629-line-1)">
+    <g class="terminal-1644571604-matrix">
+    <text class="terminal-1644571604-r1" x="0" y="20" textLength="256.2" clip-path="url(#terminal-1644571604-line-0)">$&#160;bash&#160;test/splash.sh</text><text class="terminal-1644571604-r1" x="2366.8" y="20" textLength="12.2" clip-path="url(#terminal-1644571604-line-0)">
+</text><text class="terminal-1644571604-r1" x="0" y="44.4" textLength="317.2" clip-path="url(#terminal-1644571604-line-1)">+++&#160;dirname&#160;test/splash.sh</text><text class="terminal-1644571604-r1" x="2366.8" y="44.4" textLength="12.2" clip-path="url(#terminal-1644571604-line-1)">
+</text><text class="terminal-1644571604-r1" x="0" y="68.8" textLength="122" clip-path="url(#terminal-1644571604-line-2)">++&#160;cd&#160;test</text><text class="terminal-1644571604-r1" x="2366.8" y="68.8" textLength="12.2" clip-path="url(#terminal-1644571604-line-2)">
+</text><text class="terminal-1644571604-r1" x="0" y="93.2" textLength="73.2" clip-path="url(#terminal-1644571604-line-3)">++&#160;pwd</text><text class="terminal-1644571604-r1" x="2366.8" y="93.2" textLength="12.2" clip-path="url(#terminal-1644571604-line-3)">
+</text><text class="terminal-1644571604-r1" x="0" y="117.6" textLength="597.8" clip-path="url(#terminal-1644571604-line-4)">+&#160;SCRIPT_DIR=/home/runner/work/seqfu2/seqfu2/test</text><text class="terminal-1644571604-r1" x="2366.8" y="117.6" textLength="12.2" clip-path="url(#terminal-1644571604-line-4)">
+</text><text class="terminal-1644571604-r1" x="0" y="142" textLength="671" clip-path="url(#terminal-1644571604-line-5)">+&#160;ldd&#160;/home/runner/work/seqfu2/seqfu2/test/../bin/seqfu</text><text class="terminal-1644571604-r1" x="2366.8" y="142" textLength="12.2" clip-path="url(#terminal-1644571604-line-5)">
+</text><text class="terminal-1644571604-r1" x="97.6" y="166.4" textLength="439.2" clip-path="url(#terminal-1644571604-line-6)">linux-vdso.so.1&#160;(0x00007ffc671e6000)</text><text class="terminal-1644571604-r1" x="2366.8" y="166.4" textLength="12.2" clip-path="url(#terminal-1644571604-line-6)">
+</text><text class="terminal-1644571604-r1" x="97.6" y="190.8" textLength="793" clip-path="url(#terminal-1644571604-line-7)">libz.so.1&#160;=&gt;&#160;/lib/x86_64-linux-gnu/libz.so.1&#160;(0x00007f6821050000)</text><text class="terminal-1644571604-r1" x="2366.8" y="190.8" textLength="12.2" clip-path="url(#terminal-1644571604-line-7)">
+</text><text class="terminal-1644571604-r1" x="97.6" y="215.2" textLength="414.8" clip-path="url(#terminal-1644571604-line-8)">libc.musl-x86_64.so.1&#160;=&gt;&#160;not&#160;found</text><text class="terminal-1644571604-r1" x="2366.8" y="215.2" textLength="12.2" clip-path="url(#terminal-1644571604-line-8)">
+</text><text class="terminal-1644571604-r1" x="97.6" y="239.6" textLength="793" clip-path="url(#terminal-1644571604-line-9)">libc.so.6&#160;=&gt;&#160;/lib/x86_64-linux-gnu/libc.so.6&#160;(0x00007f6820e5e000)</text><text class="terminal-1644571604-r1" x="2366.8" y="239.6" textLength="12.2" clip-path="url(#terminal-1644571604-line-9)">
+</text><text class="terminal-1644571604-r1" x="97.6" y="264" textLength="927.2" clip-path="url(#terminal-1644571604-line-10)">/lib/ld-musl-x86_64.so.1&#160;=&gt;&#160;/lib64/ld-linux-x86-64.so.2&#160;(0x00007f68211e5000)</text><text class="terminal-1644571604-r1" x="2366.8" y="264" textLength="12.2" clip-path="url(#terminal-1644571604-line-10)">
+</text><text class="terminal-1644571604-r1" x="0" y="288.4" textLength="195.2" clip-path="url(#terminal-1644571604-line-11)">+&#160;echo&#160;/bin/bash</text><text class="terminal-1644571604-r1" x="2366.8" y="288.4" textLength="12.2" clip-path="url(#terminal-1644571604-line-11)">
+</text><text class="terminal-1644571604-r1" x="0" y="312.8" textLength="109.8" clip-path="url(#terminal-1644571604-line-12)">/bin/bash</text><text class="terminal-1644571604-r1" x="2366.8" y="312.8" textLength="12.2" clip-path="url(#terminal-1644571604-line-12)">
+</text><text class="terminal-1644571604-r1" x="0" y="337.2" textLength="97.6" clip-path="url(#terminal-1644571604-line-13)">+&#160;whoami</text><text class="terminal-1644571604-r1" x="2366.8" y="337.2" textLength="12.2" clip-path="url(#terminal-1644571604-line-13)">
+</text><text class="terminal-1644571604-r1" x="0" y="361.6" textLength="73.2" clip-path="url(#terminal-1644571604-line-14)">runner</text><text class="terminal-1644571604-r1" x="2366.8" y="361.6" textLength="12.2" clip-path="url(#terminal-1644571604-line-14)">
+</text><text class="terminal-1644571604-r1" x="0" y="386" textLength="683.2" clip-path="url(#terminal-1644571604-line-15)">+&#160;file&#160;/home/runner/work/seqfu2/seqfu2/test/../bin/seqfu</text><text class="terminal-1644571604-r1" x="2366.8" y="386" textLength="12.2" clip-path="url(#terminal-1644571604-line-15)">
+</text><text class="terminal-1644571604-r1" x="0" y="410.4" textLength="2366.8" clip-path="url(#terminal-1644571604-line-16)">/home/runner/work/seqfu2/seqfu2/test/../bin/seqfu:&#160;ELF&#160;64-bit&#160;LSB&#160;shared&#160;object,&#160;x86-64,&#160;version&#160;1&#160;(SYSV),&#160;dynamically&#160;linked,&#160;interpreter&#160;/lib/ld-musl-x86_64.so.1,&#160;with&#160;debug_info,&#160;not&#160;stripped</text><text class="terminal-1644571604-r1" x="2366.8" y="410.4" textLength="12.2" clip-path="url(#terminal-1644571604-line-16)">
+</text><text class="terminal-1644571604-r1" x="0" y="434.8" textLength="622.2" clip-path="url(#terminal-1644571604-line-17)">+&#160;/home/runner/work/seqfu2/seqfu2/test/../bin/seqfu</text><text class="terminal-1644571604-r1" x="2366.8" y="434.8" textLength="12.2" clip-path="url(#terminal-1644571604-line-17)">
+</text><text class="terminal-1644571604-r1" x="0" y="459.2" textLength="1220" clip-path="url(#terminal-1644571604-line-18)">test/splash.sh:&#160;line&#160;8:&#160;/home/runner/work/seqfu2/seqfu2/test/../bin/seqfu:&#160;No&#160;such&#160;file&#160;or&#160;directory</text><text class="terminal-1644571604-r1" x="2366.8" y="459.2" textLength="12.2" clip-path="url(#terminal-1644571604-line-18)">
 </text>
     </g>
     </g>
