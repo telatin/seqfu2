@@ -37,32 +37,4 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 
 ## Splash screen
 
-```
-SeqFu - Sequence Fastx Utilities
-version: 1.10.0
-
-  · count [cnt]         : count FASTA/FASTQ reads, pair-end aware
-  · deinterleave [dei]  : deinterleave FASTQ
-  · derep [der]         : feature-rich dereplication of FASTA/FASTQ files
-  · interleave [ilv]    : interleave FASTQ pair ends
-  · lanes [mrl]         : merge Illumina lanes
-  · list [lst]          : print sequences from a list of names
-  · metadata [met]      : print a table of FASTQ reads (mapping files)
-  · rotate [rot]        : rotate a sequence with a new start position
-  · sort [srt]          : sort sequences by size (uniques)
-  · stats [st]          : statistics on sequence lengths
-
-  · cat                 : concatenate FASTA/FASTQ files
-  · grep                : select sequences with patterns
-  · head                : print first sequences
-  · rc                  : reverse complement strings or files
-  · tab                 : tabulate reads to TSV (and viceversa)
-  · tail                : view last sequences
-  · view                : view sequences with colored quality and oligo matches
-
-Type 'seqfu version' or 'seqfu cite' to print the version and paper, respectively.
-Add --help after each command to print its usage.
-```
-
-
 ![`./bin/seqfu`](docs/img/screenshot-seqfu.svg "SeqFu")
