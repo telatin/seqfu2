@@ -36,7 +36,5 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 [**telatin.github.io/seqfu2**](https://telatin.github.io/seqfu2)
 
 ## Splash screen
-![`$(readlink -f bin/seqfu)`](docs/img/screenshot-ls.svg "list")
-![`bash --version`](docs/img/screenshot-bash.svg "bash")
-![`ldd bin/seqfu`](docs/img/screenshot-ldd.svg "SeqFu")
-![`echo $SHELL`](docs/img/screenshot-echo.svg "echo")
+![`bash test/splash.sh`](docs/img/screenshot-seqfu.svg "SeqFu")
+
