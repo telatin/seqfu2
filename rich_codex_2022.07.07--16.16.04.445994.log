@@ -1,0 +1,123 @@
+[2022-07-07 16:16:04,447] git.cmd              [DEBUG  ]  Popen(['git', 'diff', '--cached', '--abbrev=40', '--full-index', '--raw'], cwd=/home/runner/work/seqfu2/seqfu2, universal_newlines=False, shell=None, istream=None)
+[2022-07-07 16:16:04,450] git.cmd              [DEBUG  ]  Popen(['git', 'diff', '--abbrev=40', '--full-index', '--raw'], cwd=/home/runner/work/seqfu2/seqfu2, universal_newlines=False, shell=None, istream=None)
+[2022-07-07 16:16:04,508] root                 [DEBUG  ]  Git status check: Git repo looks good. (skip_git_checks: False)
+[2022-07-07 16:16:04,508] root                 [DEBUG  ]  Skipping confirmation of commands
+[2022-07-07 16:16:04,508] root                 [DEBUG  ]  Forcing terminal logging output
+[2022-07-07 16:16:04,508] root                 [INFO   ]  Trimming terminal output down to a minimum of 80
+[2022-07-07 16:16:04,513] rich-codex           [DEBUG  ]  Appending contents of .gitignore to 'SEARCH_EXCLUDE'
+[2022-07-07 16:16:04,534] rich-codex           [DEBUG  ]  [dim]Couldn't find '.rich-codex.yml'
+[2022-07-07 16:16:04,534] rich-codex           [DEBUG  ]  [dim]Couldn't find '.github/rich-codex.yml'
+[2022-07-07 16:16:04,534] rich-codex           [DEBUG  ]  [dim]Couldn't find 'docs/img/rich-codex.yml'
+[2022-07-07 16:16:04,551] rich-codex           [INFO   ]  Searching 86 files
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/stats.md[/]
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/view.md[/]
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 41: {'img_path': '{{site.baseurl}}/img/view.png', 'title': None}
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 72: {'img_path': '{{site.baseurl}}/img/encoding.png', 'title': None}
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  Searching: [magenta]src/doc/bench.md[/]
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.8.8.md[/]
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/derep.md[/]
+[2022-07-07 16:16:04,553] rich-codex           [DEBUG  ]  Searching: [magenta]test/deinterleave.md[/]
+[2022-07-07 16:16:04,554] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-tabcheck.md[/]
+[2022-07-07 16:16:04,554] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-orf.md[/]
+[2022-07-07 16:16:04,554] rich-codex           [DEBUG  ]  Searching: [magenta]re/Bsa-Bso.md[/]
+[2022-07-07 16:16:04,554] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.9.3.md[/]
+[2022-07-07 16:16:04,554] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-msa.md[/]
+[2022-07-07 16:16:04,554] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 13: {'img_path': '{{site.baseurl}}/img/msa.png', 'title': None}
+[2022-07-07 16:16:04,554] rich-codex           [DEBUG  ]  Searching: [magenta]re/E-F.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/rotate.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.12.0.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  Searching: [magenta]docs/intro.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 57: {'img_path': '{{site.baseurl}}/img/view.png', 'title': None}
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.10.0.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  Searching: [magenta]bench/interleave.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/deinterleave.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  Searching: [magenta]README.md[/]
+[2022-07-07 16:16:04,555] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 7: {'img_path': 'https://img.shields.io/github/last-commit/telatin/seqfu2', 'title': None}
+[2022-07-07 16:16:04,557] rich-codex           [DEBUG  ]  Found markdown [blue]command[/], line 39: 'ls -l'
+[2022-07-07 16:16:04,558] rich-codex           [DEBUG  ]  Found markdown [blue]command[/], line 40: 'find -name "seqfu*"'
+[2022-07-07 16:16:04,559] rich-codex           [DEBUG  ]  Found markdown [blue]command[/], line 41: './bin/seqfu'
+[2022-07-07 16:16:04,559] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-primers.md[/]
+[2022-07-07 16:16:04,559] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-index.md[/]
+[2022-07-07 16:16:04,559] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-cov.md[/]
+[2022-07-07 16:16:04,559] rich-codex           [DEBUG  ]  Searching: [magenta].github/ISSUE_TEMPLATE/feature_request.md[/]
+[2022-07-07 16:16:04,559] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.9.0.md[/]
+[2022-07-07 16:16:04,559] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/sort.md[/]
+[2022-07-07 16:16:04,560] rich-codex           [DEBUG  ]  Searching: [magenta]re/Bd-Bp.md[/]
+[2022-07-07 16:16:04,560] rich-codex           [DEBUG  ]  Searching: [magenta]re/Bsp-Bss.md[/]
+[2022-07-07 16:16:04,560] rich-codex           [DEBUG  ]  Searching: [magenta]re/T-Z.md[/]
+[2022-07-07 16:16:04,560] rich-codex           [DEBUG  ]  Searching: [magenta]bench/deinterleave_benchmarks.md[/]
+[2022-07-07 16:16:04,560] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/rc.md[/]
+[2022-07-07 16:16:04,560] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-16Sregion.md[/]
+[2022-07-07 16:16:04,560] rich-codex           [DEBUG  ]  Searching: [magenta]test/speed/7794_51_R1.md[/]
+[2022-07-07 16:16:04,561] rich-codex           [DEBUG  ]  Searching: [magenta]src/doc/single_file.md[/]
+[2022-07-07 16:16:04,561] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-virfilter.md[/]
+[2022-07-07 16:16:04,561] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/lanes.md[/]
+[2022-07-07 16:16:04,561] rich-codex           [DEBUG  ]  Searching: [magenta]test/interleave.md[/]
+[2022-07-07 16:16:04,561] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.9.2.md[/]
+[2022-07-07 16:16:04,561] rich-codex           [DEBUG  ]  Searching: [magenta]re/enzyme_table.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]docs/install.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]bench/run-benchmarks.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/count.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-multirelabel.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]src/lib/README.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.11.0.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/qual.md[/]
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 92: {'img_path': '{{site.baseurl}}/img/qual.png', 'title': None}
+[2022-07-07 16:16:04,563] rich-codex           [DEBUG  ]  Searching: [magenta]re/C-D.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.8.7.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]docs/releases/README.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/tabulate.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]re/O-R.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/list.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-homocomp.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.9.1.md[/]
+[2022-07-07 16:16:04,564] rich-codex           [DEBUG  ]  Searching: [magenta]docs/releases/history.md[/]
+[2022-07-07 16:16:04,565] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/metadata.md[/]
+[2022-07-07 16:16:04,565] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/interleave.md[/]
+[2022-07-07 16:16:04,565] rich-codex           [DEBUG  ]  Searching: [magenta]test/merge.md[/]
+[2022-07-07 16:16:04,565] rich-codex           [DEBUG  ]  Searching: [magenta]bench/interleave_benchmarks.md[/]
+[2022-07-07 16:16:04,565] rich-codex           [DEBUG  ]  Searching: [magenta]docs/usage.md[/]
+[2022-07-07 16:16:04,565] rich-codex           [DEBUG  ]  Searching: [magenta]docs/notes.md[/]
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 55: {'img_path': '{{site.baseurl}}/img/howtoget.png', 'title': None}
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 60: {'img_path': '{{site.baseurl}}/img/flowers.png', 'title': None}
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/head.md[/]
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 45: {'img_path': '{{site.baseurl}}/img/seqfu-head.png', 'title': None}
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  Searching: [magenta]src/build.md[/]
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/cat.md[/]
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/tail.md[/]
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-shred.md[/]
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  Searching: [magenta].github/ISSUE_TEMPLATE/bug_report.md[/]
+[2022-07-07 16:16:04,566] rich-codex           [DEBUG  ]  Searching: [magenta]re/README.md[/]
+[2022-07-07 16:16:04,567] rich-codex           [DEBUG  ]  Searching: [magenta]bench/deinterleave.md[/]
+[2022-07-07 16:16:04,567] rich-codex           [DEBUG  ]  Searching: [magenta]templates/README.md[/]
+[2022-07-07 16:16:04,567] rich-codex           [DEBUG  ]  Searching: [magenta]re/Bst-Bv.md[/]
+[2022-07-07 16:16:04,567] rich-codex           [DEBUG  ]  Searching: [magenta]re/S.md[/]
+[2022-07-07 16:16:04,567] rich-codex           [DEBUG  ]  Searching: [magenta]tweets/README.md[/]
+[2022-07-07 16:16:04,567] rich-codex           [DEBUG  ]  Searching: [magenta]re/L-N.md[/]
+[2022-07-07 16:16:04,567] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/merge.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/grep.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-nanotags.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]re/G-K.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]docs/tools/README.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]releases/v1.8.9.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]re/Ba-Bc.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]templates/perl/README.md[/]
+[2022-07-07 16:16:04,568] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/README.md[/]
+[2022-07-07 16:16:04,569] rich-codex           [DEBUG  ]  Searching: [magenta]test/speed/F09.md[/]
+[2022-07-07 16:16:04,569] rich-codex           [DEBUG  ]  Searching: [magenta]docs/utilities/fu-sw.md[/]
+[2022-07-07 16:16:04,569] rich-codex           [DEBUG  ]  Searching: [magenta]docs/readme.md[/]
+[2022-07-07 16:16:04,569] rich-codex           [DEBUG  ]  [dim]Skipped markdown image, line 8: {'img_path': 'https://img.shields.io/github/last-commit/telatin/seqfu2', 'title': None}
+[2022-07-07 16:16:04,569] rich-codex           [DEBUG  ]  Searching: [magenta]test/speed/hg38-fasta.md[/]
+[2022-07-07 16:16:04,569] rich-codex           [INFO   ]  Search: Found 3 commands
+[2022-07-07 16:16:04,571] rich-codex           [DEBUG  ]  Collapsing 3 image requests to 3 deduplicated
+[2022-07-07 16:16:04,573] rich-codex           [DEBUG  ]  Running command './bin/seqfu' with subprocess
+[2022-07-07 16:16:04,575] rich-codex           [DEBUG  ]  Setting terminal width to 80
+[2022-07-07 16:16:04,577] rich-codex           [DEBUG  ]  [dim]Skipped: 'docs/img/screenshot-seqfu.svg' (0.00% change)
+[2022-07-07 16:16:04,577] rich-codex           [DEBUG  ]  Running command 'find -name "seqfu*"' with subprocess
+[2022-07-07 16:16:04,581] rich-codex           [DEBUG  ]  Setting terminal width to 80
+[2022-07-07 16:16:04,583] rich-codex           [INFO   ]  Saved: 'docs/img/screenshot-find.svg' (new image)
+[2022-07-07 16:16:04,584] rich-codex           [DEBUG  ]  Running command 'ls -l' with subprocess
+[2022-07-07 16:16:04,587] rich-codex           [DEBUG  ]  Setting terminal width to 89
+[2022-07-07 16:16:04,593] rich-codex           [INFO   ]  Saved: 'docs/img/screenshot-ls.svg' (new image)
+[2022-07-07 16:16:04,595] root                 [INFO   ]  [dim]Skipped 1 images 🤫
+[2022-07-07 16:16:04,595] root                 [INFO   ]  Saved 2 images ✨
