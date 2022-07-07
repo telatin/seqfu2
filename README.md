@@ -65,4 +65,4 @@ Add --help after each command to print its usage.
 ```
 
 
-[`seqfu`](docs/img/screenshot-seqfu.svg "SeqFu")
+![`seqfu`](docs/img/screenshot-seqfu.svg "SeqFu")

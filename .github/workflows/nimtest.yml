@@ -32,10 +32,6 @@ jobs:
         with:
           # Command to run
           command: sudo apk add zlib-dev && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && ./bin/seqfu --version && bash test/mini.sh
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: 3.x
       - name: Generate terminal images with rich-codex
         uses: ewels/rich-codex@v1
         with:
