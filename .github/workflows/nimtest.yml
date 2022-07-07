@@ -5,9 +5,7 @@ name: Build_Nim
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
+  release:
     branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -32,7 +30,3 @@ jobs:
         with:
           # Command to run
           command: sudo apk add zlib-dev && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && ./bin/seqfu --version && bash test/mini.sh
-      - name: Generate terminal images with rich-codex
-        uses: ewels/rich-codex@v1
-        with:
-          commit_changes: "true"
