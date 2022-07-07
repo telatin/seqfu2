@@ -23,7 +23,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: NIM Lang Alpine
        # You may pin to the exact commit or the version.
@@ -32,6 +32,10 @@ jobs:
         with:
           # Command to run
           command: sudo apk add zlib-dev && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && ./bin/seqfu --version && bash test/mini.sh
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.x
       - name: Generate terminal images with rich-codex
         uses: ewels/rich-codex@v1
         with:

@@ -64,4 +64,5 @@ Type 'seqfu version' or 'seqfu cite' to print the version and paper, respectivel
 Add --help after each command to print its usage.
 ```
 
-[`seqfu`](docs/img/screenshot-seqfu.png)
+
+[`seqfu`](docs/img/screenshot-seqfu.svg "SeqFu")
