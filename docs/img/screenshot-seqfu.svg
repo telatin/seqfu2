@@ -19,43 +19,43 @@
         font-weight: 700;
     }
 
-    .terminal-3309113677-matrix {
+    .terminal-2577207443-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-3309113677-title {
+    .terminal-2577207443-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-3309113677-r1 { fill: #c5c8c6 }
+    .terminal-2577207443-r1 { fill: #c5c8c6 }
     </style>
 
     <defs>
-    <clipPath id="terminal-3309113677-clip-terminal">
+    <clipPath id="terminal-2577207443-clip-terminal">
       <rect x="0" y="0" width="975.0" height="47.8" />
     </clipPath>
-    <clipPath id="terminal-3309113677-line-0">
+    <clipPath id="terminal-2577207443-line-0">
     <rect x="0" y="1.5" width="976" height="24.65"/>
             </clipPath>
     </defs>
 
-    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="992" height="96.8" rx="8"/><text class="terminal-3309113677-title" fill="#c5c8c6" text-anchor="middle" x="496" y="27">SeqFu</text>
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="992" height="96.8" rx="8"/><text class="terminal-2577207443-title" fill="#c5c8c6" text-anchor="middle" x="496" y="27">SeqFu</text>
             <g transform="translate(26,22)">
             <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
             <circle cx="22" cy="0" r="7" fill="#febc2e"/>
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
         
-    <g transform="translate(9, 41)" clip-path="url(#terminal-3309113677-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-2577207443-clip-terminal)">
     
-    <g class="terminal-3309113677-matrix">
-    <text class="terminal-3309113677-r1" x="0" y="20" textLength="158.6" clip-path="url(#terminal-3309113677-line-0)">$&#160;./bin/seqfu</text><text class="terminal-3309113677-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-3309113677-line-0)">
-</text><text class="terminal-3309113677-r1" x="0" y="44.4" textLength="414.8" clip-path="url(#terminal-3309113677-line-1)">/bin/sh:&#160;1:&#160;./bin/seqfu:&#160;not&#160;found</text><text class="terminal-3309113677-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-3309113677-line-1)">
+    <g class="terminal-2577207443-matrix">
+    <text class="terminal-2577207443-r1" x="0" y="20" textLength="134.2" clip-path="url(#terminal-2577207443-line-0)">$&#160;bin/seqfu</text><text class="terminal-2577207443-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-2577207443-line-0)">
+</text><text class="terminal-2577207443-r1" x="0" y="44.4" textLength="390.4" clip-path="url(#terminal-2577207443-line-1)">/bin/sh:&#160;1:&#160;bin/seqfu:&#160;not&#160;found</text><text class="terminal-2577207443-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-2577207443-line-1)">
 </text>
     </g>
     </g>
