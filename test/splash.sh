@@ -5,4 +5,7 @@ ldd $SCRIPT_DIR/../bin/seqfu
 echo $SHELL
 whoami
 file $SCRIPT_DIR/../bin/seqfu
-$SCRIPT_DIR/../bin/seqfu
+ls /etc
+apk
+apt
+yum
