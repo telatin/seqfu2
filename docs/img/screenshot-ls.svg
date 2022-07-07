@@ -1,4 +1,4 @@
-<svg class="rich-terminal" viewBox="0 0 1104 611.1999999999999" xmlns="http://www.w3.org/2000/svg">
+<svg class="rich-terminal" viewBox="0 0 994 464.79999999999995" xmlns="http://www.w3.org/2000/svg">
     <!-- Generated with Rich https://www.textualize.io -->
     <style>
 
@@ -19,127 +19,103 @@
         font-weight: 700;
     }
 
-    .terminal-3647171617-matrix {
+    .terminal-1984756407-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-3647171617-title {
+    .terminal-1984756407-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-3647171617-r1 { fill: #c5c8c6 }
+    .terminal-1984756407-r1 { fill: #c5c8c6 }
     </style>
 
     <defs>
-    <clipPath id="terminal-3647171617-clip-terminal">
-      <rect x="0" y="0" width="1084.8" height="560.1999999999999" />
+    <clipPath id="terminal-1984756407-clip-terminal">
+      <rect x="0" y="0" width="975.0" height="413.79999999999995" />
     </clipPath>
-    <clipPath id="terminal-3647171617-line-0">
-    <rect x="0" y="1.5" width="1085.8" height="24.65"/>
+    <clipPath id="terminal-1984756407-line-0">
+    <rect x="0" y="1.5" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-1">
-    <rect x="0" y="25.9" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-1">
+    <rect x="0" y="25.9" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-2">
-    <rect x="0" y="50.3" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-2">
+    <rect x="0" y="50.3" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-3">
-    <rect x="0" y="74.7" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-3">
+    <rect x="0" y="74.7" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-4">
-    <rect x="0" y="99.1" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-4">
+    <rect x="0" y="99.1" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-5">
-    <rect x="0" y="123.5" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-5">
+    <rect x="0" y="123.5" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-6">
-    <rect x="0" y="147.9" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-6">
+    <rect x="0" y="147.9" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-7">
-    <rect x="0" y="172.3" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-7">
+    <rect x="0" y="172.3" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-8">
-    <rect x="0" y="196.7" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-8">
+    <rect x="0" y="196.7" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-9">
-    <rect x="0" y="221.1" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-9">
+    <rect x="0" y="221.1" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-10">
-    <rect x="0" y="245.5" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-10">
+    <rect x="0" y="245.5" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-11">
-    <rect x="0" y="269.9" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-11">
+    <rect x="0" y="269.9" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-12">
-    <rect x="0" y="294.3" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-12">
+    <rect x="0" y="294.3" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-13">
-    <rect x="0" y="318.7" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-13">
+    <rect x="0" y="318.7" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-14">
-    <rect x="0" y="343.1" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-14">
+    <rect x="0" y="343.1" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3647171617-line-15">
-    <rect x="0" y="367.5" width="1085.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-3647171617-line-16">
-    <rect x="0" y="391.9" width="1085.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-3647171617-line-17">
-    <rect x="0" y="416.3" width="1085.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-3647171617-line-18">
-    <rect x="0" y="440.7" width="1085.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-3647171617-line-19">
-    <rect x="0" y="465.1" width="1085.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-3647171617-line-20">
-    <rect x="0" y="489.5" width="1085.8" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-3647171617-line-21">
-    <rect x="0" y="513.9" width="1085.8" height="24.65"/>
+<clipPath id="terminal-1984756407-line-15">
+    <rect x="0" y="367.5" width="976" height="24.65"/>
             </clipPath>
     </defs>
 
-    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1102" height="609.2" rx="8"/><text class="terminal-3647171617-title" fill="#c5c8c6" text-anchor="middle" x="551" y="27">list</text>
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="992" height="462.8" rx="8"/><text class="terminal-1984756407-title" fill="#c5c8c6" text-anchor="middle" x="496" y="27">list</text>
             <g transform="translate(26,22)">
             <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
             <circle cx="22" cy="0" r="7" fill="#febc2e"/>
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
         
-    <g transform="translate(9, 41)" clip-path="url(#terminal-3647171617-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-1984756407-clip-terminal)">
     
-    <g class="terminal-3647171617-matrix">
-    <text class="terminal-3647171617-r1" x="0" y="20" textLength="85.4" clip-path="url(#terminal-3647171617-line-0)">$&#160;ls&#160;-l</text><text class="terminal-3647171617-r1" x="1085.8" y="20" textLength="12.2" clip-path="url(#terminal-3647171617-line-0)">
-</text><text class="terminal-3647171617-r1" x="0" y="44.4" textLength="109.8" clip-path="url(#terminal-3647171617-line-1)">total&#160;152</text><text class="terminal-3647171617-r1" x="1085.8" y="44.4" textLength="12.2" clip-path="url(#terminal-3647171617-line-1)">
-</text><text class="terminal-3647171617-r1" x="0" y="68.8" textLength="719.8" clip-path="url(#terminal-3647171617-line-2)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;&#160;2357&#160;Jul&#160;&#160;7&#160;16:13&#160;CITATION.cff</text><text class="terminal-3647171617-r1" x="1085.8" y="68.8" textLength="12.2" clip-path="url(#terminal-3647171617-line-2)">
-</text><text class="terminal-3647171617-r1" x="0" y="93.2" textLength="695.4" clip-path="url(#terminal-3647171617-line-3)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;&#160;&#160;530&#160;Jul&#160;&#160;7&#160;16:13&#160;Dockerfile</text><text class="terminal-3647171617-r1" x="1085.8" y="93.2" textLength="12.2" clip-path="url(#terminal-3647171617-line-3)">
-</text><text class="terminal-3647171617-r1" x="0" y="117.6" textLength="658.8" clip-path="url(#terminal-3647171617-line-4)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;35122&#160;Jul&#160;&#160;7&#160;16:13&#160;LICENSE</text><text class="terminal-3647171617-r1" x="1085.8" y="117.6" textLength="12.2" clip-path="url(#terminal-3647171617-line-4)">
-</text><text class="terminal-3647171617-r1" x="0" y="142" textLength="671" clip-path="url(#terminal-3647171617-line-5)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;&#160;2166&#160;Jul&#160;&#160;7&#160;16:13&#160;Makefile</text><text class="terminal-3647171617-r1" x="1085.8" y="142" textLength="12.2" clip-path="url(#terminal-3647171617-line-5)">
-</text><text class="terminal-3647171617-r1" x="0" y="166.4" textLength="683.2" clip-path="url(#terminal-3647171617-line-6)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;&#160;1638&#160;Jul&#160;&#160;7&#160;16:13&#160;README.md</text><text class="terminal-3647171617-r1" x="1085.8" y="166.4" textLength="12.2" clip-path="url(#terminal-3647171617-line-6)">
-</text><text class="terminal-3647171617-r1" x="0" y="190.8" textLength="634.4" clip-path="url(#terminal-3647171617-line-7)">drwxr-xr-x&#160;&#160;2&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;bench</text><text class="terminal-3647171617-r1" x="1085.8" y="190.8" textLength="12.2" clip-path="url(#terminal-3647171617-line-7)">
-</text><text class="terminal-3647171617-r1" x="0" y="215.2" textLength="610" clip-path="url(#terminal-3647171617-line-8)">drwxr-xr-x&#160;&#160;2&#160;root&#160;&#160;&#160;root&#160;&#160;&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:15&#160;bin</text><text class="terminal-3647171617-r1" x="1085.8" y="215.2" textLength="12.2" clip-path="url(#terminal-3647171617-line-8)">
-</text><text class="terminal-3647171617-r1" x="0" y="239.6" textLength="622.2" clip-path="url(#terminal-3647171617-line-9)">drwxr-xr-x&#160;13&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;data</text><text class="terminal-3647171617-r1" x="1085.8" y="239.6" textLength="12.2" clip-path="url(#terminal-3647171617-line-9)">
-</text><text class="terminal-3647171617-r1" x="0" y="264" textLength="622.2" clip-path="url(#terminal-3647171617-line-10)">drwxr-xr-x&#160;&#160;7&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;docs</text><text class="terminal-3647171617-r1" x="1085.8" y="264" textLength="12.2" clip-path="url(#terminal-3647171617-line-10)">
-</text><text class="terminal-3647171617-r1" x="0" y="288.4" textLength="658.8" clip-path="url(#terminal-3647171617-line-11)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;&#160;&#160;&#160;97&#160;Jul&#160;&#160;7&#160;16:13&#160;nim.cfg</text><text class="terminal-3647171617-r1" x="1085.8" y="288.4" textLength="12.2" clip-path="url(#terminal-3647171617-line-11)">
-</text><text class="terminal-3647171617-r1" x="0" y="312.8" textLength="597.8" clip-path="url(#terminal-3647171617-line-12)">drwxr-xr-x&#160;&#160;2&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;re</text><text class="terminal-3647171617-r1" x="1085.8" y="312.8" textLength="12.2" clip-path="url(#terminal-3647171617-line-12)">
-</text><text class="terminal-3647171617-r1" x="0" y="337.2" textLength="671" clip-path="url(#terminal-3647171617-line-13)">drwxr-xr-x&#160;&#160;2&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;releases</text><text class="terminal-3647171617-r1" x="1085.8" y="337.2" textLength="12.2" clip-path="url(#terminal-3647171617-line-13)">
-</text><text class="terminal-3647171617-r1" x="0" y="361.6" textLength="1085.8" clip-path="url(#terminal-3647171617-line-14)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;12356&#160;Jul&#160;&#160;7&#160;16:13&#160;rich_codex_2022.07.07--16.06.38.058524.log</text><text class="terminal-3647171617-r1" x="1085.8" y="361.6" textLength="12.2" clip-path="url(#terminal-3647171617-line-14)">
-</text><text class="terminal-3647171617-r1" x="0" y="386" textLength="1085.8" clip-path="url(#terminal-3647171617-line-15)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;12371&#160;Jul&#160;&#160;7&#160;16:13&#160;rich_codex_2022.07.07--16.10.05.895549.log</text><text class="terminal-3647171617-r1" x="1085.8" y="386" textLength="12.2" clip-path="url(#terminal-3647171617-line-15)">
-</text><text class="terminal-3647171617-r1" x="0" y="410.4" textLength="1085.8" clip-path="url(#terminal-3647171617-line-16)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;12936&#160;Jul&#160;&#160;7&#160;16:16&#160;rich_codex_2022.07.07--16.16.04.445994.log</text><text class="terminal-3647171617-r1" x="1085.8" y="410.4" textLength="12.2" clip-path="url(#terminal-3647171617-line-16)">
-</text><text class="terminal-3647171617-r1" x="0" y="434.8" textLength="719.8" clip-path="url(#terminal-3647171617-line-17)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;&#160;&#160;828&#160;Jul&#160;&#160;7&#160;16:13&#160;seqfu.nimble</text><text class="terminal-3647171617-r1" x="1085.8" y="434.8" textLength="12.2" clip-path="url(#terminal-3647171617-line-17)">
-</text><text class="terminal-3647171617-r1" x="0" y="459.2" textLength="671" clip-path="url(#terminal-3647171617-line-18)">-rw-r--r--&#160;&#160;1&#160;runner&#160;docker&#160;&#160;&#160;&#160;29&#160;Jul&#160;&#160;7&#160;16:13&#160;setup.py</text><text class="terminal-3647171617-r1" x="1085.8" y="459.2" textLength="12.2" clip-path="url(#terminal-3647171617-line-18)">
-</text><text class="terminal-3647171617-r1" x="0" y="483.6" textLength="610" clip-path="url(#terminal-3647171617-line-19)">drwxr-xr-x&#160;&#160;6&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;src</text><text class="terminal-3647171617-r1" x="1085.8" y="483.6" textLength="12.2" clip-path="url(#terminal-3647171617-line-19)">
-</text><text class="terminal-3647171617-r1" x="0" y="508" textLength="683.2" clip-path="url(#terminal-3647171617-line-20)">drwxr-xr-x&#160;&#160;3&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;templates</text><text class="terminal-3647171617-r1" x="1085.8" y="508" textLength="12.2" clip-path="url(#terminal-3647171617-line-20)">
-</text><text class="terminal-3647171617-r1" x="0" y="532.4" textLength="622.2" clip-path="url(#terminal-3647171617-line-21)">drwxr-xr-x&#160;&#160;3&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;test</text><text class="terminal-3647171617-r1" x="1085.8" y="532.4" textLength="12.2" clip-path="url(#terminal-3647171617-line-21)">
-</text><text class="terminal-3647171617-r1" x="0" y="556.8" textLength="646.6" clip-path="url(#terminal-3647171617-line-22)">drwxr-xr-x&#160;&#160;2&#160;runner&#160;docker&#160;&#160;4096&#160;Jul&#160;&#160;7&#160;16:13&#160;tweets</text><text class="terminal-3647171617-r1" x="1085.8" y="556.8" textLength="12.2" clip-path="url(#terminal-3647171617-line-22)">
+    <g class="terminal-1984756407-matrix">
+    <text class="terminal-1984756407-r1" x="0" y="20" textLength="134.2" clip-path="url(#terminal-1984756407-line-0)">$&#160;ls&#160;-l&#160;bin</text><text class="terminal-1984756407-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-1984756407-line-0)">
+</text><text class="terminal-1984756407-r1" x="0" y="44.4" textLength="134.2" clip-path="url(#terminal-1984756407-line-1)">total&#160;10104</text><text class="terminal-1984756407-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-1984756407-line-1)">
+</text><text class="terminal-1984756407-r1" x="0" y="68.8" textLength="756.4" clip-path="url(#terminal-1984756407-line-2)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;601776&#160;Jul&#160;&#160;7&#160;16:20&#160;dadaist2-mergeseqs</text><text class="terminal-1984756407-r1" x="976" y="68.8" textLength="12.2" clip-path="url(#terminal-1984756407-line-2)">
+</text><text class="terminal-1984756407-r1" x="0" y="93.2" textLength="683.2" clip-path="url(#terminal-1984756407-line-3)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;708056&#160;Jul&#160;&#160;7&#160;16:19&#160;fu-16Sregion</text><text class="terminal-1984756407-r1" x="976" y="93.2" textLength="12.2" clip-path="url(#terminal-1984756407-line-3)">
+</text><text class="terminal-1984756407-r1" x="0" y="117.6" textLength="610" clip-path="url(#terminal-1984756407-line-4)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;599328&#160;Jul&#160;&#160;7&#160;16:21&#160;fu-cov</text><text class="terminal-1984756407-r1" x="976" y="117.6" textLength="12.2" clip-path="url(#terminal-1984756407-line-4)">
+</text><text class="terminal-1984756407-r1" x="0" y="142" textLength="671" clip-path="url(#terminal-1984756407-line-5)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;589896&#160;Jul&#160;&#160;7&#160;16:21&#160;fu-homocomp</text><text class="terminal-1984756407-r1" x="976" y="142" textLength="12.2" clip-path="url(#terminal-1984756407-line-5)">
+</text><text class="terminal-1984756407-r1" x="0" y="166.4" textLength="634.4" clip-path="url(#terminal-1984756407-line-6)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;594696&#160;Jul&#160;&#160;7&#160;16:21&#160;fu-index</text><text class="terminal-1984756407-r1" x="976" y="166.4" textLength="12.2" clip-path="url(#terminal-1984756407-line-6)">
+</text><text class="terminal-1984756407-r1" x="0" y="190.8" textLength="610" clip-path="url(#terminal-1984756407-line-7)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;687928&#160;Jul&#160;&#160;7&#160;16:20&#160;fu-msa</text><text class="terminal-1984756407-r1" x="976" y="190.8" textLength="12.2" clip-path="url(#terminal-1984756407-line-7)">
+</text><text class="terminal-1984756407-r1" x="0" y="215.2" textLength="719.8" clip-path="url(#terminal-1984756407-line-8)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;565768&#160;Jul&#160;&#160;7&#160;16:21&#160;fu-multirelabel</text><text class="terminal-1984756407-r1" x="976" y="215.2" textLength="12.2" clip-path="url(#terminal-1984756407-line-8)">
+</text><text class="terminal-1984756407-r1" x="0" y="239.6" textLength="671" clip-path="url(#terminal-1984756407-line-9)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;630856&#160;Jul&#160;&#160;7&#160;16:20&#160;fu-nanotags</text><text class="terminal-1984756407-r1" x="976" y="239.6" textLength="12.2" clip-path="url(#terminal-1984756407-line-9)">
+</text><text class="terminal-1984756407-r1" x="0" y="264" textLength="610" clip-path="url(#terminal-1984756407-line-10)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;625224&#160;Jul&#160;&#160;7&#160;16:21&#160;fu-orf</text><text class="terminal-1984756407-r1" x="976" y="264" textLength="12.2" clip-path="url(#terminal-1984756407-line-10)">
+</text><text class="terminal-1984756407-r1" x="0" y="288.4" textLength="658.8" clip-path="url(#terminal-1984756407-line-11)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;621592&#160;Jul&#160;&#160;7&#160;16:20&#160;fu-primers</text><text class="terminal-1984756407-r1" x="976" y="288.4" textLength="12.2" clip-path="url(#terminal-1984756407-line-11)">
+</text><text class="terminal-1984756407-r1" x="0" y="312.8" textLength="634.4" clip-path="url(#terminal-1984756407-line-12)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;570744&#160;Jul&#160;&#160;7&#160;16:20&#160;fu-shred</text><text class="terminal-1984756407-r1" x="976" y="312.8" textLength="12.2" clip-path="url(#terminal-1984756407-line-12)">
+</text><text class="terminal-1984756407-r1" x="0" y="337.2" textLength="597.8" clip-path="url(#terminal-1984756407-line-13)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;621456&#160;Jul&#160;&#160;7&#160;16:21&#160;fu-sw</text><text class="terminal-1984756407-r1" x="976" y="337.2" textLength="12.2" clip-path="url(#terminal-1984756407-line-13)">
+</text><text class="terminal-1984756407-r1" x="0" y="361.6" textLength="671" clip-path="url(#terminal-1984756407-line-14)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;&#160;583592&#160;Jul&#160;&#160;7&#160;16:20&#160;fu-tabcheck</text><text class="terminal-1984756407-r1" x="976" y="361.6" textLength="12.2" clip-path="url(#terminal-1984756407-line-14)">
+</text><text class="terminal-1984756407-r1" x="0" y="386" textLength="683.2" clip-path="url(#terminal-1984756407-line-15)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;1213648&#160;Jul&#160;&#160;7&#160;16:20&#160;fu-virfilter</text><text class="terminal-1984756407-r1" x="976" y="386" textLength="12.2" clip-path="url(#terminal-1984756407-line-15)">
+</text><text class="terminal-1984756407-r1" x="0" y="410.4" textLength="597.8" clip-path="url(#terminal-1984756407-line-16)">-rwxr-xr-x&#160;1&#160;root&#160;root&#160;1098600&#160;Jul&#160;&#160;7&#160;16:21&#160;seqfu</text><text class="terminal-1984756407-r1" x="976" y="410.4" textLength="12.2" clip-path="url(#terminal-1984756407-line-16)">
 </text>
     </g>
     </g>
