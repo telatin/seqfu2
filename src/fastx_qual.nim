@@ -25,8 +25,8 @@ proc qualityProfile(s: seq[RunningStat]): string =
     
     
 
-proc getStopPos(s: seq[RunningStat], w: int, minq, wndq: float): int =
-   
+proc getStopPos(s: seq[RunningStat], w: int, minq, wndq: float, debug: bool): int =
+  
   for i, stats in s:
     let max = if i + w - 1 <= len(s): i + w - 1
           else: len(s)
@@ -39,6 +39,7 @@ proc getStopPos(s: seq[RunningStat], w: int, minq, wndq: float): int =
       wnd += s[j].mean
       c += 1
 
+    echo i, "\t", wnd, "\t", c, "\t", s[i].mean, "<", minq , "\t", (wnd / float(c)), "<", wndq
     if s[i].mean < minq:
       return i
 
@@ -67,7 +68,7 @@ To read from STDIN, use - as filename.
 
 Qualified position:
   -w, --wnd INT          Sliding window size [default: 4]
-  -q, --wnd-qual FLOAT   Minimum quality in the sliding window [default: 30.0]
+  -q, --wnd-qual FLOAT   Minimum quality in the sliding window [default: 28.5]
   -z, --min-qual FLOAT   Stop the sliding windows when quality is below [default: 18.0]   
 
 Additional output:
@@ -77,6 +78,7 @@ Additional output:
 
 Other options:
   -v, --verbose          Verbose output
+  --debug                Debug mode
   -O, --offset INT       Quality encoding offset [default: 33]
   --help                 Show this help
 
@@ -85,6 +87,7 @@ Other options:
     verbose       = args["--verbose"] 
 
     let
+      debug      = bool(args["--debug"])
       addGC      = args["--gc"]
       skip       = parseInt($args["--skip"])
       qualOffset = parseInt($args["--offset"])
@@ -147,7 +150,7 @@ Other options:
         # End parsing file
 
         let encodingType = rangeToStr(stats.min + float(qualOffset), stats.max + float(qualOffset), ranges)
-        let stopPos = getStopPos(sttSeq, wndSize, minQual, wndQual)        
+        let stopPos = getStopPos(sttSeq, wndSize, minQual, wndQual, debug)        
         
         # Generate GC column if required
         let gcColumn = if addGC: "\t" &  fmt"{float(totalGC) / float(totalLength):.5f}"
