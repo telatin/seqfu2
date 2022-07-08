@@ -146,4 +146,4 @@ For the **Gastrointestinal reference genomes** (many short sequences):
 
 ## Screenshot
 
-![Screenshot of "seqfu stats"](img/screenshot-stats.svg "SeqFu stats")
+![Screenshot of "seqfu stats"]({{site.baseurl}}/img/screenshot-stats.svg "SeqFu stats")

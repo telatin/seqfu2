@@ -74,6 +74,6 @@ The following screenshot shows how quality scores are rendered using the differe
 
 ## Screenshot
 
-![Screenshot of "seqfu view, help"](img/screenshot-view.svg "SeqFu view")
+![Screenshot of "seqfu view, help"]({{site.baseurl}}/img/screenshot-view.svg "SeqFu view")
 
-![Screenshot of "seqfu view, action"](docs/img/screenshot-view-example.svg "SeqFu view example")
+![Screenshot of "seqfu view, action"]({{site.baseurl}}/img/screenshot-view-example.svg "SeqFu view example")

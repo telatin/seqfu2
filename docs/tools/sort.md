@@ -18,3 +18,7 @@ Options:
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
+
+## Screenshot
+
+![Screenshot of "seqfu sort"]({{site.baseurl}}/img/screenshot-sort.svg "SeqFu sort")

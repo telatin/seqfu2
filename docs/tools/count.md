@@ -82,6 +82,6 @@ MultiQC itself can be installed via Bioconda with `conda install -y -c bioconda 
 
 To understand how to use MultiQC, if you never did so, check their excellent [documentation](https://multiqc.info).
 
-## Screenshot
+### Screenshot
 
-![Screenshot of "seqfu count"](img/screenshot-count.svg "SeqFu cat")
+![Screenshot of "seqfu count"]({{site.baseurl}}/img/screenshot-count.svg "SeqFu cat")

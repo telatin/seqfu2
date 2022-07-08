@@ -83,3 +83,6 @@ Output:
 GTTTTTTTTTTCAGTAGTACGTGTTAGTAGCA
 ```
 
+## Screenshot
+
+![Screenshot of "seqfu rotate"]({{site.baseurl}}/img/screenshot-rotate.svg "SeqFu rotate")

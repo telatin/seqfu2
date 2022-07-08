@@ -28,4 +28,4 @@ Options:
 
 ## Screenshot
 
-![Screenshot of "seqfu tail"](img/screenshot-tail.svg "SeqFu tail")
+![Screenshot of "seqfu tail"]({{site.baseurl}}/img/screenshot-tail.svg "SeqFu tail")
