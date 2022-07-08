@@ -1,3 +1,41 @@
+## Release history
+
+
+### version 1.12.0
+
+* Expanded "fu-index": also reports run infos, not only indexes
+* Minor bugfix
+
+### version 1.11.0
+
+* Improved seqfu stats: added sorting option and JSON output, added GC content, improved test suite.
+* bugfix Seqfu tabulate -d (detabulate) was too stringent in requiring forward and reverse reads to have the same length 🤦
+
+### version 1.10.0
+* Added support for MetaPhage to seqfu metadata
+* Added --header to fu-tabcheck
+* Minor fixes
+
+### version 1.9.3
+
+* bugfix: seqfu cat controls the length of operations (truncate, trim)
+* improved: seqfu cat improved renaming options (basename and strip-name will now add a progressive number automatically)
+
+### version 1.9.2
+
+* Bugfix on Seqfu Detabulate
+
+### version 1.9.1
+
+* Fixes #8
+* This is a re-release finally with all the necessary commits
+
+### version 1.9.0
+
+* seqfu grep now has -w (word) and -f (full) match options. default behaviour unchanged.
+* seqfu cat now has a filter for Ns (--max-ns INT)
+* seqfu cat now has a filter for the total expected errors (--max-ee FLOAT), and can report --add-ee and --add-initial-ee
+* Added header line in seqfu metadata when using "irida" formats
 
 
 ### version 1.8.6

@@ -1,0 +1,2 @@
+* `seqfu cat` now can skip a set of initial sequences (`--skip-first INT`) or start from a specific sequence (`--jump-to`)
+* Minor updates in the test suite, github actions (including rich_codex) and documentation updates

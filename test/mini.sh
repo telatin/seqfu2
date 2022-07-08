@@ -50,7 +50,7 @@ then
   echo "Version not found"
   ERRORS=$((ERRORS+1))
 else
-  grep "$VERSION" $DIR/../seqfu.nimble
+  grep "$VERSION" "$DIR"/../seqfu.nimble
 fi
 
 PASS=0
@@ -106,7 +106,7 @@ else
 fi
 
 # Homopolymer
-HOMO="$(dirname \"$BIN\")"/fu-homocomp
+HOMO="$(dirname "$BIN")"/fu-homocomp
 if [[ -e "$HOMO" ]]; then
   ORIGINAL=$(grep . "$FILES"/homopolymer.fq | wc -c)
   COMPRESSED=$($HOMO "$FILES"/homopolymer.fq | wc -c )

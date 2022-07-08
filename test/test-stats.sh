@@ -46,7 +46,7 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
-CSV=$("$BINDIR"/seqfu stats --basename --csv "$iAmpli" > "$TMP")
+"$BINDIR"/seqfu stats --basename --csv "$iAmpli" > "$TMP"
 N50=$(cat "$TMP" | tail -n 1 | cut -f 5 -d ,)
 MSG="Checking CSV output N50 is 316, got: <$N50>"
 if [[ $N50 == 316 ]]; then
@@ -58,7 +58,7 @@ else
 fi
 
 # Nice output
-STATS=$("$BINDIR"/seqfu stats --basename --nice "$iAmpli" > "$TMP")
+"$BINDIR"/seqfu stats --basename --nice "$iAmpli" > "$TMP"
 WC=$(cat "$TMP" | grep . | wc -l | grep -o '[[:digit:]]\+')
 if [[ "$WC" == 5 ]]; then
     echo -e "$OK: Checking nice output expecting 5 lines: <$WC>"
@@ -70,7 +70,7 @@ fi
 
 # Json 
 TMP2=$(mktemp)
-STATS=$("$BINDIR"/seqfu stats --basename --json --multiqc "$TMP2" "$iAmpli" > "$TMP")
+"$BINDIR"/seqfu stats --basename --json --multiqc "$TMP2" "$iAmpli" > "$TMP"
 WC=$(cat "$TMP" | grep . | wc -l | grep -o '[[:digit:]]\+')
 WC2=$(cat "$TMP2" | grep . | wc -l | grep -o '[[:digit:]]\+')
 if [[ "$WC2" == 39 ]]; then

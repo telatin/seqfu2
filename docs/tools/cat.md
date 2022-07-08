@@ -11,8 +11,10 @@ Usage: cat [options] [<inputfile> ...]
 Concatenate multiple FASTA or FASTQ files.
 
 Options:
-  -k, --skip SKIP        Print one sequence every SKIP [default: 0]
-
+  -k, --skip STEP        Print one sequence every STEP [default: 0]
+  --skip-first INT       Skip the first INT records [default: -1]
+  --jump-to STR          Start from record named STR (overrides --skip-first)
+  
 Sequence name:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -z, --strip-name       Remove the original sequence name
@@ -44,6 +46,7 @@ Filtering:
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
   --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
                          Negative values to print the last INT bases
+  --max-bp INT           Stop printing after INT bases [default: 0]
 
 Output:
   --fasta                Force FASTA output
@@ -51,6 +54,7 @@ Output:
   --list                 Output a list of sequence names 
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
+  --debug                Debug output
   -h, --help             Show this help
 ```
 

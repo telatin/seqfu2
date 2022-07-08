@@ -38,7 +38,7 @@ Options:
 The quality scores are rendered as colored bars (grey, red, yellow, green) of different heights.
 Matching oligos are rendered as blue arrows (forward) or red arrows (reverse).
 
-![View]({{site.baseurl}}/img/view.png)
+![Screenshot of "seqfu view, action"]({{site.baseurl}}/img/screenshot-view-example.svg "SeqFu view example")
 
 
 ## Important hints
@@ -76,4 +76,3 @@ The following screenshot shows how quality scores are rendered using the differe
 
 ![Screenshot of "seqfu view, help"]({{site.baseurl}}/img/screenshot-view.svg "SeqFu view")
 
-![Screenshot of "seqfu view, action"]({{site.baseurl}}/img/screenshot-view-example.svg "SeqFu view example")

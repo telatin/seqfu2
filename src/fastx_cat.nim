@@ -22,8 +22,10 @@ Usage: cat [options] [<inputfile> ...]
 Concatenate multiple FASTA or FASTQ files.
 
 Options:
-  -k, --skip SKIP        Print one sequence every SKIP [default: 0]
-
+  -k, --skip STEP        Print one sequence every STEP [default: 0]
+  --skip-first INT       Skip the first INT records [default: -1]
+  --jump-to STR          Start from record named STR (overrides --skip-first)
+  
 Sequence name:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -z, --strip-name       Remove the original sequence name
@@ -55,6 +57,7 @@ Filtering:
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
   --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
                          Negative values to print the last INT bases
+  --max-bp INT           Stop printing after INT bases [default: 0]
 
 Output:
   --fasta                Force FASTA output
@@ -62,6 +65,7 @@ Output:
   --list                 Output a list of sequence names 
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
+  --debug                Debug output
   -h, --help             Show this help
 
   """, version=version(), argv=argv)
@@ -77,10 +81,14 @@ Output:
       EE_DECIMAL_DIGITS = 4
 
     var
+      newMod = 0
       appendToName: string
       appendSuffixToName: bool
       formatList: bool
+      maxBp: int
       skip   : int
+      skip_first : int
+      jump_to: string
       prefix : string
       files  : seq[string]  
       printBasename: bool 
@@ -93,14 +101,19 @@ Output:
       basenameSeparatorString: string
       maxNs: int
       maxEe: float
-
+      debug: bool
     try:
+      debug = bool(args["--debug"])
       appendToName = $args["--append"]
       appendSuffixToName = if len(appendToName) > 0: true
                            else: false
       basenameSeparatorString = $args["--basename-sep"]
       formatList = args["--list"]
       skip =  parseInt($args["--skip"])
+      skip_first = parseInt($args["--skip-first"])
+      maxBp = parseint($args["--max-bp"])
+      jump_to = if args["--jump-to"]: $args["--jump-to"]
+                else: ""
       printBasename = args["--basename"] 
       separator = $args["--sep"]
       minSeqLen = parseInt($args["--min-len"])
@@ -143,23 +156,51 @@ Output:
 
       var 
         f = xopen[GzFile](filename)
-        y = 0
         r: FastxRecord
+        y = 0
         
       defer: f.close()
       var 
         currentSeqCount    = 0
         currentPrintedSeqs = 0
+        totBp              = 0
       
-      
+
+      if len(jump_to) > 0:
+        while f.readFastx(r):
+          if r.name == jump_to:
+            break
+      elif skip_first >= 0:
+        # Before introducing --skip-first the first, when using --skip, the first record was skipped.
+        # This is no longer ideal, but to allow backwards compatibility, we default --skip-first -1
+        # to have the old behavior, any other value will be used as the new behaviour o starting from
+        # the first record when --skip-first 0 and --skip INT>0 is used.
+        newMod = 1
+        y = 1
+        if skip_first > 0:
+          var j = 0
+          while f.readFastx(r):
+            j += 1
+            if j >= skip_first:
+                break
+            
+
+            
       while f.readFastx(r):
+        if maxBp > 0 and totBp > maxBp:
+          if debug:
+            stderr.writeLine("Stopping at maxBp: ", totBp, ">", maxBp)
+          break
+
         currentSeqCount += 1
 
+        #if currentSeqCount < 0:
+        #  continue
         # Skip sequences [store in y==0 the ok to print]
         if skip > 0:
           y = currentSeqCount mod skip
 
-        if y == 0:
+        if y == newMod:
           # Print sequence
           currentPrintedSeqs += 1
           
@@ -225,7 +266,10 @@ Output:
 
           # Checkpoint: sequence survived
           totalPrintedSeqs   += 1
+          totBp += len(r.seq)
 
+
+          
           ## SEQUENCE NAME
           var
             newName = ""
