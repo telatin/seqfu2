@@ -45,12 +45,12 @@ done
 # Check version
 
 VERSION=$("$BIN" version)
-if [[ $VERSION == "" ]];
+if [[ "$VERSION" == "" ]];
 then
   echo "Version not found"
   ERRORS=$((ERRORS+1))
 else
-  grep $VERSION $DIR/../seqfu.nimble
+  grep "$VERSION" $DIR/../seqfu.nimble
 fi
 
 PASS=0
@@ -106,7 +106,7 @@ else
 fi
 
 # Homopolymer
-HOMO="$(dirname "$BIN")/fu-homocomp"
+HOMO="$(dirname \"$BIN\")"/fu-homocomp
 if [[ -e "$HOMO" ]]; then
   ORIGINAL=$(grep . "$FILES"/homopolymer.fq | wc -c)
   COMPRESSED=$($HOMO "$FILES"/homopolymer.fq | wc -c )
@@ -166,7 +166,7 @@ fi
 
 
 ## Sort by size (asc)
-OUTPUT="$(""$BIN"" sort --asc ""$iSort"" | head -n 1| cut -c 2-6)"
+OUTPUT=$("$BIN" sort --asc "$iSort" | head -n 1| cut -c 2-6)
 if [[ $OUTPUT == 'short' ]]; then
   echo -e "$OK: Sort by size"
   PASS=$((PASS+1))
@@ -315,13 +315,13 @@ fi
 echo ""
 for TEST in "$DIR"/test-*.sh;
 do
-  BASE=$(basename "$TEST"  | cut -f 1 -d .)
+  #BASE=$(basename "$TEST"  | cut -f 1 -d .)
   PREVPASS=$PASS
   PREVERR=$ERRORS
 
   if [[ -e $TEST ]]; then
     echo ""
-    separator " Testing module: $(basename $TEST .sh | cut -f 2 -d - )"
+    separator " Testing module: $(basename "$TEST" .sh | cut -f 2 -d - )"
     source "$TEST"
 
     if [[ $ERRORS -gt $PREVERR ]];

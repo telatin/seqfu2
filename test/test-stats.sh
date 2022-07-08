@@ -9,7 +9,7 @@ SEQS=$(cat "$TMP" | tail -n 1 | cut -f 2)
 TOT=$(cat "$TMP" | tail -n 1 | cut -f 3)
 N50=$(cat "$TMP" | tail -n 1 | cut -f 5)
 
-MSG="Checking normal output expecting 2 lines: <"$WC">"
+MSG="Checking normal output expecting 2 lines: <$WC>"
 if [[ $WC == 2 ]]; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
@@ -46,7 +46,7 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
-CSV=$("$BINDIR"/seqfu stats --basename --csv $iAmpli > $TMP)
+CSV=$("$BINDIR"/seqfu stats --basename --csv "$iAmpli" > "$TMP")
 N50=$(cat "$TMP" | tail -n 1 | cut -f 5 -d ,)
 MSG="Checking CSV output N50 is 316, got: <$N50>"
 if [[ $N50 == 316 ]]; then
@@ -58,7 +58,7 @@ else
 fi
 
 # Nice output
-STATS=$("$BINDIR"/seqfu stats --basename --nice $iAmpli > $TMP)
+STATS=$("$BINDIR"/seqfu stats --basename --nice "$iAmpli" > "$TMP")
 WC=$(cat "$TMP" | grep . | wc -l | grep -o '[[:digit:]]\+')
 if [[ "$WC" == 5 ]]; then
     echo -e "$OK: Checking nice output expecting 5 lines: <$WC>"
@@ -95,9 +95,9 @@ fi
 # Sort by N50 descending
 "$BINDIR"/seqfu stats --basename  --sort n50 --reverse  "$iAmpli" "$iSort" "$iMini" > "$TMP2"
 
-FILT=$(cat $TMP | head -n 2 | tail -n 1 | cut -f 1)
+FILT=$(cat "$TMP" | head -n 2 | tail -n 1 | cut -f 1)
 MSG="Checking default starting  by 'filt': <$FILT>"
-if [[ $FILT == "filt" ]];  then
+if [[ "$FILT" == "filt" ]];  then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
 else
@@ -107,7 +107,7 @@ fi
 
 FILT=$(cat $TMP2 | head -n 2 |tail -n 1 | cut -f 1)
 MSG="Checking default N50 starting by 'sort': <$FILT>"
-if [[ $FILT == "sort" ]];  then
+if [[ "$FILT" == "sort" ]];  then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
 else
@@ -145,7 +145,7 @@ if [[ $(head -n 1 "$TMP" | cut -f 3 ) == 3300 ]]; then
    echo -e "$OK: $MSG"
    PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG:$(head -n 1 $TMP | cut -f 3 ) "
+    echo -e "$FAIL: $MSG:$(head -n 1 "$TMP" | cut -f 3 ) "
     ERRORS=$((ERRORS+1))
 fi
 

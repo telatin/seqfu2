@@ -23,13 +23,13 @@ else
 fi
 
 DEST="$SCRIPT_DIR/../releases/zips/";
-mkdir -p $DEST
+mkdir -p "$DEST"
 
 echo "Last version online: $VER"
 echo "Local version: $LOCALVER"
 nimble build
 LOCAL_RELEASE=$(./bin/seqfu version)
-zip -r $DEST/SeqFu-v${LOCAL_RELEASE}-${PLAT}.zip bin/*
+zip -r "$DEST"/SeqFu-v"${LOCAL_RELEASE}"-"${PLAT}".zip bin/*
 
 echo "Last version online: $VER"
 echo "Local version: $LOCAL_RELEASE"

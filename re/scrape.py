@@ -2,7 +2,10 @@
 """
 Extract enzyme table from wikipedia page.
 Input: a text file with the list of Enzyme tables URLs
+
+Internal use only / Dev
 """
+
 #Note: requires lxml
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -15,7 +18,7 @@ import os, sys
 def siteString(site):
     # site: 5' GAATTC 3' CTTAAG
     # cutsite: 5' ---G   AATTC--- 3'  3' ---CTTAA   G--- 5'
-    if type(site) != str:
+    if not isinstance(site, str):
         return ""
     
 
@@ -140,5 +143,3 @@ if __name__ == "__main__":
         
         df.to_markdown("enzyme_table.md")
         df.to_csv("enzyme_table.csv")
-            
-
