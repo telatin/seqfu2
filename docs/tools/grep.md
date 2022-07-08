@@ -82,3 +82,7 @@ We can also use IUPAC bases (N for any base, B for C, G or A...):
 ```
 seqfu -o TTTTNT file.fasta
 ```
+
+## Screenshot
+
+![Screenshot of "seqfu grep"](img/screenshot-grep.svg "SeqFu grep")

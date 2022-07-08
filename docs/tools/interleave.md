@@ -70,3 +70,8 @@ IIIIIIIIIIIIIIII          IIIIIIII                  IIIIIIIIIIIIIIIIIII
                                                     +
                                                     IIIIIIII
 ```
+
+
+## Screenshot
+
+![Screenshot of "seqfu interleave"](img/screenshot-interleave.svg "SeqFu interleave")

@@ -52,3 +52,8 @@ CTTGGTCATTTAGAGGAAGTAAGAGAGAAATGTATAAACTCATAATTGACGAATGATAATTGTTATTGAAGTTTTTGTAA
 
 If the input files were already dereplicated printing the "size" of the cluster, `derep` will sum the
 size values.
+
+
+## Screenshot
+
+![Screenshot of "seqfu derep"](img/screenshot-derep.svg "SeqFu derep")

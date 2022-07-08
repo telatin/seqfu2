@@ -2,12 +2,13 @@
 
 # Single file
 TMP=$(mktemp)
+echo "    Temp file: $TMP"
 "$BINDIR"/fu-index "$iPair1" "$iPair2" > "$TMP"
 
 
 MSG="Checking output expecting 2 lines:"
 EXP=2
-OBS=$(cat "$TMP" | wc -l)
+OBS=$(cat "$TMP" | wc -l | grep -o "[[:digit:]]\+" | head -n 1)
 if [[ $OBS -eq $EXP ]]; then
     echo -e "$OK: $MSG: exp=$EXP obs=$OBS"
     PASS=$((PASS+1))
@@ -15,7 +16,7 @@ else
     echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
     cat "$TMP"
     echo ---
-    cat "$TMP" | wc -l | '[[:digit:]]\+'
+    #cat "$TMP" | wc -l | '[[:digit:]]\+'
     ERRORS=$((ERRORS+1))
 fi
  
@@ -27,7 +28,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
+    echo -e "$FAIL: $MSG: $EXP / $OBS"
     ERRORS=$((ERRORS+1))
 fi
  
@@ -82,12 +83,12 @@ fi
 
 MSG="Checking output expecting 1 line:"
 EXP=1
-OBS=$(cat "$TMP" | wc -l)
+OBS=$(wc -l "$TMP" | grep -o '[[:digit:]]\+'  | head -n 1)
 if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
+    echo -e "$FAIL: $MSG: exp=$EXP / got=$OBS"
     ERRORS=$((ERRORS+1))
 fi
 

@@ -28,6 +28,6 @@ getversion
 
 mkdir -p "$DESTDIR"
 ZIP="$DESTDIR"/${programName}-${new_tag}-${os_tag}.zip
-zip -j $ZIP "$BINDIR"/*
+zip -j "$ZIP" "$BINDIR"/*
 
 gh release upload ${new_tag} "$ZIP"

@@ -50,3 +50,8 @@ The following examples shows the output of `seqfu head -n 10`, and `seqfu head -
 the standard input if no filenames are provided, or `-` is added to the list).
 The output will be in the same format as the input, unless `--fasta` or `--fastq`
 are specified to force a different output.
+
+
+## Screenshot
+
+![Screenshot of "seqfu head"](img/screenshot-head.svg "SeqFu head")

@@ -77,3 +77,8 @@ IIIIIIIIIIIIIIII          IIIIIIII                  IIIIIIIIIIIIIIIIIII
                                                     +
                                                     IIIIIIII
 ```
+
+
+## Screenshot
+
+![Screenshot of "seqfu deinterleave"](img/screenshot-deinterleave.svg "SeqFu deinterleave")

@@ -25,4 +25,7 @@ Options:
   -h, --help             Show this help
 ```
 
-  
+
+## Screenshot
+
+![Screenshot of "seqfu tail"](img/screenshot-tail.svg "SeqFu tail")

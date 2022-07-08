@@ -22,3 +22,4 @@ multiqc/*
 noise/
 .vscode/
 rich_codex_*.log
+init.sh

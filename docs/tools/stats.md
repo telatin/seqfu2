@@ -144,3 +144,6 @@ For the **Gastrointestinal reference genomes** (many short sequences):
 | `n50 -x $FILE` | 76.377 ± 1.990 | 74.891 | 78.638 | 20.14 ± 0.68 |
 
 
+## Screenshot
+
+![Screenshot of "seqfu stats"](img/screenshot-stats.svg "SeqFu stats")

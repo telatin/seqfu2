@@ -70,3 +70,10 @@ If you see the Euro character (€) then your terminal fully supports UTF-8. If 
 The following screenshot shows how quality scores are rendered using the different options:
 
 ![Quality representation]({{site.baseurl}}/img/encoding.png)
+
+
+## Screenshot
+
+![Screenshot of "seqfu view, help"](img/screenshot-view.svg "SeqFu view")
+
+![Screenshot of "seqfu view, action"](docs/img/screenshot-view-example.svg "SeqFu view example")
