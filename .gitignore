@@ -21,3 +21,4 @@ stat_Homo_sapiens.md
 multiqc/*
 noise/
 .vscode/
+rich_codex_*.log
