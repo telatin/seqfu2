@@ -2,7 +2,7 @@
 
 # Single file
 TMP=$(mktemp)
-STATS=$("$BINDIR"/seqfu stats --basename "$iAmpli" > "$TMP")
+"$BINDIR"/seqfu stats --basename "$iAmpli" > "$TMP"
 
 WC=$(cat "$TMP" | wc -l | grep -o '[[:digit:]]\+')
 SEQS=$(cat "$TMP" | tail -n 1 | cut -f 2)
@@ -95,7 +95,8 @@ fi
 # Sort by N50 descending
 "$BINDIR"/seqfu stats --basename  --sort n50 --reverse  "$iAmpli" "$iSort" "$iMini" > "$TMP2"
 
-FILT=$(cat "$TMP" | head -n 2 | tail -n 1 | cut -f 1)
+#FILT
+cat "$TMP" | head -n 2 | tail -n 1 | cut -f 1
 MSG="Checking default starting  by 'filt': <$FILT>"
 if [[ "$FILT" == "filt" ]];  then
     echo -e "$OK: $MSG"
