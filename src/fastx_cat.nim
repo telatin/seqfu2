@@ -187,10 +187,7 @@ Output:
 
             
       while f.readFastx(r):
-        if maxBp > 0 and totBp > maxBp:
-          if debug:
-            stderr.writeLine("Stopping at maxBp: ", totBp, ">", maxBp)
-          break
+
 
         currentSeqCount += 1
 
@@ -264,9 +261,15 @@ Output:
           if maxEe >= 0.0 and get_ee(r.qual) > maxEe:
             continue
 
+          totBp += len(r.seq)
+          if maxBp > 0 and totBp > maxBp:
+            if debug:
+              stderr.writeLine("Stopping at maxBp: ", totBp, ">", maxBp)
+            break
+          
           # Checkpoint: sequence survived
           totalPrintedSeqs   += 1
-          totBp += len(r.seq)
+          
 
 
           

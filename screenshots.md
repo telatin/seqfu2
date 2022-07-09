@@ -44,8 +44,16 @@
 
 ![`./bin/seqfu view --help`](docs/img/screenshot-view.svg "SeqFu view")
 ![`./bin/seqfu view data/primers/small.fq -o CCTACGGGAG -r ATGAGCGTCTCG`](docs/img/screenshot-view-example.svg "SeqFu view example")
+
+./bin/seqfu view data/qualities.fq
+
 ![`./bin/seqfu view data/qualities.fq`](docs/img/screenshot-view-qual.svg "SeqFu view qualities")
+
+./bin/seqfu view --ascii data/qualities.fq
+
 ![`./bin/seqfu view --ascii data/qualities.fq`](docs/img/screenshot-view-qual-ascii.svg "SeqFu view qualities")
+
+./bin/seqfu view --qual-chars data/qualities.fq
 ![`./bin/seqfu view --qual-chars data/qualities.fq`](docs/img/screenshot-view-raw.svg "SeqFu view encoded quality")
 
 ## rc

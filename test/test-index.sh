@@ -73,7 +73,7 @@ if [[ "$OBS" == "$EXP" ]]; then
     echo -e "$OK: $MSG: $EXP / $OBS"
     PASS=$((PASS+1))
 else
-    echo -e ""$FAIL: $MSG: $EXP / $OBS: $(cat $TMP)""
+    echo -e "$FAIL: $MSG: $EXP / $OBS: $(cat "$TMP")"
     ERRORS=$((ERRORS+1))
 fi
 
