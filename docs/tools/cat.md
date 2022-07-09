@@ -13,7 +13,8 @@ Concatenate multiple FASTA or FASTQ files.
 Options:
   -k, --skip STEP        Print one sequence every STEP [default: 0]
   --skip-first INT       Skip the first INT records [default: -1]
-  --jump-to STR          Start from record named STR (overrides --skip-first)
+  --jump-to STR          Start from the record after the one named STR
+                         (overrides --skip-first!)
   
 Sequence name:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
