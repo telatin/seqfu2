@@ -95,8 +95,7 @@ fi
 # Sort by N50 descending
 "$BINDIR"/seqfu stats --basename  --sort n50 --reverse  "$iAmpli" "$iSort" "$iMini" > "$TMP2"
 
-#FILT
-cat "$TMP" | head -n 2 | tail -n 1 | cut -f 1
+FILT=$(cat "$TMP" | head -n 2 | tail -n 1 | cut -f 1)
 MSG="Checking default starting  by 'filt': <$FILT>"
 if [[ "$FILT" == "filt" ]];  then
     echo -e "$OK: $MSG"
@@ -106,7 +105,7 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
-FILT=$(cat $TMP2 | head -n 2 |tail -n 1 | cut -f 1)
+FILT=$(cat "$TMP2" | head -n 2 |tail -n 1 | cut -f 1)
 MSG="Checking default N50 starting by 'sort': <$FILT>"
 if [[ "$FILT" == "sort" ]];  then
     echo -e "$OK: $MSG"
