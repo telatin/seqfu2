@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PY=$(command -v python)
-if [[ -e "$BINDIR"/fu-split ]] && [[ $PY == 0 ]]; then
+if [[ -e "$BINDIR"/fu-split ]] && [[ $? == 0 ]]; then
 
 python --version
 
@@ -121,4 +121,6 @@ do
 done
 rm -rf "$OUTDIR"
 
+else
+    echo -e "SKIP: python not found ($PY) or fu-split not in $BINDIR"
 fi
