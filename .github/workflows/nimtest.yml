@@ -29,4 +29,4 @@ jobs:
         uses: skynet-core/nim@v1.2
         with:
           # Command to run
-          command: sudo apk add zlib-dev && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && ./bin/seqfu --version && bash test/mini.sh
+          command: sudo apk add zlib-dev && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && bash test/mini.sh
