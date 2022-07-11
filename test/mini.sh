@@ -12,7 +12,7 @@ iPair2="$FILES"/illumina_2.fq.gz
 iAmpli="$FILES"/filt.fa.gz
 iSort="$FILES"/sort.fa
 iMini="$FILES"/target.fa
-
+i16S="$FILES"/primers/16S_R1.fq.gz
 OK='\033[0;32mOK\033[0m'
 FAIL='\033[0;31mFAIL\033[0m'
 STAR='\033[1;34m*\033[0m'

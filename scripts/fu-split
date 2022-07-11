@@ -44,7 +44,8 @@ class SplitOpt:
         format = None
         if self.output_string is None:
             return None, None, None, None
-        m = re.match(r'^(.*?)(%s{3,})(.*)$' % self.char, self.output_string)
+        dirname, filename = os.path.split(self.output_string)
+        m = re.match(r'^(.*?)(%s{3,})(.*)$' % self.char, filename)
         if ".fasta" in self.output_string or ".fa" in self.output_string:
             format = "--fasta"
         elif ".fastq" in self.output_string or ".fq" in self.output_string:
@@ -52,7 +53,7 @@ class SplitOpt:
         if m is None:
             return self.output_string, DEFAULT_COUNTER_LEN, '', None
         else:
-            return m.group(1), len(m.group(2)), m.group(3), format
+            return os.path.join(dirname, m.group(1)), len(m.group(2)), m.group(3), format
 
 def checkSeqfuVersion(minver="1.13.0", verbose=False):
     cmd = ["seqfu", "--version"]
@@ -168,7 +169,7 @@ def runSingleCommand(cmd1, output, opt):
 def last_seq(file):
     cmd = ["seqfu", "tail", "-n", "1", file]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return p.stdout.read().decode("utf-8").split("\n")[0].strip()[1:]
+    return p.stdout.read().decode("utf-8").split("\n")[0].split("\t")[0].split(" ")[0].strip()[1:]
 
 def splitFileBySeqs(input, num_seqs, opt):
     """
@@ -210,21 +211,24 @@ def splitFileByBp(input, bp, opt):
     n = 0
     while not finished:
         n += 1
+
         output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
+        if opt.verbose:
+            print("Step: ", n, " to: ", output.name, " (last: "+fromSeq+")" if fromSeq else '', file=sys.stderr)
+  
         cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
         run  = runSingleCommand(cat, output, opt)
         
-        last = last_seq(output.name)
-        if opt.verbose:
-            print("Step: ", n, " to: ", output.name, " (last: "+last+")" if last else '(end)', file=sys.stderr)
-        
+        last = last_seq(output.name)      
         if last != "":
             fromArg = "--jump-to"
             fromSeq = last
         else:
             # Remove output.name
             output.close()
-            os.remove(output.name)
+            # if empty: remove file
+            if os.stat(output.name).st_size == 0:
+                os.remove(output.name)
             finished = True
 
 def splitFileInN(input, n, opt):
@@ -245,6 +249,15 @@ def splitFileInN(input, n, opt):
             os.wait()
             processes.difference_update([
                 p for p in processes if p.poll() is not None])
+        
+        # Wait for all processes to finish
+        for p in processes:
+            if opt.debug:
+                print("Waiting for: ", p.pid, file=sys.stderr)
+            p.wait()
+            if p.returncode != 0:
+                print("Error:", p.stderr.read().decode("utf-8"), file=sys.stderr)
+                return False
 
 
 if __name__ == "__main__":
