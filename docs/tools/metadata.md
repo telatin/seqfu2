@@ -126,4 +126,4 @@ sample2,123,sample2_R1.fq.gz,sample2_R2.fq.gz
 
 ## Screenshot
 
-![Screenshot of "seqfu metadata"](img/screenshot-metadata.svg "SeqFu metadata")
+![Screenshot of "seqfu metadata"]({{site.baseurl}}/img/screenshot-metadata.svg "SeqFu metadata")

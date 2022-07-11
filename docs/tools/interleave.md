@@ -74,4 +74,4 @@ IIIIIIIIIIIIIIII          IIIIIIII                  IIIIIIIIIIIIIIIIIII
 
 ## Screenshot
 
-![Screenshot of "seqfu interleave"](img/screenshot-interleave.svg "SeqFu interleave")
+![Screenshot of "seqfu interleave"]({{site.baseurl}}/img/screenshot-interleave.svg "SeqFu interleave")

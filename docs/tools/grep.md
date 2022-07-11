@@ -85,4 +85,4 @@ seqfu -o TTTTNT file.fasta
 
 ## Screenshot
 
-![Screenshot of "seqfu grep"](img/screenshot-grep.svg "SeqFu grep")
+![Screenshot of "seqfu grep"]({{site.baseurl}}/img/screenshot-grep.svg "SeqFu grep")

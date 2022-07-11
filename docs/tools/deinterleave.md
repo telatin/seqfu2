@@ -81,4 +81,4 @@ IIIIIIIIIIIIIIII          IIIIIIII                  IIIIIIIIIIIIIIIIIII
 
 ## Screenshot
 
-![Screenshot of "seqfu deinterleave"](img/screenshot-deinterleave.svg "SeqFu deinterleave")
+![Screenshot of "seqfu deinterleave"]({{site.baseurl}}/img/screenshot-deinterleave.svg "SeqFu deinterleave")
