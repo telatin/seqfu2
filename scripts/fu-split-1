@@ -18,7 +18,9 @@ DEFAULT_COUNTER_LEN = 5
 class SplitOpt:
     def __init__(self, args):
         self.threads = int(args.threads) if args.threads is not None else 1
-        self.verbose = args.verbose
+        self.verbose = True if args.verbose or args.debug else False
+        self.debug   = args.debug
+        self.char    = args.number_char if args.number_char is not None else '0'
         self.output_string = args.output
         self.prefix, self.num_len, self.suffix, self.format = self.parse_output_string()
         self.input = args.input
@@ -42,7 +44,8 @@ class SplitOpt:
         format = None
         if self.output_string is None:
             return None, None, None, None
-        m = re.match(r'^(.*?)(0{3,})(.*)$', self.output_string)
+        dirname, filename = os.path.split(self.output_string)
+        m = re.match(r'^(.*?)(%s{3,})(.*)$' % self.char, filename)
         if ".fasta" in self.output_string or ".fa" in self.output_string:
             format = "--fasta"
         elif ".fastq" in self.output_string or ".fq" in self.output_string:
@@ -50,8 +53,51 @@ class SplitOpt:
         if m is None:
             return self.output_string, DEFAULT_COUNTER_LEN, '', None
         else:
-            return m.group(1), len(m.group(2)), m.group(3), format
+            return os.path.join(dirname, m.group(1)), len(m.group(2)), m.group(3), format
 
+def checkSeqfuVersion(minver="1.13.0", verbose=False):
+    cmd = ["seqfu", "--version"]
+    try:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        version = p.stdout.read().decode("utf-8").split("\n")[0].strip().split(".")
+
+        if len(version) < 3:
+            return False        
+
+        if verbose:
+            print("[cmd] seqfu version: %s" % '.'.join(version), file=sys.stderr)
+
+
+        # Compare semver
+        if version[0] < minver.split(".")[0]:
+            return False
+        elif version[0] == minver.split(".")[0]:
+            if version[1] < minver.split(".")[1]:
+                return False
+            elif version[1] == minver.split(".")[1]:
+                if version[2] < minver.split(".")[2]:
+                    return False
+                return True
+        else:
+            return True
+    except Exception as e:
+        print("Error: `seqfu` not found:", e, file=sys.stderr)
+        return False
+
+def parse_bases(bases):
+    """
+    Receive a number or number with suffix (kb, gb, tb)
+    """
+    if bases.isdigit():
+        return int(bases)
+    else:
+        if bases.lower().endswith("b"):
+            bases = bases[:-1]
+        elif bases.lower().endswith("bp"):
+            bases = bases[:-2]
+        suffix = bases[-1].lower()
+
+<<<<<<< HEAD
 def checkSeqfuVersion(minver="1.13.0", verbose=False):
     cmd = ["seqfu", "--version"]
     try:
@@ -83,15 +129,45 @@ def checkSeqfuVersion(minver="1.13.0", verbose=False):
         print("Error: `seqfu` not found:", e, file=sys.stderr)
         return False
 
+=======
+        if suffix == "k":
+            return int(bases[:-1]) * 1000
+        elif suffix == "m":
+            return int(bases[:-1]) * 1000 * 1000
+        elif suffix == "g":
+            return int(bases[:-1]) * 1000 * 1000 * 1000
+        elif suffix == "t":
+            return int(bases[:-1]) * 1000 * 1000 * 1000 * 1000
+        else:
+            print("Error: Invalid base number: %s" % bases, file=sys.stderr)
+            return int(bases)
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
 def removeNone(list):
     return [x for x in list if x is not None]
 
+def delFile(filename, verbose=False):
+    if os.path.exists(filename):
+        try:
+            if verbose:
+                print("[delete] rm %s" % filename, file=sys.stderr)
+            os.remove(filename)
+        except Exception as e:
+            print("Error: Cannot remove file: %s" % filename, file=sys.stderr)
+            print(e, file=sys.stderr)
+            return False
+    else:
+        print("Error: File %s not found" % filename, file=sys.stderr)
+        return False
 def runcmds(cmd1, cmd2, output, opt):
     cmd1 = removeNone(cmd1)
     cmd2 = removeNone(cmd2)
     
     try:
+<<<<<<< HEAD
         if opt.verbose:
+=======
+        if opt.debug:
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
             print("[cmd] Running: %s" % ' '.join(cmd1), file=sys.stderr)
         e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
@@ -100,7 +176,11 @@ def runcmds(cmd1, cmd2, output, opt):
 
     if opt.compress:
         try:
+<<<<<<< HEAD
             if opt.verbose:
+=======
+            if opt.debug:
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
                 print("[cmd] Running: %s and gzip" % ' '.join(cmd2), file=sys.stderr)
             e2   = subprocess.Popen(cmd2, stdin=e1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             subprocess.Popen(["gzip", "-c"], stdin=e2.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
@@ -109,7 +189,11 @@ def runcmds(cmd1, cmd2, output, opt):
             return False
     else:
         try:
+<<<<<<< HEAD
             if opt.verbose:
+=======
+            if opt.debug:
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
                 print("[cmd] Running: %s" % ' '.join(cmd2), file=sys.stderr)
             subprocess.Popen(cmd2, stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
@@ -117,20 +201,33 @@ def runcmds(cmd1, cmd2, output, opt):
             return False
     return True
 
-def runcmd(cmd1, output, opt):
+def runSingleCommand(cmd1, output, opt):
     cmd1 = removeNone(cmd1)
     
-
     if opt.compress:
         try:
+<<<<<<< HEAD
             e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE)
+=======
+            if opt.debug:
+                print("[cmd] Running: %s and gzip" % ' '.join(cmd1), file=sys.stderr)
+            e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if opt.debug:
+                print("# ", e1.stderr, file=sys.stderr)
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
             subprocess.Popen(["gzip", "-c"], stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
             print("Error:", e, file=sys.stderr)
             return False
     else:
         try:
+<<<<<<< HEAD
             e1 = subprocess.Popen(cmd1, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
+=======
+            if opt.debug:
+                print("[cmd] Running: %s" % ' '.join(cmd1), file=sys.stderr)
+            subprocess.Popen(cmd1, stderr=subprocess.PIPE, stdout=output).communicate()
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
         except Exception as e:
             print("Error:", e, file=sys.stderr)
             return False
@@ -139,7 +236,11 @@ def runcmd(cmd1, output, opt):
 def last_seq(file):
     cmd = ["seqfu", "tail", "-n", "1", file]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+<<<<<<< HEAD
     return p.stdout.read().decode("utf-8").split("\n")[0].strip()[1:]
+=======
+    return p.stdout.read().decode("utf-8").split("\n")[0].split("\t")[0].split(" ")[0].strip()[1:]
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
 
 def splitFileBySeqs(input, num_seqs, opt):
     """
@@ -160,7 +261,11 @@ def splitFileBySeqs(input, num_seqs, opt):
         last = last_seq(output.name)
        
         if opt.verbose:
+<<<<<<< HEAD
             print("Step: ", n, " to: ", output.name, " (last:", last, ")", file=sys.stderr)
+=======
+            print("Step: ", n, " to: ", output.name, " (last: "+last+")" if last else '(end)', file=sys.stderr)
+>>>>>>> d83dc1c8d436011b49c00d7e389a2da1a4f4f23a
         
         if last != "":
             fromArg = "--jump-to"
@@ -168,7 +273,7 @@ def splitFileBySeqs(input, num_seqs, opt):
         else:
             # Remove output.name
             output.close()
-            os.remove(output.name)
+            delFile(output.name, opt.debug)
             finished = True
         
 def splitFileByBp(input, bp, opt):
@@ -180,23 +285,25 @@ def splitFileByBp(input, bp, opt):
     fromSeq = None
     n = 0
     while not finished:
-
         n += 1
+
         output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
-        cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
-        run  = runcmd(cat, output, opt)
-        
-        last = last_seq(output.name)
         if opt.verbose:
-            print("Step: ", n, "Last:", last, file=sys.stderr)
+            print("Step: ", n, " to: ", output.name, " (last: "+fromSeq+")" if fromSeq else '', file=sys.stderr)
+  
+        cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
+        run  = runSingleCommand(cat, output, opt)
         
+        last = last_seq(output.name)      
         if last != "":
             fromArg = "--jump-to"
             fromSeq = last
         else:
             # Remove output.name
             output.close()
-            os.remove(output.name)
+            # if empty: remove file
+            
+            delFile(output.name, opt.debug)
             finished = True
 
 def splitFileInN(input, n, opt):
@@ -217,6 +324,15 @@ def splitFileInN(input, n, opt):
             os.wait()
             processes.difference_update([
                 p for p in processes if p.poll() is not None])
+        
+        # Wait for all processes to finish
+        for p in processes:
+            if opt.debug:
+                print("Waiting for: ", p.pid, file=sys.stderr)
+            p.wait()
+            if p.returncode != 0:
+                print("Error:", p.stderr.read().decode("utf-8"), file=sys.stderr)
+                return False
 
 
 if __name__ == "__main__":
@@ -228,12 +344,14 @@ if __name__ == "__main__":
     method = parser.add_mutually_exclusive_group(required=True)
     method.add_argument("-n", "--num-files", help="Number of desired files", type=int)
     method.add_argument("-s", "--num-seqs", help="Number of sequences per file", type=int)
-    method.add_argument("-b", "--num-bases", help="Number of bases per file", type=int)
+    method.add_argument("-b", "--num-bases", help="Number of bases per file", type=str)
 
     other = parser.add_argument_group("Other options")
     other.add_argument("--threads", help="Number of threads (-n only) [default: %(default)s", default=8, type=int)
+    other.add_argument("--number-char", help="Character used to represent the progressive number in output string [default: %(default)s", default="0", type=str)
     other.add_argument("--compress", help="Force compression of the output files", action="store_true")
     other.add_argument("--verbose", help="Verbose mode", action="store_true")
+    other.add_argument("--debug", help="Debug mode", action="store_true")
 
     # version
     parser.add_argument("--version", action="version", version="%(prog)s " + __VERSION__)
@@ -253,4 +371,5 @@ if __name__ == "__main__":
     elif args.num_seqs is not None:
         splitFileBySeqs(opt.input, args.num_seqs, opt)
     elif args.num_bases is not None:
-        splitFileByBp(opt.input, args.num_bases, opt)
+        bases = parse_bases(args.num_bases)
+        splitFileByBp(opt.input, bases, opt)

@@ -4,7 +4,7 @@ import strutils
 import tables
 import algorithm
 import docopt
-
+import colorize
  
 
 # Suite Version
@@ -127,8 +127,14 @@ proc main(args: var seq[string]): int =
       if a < b: return -1
       else: return 1
       )
-    echo format("SeqFu - Sequence Fastx Utilities\nversion: $#\n", version())
-
+    echo format("SeqFu $# - FASTX Tools\n", version())
+    echo """
+      ____             _____      
+     / ___|  ___  __ _|  ___|   _ 
+     \___ \ / _ \/ _` | |_ | | | |
+      ___) |  __/ (_| |  _|| |_| |
+     |____/ \___|\__, |_|   \__,_|
+                    |_|           """.fgGreen
     for k in hkeys1:
       echo "  ", format("· $1: $2", k & repeat(" ", 20 - len(k)), helps[k])
     echo ""
