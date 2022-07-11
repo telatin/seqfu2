@@ -5,7 +5,11 @@ Split FASTA/FASTQ files into multiple files according to:
  * Number of sequences per file, or
  * Number of bases per file.
 """
+
+# Compatibility notes:
+# subprocess.devnull is new in Python 3.3.
 from __future__ import print_function
+__VERSION__ = "0.1.1"
 import sys, os, re
 import subprocess
 
@@ -14,16 +18,21 @@ DEFAULT_COUNTER_LEN = 5
 class SplitOpt:
     def __init__(self, args):
         self.threads = int(args.threads) if args.threads is not None else 1
-        self.verbose = args.verbose
+        self.verbose = True if args.verbose or args.debug else False
+        self.debug   = args.debug
+        self.char    = args.number_char if args.number_char is not None else '0'
         self.output_string = args.output
         self.prefix, self.num_len, self.suffix, self.format = self.parse_output_string()
         self.input = args.input
         self.compress = True if args.compress else True if self.output_string.endswith('.gz') else False
     
-    def __str__(self) -> str:
+    def __str__(self):
         return "fu-split{input: %s, output:%s%s%s, " % (self.input, self.prefix, "X" * self.num_len, self.suffix) + "threads: %d, verbose: %s, compress: %s}" % (self.threads, self.verbose, self.compress)
 
     def getOutput(self, number):
+        """
+        Return the formatted output file name for a given number.
+        """
         suffix = self.suffix if self.suffix is not None else ''
         prefix = self.prefix if self.prefix is not None else ''
         return prefix + str(number).zfill(self.num_len) + suffix
@@ -35,7 +44,7 @@ class SplitOpt:
         format = None
         if self.output_string is None:
             return None, None, None, None
-        m = re.match(r'^(.*?)(0{3,})(.*)$', self.output_string)
+        m = re.match(r'^(.*?)(%s{3,})(.*)$' % self.char, self.output_string)
         if ".fasta" in self.output_string or ".fa" in self.output_string:
             format = "--fasta"
         elif ".fastq" in self.output_string or ".fq" in self.output_string:
@@ -45,6 +54,59 @@ class SplitOpt:
         else:
             return m.group(1), len(m.group(2)), m.group(3), format
 
+def checkSeqfuVersion(minver="1.13.0", verbose=False):
+    cmd = ["seqfu", "--version"]
+    try:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        version = p.stdout.read().decode("utf-8").split("\n")[0].strip().split(".")
+
+        if len(version) < 3:
+            return False        
+
+        if verbose:
+            print("[cmd] seqfu version: %s" % '.'.join(version), file=sys.stderr)
+
+
+        # Compare semver
+        if version[0] < minver.split(".")[0]:
+            return False
+        elif version[0] == minver.split(".")[0]:
+            if version[1] < minver.split(".")[1]:
+                return False
+            elif version[1] == minver.split(".")[1]:
+                if version[2] < minver.split(".")[2]:
+                    return False
+                return True
+        else:
+            return True
+    except Exception as e:
+        print("Error: `seqfu` not found:", e, file=sys.stderr)
+        return False
+
+def parse_bases(bases):
+    """
+    Receive a number or number with suffix (kb, gb, tb)
+    """
+    if bases.isdigit():
+        return int(bases)
+    else:
+        if bases.lower().endswith("b"):
+            bases = bases[:-1]
+        elif bases.lower().endswith("bp"):
+            bases = bases[:-2]
+        suffix = bases[-1].lower()
+
+        if suffix == "k":
+            return int(bases[:-1]) * 1000
+        elif suffix == "m":
+            return int(bases[:-1]) * 1000 * 1000
+        elif suffix == "g":
+            return int(bases[:-1]) * 1000 * 1000 * 1000
+        elif suffix == "t":
+            return int(bases[:-1]) * 1000 * 1000 * 1000 * 1000
+        else:
+            print("Error: Invalid base number: %s" % bases, file=sys.stderr)
+            return int(bases)
 def removeNone(list):
     return [x for x in list if x is not None]
 
@@ -53,40 +115,51 @@ def runcmds(cmd1, cmd2, output, opt):
     cmd2 = removeNone(cmd2)
     
     try:
-        e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE)
+        if opt.debug:
+            print("[cmd] Running: %s" % ' '.join(cmd1), file=sys.stderr)
+        e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
         print("Error:", e, file=sys.stderr)
         return False
 
     if opt.compress:
         try:
-            e2   = subprocess.Popen(cmd2, stdin=e1.stdout, stdout=subprocess.PIPE)
-            subprocess.Popen(["gzip", "-c"], stdin=e2.stdout, stdout=output).communicate()
+            if opt.debug:
+                print("[cmd] Running: %s and gzip" % ' '.join(cmd2), file=sys.stderr)
+            e2   = subprocess.Popen(cmd2, stdin=e1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(["gzip", "-c"], stdin=e2.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
             print("Error:", e, file=sys.stderr)
             return False
     else:
         try:
-            subprocess.Popen(cmd2, stdin=e1.stdout, stdout=output).communicate()
+            if opt.debug:
+                print("[cmd] Running: %s" % ' '.join(cmd2), file=sys.stderr)
+            subprocess.Popen(cmd2, stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
             print("Error:", e, file=sys.stderr)
             return False
     return True
 
-def runcmd(cmd1, output, opt):
+def runSingleCommand(cmd1, output, opt):
     cmd1 = removeNone(cmd1)
     
-
     if opt.compress:
         try:
-            e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE)
-            subprocess.Popen(["gzip", "-c"], stdin=e1.stdout, stdout=output).communicate()
+            if opt.debug:
+                print("[cmd] Running: %s and gzip" % ' '.join(cmd1), file=sys.stderr)
+            e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if opt.debug:
+                print("# ", e1.stderr, file=sys.stderr)
+            subprocess.Popen(["gzip", "-c"], stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
             print("Error:", e, file=sys.stderr)
             return False
     else:
         try:
-            e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE).communicate()
+            if opt.debug:
+                print("[cmd] Running: %s" % ' '.join(cmd1), file=sys.stderr)
+            subprocess.Popen(cmd1, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
             print("Error:", e, file=sys.stderr)
             return False
@@ -94,7 +167,7 @@ def runcmd(cmd1, output, opt):
 
 def last_seq(file):
     cmd = ["seqfu", "tail", "-n", "1", file]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return p.stdout.read().decode("utf-8").split("\n")[0].strip()[1:]
 
 def splitFileBySeqs(input, num_seqs, opt):
@@ -116,7 +189,7 @@ def splitFileBySeqs(input, num_seqs, opt):
         last = last_seq(output.name)
        
         if opt.verbose:
-            print("Step: ", n, "Last:", last, file=sys.stderr)
+            print("Step: ", n, " to: ", output.name, " (last: "+last+")" if last else '(end)', file=sys.stderr)
         
         if last != "":
             fromArg = "--jump-to"
@@ -136,15 +209,14 @@ def splitFileByBp(input, bp, opt):
     fromSeq = None
     n = 0
     while not finished:
-
         n += 1
         output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
         cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
-        run  = runcmd(cat, output, opt)
+        run  = runSingleCommand(cat, output, opt)
         
         last = last_seq(output.name)
         if opt.verbose:
-            print("Step: ", n, "Last:", last, file=sys.stderr)
+            print("Step: ", n, " to: ", output.name, " (last: "+last+")" if last else '(end)', file=sys.stderr)
         
         if last != "":
             fromArg = "--jump-to"
@@ -166,8 +238,7 @@ def splitFileInN(input, n, opt):
         cmd = removeNone(cmd)
         
         output = open(opt.getOutput(i), "w")
-        
-        processes.add(subprocess.Popen(cmd, stdout=output))
+        processes.add(subprocess.Popen(cmd, stdout=output, stderr=subprocess.PIPE))
         if opt.verbose:
             print("Chunk: ", i + 1, " to: ", output.name, file=sys.stderr)
         if len(processes) >= opt.threads:
@@ -185,14 +256,22 @@ if __name__ == "__main__":
     method = parser.add_mutually_exclusive_group(required=True)
     method.add_argument("-n", "--num-files", help="Number of desired files", type=int)
     method.add_argument("-s", "--num-seqs", help="Number of sequences per file", type=int)
-    method.add_argument("-b", "--num-bases", help="Number of bases per file", type=int)
+    method.add_argument("-b", "--num-bases", help="Number of bases per file", type=str)
 
     other = parser.add_argument_group("Other options")
     other.add_argument("--threads", help="Number of threads (-n only) [default: %(default)s", default=8, type=int)
+    other.add_argument("--number-char", help="Character used to represent the progressive number in output string [default: %(default)s", default="0", type=str)
     other.add_argument("--compress", help="Force compression of the output files", action="store_true")
     other.add_argument("--verbose", help="Verbose mode", action="store_true")
+    other.add_argument("--debug", help="Debug mode", action="store_true")
 
+    # version
+    parser.add_argument("--version", action="version", version="%(prog)s " + __VERSION__)
     args = parser.parse_args()
+
+    if not checkSeqfuVersion("1.13.0", args.verbose):
+        print("Error: seqfu version 1.13.0 or higher is required.", file=sys.stderr)
+        sys.exit(1)
 
     opt = SplitOpt(args)
 
@@ -204,4 +283,5 @@ if __name__ == "__main__":
     elif args.num_seqs is not None:
         splitFileBySeqs(opt.input, args.num_seqs, opt)
     elif args.num_bases is not None:
-        splitFileByBp(opt.input, args.num_bases, opt)
+        bases = parse_bases(args.num_bases)
+        splitFileByBp(opt.input, bases, opt)
