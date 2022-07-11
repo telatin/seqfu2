@@ -1,0 +1,13 @@
+FROM ubuntu:18.04
+
+RUN set -x \
+    && pythonVersions='python3.6 python3.7 python3.8' \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends software-properties-common \
+    && apt-add-repository -y ppa:fkrull/deadsnakes \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends $pythonVersions \
+    && apt-get purge -y --auto-remove software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+CMD bash
