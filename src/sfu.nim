@@ -127,7 +127,7 @@ proc main(args: var seq[string]): int =
       if a < b: return -1
       else: return 1
       )
-    echo format("SeqFu$# - FASTX Tools\n", version())
+    echo format("SeqFu $# - FASTX Tools\n", version())
     echo """
       ____             _____      
      / ___|  ___  __ _|  ___|   _ 
