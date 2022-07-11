@@ -32,6 +32,7 @@ if [[ $OBS == $EXP ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
+    ls -lh "$OUTDIR"/splitParts-*.fa.gz
     ERRORS=$((ERRORS+1))
 fi
 
@@ -63,12 +64,13 @@ fi
 
 EXP=4
 OBS=$(ls "$OUTDIR"/splitBases-*.fa.gz | wc -l | grep -o '[[:digit:]]\+')
-MSG="Split in $EXP files: got $OBS"
+MSG="Split by bases in $EXP files: got $OBS"
 if [[ $OBS == $EXP ]]; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: $MSG"
+    "$BINDIR"/seqfu stats -b -n "$OUTDIR"/splitBases-*.fa.gz
     ERRORS=$((ERRORS+1))
 fi
 

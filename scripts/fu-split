@@ -111,6 +111,19 @@ def parse_bases(bases):
 def removeNone(list):
     return [x for x in list if x is not None]
 
+def delFile(filename, verbose=False):
+    if os.path.exists(filename):
+        try:
+            if verbose:
+                print("[delete] rm %s" % filename, file=sys.stderr)
+            os.remove(filename)
+        except Exception as e:
+            print("Error: Cannot remove file: %s" % filename, file=sys.stderr)
+            print(e, file=sys.stderr)
+            return False
+    else:
+        print("Error: File %s not found" % filename, file=sys.stderr)
+        return False
 def runcmds(cmd1, cmd2, output, opt):
     cmd1 = removeNone(cmd1)
     cmd2 = removeNone(cmd2)
@@ -198,7 +211,7 @@ def splitFileBySeqs(input, num_seqs, opt):
         else:
             # Remove output.name
             output.close()
-            os.remove(output.name)
+            delFile(output.name, opt.debug)
             finished = True
         
 def splitFileByBp(input, bp, opt):
@@ -227,8 +240,8 @@ def splitFileByBp(input, bp, opt):
             # Remove output.name
             output.close()
             # if empty: remove file
-            if os.stat(output.name).st_size == 0:
-                os.remove(output.name)
+            
+            delFile(output.name, opt.debug)
             finished = True
 
 def splitFileInN(input, n, opt):
