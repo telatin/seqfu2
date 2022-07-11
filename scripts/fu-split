@@ -1,0 +1,207 @@
+#!/usr/bin/env python
+"""
+Split FASTA/FASTQ files into multiple files according to:
+ * Number of desired files,
+ * Number of sequences per file, or
+ * Number of bases per file.
+"""
+from __future__ import print_function
+import sys, os, re
+import subprocess
+
+
+DEFAULT_COUNTER_LEN = 5
+class SplitOpt:
+    def __init__(self, args):
+        self.threads = int(args.threads) if args.threads is not None else 1
+        self.verbose = args.verbose
+        self.output_string = args.output
+        self.prefix, self.num_len, self.suffix, self.format = self.parse_output_string()
+        self.input = args.input
+        self.compress = True if args.compress else True if self.output_string.endswith('.gz') else False
+    
+    def __str__(self) -> str:
+        return "fu-split{input: %s, output:%s%s%s, " % (self.input, self.prefix, "X" * self.num_len, self.suffix) + "threads: %d, verbose: %s, compress: %s}" % (self.threads, self.verbose, self.compress)
+
+    def getOutput(self, number):
+        suffix = self.suffix if self.suffix is not None else ''
+        prefix = self.prefix if self.prefix is not None else ''
+        return prefix + str(number).zfill(self.num_len) + suffix
+
+    def parse_output_string(self):
+        """
+        Parse the output string.
+        """
+        format = None
+        if self.output_string is None:
+            return None, None, None, None
+        m = re.match(r'^(.*?)(0{3,})(.*)$', self.output_string)
+        if ".fasta" in self.output_string or ".fa" in self.output_string:
+            format = "--fasta"
+        elif ".fastq" in self.output_string or ".fq" in self.output_string:
+            format = "--fastq"
+        if m is None:
+            return self.output_string, DEFAULT_COUNTER_LEN, '', None
+        else:
+            return m.group(1), len(m.group(2)), m.group(3), format
+
+def removeNone(list):
+    return [x for x in list if x is not None]
+
+def runcmds(cmd1, cmd2, output, opt):
+    cmd1 = removeNone(cmd1)
+    cmd2 = removeNone(cmd2)
+    
+    try:
+        e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE)
+    except Exception as e:
+        print("Error:", e, file=sys.stderr)
+        return False
+
+    if opt.compress:
+        try:
+            e2   = subprocess.Popen(cmd2, stdin=e1.stdout, stdout=subprocess.PIPE)
+            subprocess.Popen(["gzip", "-c"], stdin=e2.stdout, stdout=output).communicate()
+        except Exception as e:
+            print("Error:", e, file=sys.stderr)
+            return False
+    else:
+        try:
+            subprocess.Popen(cmd2, stdin=e1.stdout, stdout=output).communicate()
+        except Exception as e:
+            print("Error:", e, file=sys.stderr)
+            return False
+    return True
+
+def runcmd(cmd1, output, opt):
+    cmd1 = removeNone(cmd1)
+    
+
+    if opt.compress:
+        try:
+            e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE)
+            subprocess.Popen(["gzip", "-c"], stdin=e1.stdout, stdout=output).communicate()
+        except Exception as e:
+            print("Error:", e, file=sys.stderr)
+            return False
+    else:
+        try:
+            e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE).communicate()
+        except Exception as e:
+            print("Error:", e, file=sys.stderr)
+            return False
+    return True
+
+def last_seq(file):
+    cmd = ["seqfu", "tail", "-n", "1", file]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    return p.stdout.read().decode("utf-8").split("\n")[0].strip()[1:]
+
+def splitFileBySeqs(input, num_seqs, opt):
+    """
+    Split a file into multiple files by number of sequences.
+    """
+    finished = False
+    fromArg = None
+    fromSeq = None
+    n = 0
+    while not finished:
+
+        n += 1
+        output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
+        cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, input]
+        head = ["seqfu", "head", "-n", str(num_seqs)]
+        run  = runcmds(cat, head, output, opt)
+        
+        last = last_seq(output.name)
+       
+        if opt.verbose:
+            print("Step: ", n, "Last:", last, file=sys.stderr)
+        
+        if last != "":
+            fromArg = "--jump-to"
+            fromSeq = last
+        else:
+            # Remove output.name
+            output.close()
+            os.remove(output.name)
+            finished = True
+        
+def splitFileByBp(input, bp, opt):
+    """
+    Split a file into multiple files by number of sequences.
+    """
+    finished = False
+    fromArg = None
+    fromSeq = None
+    n = 0
+    while not finished:
+
+        n += 1
+        output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
+        cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
+        run  = runcmd(cat, output, opt)
+        
+        last = last_seq(output.name)
+        if opt.verbose:
+            print("Step: ", n, "Last:", last, file=sys.stderr)
+        
+        if last != "":
+            fromArg = "--jump-to"
+            fromSeq = last
+        else:
+            # Remove output.name
+            output.close()
+            os.remove(output.name)
+            finished = True
+
+def splitFileInN(input, n, opt):
+    """
+    Split a file into multiple files evenly distributed using
+    multiple threads.
+    """
+    processes = set()
+    for i in range(n):
+        cmd = ["seqfu", "cat", "--skip", str(n), "--skip-first", str(i), opt.format, input]
+        cmd = removeNone(cmd)
+        
+        output = open(opt.getOutput(i), "w")
+        
+        processes.add(subprocess.Popen(cmd, stdout=output))
+        if opt.verbose:
+            print("Chunk: ", i + 1, " to: ", output.name, file=sys.stderr)
+        if len(processes) >= opt.threads:
+            os.wait()
+            processes.difference_update([
+                p for p in processes if p.poll() is not None])
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Split FASTA/FASTQ files into multiple files")
+    parser.add_argument("-i", "--input", help="Input file", required=True)
+    parser.add_argument("-o", "--output", help="Output file (add a stretch of 3+ zeroes to specify the progressive number), compression will be detected. Example: parz_0000.fq.gz", required=True)
+
+    method = parser.add_mutually_exclusive_group(required=True)
+    method.add_argument("-n", "--num-files", help="Number of desired files", type=int)
+    method.add_argument("-s", "--num-seqs", help="Number of sequences per file", type=int)
+    method.add_argument("-b", "--num-bases", help="Number of bases per file", type=int)
+
+    other = parser.add_argument_group("Other options")
+    other.add_argument("--threads", help="Number of threads (-n only) [default: %(default)s", default=8, type=int)
+    other.add_argument("--compress", help="Force compression of the output files", action="store_true")
+    other.add_argument("--verbose", help="Verbose mode", action="store_true")
+
+    args = parser.parse_args()
+
+    opt = SplitOpt(args)
+
+    if opt.verbose:
+        print(opt, file=sys.stderr)
+
+    if args.num_files is not None:
+        splitFileInN(args.input, args.num_files, opt)
+    elif args.num_seqs is not None:
+        splitFileBySeqs(opt.input, args.num_seqs, opt)
+    elif args.num_bases is not None:
+        splitFileByBp(opt.input, args.num_bases, opt)
