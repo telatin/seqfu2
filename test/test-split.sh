@@ -1,6 +1,9 @@
 #!/bin/bash
 
-if [[ -e "$BINDIR"/fu-split ]]; then
+PY=$(command -v python)
+if [[ -e "$BINDIR"/fu-split ]] && [[ $PY == 0 ]]; then
+
+python --version
 
 # Single file
 OUTDIR=$(mktemp -d)
