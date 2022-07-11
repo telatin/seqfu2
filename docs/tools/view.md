@@ -69,10 +69,16 @@ If you see the Euro character (€) then your terminal fully supports UTF-8. If 
 
 The following screenshot shows how quality scores are rendered using the different options:
 
+*  Default view with quality scale
+
 ![Screenshot: Quality scale"]({{site.baseurl}}/img/screenshot-view-qual.svg "SeqFu view: quality scale")
 
-![Screenshot: Quality scale in ascii]({{site.baseurl}}/img/screenshot-view-qual-ascii.svg "Qualities in ASCII chars")
+* Graphical representation of the quality with ASCII characters
+  
+![Screenshot: Quality scale in ASCII]({{site.baseurl}}/img/screenshot-view-qual-ascii.svg "Qualities in ASCII chars")
 
+* Quality encoded as in the FASTQ file, but colored
+                                               
 ![Screenshot: Quality scale as in FASTQ]({{site.baseurl}}/img/screenshot-view-qual-raw.svg  "Qualities as encoded in FASTQ")
 
 ## Screenshot
