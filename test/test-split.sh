@@ -1,8 +1,9 @@
 #!/bin/bash
 
+if [[ -e "$BINDIR"/fu-split ]]; then
+
 # Single file
 OUTDIR=$(mktemp -d)
-"$BINDIR"/seqfu stats --basename "$i16S" > "$TMP"
 
 count() {
     "$BINDIR"/seqfu count "$1" | cut -f 2
@@ -116,3 +117,5 @@ do
     fi
 done
 rm -rf "$OUTDIR"
+
+fi
