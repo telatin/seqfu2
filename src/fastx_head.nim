@@ -21,6 +21,8 @@ Options:
   -s, --strip-comments   Remove comments
   -b, --basename         prepend basename to sequence name
   -v, --verbose          Verbose output
+  --print-last           Print the name of the last sequence to STDERR (Last:NAME)
+  --fatal                Exit with error if less than NUM sequences are found
   --quiet                Don't print warnings
   --help                 Show this help
 
@@ -34,8 +36,8 @@ Output:
 
     verbose       = args["--verbose"]
     stripComments = args["--strip-comments"]
-    forceFasta    = args["--fasta"]
-    forceFastq    = args["--fastq"]
+    forceFasta    = bool(args["--fasta"])
+    forceFastq    = bool(args["--fastq"])
     defaultQual   = parseInt($args["--fastq-qual"])
     var
       num, skip    : int
@@ -44,6 +46,9 @@ Output:
       printBasename: bool 
       separator    :  string 
 
+    let 
+      printLast     = bool(args["--print-last"])
+      fatalWarning  = bool(args["--fatal"])
 
     try:
       num =  parseInt($args["--num"])
@@ -104,6 +109,11 @@ Output:
             r.name = $getBasename(filename) & separator & r.name
           printSeq(r, nil)
       
+        if printed == num and printLast:
+          stderr.writeLine("Last:", r.name)
       if (not args["--quiet"]) and printed < num:
         stderr.writeLine("WARNING\nPrinted less sequences (", printed, "/", num, ") than requested for ", filename, ". Try reducing --skip.")
+        if fatalWarning:
+          stderr.writeLine("Exiting with error.")
+          quit(1)
         

@@ -16,8 +16,7 @@ import subprocess
 
 DEFAULT_COUNTER_LEN = 5
 class SplitOpt:
-    def __init__(self, args, version=None):
-        self.seqfuver = version
+    def __init__(self, args):
         self.threads = int(args.threads) if args.threads is not None else 1
         self.verbose = True if args.verbose or args.debug else False
         self.debug   = args.debug
@@ -28,7 +27,7 @@ class SplitOpt:
         self.compress = True if args.compress else True if self.output_string.endswith('.gz') else False
     
     def __str__(self):
-        return "fu-split{input: %s, output:%s%s%s, " % (self.input, self.prefix, "?" * self.num_len, self.suffix) + "threads: %d, verbose: %s, compress: %s}" % (self.threads, self.verbose, self.compress)
+        return "fu-split{input: %s, output:%s%s%s, " % (self.input, self.prefix, "X" * self.num_len, self.suffix) + "threads: %d, verbose: %s, compress: %s}" % (self.threads, self.verbose, self.compress)
 
     def getOutput(self, number):
         """
@@ -63,7 +62,7 @@ def checkSeqfuVersion(minver="1.13.0", verbose=False):
         version = p.stdout.read().decode("utf-8").split("\n")[0].strip().split(".")
 
         if len(version) < 3:
-            return False, None        
+            return False        
 
         if verbose:
             print("[cmd] seqfu version: %s" % '.'.join(version), file=sys.stderr)
@@ -71,16 +70,16 @@ def checkSeqfuVersion(minver="1.13.0", verbose=False):
 
         # Compare semver
         if version[0] < minver.split(".")[0]:
-            return False, version
+            return False
         elif version[0] == minver.split(".")[0]:
             if version[1] < minver.split(".")[1]:
-                return False, version
+                return False
             elif version[1] == minver.split(".")[1]:
                 if version[2] < minver.split(".")[2]:
-                    return False, version
-                return True, version
+                    return False
+                return True
         else:
-            return True, version
+            return True
     except Exception as e:
         print("Error: `seqfu` not found:", e, file=sys.stderr)
         return False
@@ -112,13 +111,6 @@ def parse_bases(bases):
 def removeNone(list):
     return [x for x in list if x is not None]
 
-def parseLast(text):
-    for line in text.split("\n"):
-        if line.startswith("Last:"):
-
-            return ":".join(line.strip().split(":")[1:])
-    return None
-
 def delFile(filename, verbose=False):
     if os.path.exists(filename):
         try:
@@ -132,18 +124,17 @@ def delFile(filename, verbose=False):
     else:
         print("Error: File %s not found" % filename, file=sys.stderr)
         return False
-
 def runcmds(cmd1, cmd2, output, opt):
     cmd1 = removeNone(cmd1)
     cmd2 = removeNone(cmd2)
-    last = None
+    
     try:
         if opt.debug:
             print("[cmd] Running: %s" % ' '.join(cmd1), file=sys.stderr)
         e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
-        print("[runcmds-1] Error:", e, file=sys.stderr)
-        return False, last
+        print("Error:", e, file=sys.stderr)
+        return False
 
     if opt.compress:
         try:
@@ -151,52 +142,42 @@ def runcmds(cmd1, cmd2, output, opt):
                 print("[cmd] Running: %s and gzip" % ' '.join(cmd2), file=sys.stderr)
             e2   = subprocess.Popen(cmd2, stdin=e1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             subprocess.Popen(["gzip", "-c"], stdin=e2.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
-            last = parseLast(e2.stderr.read().decode("utf-8"))
         except Exception as e:
-            print("[runcmds-gz] Error:", e, file=sys.stderr)
-            return False, last
+            print("Error:", e, file=sys.stderr)
+            return False
     else:
         try:
             if opt.debug:
                 print("[cmd] Running: %s" % ' '.join(cmd2), file=sys.stderr)
-            e2 = subprocess.Popen(cmd2, stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
-            last = parseLast(e2[1].decode("utf-8"))
+            subprocess.Popen(cmd2, stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
-            print("[runcmds-regular] Error:", e, file=sys.stderr)
-            print("E2:", e2[1], file=sys.stderr)
-            return False, last
-    return True, last
+            print("Error:", e, file=sys.stderr)
+            return False
+    return True
 
 def runSingleCommand(cmd1, output, opt):
-    ## splitFileByBp
     cmd1 = removeNone(cmd1)
     
     if opt.compress:
         try:
             if opt.debug:
-                print("[cmdsingle] Running: %s and gzip" % ' '.join(cmd1), file=sys.stderr)
+                print("[cmd] Running: %s and gzip" % ' '.join(cmd1), file=sys.stderr)
             e1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            subprocess.Popen(["gzip", "-c"], stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
-            last = parseLast(e1.stderr.read().decode("utf-8"))
             if opt.debug:
-                print("# ", last, file=sys.stderr)
-            return last
+                print("# ", e1.stderr, file=sys.stderr)
+            subprocess.Popen(["gzip", "-c"], stdin=e1.stdout, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
-            print("[singlecmd-gzip] Error:", e, file=sys.stderr)
-            return None
+            print("Error:", e, file=sys.stderr)
+            return False
     else:
         try:
             if opt.debug:
-                print("[cmdsingle] Running: %s" % ' '.join(cmd1), file=sys.stderr)
-            e1 = subprocess.Popen(cmd1, stderr=subprocess.PIPE, stdout=output).communicate()
-            last = parseLast(e1[1].decode("utf-8"))
-            if opt.debug:
-                print("# ", last, file=sys.stderr)
-            return last
+                print("[cmd] Running: %s" % ' '.join(cmd1), file=sys.stderr)
+            subprocess.Popen(cmd1, stderr=subprocess.PIPE, stdout=output).communicate()
         except Exception as e:
-            print("[singlecmd-nozip] Error:", e, "\n", e1, file=sys.stderr)
-            return None
-
+            print("Error:", e, file=sys.stderr)
+            return False
+    return True
 
 def last_seq(file):
     cmd = ["seqfu", "tail", "-n", "1", file]
@@ -216,11 +197,10 @@ def splitFileBySeqs(input, num_seqs, opt):
         n += 1
         output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
         cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, input]
-        head = ["seqfu", "head", "--print-last", "-n", str(num_seqs)]
-        run, last  = runcmds(cat, head, output, opt)
+        head = ["seqfu", "head", "-n", str(num_seqs)]
+        run  = runcmds(cat, head, output, opt)
         
-        if last is None:
-            last = last_seq(output.name)
+        last = last_seq(output.name)
        
         if opt.verbose:
             print("Step: ", n, " to: ", output.name, " (last: "+last+")" if last else '(end)', file=sys.stderr)
@@ -249,11 +229,10 @@ def splitFileByBp(input, bp, opt):
         if opt.verbose:
             print("Step: ", n, " to: ", output.name, " (last: "+fromSeq+")" if fromSeq else '', file=sys.stderr)
   
-        cat = ["seqfu", "cat","--print-last", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
-        last  = runSingleCommand(cat, output, opt)
+        cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
+        run  = runSingleCommand(cat, output, opt)
         
-        if last is None:
-            last = last_seq(output.name)      
+        last = last_seq(output.name)      
         if last != "":
             fromArg = "--jump-to"
             fromSeq = last
@@ -292,7 +271,6 @@ def splitFileInN(input, n, opt):
             if p.returncode != 0:
                 print("Error:", p.stderr.read().decode("utf-8"), file=sys.stderr)
                 return False
-            
 
 
 if __name__ == "__main__":
@@ -317,12 +295,11 @@ if __name__ == "__main__":
     parser.add_argument("--version", action="version", version="%(prog)s " + __VERSION__)
     args = parser.parse_args()
 
-    checked, version = checkSeqfuVersion("1.13.0", args.verbose)
-    if not checked:
+    if not checkSeqfuVersion("1.13.0", args.verbose):
         print("Error: seqfu version 1.13.0 or higher is required.", file=sys.stderr)
         sys.exit(1)
 
-    opt = SplitOpt(args, version)
+    opt = SplitOpt(args)
 
     if opt.verbose:
         print(opt, file=sys.stderr)

@@ -25,8 +25,9 @@ Options:
   -k, --skip STEP        Print one sequence every STEP [default: 0]
   --skip-first INT       Skip the first INT records [default: -1]
   --jump-to STR          Start from the record after the one named STR
-                         (overrides --skip-first!)
-  
+                         (overrides --skip-first)
+  --print-last           Print the name of the last sequence to STDERR (Last:NAME)
+
 Sequence name:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -z, --strip-name       Remove the original sequence name
@@ -80,6 +81,8 @@ Output:
     let
       GC_DECIMAL_DIGITS = 2
       EE_DECIMAL_DIGITS = 4
+      printLast = bool(args["--print-last"])
+
 
     var
       newMod = 0
@@ -147,6 +150,7 @@ Output:
     var
       totalPrintedSeqs = 0
       wrongLenCount = 0
+      lastName = ""
     for filename in files:
 
       echoVerbose(filename, verbose)
@@ -356,6 +360,8 @@ Output:
           if args["--add-ee"]:
             r.comment &= $args["--comment-sep"] & "ee=" & get_ee(r.qual).formatFloat(ffDecimal, EE_DECIMAL_DIGITS)
 
+
+          lastName = r.name
           # Print output
           if formatList:
             echo r.name
@@ -376,6 +382,7 @@ Output:
       # File parsed
       if verbose:
         stderr.writeLine(currentPrintedSeqs, "/", currentSeqCount, " sequences printed. ", wrongLenCount, " wrong length.")
-
+      if printLast:
+        stderr.writeLine("Last:", lastName)
       
  
