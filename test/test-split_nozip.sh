@@ -12,8 +12,7 @@ count() {
     "$BINDIR"/seqfu count "$1" | cut -f 2
 }
 bp() {
-    TOT=0
-    seqfu cat "$@" | seqfu stats | grep -v "Total bp" | cut -f 3
+    "$BINDIR"/seqfu cat "$@" | "$BINDIR"/seqfu stats | grep -v "Total bp" | cut -f 3
 }
 
 if [[ ! -d "$OUTDIR" ]]; then
@@ -53,7 +52,7 @@ BASES=500000
 "$BINDIR"/fu-split -i "$i16S" -b $BASES  -o "$OUTDIR"/splitBases-00000.fa
 EXP=$(bp "$i16S")
 OBS=$(bp "$OUTDIR"/splitBases-*.fa)
-MSG="Split by $BASES bases: exp=$EXP got=$OBS ["$OUTDIR"/splitBases-*.fa]"
+MSG="Split by $BASES bases: exp=$EXP got=$OBS"
 if [[ $OBS == $EXP ]]; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))

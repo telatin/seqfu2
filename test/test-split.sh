@@ -12,8 +12,7 @@ count() {
     "$BINDIR"/seqfu count "$1" | cut -f 2
 }
 bp() {
-    TOT=0
-    seqfu cat "$@" | seqfu stats | grep -v "Total bp" | cut -f 3
+    "$BINDIR"/seqfu cat "$@" | "$BINDIR"/seqfu stats | grep -v "Total bp" | cut -f 3
 }
 
 if [[ ! -d "$OUTDIR" ]]; then
