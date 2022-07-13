@@ -4,10 +4,6 @@ name: Build_Nim
 
 # Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  release:
-    branches: [ main ]
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -29,4 +25,4 @@ jobs:
         uses: skynet-core/nim@v1.2
         with:
           # Command to run
-          command: sudo apk add zlib-dev && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
+          command: sudo apk add zlib-dev python3 && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
