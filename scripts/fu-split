@@ -17,25 +17,39 @@ import subprocess
 DEFAULT_COUNTER_LEN = 5
 class SplitOpt:
     def __init__(self, args, version=None):
+        self.tags = [args.for_tag, args.rev_tag]
         self.seqfuver = version
         self.threads = int(args.threads) if args.threads is not None else 1
         self.verbose = True if args.verbose or args.debug else False
         self.debug   = args.debug
         self.char    = args.number_char if args.number_char is not None else '0'
+        self.input   = args.input
+        self.reverse = args.input_rev
         self.output_string = args.output
         self.prefix, self.num_len, self.suffix, self.format = self.parse_output_string()
-        self.input = args.input
+
         self.compress = True if args.compress else True if self.output_string.endswith('.gz') else False
     
     def __str__(self):
         return "fu-split{input: %s, output:%s%s%s, " % (self.input, self.prefix, "?" * self.num_len, self.suffix) + "threads: %d, verbose: %s, compress: %s}" % (self.threads, self.verbose, self.compress)
 
+    def getPair(self):
+        if self.reverse is None:
+            return ""
+        else:
+            if self.input == self.reverse:
+                return self.tags[1]
+            else:
+                return self.tags[0]
+
     def getOutput(self, number):
         """
         Return the formatted output file name for a given number.
         """
-        suffix = self.suffix if self.suffix is not None else ''
+        suffix = self.getPair()
+        suffix += self.suffix if self.suffix is not None else ''
         prefix = self.prefix if self.prefix is not None else ''
+        
         return prefix + str(number).zfill(self.num_len) + suffix
 
     def parse_output_string(self):
@@ -47,9 +61,9 @@ class SplitOpt:
             return None, None, None, None
         dirname, filename = os.path.split(self.output_string)
         m = re.match(r'^(.*?)(%s{3,})(.*)$' % self.char, filename)
-        if ".fasta" in self.output_string or ".fa" in self.output_string:
+        if ".fasta" in self.output_string.lower() or ".fa" in self.output_string.lower():
             format = "--fasta"
-        elif ".fastq" in self.output_string or ".fq" in self.output_string:
+        elif ".fastq" in self.output_string.lower() or ".fq" in self.output_string.lower():
             format = "--fastq"
         if m is None:
             return self.output_string, DEFAULT_COUNTER_LEN, '', None
@@ -214,7 +228,7 @@ def splitFileBySeqs(input, num_seqs, opt):
     while not finished:
 
         n += 1
-        output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
+        output = open(opt.getOutput(n), "w")
         cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, input]
         head = ["seqfu", "head", "--print-last", "-n", str(num_seqs)]
         run, last  = runcmds(cat, head, output, opt)
@@ -245,7 +259,7 @@ def splitFileByBp(input, bp, opt):
     while not finished:
         n += 1
 
-        output = open(opt.prefix + str(n).zfill(opt.num_len) + opt.suffix, "w")
+        output = open(opt.getOutput(n), "w")
         if opt.verbose:
             print("Step: ", n, " to: ", output.name, " (last: "+fromSeq+")" if fromSeq else '', file=sys.stderr)
   
@@ -275,7 +289,7 @@ def splitFileInN(input, n, opt):
         cmd = ["seqfu", "cat", "--skip", str(n), "--skip-first", str(i), opt.format, input]
         cmd = removeNone(cmd)
         
-        output = open(opt.getOutput(i), "w")
+        output = open(opt.getOutput(i+1), "w")
         processes.add(subprocess.Popen(cmd, stdout=output, stderr=subprocess.PIPE))
         if opt.verbose:
             print("Chunk: ", i + 1, " to: ", output.name, file=sys.stderr)
@@ -299,7 +313,10 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Split FASTA/FASTQ files into multiple files")
     parser.add_argument("-i", "--input", help="Input file", required=True)
+    parser.add_argument("-I", "--input-rev", help="Second input file (reverse pair)", required=False)
     parser.add_argument("-o", "--output", help="Output file (add a stretch of 3+ zeroes to specify the progressive number), compression will be detected. Example: parz_0000.fq.gz", required=True)
+    parser.add_argument("--for-tag", help="Tag to use for the forward reads output (default: %(default)s", default="_R1")
+    parser.add_argument("--rev-tag", help="Tag to use for the forward reads output (default: %(default)s", default="_R2")
 
     method = parser.add_mutually_exclusive_group(required=True)
     method.add_argument("-n", "--num-files", help="Number of desired files", type=int)
@@ -329,8 +346,18 @@ if __name__ == "__main__":
 
     if args.num_files is not None:
         splitFileInN(args.input, args.num_files, opt)
+        if args.input_rev is not None:
+            opt.input = args.input_rev
+            print(">>>", opt.input, opt.reverse)
+            splitFileInN(args.input_rev, args.num_files, opt)
     elif args.num_seqs is not None:
         splitFileBySeqs(opt.input, args.num_seqs, opt)
+        if args.input_rev is not None:
+            opt.input = args.input_rev
+            splitFileBySeqs(opt.input_rev, args.num_seqs, opt)
     elif args.num_bases is not None:
         bases = parse_bases(args.num_bases)
         splitFileByBp(opt.input, bases, opt)
+        if args.input_rev is not None:
+            opt.input = args.input_rev
+            splitFileByBp(opt.input_rev, bases, opt)
