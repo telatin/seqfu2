@@ -1,6 +1,19 @@
 ## Release history
 
+### version 1.13.0
 
+* `seqfu cat` now can skip a set of initial sequences (`--skip-first INT`) or start from a specific sequence (`--jump-to`)
+* Minor updates in the test suite, github actions (including rich_codex) and documentation updates
+
+#### 1.13.1
+
+* added `fu-split` (experimental)
+
+#### 1.13.2
+
+* added `--print-last` option to **seqfu cat** and **seqfu heda**
+* updated `fu-split`, with support for paired end reads, improved performance thanks to `--print-last`, new tests
+  
 ### version 1.12.0
 
 * Expanded "fu-index": also reports run infos, not only indexes
