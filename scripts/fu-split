@@ -9,7 +9,7 @@ Split FASTA/FASTQ files into multiple files according to:
 # Compatibility notes:
 # subprocess.devnull is new in Python 3.3.
 from __future__ import print_function
-__VERSION__ = "0.1.1"
+__VERSION__ = "0.2.0"
 import sys, os, re
 import subprocess
 

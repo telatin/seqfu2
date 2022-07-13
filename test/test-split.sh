@@ -1,7 +1,8 @@
 #!/bin/bash
 
 PY=$(command -v python)
-if [[ -e "$BINDIR"/fu-split ]] && [[ $? == 0 ]]; then
+PYERR=$?
+if [[ -e "$BINDIR"/fu-split ]] && [[ $PYERR == 0 ]]; then
 
 python --version
 

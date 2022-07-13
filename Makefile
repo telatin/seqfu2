@@ -18,7 +18,9 @@ src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split
 	chmod +x $(SCRIPTS)/fu-split
-	cp $(SCRIPTS)/fu-split $(BIN)/fu-split
+	cp -f $(SCRIPTS)/fu-split $(BIN)/fu-split
+	sed '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(SCRIPTS)/fu-split > $(BIN)/fu-split
+	chmod 555 $(BIN)/fu-split
 
 $(BIN)/seqfu: src/sfu.nim
 	nim c $(NIMPARAM) --out:$@ $<
