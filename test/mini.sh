@@ -13,8 +13,8 @@ iAmpli="$FILES"/filt.fa.gz
 iSort="$FILES"/sort.fa
 iMini="$FILES"/target.fa
 i16S="$FILES"/primers/16S_R1.fq.gz
-iComments="$FILES"/comments.fastq
-iNum="$FILES"/numbers.fa
+export iComments="$FILES"/comments.fastq
+export iNum="$FILES"/numbers.fa
 
 OK='\033[0;32mOK\033[0m'
 FAIL='\033[0;31mFAIL\033[0m'
@@ -25,6 +25,7 @@ YELLOW='\033[1;33m'
 ERRORS=0
 
 count() {
+    
     "$BINDIR"/seqfu count "$1" | cut -f 2
 }
 bp() {
