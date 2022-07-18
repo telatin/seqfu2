@@ -65,3 +65,7 @@ Example:
 
 Specify both `--input` and `--input-rev` to split a paired end FASTQ file. The output file will be differentiated
 with the `--for-tag` and `--rev-tag` options (default: `_R1` and `_R2`).
+
+## Binary
+
+Export `$SEQFU_BIN` to specify the path to SeqFu, otherwise will default to `seqfu` (as in `$PATH`).

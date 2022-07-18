@@ -1,5 +1,14 @@
 ## Release history
 
+### version 1.14.0
+
+* **Seqfu grep** will die if fed with non existing files (to ensure no wrong parameters were passed)
+* **Seqfu grep** will match oligos case insensitive by default
+* Bugfix in `seqfu tab`: when detabulating FASTA files was checking for the quality
+* `fu-split` now can use a different SeqFu than specified in path, setting `$SEQFU_BIN`.
+* Addedd invert match `-v` to `seqfu grep`
+
+
 ### version 1.13.0
 
 * `seqfu cat` now can skip a set of initial sequences (`--skip-first INT`) or start from a specific sequence (`--jump-to`)

@@ -4,7 +4,7 @@
 
 # SeqFu
 
-[![Nim Build Test](https://github.com/telatin/seqfu2/actions/workflows/main.yml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/main.yml)
+[![Seqfu-Test](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml)
 ![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
 [![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/seqfu?label=Bioconda%20Downloads)](https://anaconda.org/bioconda/seqfu)
