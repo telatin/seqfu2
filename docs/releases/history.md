@@ -4,10 +4,11 @@
 
 * **Seqfu grep** will die if fed with non existing files (to ensure no wrong parameters were passed)
 * **Seqfu grep** will match oligos case insensitive by default
-* Bugfix in `seqfu tab`: when detabulating FASTA files was checking for the quality
-* `fu-split` now can use a different SeqFu than specified in path, setting `$SEQFU_BIN`.
 * Addedd invert match `-v` to `seqfu grep`
-
+* Improved `fu-tabcheck`, notably added `--inspect` option to print columns info
+* `fu-split` now can use a different SeqFu than specified in path, setting `$SEQFU_BIN` or `--bin` option
+* `fu-split` version check fixed
+* :warning: Bugfix in `seqfu tab`: was not working with FASTA files
 
 ### version 1.13.0
 

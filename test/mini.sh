@@ -18,7 +18,10 @@ iNum="$FILES"/numbers.fa
 
 OK='\033[0;32mOK\033[0m'
 FAIL='\033[0;31mFAIL\033[0m'
-STAR='\033[1;34m*\033[0m'
+STAR='\033[1;34m->\033[0m'
+NOTE='\033[0;34m'
+BOLD='\033[1m'
+YELLOW='\033[1;33m'
 ERRORS=0
 
 count() {
@@ -32,10 +35,10 @@ function separator {
   # if length $1 > 0; then
   #   echo -e "\n$1\n"
   if [[ $1 ]]; then
-    echo -e "\033[0;36m $1 \033[0m"
+    echo -e "${YELLOW}\033[1m $1 \033[0m"
   fi
-  CYAN_BAR='\033[0;36m ======================================== \033[0m'
-  echo -e "$CYAN_BAR"
+  DIV_BAR="${YELLOW}\033[1m------------------------------------------------------------ \033[0m"
+  echo -e "$DIV_BAR"
 }
 
 separator "Minimal test suite"
@@ -117,8 +120,8 @@ fi
 # Homopolymer
 HOMO="$(dirname "$BIN")"/fu-homocomp
 if [[ -e "$HOMO" ]]; then
-  ORIGINAL=$(grep . "$FILES"/homopolymer.fq | wc -c)
-  COMPRESSED=$($HOMO "$FILES"/homopolymer.fq | wc -c )
+  ORIGINAL=$(grep . "$FILES"/homopolymer.fq | wc -c  | grep -o "[[:digit:]]\+")
+  COMPRESSED=$($HOMO "$FILES"/homopolymer.fq | wc -c | grep -o "[[:digit:]]\+")
   if [[ $ORIGINAL -gt $COMPRESSED ]]; then
     echo -e "$OK: homopolymer pass $ORIGINAL > $COMPRESSED"
     PASS=$((PASS+1))
@@ -324,9 +327,14 @@ fi
 echo ""
 for TEST in "$DIR"/test-*.sh;
 do
-  #BASE=$(basename "$TEST"  | cut -f 1 -d .)
+  UTIL=$(basename "$TEST" | cut -f 1 -d '.' | cut -f 2 -d -)
   PREVPASS=$PASS
   PREVERR=$ERRORS
+
+  if [[ ! -z ${1+x} ]] && [[ "$1" != "$UTIL" ]]; then
+    echo Skipping $UTIL: looking for $1
+    continue
+  fi
 
   if [[ -e $TEST ]]; then
     echo ""
@@ -337,13 +345,14 @@ do
     then
       echo -e "$FAIL: Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed"
     else
-      echo -e "# Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed"
+      echo -e "$NOTE# Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed"
     fi
   fi
-
-
-  
 done
+
+if [[ ! -z ${1+x} ]]; then
+  exit 0
+fi
 
 ## Check docs
 separator "\n Checking docs"
@@ -384,11 +393,11 @@ if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
    ERRORS=$((ERRORS+1))
   fi
 else
-  echo -e "$OK:  $LOCAL_RELEASE != $GH_RELEASE (remote)"
+  echo -e "$OK: Nimble release $LOCAL_RELEASE != $GH_RELEASE (remote)"
   PASS=$((PASS+1))
 fi
 
-echo "[VERSION] $("$BINDIR"/seqfu version)"
+echo "    Binary version $("$BINDIR"/seqfu version)"
 
 ### Check failures
 separator

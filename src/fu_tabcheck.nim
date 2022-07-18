@@ -4,6 +4,7 @@ import os
 import tables
 import algorithm
 import zip/gzipfiles
+import std/strutils
 
 const NimblePkgVersion {.strdefine.} = "undef"
 const version = if NimblePkgVersion == "undef": "<prerelease>"
@@ -17,9 +18,9 @@ type
     columns: int
     valid: bool
     sep: string
+    sepchar: char
     errormsg: string
-    emptycols: seq[int]
-    colinfo: seq[string]
+ 
 
 proc toString(s: checkResult, withHeader=false): string =
   if s.valid:
@@ -30,17 +31,19 @@ proc toString(s: checkResult, withHeader=false): string =
   
   let sepStr = if not withHeader: "separator="
                 else: ""
-  result &= $(s.columns) & "\t" & $(s.records) & "\t" & sepStr & s.sep
+  result &= $(s.columns) & "\t" & $(s.records) & "\t" & sepStr & "[" & s.sep & "]"
 
 proc checkFile(f: string, sep: char, header: char): checkResult =
-  var parser: CsvParser
-
+  var
+    parser: CsvParser
+  
+  result.sepchar = sep
   if sep == '\t':
-    result.sep = "[tab]"
+    result.sep = "tab"
   elif sep == ' ':
-    result.sep = "[space]"
+    result.sep = "space"
   else:
-    result.sep = "[" & $sep & "]"
+    result.sep = $sep 
 
   var
     total_lines = 0
@@ -51,6 +54,7 @@ proc checkFile(f: string, sep: char, header: char): checkResult =
     while readRow(parser):
       total_lines += 1
       col_per_line.inc( len(parser.row) )
+
     col_per_line.sort()
 
     if len(col_per_line) == 1:
@@ -68,6 +72,49 @@ proc checkFile(f: string, sep: char, header: char): checkResult =
   except Exception as e:
     stderr.writeLine("ERROR: parsing ", f, ": ", e.msg)
 
+
+
+proc checkColumns(f: string, sep: char, header: char) =
+  var
+    parser: CsvParser
+
+  try:
+    let
+      file = newGzFileStream(f)
+    parser.open(file, f, separator = sep)
+    parser.readHeaderRow()
+    
+    
+
+    var
+      colstats = newSeq[initCountTable[string]()](len(parser.row))
+      colnames = parser.row
+      rowcount = 0
+    
+    # Parse CSV file
+    while readRow(parser):
+      rowcount += 1
+      # Increment column count in the array
+      for i, col in pairs(parser.headers):
+        colstats[i].inc( parser.rowEntry(col) )
+    
+    for i, counter in colstats:
+      var
+        top: string
+        topratio: float
+      colstats[i].sort()
+       
+      for s, count in colstats[i]:
+        top = s
+        topratio = float(100 * count / rowcount)
+        break
+      echo os.extractFilename(f), "\t", i, "\t", colnames[i], "\t", len(colstats[i]), "\t", top, "\t", topratio.formatFloat(ffDecimal, 1), "%"
+
+
+  except Exception as e:
+    stderr.writeLine("ERROR: parsing ", f, ": ", e.msg)
+
+
 proc main(): int =
   let args = docopt("""
   fu-tabcheck
@@ -80,12 +127,12 @@ proc main(): int =
   fu-tabcheck [options] <FILE>...
 
   Options:
-    -s --separator CHAR   Character separating the values, 'tab' for tab and 'auto'
-                          to try tab or commas [default: auto]
-    -c --comment CHAR     Comment/Header char [default: #]
-    --header              Print a header to the report
-    -i --inspect          Gather more informations on column content      
-    --verbose             Enable verbose mode
+    -s, --separator CHAR   Character separating the values, 'tab' for tab and 'auto'
+                           to try tab or commas [default: auto]
+    -c, --comment CHAR     Comment/Header char [default: #]
+    -i, --inspect          Gather more informations on column content [if valid column]     
+    --header               Print a header to the report
+    --verbose              Enable verbose mode
   """, version=version, argv=commandLineParams())
 
 
@@ -94,6 +141,7 @@ proc main(): int =
   var
     sepList = newSeq[char]()
     commentChar = $args["--comment"]
+
   if $args["--separator"] == "auto":
     sepList.add("\t")
     sepList.add(",")
@@ -105,17 +153,20 @@ proc main(): int =
   let
     separators = sepList
     printHeader = bool(args["--header"])
+    doInspect   = bool(args["--inspect"])
   
   if args["--verbose"]:
     stderr.writeLine("Separator: ", separators)
+
   # Prepare the 
   # Process file read by read
 
   var
     okFiles = 0
     badFiles = 0
+    filteredFiles = newTable[string, char]()
 
-  if printHeader:
+  if printHeader and not doInspect:
     echo "File\tPassQC\tColumns\tRows\tSeparator"
   for file in @(args["<FILE>"]):
     var
@@ -126,21 +177,30 @@ proc main(): int =
     for sepChar in separators:
       let check = checkFile(file, sepChar, commentChar[0])
       if args["--verbose"]:
-        echo "<", sepChar, "> ", check
+        stderr.writeLine "<", sepChar, "> ", check
       if check.valid == true:
         if bestFile.columns < check.columns:
           bestFile = check
     
     if bestFile.valid == true:
       okFiles += 1
+      filteredFiles[file] = bestFile.sepchar
     else:
       badFiles += 1
-    echo file, "\t", bestFile.toString(printHeader)
+    if not doInspect:
+      echo file, "\t", bestFile.toString(printHeader)
   if args["--verbose"]:
     stderr.writeLine(okFiles, " valid. ", badFiles, " non-valid files.")
   
   if badFiles > 0:
     return 1
+
+  # Inspect?
+  if doInspect:
+    for file, separator in filteredFiles.pairs():
+      if printHeader:
+        echo "File\tColID\tColName\tTypes\tTopItem\tTopRatio"
+      checkColumns(file, separator, commentChar[0])
 
   return 0
 
