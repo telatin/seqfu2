@@ -17,6 +17,7 @@ import subprocess
 DEFAULT_COUNTER_LEN = 5
 class SplitOpt:
     def __init__(self, args, version=None):
+        self.bin  = getBin(args.bin)
         self.tags = [args.for_tag, args.rev_tag]
         self.seqfuver = version
         self.threads = int(args.threads) if args.threads is not None else 1
@@ -70,34 +71,65 @@ class SplitOpt:
         else:
             return os.path.join(dirname, m.group(1)), len(m.group(2)), m.group(3), format
 
+def getBin(bin=None):
+    if bin:
+        return bin
+    # check env variable SEQFU_BIN
+    if "SEQFU_BIN" in os.environ:
+        return os.environ["SEQFU_BIN"]
+    else:
+        return "seqfu"
+
 def checkSeqfuVersion(minver="1.13.0", verbose=False):
-    cmd = ["seqfu", "--version"]
+    versionRequested = minver.split(".")
+    versionOk = False
+    versionDetected = ["-", "-", "-"]
+    cmd = [getBin(), "--version"]
+    if verbose:
+        print("[getVersion] %s, requested %s" %  (" ".join(cmd), minver), 
+            file=sys.stderr)
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         version = p.stdout.read().decode("utf-8").split("\n")[0].strip().split(".")
 
         if len(version) < 3:
-            return False, None        
+            versionDetected[0] = version     
 
         if verbose:
-            print("[cmd] seqfu version: %s" % '.'.join(version), file=sys.stderr)
+            print("[getVersion.cmd] seqfu version: %s" % '.'.join(version), file=sys.stderr)
 
+        versionDetected = version
 
         # Compare semver
-        if version[0] < minver.split(".")[0]:
-            return False, version
-        elif version[0] == minver.split(".")[0]:
-            if version[1] < minver.split(".")[1]:
-                return False, version
-            elif version[1] == minver.split(".")[1]:
-                if version[2] < minver.split(".")[2]:
-                    return False, version
-                return True, version
-        else:
-            return True, version
+        if version[0] < versionRequested[0]:
+            if verbose:
+                print("\tMajor version too low: %s < %s" % (version[0], minver.split(".")[0]), file=sys.stderr)
+            return versionOk, versionDetected
+        elif version[0] == versionRequested[0]:
+            # 1.x.f == 1.y.z
+            if version[1] < versionRequested[1]:
+                if verbose:
+                    print("\tMiddle version too low: %s < %s" % (version[0], versionRequested[0]), file=sys.stderr)
+                return versionOk, versionDetected
+            elif version[1] == versionRequested[1]:
+                if version[2] < versionRequested[2]:
+                    if verbose:
+                        print("\tLast version too low: %s < %s" % (version[0], minver.split(".")[0]), file=sys.stderr)
+                    return versionOk, versionDetected
+                else:
+                    versionOk = True
+                    return versionOk, versionDetected
+            else:
+                versionOk = True
+                return versionOk, versionDetected
+        elif version[0] > versionRequested[0]:
+            versionOk = True
+            return versionOk, versionDetected
     except Exception as e:
         print("Error: `seqfu` not found:", e, file=sys.stderr)
-        return False
+        return versionOk, versionDetected
+
+    return versionOk, [getBin(), "x", "x"]
 
 def parse_bases(bases):
     """
@@ -213,7 +245,7 @@ def runSingleCommand(cmd1, output, opt):
 
 
 def last_seq(file):
-    cmd = ["seqfu", "tail", "-n", "1", file]
+    cmd = [getBin(), "tail", "-n", "1", file]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return p.stdout.read().decode("utf-8").split("\n")[0].split("\t")[0].split(" ")[0].strip()[1:]
 
@@ -229,8 +261,8 @@ def splitFileBySeqs(input, num_seqs, opt):
 
         n += 1
         output = open(opt.getOutput(n), "w")
-        cat = ["seqfu", "cat", opt.format, fromArg, fromSeq, input]
-        head = ["seqfu", "head", "--print-last", "-n", str(num_seqs)]
+        cat = [getBin(opt.bin), "cat", opt.format, fromArg, fromSeq, input]
+        head = [getBin(opt.bin), "head", "--print-last", "-n", str(num_seqs)]
         run, last  = runcmds(cat, head, output, opt)
         
         if last is None:
@@ -263,7 +295,7 @@ def splitFileByBp(input, bp, opt):
         if opt.verbose:
             print("Step: ", n, " to: ", output.name, " (last: "+fromSeq+")" if fromSeq else '', file=sys.stderr)
   
-        cat = ["seqfu", "cat","--print-last", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
+        cat = [getBin(opt.bin), "cat","--print-last", opt.format, fromArg, fromSeq, "--max-bp", str(bp), input]
         last  = runSingleCommand(cat, output, opt)
         
         if last is None:
@@ -286,7 +318,7 @@ def splitFileInN(input, n, opt):
     """
     processes = set()
     for i in range(n):
-        cmd = ["seqfu", "cat", "--skip", str(n), "--skip-first", str(i), opt.format, input]
+        cmd = [getBin(opt.bin), "cat", "--skip", str(n), "--skip-first", str(i), opt.format, input]
         cmd = removeNone(cmd)
         
         output = open(opt.getOutput(i+1), "w")
@@ -327,16 +359,24 @@ if __name__ == "__main__":
     other.add_argument("--threads", help="Number of threads (-n only) [default: %(default)s", default=8, type=int)
     other.add_argument("--number-char", help="Character used to represent the progressive number in output string [default: %(default)s", default="0", type=str)
     other.add_argument("--compress", help="Force compression of the output files", action="store_true")
+    other.add_argument("--bin", help="Seqfu binary, can be $SEQFU_BIN [deafault: %(default)s]", default=getBin())
     other.add_argument("--verbose", help="Verbose mode", action="store_true")
     other.add_argument("--debug", help="Debug mode", action="store_true")
+    
 
     # version
     parser.add_argument("--version", action="version", version="%(prog)s " + __VERSION__)
     args = parser.parse_args()
 
-    checked, version = checkSeqfuVersion("1.13.0", args.verbose)
+
+    try:
+        checked, version = checkSeqfuVersion("1.13.0", args.verbose)
+    except Exception as e:
+        print(checkSeqfuVersion("1.13.0", args.verbose))
+        print("Error:", e, file=sys.stderr)
+        sys.exit(1)
     if not checked:
-        print("Error: seqfu version 1.13.0 or higher is required.", file=sys.stderr)
+        print("Error: seqfu version 1.13.0 or higher is required, %s found" % ".".join(version), file=sys.stderr)
         sys.exit(1)
 
     opt = SplitOpt(args, version)

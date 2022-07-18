@@ -23,6 +23,16 @@ proc isInterleaved(f: string): int =
   # Not a FASTA/FASTQ file
   return -1
 
+proc fieldToSeq(f: seq[string]): seq[int] =
+  result = newSeq[int](8)
+  for i, v in f:
+    result[i] = len(v)
+
+proc tot(s: seq[int]): int =
+  result = 0
+  for i, v in s:
+    if v > 0:
+      result = i
 
 proc fastx_tabulate(argv: var seq[string]): int =
   let args = docopt("""
@@ -37,7 +47,7 @@ Options:
   -i, --interleaved        Input is interleaved (paired-end)
   -d, --detabulate         Convert TSV to FASTQ (if reading from file is autodetected) 
   -c, --comment-sep CHAR   Separator between name and comment (default: tab)
-  -s, --field-sep CHAR     Field separator (default: tab)
+  -s, --field-sep CHAR     Field separator when deinterleaving (default: tab)
   -v, --verbose            Verbose output
   -h, --help               Show this help
 
@@ -57,7 +67,11 @@ Options:
     detabulate  = if args["--detabulate"]: true
                   else: false
 
-
+  if verbose:
+    stderr.writeLine("# [Seqfu tab] Reading from: ", inputFile)
+    stderr.writeLine("# Field separator: \"", fieldSeparator, "\"")
+    stderr.writeLine("# Comment separator: \"", commentSeparator, "\"")
+    
   if inputFile != "-":
     if not fileExists(inputFile):
       stderr.writeLine("ERROR: File not found: ", inputFile)
@@ -75,24 +89,31 @@ Options:
         interleaved = true
 
     
-  if verbose:
-    stderr.writeLine("# Reading from: ", inputFile)
-    stderr.writeLine("# Field separator: \"", fieldSeparator, "\"")
-    stderr.writeLine("# Comment separator: \"", commentSeparator, "\"")
+
 
   if detabulate:
     # convert TSV to FASTQ (autodetect pairs)
     if inputFile == "-":
       inputFile = "/dev/stdin"
     if verbose:
-      stderr.writeLine("Importing tabular file: ", inputFile)
+      stderr.writeLine("[Detabulate] Importing tabular file: ", inputFile)
     let file = newGzFileStream(inputFile)
     defer: file.close()
-    var line: string  # Declare line variable
+    var 
+      line: string  # Declare line variable
+      c = 0
     while not file.atEnd():
+      c += 1
       line = file.readLine()
-      let fields = line.split(fieldSeparator)
-      if len(fields) == 3:
+      let
+        fields = line.split(fieldSeparator)
+        tot = len(fields)
+        lens = fieldToSeq(fields)
+      if verbose and c < 3:
+        stderr.writeLine("Line ", c, ": ", tot, " fields:", lens)
+        
+      # FASTA [Name, Comment, sequence]
+      if lens.tot == 3 or (lens[3] == 0):
         # FASTA: Name, comment, sequence
         let
           name = fields[0]
@@ -100,7 +121,8 @@ Options:
                     else: ""
           sequence = fields[2]
         echo '>', name, comment, "\n", sequence
-      elif len(fields) == 4:
+      # FASTQ Single [Name, Comment, Sequence, Quality]
+      elif (lens.tot == 3 and lens[3] > 0) and (lens[4] == 0):
         # FASTQ-se
         let
           name = fields[0]
@@ -112,8 +134,8 @@ Options:
           stderr.writeLine("ERROR: Sequence and quality are not the same length at ", name)
           quit(1)
         echo '@', name, comment, "\n", sequence, "\n+\n", quality
-      elif len(fields) == 8:
-        # FASTQ-PE
+      elif lens.tot == 7 and lens[7] > 0:
+        # FASTQ-PE [R1 Name, R1 Comment, R1 Sequence, R1 Quality, R2 Name, R2 Comment, R2 Sequence, R2 Quality]
         let
           name1 = fields[0]
           comm1 = if len(fields[1]) > 0: commentSeparator & fields[1]
@@ -132,27 +154,36 @@ Options:
           quit(1)
         else:
           echo '@', name1, comm1, "\n", seq1, "\n+\n", qual1, "\n@", name2, comm2, "\n", seq1, "\n+\n", qual2
-
       else:
-        stderr.writeLine("Unsupported format: ", len(fields), " columns found. Expecting 3, 4 or 8.")
-        stderr.writeLine("Line: ", line)
-        if len(fields) == 1:
-          stderr.writeLine("Are you using the correct field separator? <", fieldSeparator, ">")
+        stderr.writeLine("ERROR: Unrecognized format: ", line)
+        stderr.writeLine("Tot: ", lens.tot, " len[7]:", lens[7])
         quit(1)
 
+
   else:
+     # [TABULATE] Convert to table
     if verbose:
-      stderr.writeLine("Tabulating sequence file: ", inputFile)
-    # Convert to table
+      stderr.writeLine("Tabulating sequence file: ", inputFile, " (", interleaved, ")")
+   
     if not interleaved:
+      ## Single End = not interleaved
       for record in readfq(inputFile):
-        echo record.name, fieldSeparator, record.comment, fieldSeparator, record.sequence, fieldSeparator, record.quality
+        let
+          comment = (record.comment).multiReplace({"\t": " "})
+        echo record.name, fieldSeparator, comment, fieldSeparator, record.sequence, fieldSeparator, record.quality
     else:
+      ## Interleaved
       var
         c = 0
         R1: FQRecord
       for R2 in readfq(inputFile):
+        
+        let
+          r2comment = (R2.comment).multiReplace({"\t": " "})        
         c += 1
         if (c mod 2) == 0:
           echo R1.name, fieldSeparator, R1.comment, fieldSeparator, R1.sequence, fieldSeparator, R1.quality, fieldSeparator, R2.name, fieldSeparator, R2.comment, fieldSeparator, R2.sequence, fieldSeparator, R2.quality
+
+        # Assign current read to "previous" read, incl comment
         R1 = R2
+        R1.comment = r2comment

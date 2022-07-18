@@ -31,4 +31,4 @@ jobs:
         uses: skynet-core/nim@v1.2
         with:
           # Command to run
-          command: sudo apk add zlib-dev python3  && cp  /usr/bin/python3  /usr/bin/python && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
+          command: sudo apk add zlib-dev python3 perl  && cp  /usr/bin/python3  /usr/bin/python && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh

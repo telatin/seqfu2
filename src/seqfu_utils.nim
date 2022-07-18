@@ -514,7 +514,9 @@ template initClosure*(id:untyped,iter:untyped) =
 
 
 proc findOligoMatches*(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[int] =
-  let dna = '-'.repeat(len(primer) - 1) & sequence & '-'.repeat(len(primer) - 1)
+  let
+    dna = ('-'.repeat(len(primer) - 1) & sequence & '-'.repeat(len(primer) - 1)).toUpper()
+    primer = primer.toUpper()
 
   for pos in 0..len(dna)-len(primer):
     let query = dna[pos..<pos+len(primer)]

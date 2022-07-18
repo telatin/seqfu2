@@ -18,6 +18,8 @@ type
     valid: bool
     sep: string
     errormsg: string
+    emptycols: seq[int]
+    colinfo: seq[string]
 
 proc toString(s: checkResult, withHeader=false): string =
   if s.valid:
@@ -34,11 +36,11 @@ proc checkFile(f: string, sep: char, header: char): checkResult =
   var parser: CsvParser
 
   if sep == '\t':
-    result.sep = "<tab>"
+    result.sep = "[tab]"
   elif sep == ' ':
-    result.sep = "<space>"
+    result.sep = "[space]"
   else:
-    result.sep = $sep
+    result.sep = "[" & $sep & "]"
 
   var
     total_lines = 0
@@ -82,6 +84,7 @@ proc main(): int =
                           to try tab or commas [default: auto]
     -c --comment CHAR     Comment/Header char [default: #]
     --header              Print a header to the report
+    -i --inspect          Gather more informations on column content      
     --verbose             Enable verbose mode
   """, version=version, argv=commandLineParams())
 

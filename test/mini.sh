@@ -388,7 +388,7 @@ else
   PASS=$((PASS+1))
 fi
 
-
+echo "[VERSION] $("$BINDIR"/seqfu version)"
 
 ### Check failures
 separator
