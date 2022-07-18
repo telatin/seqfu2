@@ -20,7 +20,8 @@ include ./fastx_head
 include ./fastx_tail
 include ./fastx_stats
 include ./fastx_sort
-include ./fastx_grep
+include ./fastx_grep # legacy
+include ./fastx_grep2
 include ./fastq_merge_lanes
 include ./fastx_rc
 include ./fastx_qual
@@ -64,9 +65,11 @@ var progs = {
          "merge" : fastq_merge,
        "qual": fastx_qual,
        "view": fastx_view,
-       "grep": fastx_grep,
-       "head": fastx_head,
-       "tail": fastx_tail,
+       "grep": fastx_grep2,
+       "grep-legacy": fastx_grep,
+       "head": fastx_head_v2,
+       #"head-legacy": fastx_head_v1,
+       "tail": fastx_tail_v2,
        "tabulate": fastx_tabulate,
             "tab": fastx_tabulate,
        "metadata": fastx_metadata,
