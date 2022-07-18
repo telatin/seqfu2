@@ -7,7 +7,6 @@ if [[ $NATIVE -gt $COMPRESSED ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: compression from $NATIVE to $COMPRESSED"
-    FAIL=$((FAIL+1))
     ERRORS=$((ERRORS+1))
 fi
 

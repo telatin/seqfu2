@@ -9,12 +9,7 @@ python --version
 # Single file
 OUTDIR=$(mktemp -d)
 
-count() {
-    "$BINDIR"/seqfu count "$1" | cut -f 2
-}
-bp() {
-    "$BINDIR"/seqfu cat "$@" | "$BINDIR"/seqfu stats | grep -v "Total bp" | cut -f 3
-}
+
 
 if [[ ! -d "$OUTDIR" ]]; then
     echo "Error: output directory not created"

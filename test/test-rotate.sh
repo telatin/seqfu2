@@ -8,7 +8,6 @@ if [[ $ROTATE = "AAAAAAAAAACTGCTACTAACACGTACTACTG" ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: rotated seq $ROTATE  should start with polyA"
-    FAIL=$((FAIL+1))
     ERRORS=$((ERRORS+1))
 fi
 
@@ -17,7 +16,6 @@ if [[ $FORROT = "AAAAAAAAAACTGCTACTAACACGTACTACTG" ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: rotated seq $ROTATE  (pattern) should start with polyA"
-    FAIL=$((FAIL+1))
     ERRORS=$((ERRORS+1))
 fi
 
@@ -26,6 +24,5 @@ if [[ $REVROT = "GTTTTTTTTTTCAGTAGTACGTGTTAGTAGCA" ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: rotated seq $ROTATE  (reverse pattern) should start with GTTT."
-    FAIL=$((FAIL+1))
     ERRORS=$((ERRORS+1))
 fi

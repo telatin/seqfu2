@@ -5,16 +5,11 @@ PYERR=$?
 if [[ -e "$BINDIR"/fu-split ]] && [[ $PYERR == 0 ]]; then
 
 python --version
-
+export SEQFU_BIN="$BINDIR"/seqfu
 # Single file
 OUTDIR=$(mktemp -d)
 echo " * Outdir: $OUTDIR"
-count() {
-    "$BINDIR"/seqfu count "$1" | cut -f 2
-}
-bp() {
-    "$BINDIR"/seqfu cat "$@" | "$BINDIR"/seqfu stats | grep -v "Total bp" | cut -f 3
-}
+
 
 if [[ ! -d "$OUTDIR" ]]; then
     echo "Error: output directory not created"

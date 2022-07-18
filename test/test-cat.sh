@@ -4,12 +4,6 @@
 TMP=$(mktemp)
 "$BINDIR"/seqfu stats --basename "$iAmpli" > "$TMP"
 
-count() {
-    "$BINDIR"/seqfu count "$1" | cut -f 2
-}
-bp() {
-    "$BINDIR"/seqfu stats "$1" | grep -v "Total bp" | cut -f 3 
-}
 
 MSG="Precheck input file has 1000 sequences"
 if [[ $(count "$FILES"/numbers.fa) == 1000 ]]; then

@@ -13,11 +13,20 @@ iAmpli="$FILES"/filt.fa.gz
 iSort="$FILES"/sort.fa
 iMini="$FILES"/target.fa
 i16S="$FILES"/primers/16S_R1.fq.gz
+iComments="$FILES"/comments.fastq
+iNum="$FILES"/numbers.fa
+
 OK='\033[0;32mOK\033[0m'
 FAIL='\033[0;31mFAIL\033[0m'
 STAR='\033[1;34m*\033[0m'
 ERRORS=0
 
+count() {
+    "$BINDIR"/seqfu count "$1" | cut -f 2
+}
+bp() {
+    "$BINDIR"/seqfu cat "$@" | "$BINDIR"/seqfu stats | grep -v "Total bp" | cut -f 3
+}
 
 function separator {
   # if length $1 > 0; then
