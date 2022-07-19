@@ -29,6 +29,7 @@ jobs:
       - run: nimble build --passL:-lz -d:useLibzipSrc -d:release --opt:speed -Y
       - run: chmod +x ./scripts/* && cp -v ./scripts/* ./bin/
       - run: export PATH="$PATH":bin/ && bin/seqfu version && bash test/mini.sh
+      - run: echo "${HOME}/bin" >> $GITHUB_PATH
       - name: Generate terminal images with rich-codex
         uses: ewels/rich-codex@v1
         with:
