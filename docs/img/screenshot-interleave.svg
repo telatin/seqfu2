@@ -1,4 +1,4 @@
-<svg class="rich-terminal" viewBox="0 0 1031 562.4" xmlns="http://www.w3.org/2000/svg">
+<svg class="rich-terminal" viewBox="0 0 994 98.8" xmlns="http://www.w3.org/2000/svg">
     <!-- Generated with Rich https://www.textualize.io -->
     <style>
 
@@ -19,119 +19,43 @@
         font-weight: 700;
     }
 
-    .terminal-2326595990-matrix {
+    .terminal-1584863364-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-2326595990-title {
+    .terminal-1584863364-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-2326595990-r1 { fill: #c5c8c6 }
+    .terminal-1584863364-r1 { fill: #c5c8c6 }
     </style>
 
     <defs>
-    <clipPath id="terminal-2326595990-clip-terminal">
-      <rect x="0" y="0" width="1011.5999999999999" height="511.4" />
+    <clipPath id="terminal-1584863364-clip-terminal">
+      <rect x="0" y="0" width="975.0" height="47.8" />
     </clipPath>
-    <clipPath id="terminal-2326595990-line-0">
-    <rect x="0" y="1.5" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-1">
-    <rect x="0" y="25.9" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-2">
-    <rect x="0" y="50.3" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-3">
-    <rect x="0" y="74.7" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-4">
-    <rect x="0" y="99.1" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-5">
-    <rect x="0" y="123.5" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-6">
-    <rect x="0" y="147.9" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-7">
-    <rect x="0" y="172.3" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-8">
-    <rect x="0" y="196.7" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-9">
-    <rect x="0" y="221.1" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-10">
-    <rect x="0" y="245.5" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-11">
-    <rect x="0" y="269.9" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-12">
-    <rect x="0" y="294.3" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-13">
-    <rect x="0" y="318.7" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-14">
-    <rect x="0" y="343.1" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-15">
-    <rect x="0" y="367.5" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-16">
-    <rect x="0" y="391.9" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-17">
-    <rect x="0" y="416.3" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-18">
-    <rect x="0" y="440.7" width="1012.6" height="24.65"/>
-            </clipPath>
-<clipPath id="terminal-2326595990-line-19">
-    <rect x="0" y="465.1" width="1012.6" height="24.65"/>
+    <clipPath id="terminal-1584863364-line-0">
+    <rect x="0" y="1.5" width="976" height="24.65"/>
             </clipPath>
     </defs>
 
-    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1029" height="560.4" rx="8"/><text class="terminal-2326595990-title" fill="#c5c8c6" text-anchor="middle" x="514" y="27">SeqFu&#160;interleave</text>
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="992" height="96.8" rx="8"/><text class="terminal-1584863364-title" fill="#c5c8c6" text-anchor="middle" x="496" y="27">SeqFu&#160;interleave</text>
             <g transform="translate(26,22)">
             <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
             <circle cx="22" cy="0" r="7" fill="#febc2e"/>
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
         
-    <g transform="translate(9, 41)" clip-path="url(#terminal-2326595990-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-1584863364-clip-terminal)">
     
-    <g class="terminal-2326595990-matrix">
-    <text class="terminal-2326595990-r1" x="0" y="20" textLength="378.2" clip-path="url(#terminal-2326595990-line-0)">$&#160;./bin/seqfu&#160;interleave&#160;--help</text><text class="terminal-2326595990-r1" x="1012.6" y="20" textLength="12.2" clip-path="url(#terminal-2326595990-line-0)">
-</text><text class="terminal-2326595990-r1" x="0" y="44.4" textLength="329.4" clip-path="url(#terminal-2326595990-line-1)">ilv:&#160;interleave&#160;FASTQ&#160;files</text><text class="terminal-2326595990-r1" x="1012.6" y="44.4" textLength="12.2" clip-path="url(#terminal-2326595990-line-1)">
-</text><text class="terminal-2326595990-r1" x="1012.6" y="68.8" textLength="12.2" clip-path="url(#terminal-2326595990-line-2)">
-</text><text class="terminal-2326595990-r1" x="0" y="93.2" textLength="732" clip-path="url(#terminal-2326595990-line-3)">&#160;&#160;Usage:&#160;ilv&#160;[options]&#160;-1&#160;&lt;forward-pair&gt;&#160;[-2&#160;&lt;reverse-pair&gt;]</text><text class="terminal-2326595990-r1" x="1012.6" y="93.2" textLength="12.2" clip-path="url(#terminal-2326595990-line-3)">
-</text><text class="terminal-2326595990-r1" x="1012.6" y="117.6" textLength="12.2" clip-path="url(#terminal-2326595990-line-4)">
-</text><text class="terminal-2326595990-r1" x="0" y="142" textLength="939.4" clip-path="url(#terminal-2326595990-line-5)">&#160;&#160;-f&#160;--for-tag&#160;&lt;tag-1&gt;&#160;&#160;&#160;&#160;&#160;&#160;&#160;string&#160;identifying&#160;forward&#160;files&#160;[default:&#160;auto]</text><text class="terminal-2326595990-r1" x="1012.6" y="142" textLength="12.2" clip-path="url(#terminal-2326595990-line-5)">
-</text><text class="terminal-2326595990-r1" x="0" y="166.4" textLength="939.4" clip-path="url(#terminal-2326595990-line-6)">&#160;&#160;-r&#160;--rev-tag&#160;&lt;tag-2&gt;&#160;&#160;&#160;&#160;&#160;&#160;&#160;string&#160;identifying&#160;reverse&#160;files&#160;[default:&#160;auto]</text><text class="terminal-2326595990-r1" x="1012.6" y="166.4" textLength="12.2" clip-path="url(#terminal-2326595990-line-6)">
-</text><text class="terminal-2326595990-r1" x="0" y="190.8" textLength="854" clip-path="url(#terminal-2326595990-line-7)">&#160;&#160;-o&#160;--output&#160;&lt;outputfile&gt;&#160;&#160;&#160;save&#160;file&#160;to&#160;&lt;out-file&gt;&#160;instead&#160;of&#160;STDOUT</text><text class="terminal-2326595990-r1" x="1012.6" y="190.8" textLength="12.2" clip-path="url(#terminal-2326595990-line-7)">
-</text><text class="terminal-2326595990-r1" x="0" y="215.2" textLength="1012.6" clip-path="url(#terminal-2326595990-line-8)">&#160;&#160;-c&#160;--check&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;enable&#160;careful&#160;mode&#160;(check&#160;sequence&#160;names&#160;and&#160;numbers)</text><text class="terminal-2326595990-r1" x="1012.6" y="215.2" textLength="12.2" clip-path="url(#terminal-2326595990-line-8)">
-</text><text class="terminal-2326595990-r1" x="0" y="239.6" textLength="597.8" clip-path="url(#terminal-2326595990-line-9)">&#160;&#160;-v&#160;--verbose&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;print&#160;verbose&#160;output</text><text class="terminal-2326595990-r1" x="1012.6" y="239.6" textLength="12.2" clip-path="url(#terminal-2326595990-line-9)">
-</text><text class="terminal-2326595990-r1" x="1012.6" y="264" textLength="12.2" clip-path="url(#terminal-2326595990-line-10)">
-</text><text class="terminal-2326595990-r1" x="0" y="288.4" textLength="512.4" clip-path="url(#terminal-2326595990-line-11)">&#160;&#160;-s&#160;--strip-comments&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;skip&#160;comments</text><text class="terminal-2326595990-r1" x="1012.6" y="288.4" textLength="12.2" clip-path="url(#terminal-2326595990-line-11)">
-</text><text class="terminal-2326595990-r1" x="0" y="312.8" textLength="915" clip-path="url(#terminal-2326595990-line-12)">&#160;&#160;-p&#160;--prefix&#160;&quot;string&quot;&#160;&#160;&#160;&#160;&#160;&#160;&#160;rename&#160;sequences&#160;(append&#160;a&#160;progressive&#160;number)</text><text class="terminal-2326595990-r1" x="1012.6" y="312.8" textLength="12.2" clip-path="url(#terminal-2326595990-line-12)">
-</text><text class="terminal-2326595990-r1" x="1012.6" y="337.2" textLength="12.2" clip-path="url(#terminal-2326595990-line-13)">
-</text><text class="terminal-2326595990-r1" x="0" y="361.6" textLength="256.2" clip-path="url(#terminal-2326595990-line-14)">guessing&#160;second&#160;file:</text><text class="terminal-2326595990-r1" x="1012.6" y="361.6" textLength="12.2" clip-path="url(#terminal-2326595990-line-14)">
-</text><text class="terminal-2326595990-r1" x="0" y="386" textLength="878.4" clip-path="url(#terminal-2326595990-line-15)">&#160;&#160;by&#160;default&#160;&lt;forward-pair&gt;&#160;is&#160;scanned&#160;for&#160;_R1.&#160;and&#160;substitute&#160;with&#160;_R2.</text><text class="terminal-2326595990-r1" x="1012.6" y="386" textLength="12.2" clip-path="url(#terminal-2326595990-line-15)">
-</text><text class="terminal-2326595990-r1" x="0" y="410.4" textLength="646.6" clip-path="url(#terminal-2326595990-line-16)">&#160;&#160;if&#160;this&#160;fails,&#160;the&#160;patterns&#160;_1.&#160;and&#160;_2.&#160;are&#160;tested.</text><text class="terminal-2326595990-r1" x="1012.6" y="410.4" textLength="12.2" clip-path="url(#terminal-2326595990-line-16)">
-</text><text class="terminal-2326595990-r1" x="1012.6" y="434.8" textLength="12.2" clip-path="url(#terminal-2326595990-line-17)">
-</text><text class="terminal-2326595990-r1" x="0" y="459.2" textLength="97.6" clip-path="url(#terminal-2326595990-line-18)">example:</text><text class="terminal-2326595990-r1" x="1012.6" y="459.2" textLength="12.2" clip-path="url(#terminal-2326595990-line-18)">
-</text><text class="terminal-2326595990-r1" x="1012.6" y="483.6" textLength="12.2" clip-path="url(#terminal-2326595990-line-19)">
-</text><text class="terminal-2326595990-r1" x="0" y="508" textLength="463.6" clip-path="url(#terminal-2326595990-line-20)">&#160;&#160;&#160;&#160;ilv&#160;-1&#160;file_R1.fq&#160;&gt;&#160;interleaved.fq</text><text class="terminal-2326595990-r1" x="1012.6" y="508" textLength="12.2" clip-path="url(#terminal-2326595990-line-20)">
+    <g class="terminal-1584863364-matrix">
+    <text class="terminal-1584863364-r1" x="0" y="20" textLength="305" clip-path="url(#terminal-1584863364-line-0)">$&#160;seqfu&#160;interleave&#160;--help</text><text class="terminal-1584863364-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-1584863364-line-0)">
+</text><text class="terminal-1584863364-r1" x="0" y="44.4" textLength="341.6" clip-path="url(#terminal-1584863364-line-1)">/bin/sh:&#160;1:&#160;seqfu:&#160;not&#160;found</text><text class="terminal-1584863364-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-1584863364-line-1)">
 </text>
     </g>
     </g>
