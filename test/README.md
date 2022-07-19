@@ -1,6 +1,6 @@
 # Testing
 
-![`echo $PATH`](../docs/img/debug-1.svg)
+![`echo $PATH | sed 's/:/\n/g'`](../docs/img/debug-1.svg)
 ![`nim --version`](../docs/img/debug-nim.svg)
-![`ls bin`](../docs/img/debug-2.svg)
-![`./bin/seqfu`](../docs/img/debug-3.svg)
+![`pwd`](../docs/img/debug-2.svg)
+![`find . -name "seqfu"`](../docs/img/debug-3.svg)
