@@ -1,4 +1,4 @@
-<svg class="rich-terminal" viewBox="0 0 5472 98.8" xmlns="http://www.w3.org/2000/svg">
+<svg class="rich-terminal" viewBox="0 0 994 611.1999999999999" xmlns="http://www.w3.org/2000/svg">
     <!-- Generated with Rich https://www.textualize.io -->
     <style>
 
@@ -19,43 +19,127 @@
         font-weight: 700;
     }
 
-    .terminal-2814682467-matrix {
+    .terminal-3834553924-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-2814682467-title {
+    .terminal-3834553924-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-2814682467-r1 { fill: #c5c8c6 }
+    .terminal-3834553924-r1 { fill: #c5c8c6 }
     </style>
 
     <defs>
-    <clipPath id="terminal-2814682467-clip-terminal">
-      <rect x="0" y="0" width="5452.4" height="47.8" />
+    <clipPath id="terminal-3834553924-clip-terminal">
+      <rect x="0" y="0" width="975.0" height="560.1999999999999" />
     </clipPath>
-    <clipPath id="terminal-2814682467-line-0">
-    <rect x="0" y="1.5" width="5453.4" height="24.65"/>
+    <clipPath id="terminal-3834553924-line-0">
+    <rect x="0" y="1.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-1">
+    <rect x="0" y="25.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-2">
+    <rect x="0" y="50.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-3">
+    <rect x="0" y="74.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-4">
+    <rect x="0" y="99.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-5">
+    <rect x="0" y="123.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-6">
+    <rect x="0" y="147.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-7">
+    <rect x="0" y="172.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-8">
+    <rect x="0" y="196.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-9">
+    <rect x="0" y="221.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-10">
+    <rect x="0" y="245.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-11">
+    <rect x="0" y="269.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-12">
+    <rect x="0" y="294.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-13">
+    <rect x="0" y="318.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-14">
+    <rect x="0" y="343.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-15">
+    <rect x="0" y="367.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-16">
+    <rect x="0" y="391.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-17">
+    <rect x="0" y="416.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-18">
+    <rect x="0" y="440.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-19">
+    <rect x="0" y="465.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-20">
+    <rect x="0" y="489.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-3834553924-line-21">
+    <rect x="0" y="513.9" width="976" height="24.65"/>
             </clipPath>
     </defs>
 
-    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="5470" height="96.8" rx="8"/>
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="992" height="609.2" rx="8"/>
             <g transform="translate(26,22)">
             <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
             <circle cx="22" cy="0" r="7" fill="#febc2e"/>
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
         
-    <g transform="translate(9, 41)" clip-path="url(#terminal-2814682467-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-3834553924-clip-terminal)">
     
-    <g class="terminal-2814682467-matrix">
-    <text class="terminal-2814682467-r1" x="0" y="20" textLength="146.4" clip-path="url(#terminal-2814682467-line-0)">$&#160;echo&#160;$PATH</text><text class="terminal-2814682467-r1" x="5453.4" y="20" textLength="12.2" clip-path="url(#terminal-2814682467-line-0)">
-</text><text class="terminal-2814682467-r1" x="0" y="44.4" textLength="5453.4" clip-path="url(#terminal-2814682467-line-1)">/opt/hostedtoolcache/Python/3.10.5/x64/bin:/opt/hostedtoolcache/Python/3.10.5/x64:/home/runner/bin:/home/runner/.nimble/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/snap/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin</text><text class="terminal-2814682467-r1" x="5453.4" y="44.4" textLength="12.2" clip-path="url(#terminal-2814682467-line-1)">
+    <g class="terminal-3834553924-matrix">
+    <text class="terminal-3834553924-r1" x="0" y="20" textLength="353.8" clip-path="url(#terminal-3834553924-line-0)">$&#160;echo&#160;$PATH&#160;|&#160;sed&#160;&#x27;s/:/\n/g&#x27;</text><text class="terminal-3834553924-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-3834553924-line-0)">
+</text><text class="terminal-3834553924-r1" x="0" y="44.4" textLength="512.4" clip-path="url(#terminal-3834553924-line-1)">/opt/hostedtoolcache/Python/3.10.5/x64/bin</text><text class="terminal-3834553924-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-3834553924-line-1)">
+</text><text class="terminal-3834553924-r1" x="0" y="68.8" textLength="463.6" clip-path="url(#terminal-3834553924-line-2)">/opt/hostedtoolcache/Python/3.10.5/x64</text><text class="terminal-3834553924-r1" x="976" y="68.8" textLength="12.2" clip-path="url(#terminal-3834553924-line-2)">
+</text><text class="terminal-3834553924-r1" x="0" y="93.2" textLength="195.2" clip-path="url(#terminal-3834553924-line-3)">/home/runner/bin</text><text class="terminal-3834553924-r1" x="976" y="93.2" textLength="12.2" clip-path="url(#terminal-3834553924-line-3)">
+</text><text class="terminal-3834553924-r1" x="0" y="117.6" textLength="292.8" clip-path="url(#terminal-3834553924-line-4)">/home/runner/.nimble/bin</text><text class="terminal-3834553924-r1" x="976" y="117.6" textLength="12.2" clip-path="url(#terminal-3834553924-line-4)">
+</text><text class="terminal-3834553924-r1" x="0" y="142" textLength="366" clip-path="url(#terminal-3834553924-line-5)">/home/linuxbrew/.linuxbrew/bin</text><text class="terminal-3834553924-r1" x="976" y="142" textLength="12.2" clip-path="url(#terminal-3834553924-line-5)">
+</text><text class="terminal-3834553924-r1" x="0" y="166.4" textLength="378.2" clip-path="url(#terminal-3834553924-line-6)">/home/linuxbrew/.linuxbrew/sbin</text><text class="terminal-3834553924-r1" x="976" y="166.4" textLength="12.2" clip-path="url(#terminal-3834553924-line-6)">
+</text><text class="terminal-3834553924-r1" x="0" y="190.8" textLength="280.6" clip-path="url(#terminal-3834553924-line-7)">/home/runner/.local/bin</text><text class="terminal-3834553924-r1" x="976" y="190.8" textLength="12.2" clip-path="url(#terminal-3834553924-line-7)">
+</text><text class="terminal-3834553924-r1" x="0" y="215.2" textLength="158.6" clip-path="url(#terminal-3834553924-line-8)">/opt/pipx_bin</text><text class="terminal-3834553924-r1" x="976" y="215.2" textLength="12.2" clip-path="url(#terminal-3834553924-line-8)">
+</text><text class="terminal-3834553924-r1" x="0" y="239.6" textLength="280.6" clip-path="url(#terminal-3834553924-line-9)">/home/runner/.cargo/bin</text><text class="terminal-3834553924-r1" x="976" y="239.6" textLength="12.2" clip-path="url(#terminal-3834553924-line-9)">
+</text><text class="terminal-3834553924-r1" x="0" y="264" textLength="488" clip-path="url(#terminal-3834553924-line-10)">/home/runner/.config/composer/vendor/bin</text><text class="terminal-3834553924-r1" x="976" y="264" textLength="12.2" clip-path="url(#terminal-3834553924-line-10)">
+</text><text class="terminal-3834553924-r1" x="0" y="288.4" textLength="256.2" clip-path="url(#terminal-3834553924-line-11)">/usr/local/.ghcup/bin</text><text class="terminal-3834553924-r1" x="976" y="288.4" textLength="12.2" clip-path="url(#terminal-3834553924-line-11)">
+</text><text class="terminal-3834553924-r1" x="0" y="312.8" textLength="317.2" clip-path="url(#terminal-3834553924-line-12)">/home/runner/.dotnet/tools</text><text class="terminal-3834553924-r1" x="976" y="312.8" textLength="12.2" clip-path="url(#terminal-3834553924-line-12)">
+</text><text class="terminal-3834553924-r1" x="0" y="337.2" textLength="109.8" clip-path="url(#terminal-3834553924-line-13)">/snap/bin</text><text class="terminal-3834553924-r1" x="976" y="337.2" textLength="12.2" clip-path="url(#terminal-3834553924-line-13)">
+</text><text class="terminal-3834553924-r1" x="0" y="361.6" textLength="183" clip-path="url(#terminal-3834553924-line-14)">/usr/local/sbin</text><text class="terminal-3834553924-r1" x="976" y="361.6" textLength="12.2" clip-path="url(#terminal-3834553924-line-14)">
+</text><text class="terminal-3834553924-r1" x="0" y="386" textLength="170.8" clip-path="url(#terminal-3834553924-line-15)">/usr/local/bin</text><text class="terminal-3834553924-r1" x="976" y="386" textLength="12.2" clip-path="url(#terminal-3834553924-line-15)">
+</text><text class="terminal-3834553924-r1" x="0" y="410.4" textLength="109.8" clip-path="url(#terminal-3834553924-line-16)">/usr/sbin</text><text class="terminal-3834553924-r1" x="976" y="410.4" textLength="12.2" clip-path="url(#terminal-3834553924-line-16)">
+</text><text class="terminal-3834553924-r1" x="0" y="434.8" textLength="97.6" clip-path="url(#terminal-3834553924-line-17)">/usr/bin</text><text class="terminal-3834553924-r1" x="976" y="434.8" textLength="12.2" clip-path="url(#terminal-3834553924-line-17)">
+</text><text class="terminal-3834553924-r1" x="0" y="459.2" textLength="61" clip-path="url(#terminal-3834553924-line-18)">/sbin</text><text class="terminal-3834553924-r1" x="976" y="459.2" textLength="12.2" clip-path="url(#terminal-3834553924-line-18)">
+</text><text class="terminal-3834553924-r1" x="0" y="483.6" textLength="48.8" clip-path="url(#terminal-3834553924-line-19)">/bin</text><text class="terminal-3834553924-r1" x="976" y="483.6" textLength="12.2" clip-path="url(#terminal-3834553924-line-19)">
+</text><text class="terminal-3834553924-r1" x="0" y="508" textLength="122" clip-path="url(#terminal-3834553924-line-20)">/usr/games</text><text class="terminal-3834553924-r1" x="976" y="508" textLength="12.2" clip-path="url(#terminal-3834553924-line-20)">
+</text><text class="terminal-3834553924-r1" x="0" y="532.4" textLength="195.2" clip-path="url(#terminal-3834553924-line-21)">/usr/local/games</text><text class="terminal-3834553924-r1" x="976" y="532.4" textLength="12.2" clip-path="url(#terminal-3834553924-line-21)">
+</text><text class="terminal-3834553924-r1" x="0" y="556.8" textLength="109.8" clip-path="url(#terminal-3834553924-line-22)">/snap/bin</text><text class="terminal-3834553924-r1" x="976" y="556.8" textLength="12.2" clip-path="url(#terminal-3834553924-line-22)">
 </text>
     </g>
     </g>

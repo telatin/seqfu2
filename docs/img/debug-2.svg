@@ -19,27 +19,27 @@
         font-weight: 700;
     }
 
-    .terminal-1407915046-matrix {
+    .terminal-1215106864-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-1407915046-title {
+    .terminal-1215106864-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-1407915046-r1 { fill: #c5c8c6 }
+    .terminal-1215106864-r1 { fill: #c5c8c6 }
     </style>
 
     <defs>
-    <clipPath id="terminal-1407915046-clip-terminal">
+    <clipPath id="terminal-1215106864-clip-terminal">
       <rect x="0" y="0" width="975.0" height="47.8" />
     </clipPath>
-    <clipPath id="terminal-1407915046-line-0">
+    <clipPath id="terminal-1215106864-line-0">
     <rect x="0" y="1.5" width="976" height="24.65"/>
             </clipPath>
     </defs>
@@ -51,11 +51,11 @@
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
         
-    <g transform="translate(9, 41)" clip-path="url(#terminal-1407915046-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-1215106864-clip-terminal)">
     
-    <g class="terminal-1407915046-matrix">
-    <text class="terminal-1407915046-r1" x="0" y="20" textLength="97.6" clip-path="url(#terminal-1407915046-line-0)">$&#160;ls&#160;bin</text><text class="terminal-1407915046-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-1407915046-line-0)">
-</text><text class="terminal-1407915046-r1" x="0" y="44.4" textLength="610" clip-path="url(#terminal-1407915046-line-1)">ls:&#160;cannot&#160;access&#160;&#x27;bin&#x27;:&#160;No&#160;such&#160;file&#160;or&#160;directory</text><text class="terminal-1407915046-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-1407915046-line-1)">
+    <g class="terminal-1215106864-matrix">
+    <text class="terminal-1215106864-r1" x="0" y="20" textLength="61" clip-path="url(#terminal-1215106864-line-0)">$&#160;pwd</text><text class="terminal-1215106864-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-1215106864-line-0)">
+</text><text class="terminal-1215106864-r1" x="0" y="44.4" textLength="439.2" clip-path="url(#terminal-1215106864-line-1)">/home/runner/work/seqfu2/seqfu2/test</text><text class="terminal-1215106864-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-1215106864-line-1)">
 </text>
     </g>
     </g>
