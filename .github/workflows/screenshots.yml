@@ -28,7 +28,7 @@ jobs:
           nim-version: 1.6.6
       - run: nimble build --passL:-lz -d:useLibzipSrc -d:release --opt:speed -Y
       - run: chmod +x ./scripts/* && cp -v ./scripts/* ./bin/
-      - run:  export PATH="$PATH":bin/ && bin/seqfu version && bash test/mini.sh
+      - run: export PATH="$PATH":bin/ && bin/seqfu version && bash test/mini.sh
       - name: Generate terminal images with rich-codex
         uses: ewels/rich-codex@v1
         with:
