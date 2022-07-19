@@ -37,5 +37,5 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 
 ## Splash screen
 
-![`./bin/seqfu`](docs/img/screenshot-seqfu.svg "SeqFu")
+![`seqfu`](docs/img/screenshot-seqfu.svg "SeqFu")
 
