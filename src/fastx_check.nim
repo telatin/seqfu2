@@ -217,10 +217,10 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
   if an error occurs. Will print a table with a report.
 
   Input is a single dataset:
-    <FQFILE>                     the forward read file
-    <REV>                        the reverse read file
-  or a directory of FASTQ files:
-    --dir <FQDIR>                the directory containing the FASTQ files
+    <FQFILE>                   the forward read file
+    <REV>                      the reverse read file
+  or a directory of FASTQ files (--dir):
+    <FQDIR>                    the directory containing the FASTQ files
 
   Options:
     -n, --no-paired            Disable autodetection of second pair

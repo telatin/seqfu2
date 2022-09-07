@@ -153,7 +153,7 @@ WC=$(echo "$CHECKDIR" | wc -l)
 WC_ERR=$(echo "$CHECKDIR" | grep -v OK | grep ERR | wc -l)
 
 
-MSG="Checked INVALID directory exit status"
+MSG="Checked INVALID directory ($FILES/primers) exit status"
 if [[ $EXIT -gt 0 ]]; then
     echo -e "$OK: $MSG (expected > 0, got $EXIT)"
     PASS=$((PASS+1))
