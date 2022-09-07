@@ -8,17 +8,20 @@ sort: 20
 Introduced in SeqFu 1.15
 ```
 
-
+Evaluates the integrity of DNA FASTQ files. 
 
 ```text
 Usage: seqfu check [options] <FQFILE> [<REV>]
        seqfu check [options] --dir <FQDIR>
 
-  Check the integrity of FASTQ files
+  Check the integrity of FASTQ files, returns non zero
+  if an error occurs. Will print a table with a report.
 
-  <FQFILE>                     the forward read file
-  <REV>                        the reverse read file
-  <FQDIR>                      the directory containing the FASTQ files
+  Input is a single dataset:
+    <FQFILE>                     the forward read file
+    <REV>                        the reverse read file
+  or a directory of FASTQ files:
+    --dir <FQDIR>                the directory containing the FASTQ files
 
   Options:
     -n, --no-paired            Disable autodetection of second pair
