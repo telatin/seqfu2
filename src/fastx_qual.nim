@@ -39,7 +39,8 @@ proc getStopPos(s: seq[RunningStat], w: int, minq, wndq: float, debug: bool): in
       wnd += s[j].mean
       c += 1
 
-    echo i, "\t", wnd, "\t", c, "\t", s[i].mean, "<", minq , "\t", (wnd / float(c)), "<", wndq
+    if debug:
+      echo "#DEBUG\t", i, "\t", wnd, "\t", c, "\t", s[i].mean, "<", minq , "\t", (wnd / float(c)), "<", wndq
     if s[i].mean < minq:
       return i
 
@@ -78,14 +79,15 @@ Additional output:
 
 Other options:
   -v, --verbose          Verbose output
-  --debug                Debug mode
   -O, --offset INT       Quality encoding offset [default: 33]
+  --debug                Debug mode
   --help                 Show this help
 
   """, version=version(), argv=argv)
 
     verbose       = args["--verbose"] 
-
+    if bool(args["--debug"]):
+      stderr.writeLine args
     let
       debug      = bool(args["--debug"])
       addGC      = args["--gc"]

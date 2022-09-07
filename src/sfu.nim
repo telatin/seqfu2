@@ -29,7 +29,7 @@ include ./fastq_merge
 include ./fastx_cat
 include ./fastx_metadata
 include ./fastx_tabulate
-
+include ./fastx_check
 include ./fu_rotate
 
 # Experimental
@@ -77,6 +77,7 @@ var progs = {
       "rotate": fastx_rotate,
         "rot": fastx_rotate,
         "restart": fastx_rotate,
+      "check": fqcheck,
 }.toTable
 
 proc main(args: var seq[string]): int =
@@ -85,6 +86,7 @@ proc main(args: var seq[string]): int =
     helps = {  "interleave [ilv]"  :  "interleave FASTQ pair ends",
                "deinterleave [dei]": "deinterleave FASTQ",
                "derep [der]"       : "feature-rich dereplication of FASTA/FASTQ files",
+#"check"             : "check FASTQ file for errors",
 #              "merge [mrg]"       : "join Paired End reads",
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",
@@ -104,16 +106,19 @@ proc main(args: var seq[string]): int =
                   "view"           : "view sequences with colored quality and oligo matches",
                }.toTable
 
-  if len(args) == 1 and (args[0] == "--version" or args[0] == "version"):
-    # If the first argument is either --version or version, print the version
+  if len(args) == 1 and (args[0] == "--version" or args[0] == "version" or args[0] == "-v"):
+    # If the first argument is either --version or version or -v, print the version
     echo(version())
     0
   elif len(args) == 1 and (args[0] == "--cite" or args[0] == "cite" or args[0] == "--citation" or args[0] == "citation"):
+    echo "SeqFu ", version()
+    echo "--------------------------------------------------------------------------------------------"
     echo "Telatin A, Fariselli P, Birolo G."
     echo "SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files."
     echo "Bioengineering 2021, 8, 59. doi.org/10.3390/bioengineering8050059"
     echo ""
-    echo "Website: https://telatin.github.io/seqfu2"
+    echo "Repository:    https://github.com/telatin/seqfu2"
+    echo "Documentation: https://telatin.github.io/seqfu2"
     0
   elif len(args) < 1 or not progs.contains(args[0]):
     # If the first argument is not a valid subprogram, print the help
