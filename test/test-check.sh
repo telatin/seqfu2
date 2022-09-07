@@ -147,6 +147,7 @@ else
 fi 
 
 ### CHECK INVALID DIR
+LSDIR=$(ls -lh "$FILES"/primers)
 CHECKDIR=$($BINDIR/seqfu check --dir "$FILES/primers")
 EXIT=$?
 WC=$(echo "$CHECKDIR" | wc -l)
@@ -168,7 +169,7 @@ if [[ $WC == $EXP ]]; then
     echo -e "$OK: $MSG (got $WC expected $EXP)"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG (got $WC expected $EXP)"
+    echo -e "$FAIL: $MSG (got $WC expected $EXP)\n$CHECKDIR\n$LSDIR"
     ERRORS=$((ERRORS+1))
 fi 
 
@@ -179,7 +180,7 @@ if [[ $WC_ERR == $EXP ]]; then
     echo -e "$OK: $MSG (got $WC_ERR expected $EXP)"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG (got $WC_ERR expected $EXP)"
+    echo -e "$FAIL: $MSG (got $WC_ERR expected $EXP)\n$CHECKDIR\n$LSDIR"
     ERRORS=$((ERRORS+1))
 fi 
 
@@ -197,7 +198,7 @@ if [[ $EXIT -eq 0 ]]; then
     echo -e "$OK: $MSG (expected 0, got $EXIT)"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG (expected 0, got $EXIT)"
+    echo -e "$FAIL: $MSG (expected 0, got $EXIT)\n$CHECKDIR\n$LSDIR"
     ERRORS=$((ERRORS+1))
 fi 
 
