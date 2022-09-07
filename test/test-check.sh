@@ -153,9 +153,7 @@ EXIT=$?
 WC=$(cat "$TEMPFILENAME" | wc -l)
 WC_ERR=$(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l)
 
-echo "--"
-cat "$TEMPFILENAME.log"
-echo "--"
+
 MSG="Checked INVALID directory ($FILES/primers) exit status"
 if [[ $EXIT -gt 0 ]]; then
     echo -e "$OK: $MSG (expected > 0, got $EXIT)"
@@ -194,9 +192,7 @@ EXIT=$?
 WC=$(cat "$TEMPFILENAME" | wc -l)
 WC_ERR=$(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l)
 
-echo "--"
-cat "$TEMPFILENAME.log"
-echo "--"
+
 
 MSG="Checked valid directory exit status"
 if [[ $EXIT -eq 0 ]]; then

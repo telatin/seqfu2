@@ -21,16 +21,16 @@ type
     isValid: bool
     errors: string
  
-proc namesMatch(a, b: string): bool =
+proc namesMatch(seqNameFwd, seqNameRev: string): bool =
   let
-    MINLEN = 4
-  if a == b:
+    MIN_REMAINING_NAME_LENGTH = 4
+  if seqNameFwd == seqNameRev:
     return true
   else:
     for PAD in 1 .. 3:
-      if len(a) >= MINLEN + PAD and len(b) >= MINLEN + PAD:
-        if a[0 .. a.len - PAD] == b[0 .. b.len - PAD]:
-          if len(a[0 .. a.len - PAD]) > MINLEN:
+      if len(seqNameFwd) >= MIN_REMAINING_NAME_LENGTH + PAD and len(seqNameRev) >= MIN_REMAINING_NAME_LENGTH + PAD:
+        if seqNameFwd[0 .. seqNameFwd.len - PAD] == seqNameRev[0 .. seqNameRev.len - PAD]:
+          if len(seqNameFwd[0 .. seqNameFwd.len - PAD]) > MIN_REMAINING_NAME_LENGTH:
             return true
           else:
             return false
