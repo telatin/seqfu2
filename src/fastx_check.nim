@@ -140,7 +140,7 @@ proc detectPairedFile(filename: string): string =
   
   return ""
 
-proc gatherFqFiles(dir: string, no_paired: bool): (seq[string], seq[string]) =
+proc gatherFqFiles(dir: string, no_paired, debug: bool): (seq[string], seq[string]) =
   let
     fqext = @[".fq", ".fastq", ".fq.gz", ".fastq.gz"]
     fwd   = @["_R1_", "_R1.", "_1.", "_1_"]
@@ -154,6 +154,8 @@ proc gatherFqFiles(dir: string, no_paired: bool): (seq[string], seq[string]) =
     if kind != pcDir and kind != pcLinkToDir: #pcFile pcLinkToFile, pcLinkToDir
       for ext in fqext:
         if ext in path.toLower() and  path notin files:
+          if debug:
+            stderr.writeLine "#DEBUG: Adding file: " & path
           files.add(path)
   if no_paired == true:
     singleEnd = files
@@ -247,7 +249,7 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
 
 
   if bool(args["--dir"]):
-    (seList, peList) = gatherFqFiles($args["<FQDIR>"], bool(args["--no-paired"]))
+    (seList, peList) = gatherFqFiles($args["<FQDIR>"], bool(args["--no-paired"]),bool(args["--debug"]))
     if args["--debug"]:
       stderr.writeLine "#DEBUG_DIR ", $args["<FQDIR>"], ": ", len(seList), " SE files and ", len(peList), " PE files"
   else:
