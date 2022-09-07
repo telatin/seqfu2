@@ -28,11 +28,12 @@ proc namesMatch(a, b: string): bool =
     return true
   else:
     for PAD in 1 .. 3:
-      if a[0 .. a.len - PAD] == b[0 .. b.len - PAD]:
-        if len(a[0 .. a.len - PAD]) > MINLEN:
-          return true
-        else:
-          return false
+      if len(a) >= MINLEN + PAD and len(b) >= MINLEN + PAD:
+        if a[0 .. a.len - PAD] == b[0 .. b.len - PAD]:
+          if len(a[0 .. a.len - PAD]) > MINLEN:
+            return true
+          else:
+            return false
   return false
 
 proc checkFqFile(filename: string): FQcheck =
@@ -273,6 +274,8 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
   
   if true:
     for file in seList:
+      if bool(args["--debug"]):
+        stderr.writeLine "#DEBUG: Processing SE: ", file
       let 
         result = checkFqFile(file)
       if result.isValid == false:
@@ -280,6 +283,8 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
       totseq += result.seqCount
       echo result.toString(bool(args["--thousands"]))
     for file in peList:
+      if bool(args["--debug"]):
+        stderr.writeLine "#DEBUG: Processing PE: ", file
       let 
         result = checkPairedFiles(file.split(";")[0], file.split(";")[1])
       if result.isValid == false:

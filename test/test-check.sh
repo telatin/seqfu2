@@ -203,7 +203,7 @@ if [[ $EXIT -eq 0 ]]; then
     echo -e "$OK: $MSG (expected 0, got $EXIT)"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG (expected 0, got $EXIT)\n$CHECKDIR\n$LSDIR"
+    echo -e "$FAIL: $MSG (expected 0, got $EXIT)\n"
     ERRORS=$((ERRORS+1))
 fi 
 
