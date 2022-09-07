@@ -148,10 +148,10 @@ fi
 
 ### CHECK INVALID DIR
 LSDIR=$(ls -lh "$FILES"/primers)
-CHECKDIR=$($BINDIR/seqfu check --dir "$FILES/primers")
+$BINDIR/seqfu check --dir "$FILES/primers" > "$TEMPFILENAME"
 EXIT=$?
-WC=$(echo "$CHECKDIR" | wc -l)
-WC_ERR=$(echo "$CHECKDIR" | grep -v OK | grep ERR | wc -l)
+WC=$(cat "$TEMPFILENAME" | wc -l)
+WC_ERR=$(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l)
 
 
 MSG="Checked INVALID directory ($FILES/primers) exit status"
@@ -169,7 +169,7 @@ if [[ $WC == $EXP ]]; then
     echo -e "$OK: $MSG (got $WC expected $EXP)"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG (got $WC expected $EXP)\n$CHECKDIR\n$LSDIR"
+    echo -e "$FAIL: $MSG (got $WC expected $EXP)\n$(cat "$TEMPFILENAME")\n$LSDIR"
     ERRORS=$((ERRORS+1))
 fi 
 
@@ -180,7 +180,7 @@ if [[ $WC_ERR == $EXP ]]; then
     echo -e "$OK: $MSG (got $WC_ERR expected $EXP)"
     PASS=$((PASS+1))
 else
-    echo -e "$FAIL: $MSG (got $WC_ERR expected $EXP)\n$CHECKDIR\n$LSDIR"
+    echo -e "$FAIL: $MSG (got $WC_ERR expected $EXP)\n$(cat "$TEMPFILENAME")\n$LSDIR"
     ERRORS=$((ERRORS+1))
 fi 
 
