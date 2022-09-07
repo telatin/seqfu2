@@ -72,12 +72,50 @@ seqfu check --dir test_dir
 * `--quiet` will not print data, but only the exit status will be used
 * `--verbose` will print more information (including processing speed)
 * `--debug` will print debug information
-* 
+
 ### Exit status
 
 If an error is identified in at least one file, the program will exit with non zero status.
 
 ### Output
 
+The output is a table with the following columns:
 
+1. Status (`OK` or `ERR`)
+2. Library type (`SE` or `PE`)
+3. Filename (the path to the first pair, if `PE`)
+4. Number of sequences counted (if `PE`: number of sequences in **both** files) or `-` if the dataset is not valid
+5. Number of bases (if `PE`: total number of bases in **both** files) or `-` if the dataset is not valid
+6. Number of errors
+7. List of detected errors (if any)
 
+#### Example
+
+Example of output for a directory containing 3 Paired End datasets:
+
+```text
+OK      PE      /tmp/data/16S_R1.fq.gz  12274   3694474 0
+OK      PE      /tmp/data/16Snano_R1.fq.gz      468     140868  0
+OK      PE      /tmp/data/illumina_1.fq.gz      14      1260    0
+```
+
+Example of errors (can be reproduced using the *data* directory of the repository)
+
+```bash
+seqfu check --dir data/primers
+```
+
+```text
+OK      SE      data/primers/16S_merge.fq.gz    6137    2596981 0
+OK      SE      data/primers/16S_vsearch_merge.fq.gz    3935    1818111 0
+ERR     SE      data/primers/artificial.fq.gz   -       -       2       Invalid character in sequence: < > in R2.REV+.middle;
+OK      SE      data/primers/its-merge.fq.gz    7299    1504898 0
+OK      SE      data/primers/se.fq.gz   234     70434   0
+OK      SE      data/primers/small.fq   4       360     0
+OK      PE      data/primers/16S_R1.fq.gz       12274   3694474 0
+OK      PE      data/primers/16Snano_R1.fq.gz   468     140868  0
+ERR     PE      data/primers/art_R1.fq.gz       7       -       5       R2=Invalid character in sequence: < > in R2.REV+.middle;;First sequence names do not match (R1.startFOR+, R2.startREV+);Last sequence names do not match (R1.FOR1+.start-middle, );
+OK      PE      data/primers/its_R1.fq.gz       16000   3387804 0
+OK      PE      data/primers/itsfilt_R1.fq.gz   15618   3272396 0
+OK      PE      data/primers/pico_R1.fq.gz      24      7224    0
+```
