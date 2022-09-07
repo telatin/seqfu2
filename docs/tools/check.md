@@ -18,13 +18,14 @@ Usage: seqfu check [options] <FQFILE> [<REV>]
   if an error occurs. Will print a table with a report.
 
   Input is a single dataset:
-    <FQFILE>                     the forward read file
-    <REV>                        the reverse read file
-  or a directory of FASTQ files:
-    --dir <FQDIR>                the directory containing the FASTQ files
+    <FQFILE>                   the forward read file
+    <REV>                      the reverse read file
+  or a directory of FASTQ files (--dir):
+    <FQDIR>                    the directory containing the FASTQ files
 
   Options:
     -n, --no-paired            Disable autodetection of second pair
+    -s, --safe-exit            Exit with 0 even if errors are found
     -q, --quiet                Do not print infos, just exit status
     -v, --verbose              Verbose output 
     -t, --thousands            Print numbers with thousands separator
@@ -75,10 +76,12 @@ seqfu check --dir test_dir
 * `--quiet` will not print data, but only the exit status will be used
 * `--verbose` will print more information (including processing speed)
 * `--debug` will print debug information
+* `--safe-exit` will always exit with 0, even if errors are found (useful in pipelines)
 
 ### Exit status
 
-If an error is identified in at least one file, the program will exit with non zero status.
+If an error is identified in at least one file, the program will exit with non zero status,
+unless the `--safe-exit` option is used.
 
 ### Output
 

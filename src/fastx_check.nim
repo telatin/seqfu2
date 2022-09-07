@@ -224,6 +224,7 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
 
   Options:
     -n, --no-paired            Disable autodetection of second pair
+    -s, --safe-exit            Exit with 0 even if errors are found
     -q, --quiet                Do not print infos, just exit status
     -v, --verbose              Verbose output 
     -t, --thousands            Print numbers with thousands separator
@@ -293,7 +294,12 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
                     else: ""
         stderr.writeLine(fmt"Processed {($totseq).insertSep(',')} reads in {totalTime:.2f} seconds {speed}")
     
-    return errors
+    if bool(args["--safe-exit"]):
+      if bool(args["--debug"]):
+        stderr.writeLine "#DEBUG_SAFEEXIT: ", errors
+      return 0
+    else:
+      return errors
 #[ 
 
   let

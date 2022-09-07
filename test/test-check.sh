@@ -2,12 +2,12 @@
 #!/bin/bash
 
 export SEQFU_QUIET=1
-
+TEMPFILENAME=$(mktemp)
 ### SINGLE END
-SE=$("$BINDIR"/seqfu check "$FILES"/illumina_nocomm.fq)
-IS_OK=$(echo "$SE" | grep -c "OK")
-COUNT=$(echo "$SE" |cut -f 4)
-LIBRARY=$(echo "$SE" |cut -f 2)
+"$BINDIR"/seqfu check "$FILES"/illumina_nocomm.fq > "$TEMPFILENAME"
+IS_OK=$(cat "$TEMPFILENAME" | grep -c "OK")
+COUNT=$(cat "$TEMPFILENAME" |cut -f 4)
+LIBRARY=$(cat "$TEMPFILENAME" |cut -f 2)
 EXIT=$?
 
 
@@ -53,11 +53,11 @@ fi
 
 
 ### PAIRED END
-SE=$("$BINDIR"/seqfu check "$FILES"/illumina_1.fq.gz)
+"$BINDIR"/seqfu check "$FILES"/illumina_1.fq.gz > "$TEMPFILENAME"
 EXIT=$?
-IS_OK=$(echo "$SE" | grep -c "OK")
-COUNT=$(echo "$SE" |cut -f 4)
-LIBRARY=$(echo "$SE" |cut -f 2)
+IS_OK=$(cat "$TEMPFILENAME" | grep -c "OK")
+COUNT=$(cat "$TEMPFILENAME" |cut -f 4)
+LIBRARY=$(cat "$TEMPFILENAME" |cut -f 2)
 
 MSG="Checked paired end"
 EXP=1
@@ -100,11 +100,11 @@ else
 fi 
 
 ## INVALID PE
-SE=$("$BINDIR"/seqfu check "$FILES"/longerone_R1.fq.gz)
+"$BINDIR"/seqfu check "$FILES"/longerone_R1.fq.gz > "$TEMPFILENAME"
 EXIT=$?
-IS_OK=$(echo "$SE" | grep -c "OK")
-COUNT=$(echo "$SE" |cut -f 4)
-LIBRARY=$(echo "$SE" |cut -f 2)
+IS_OK=$(cat "$TEMPFILENAME" | grep -c "OK")
+COUNT=$(cat "$TEMPFILENAME" |cut -f 4)
+LIBRARY=$(cat "$TEMPFILENAME" |cut -f 2)
 
 MSG="Checked INVALID paired end"
 EXP=0
@@ -187,10 +187,10 @@ fi
 
 
 ### CHECK VALID DIR
-CHECKDIR=$($BINDIR/seqfu check --dir "$FILES/reads")
+$BINDIR/seqfu check --dir "$FILES/reads" > "$TEMPFILENAME"
 EXIT=$?
-WC=$(echo "$CHECKDIR" | wc -l)
-WC_ERR=$(echo "$CHECKDIR" | grep -v OK | grep ERR | wc -l)
+WC=$(cat "$TEMPFILENAME" | wc -l)
+WC_ERR=$(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l)
 
 
 MSG="Checked valid directory exit status"
@@ -224,3 +224,4 @@ else
 fi 
 
 
+rm "$TEMPFILENAME"
