@@ -150,8 +150,8 @@ fi
 LSDIR=$(ls -lh "$FILES"/primers)
 $BINDIR/seqfu check --verbose --debug --dir "$FILES/primers" > "$TEMPFILENAME" 2> "$TEMPFILENAME.log"
 EXIT=$?
-WC=$(cat "$TEMPFILENAME" | wc -l)
-WC_ERR=$(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l)
+WC=$(getnumber $(cat "$TEMPFILENAME" | wc -l))
+WC_ERR=$(getnumber $(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l))
 
 
 MSG="Checked INVALID directory ($FILES/primers) exit status"
@@ -164,7 +164,7 @@ else
 fi 
 
 MSG="Checked INVALID directory line count"
-EXP=12
+EXP=13
 if [[ $WC == $EXP ]]; then
     echo -e "$OK: $MSG (got $WC expected $EXP)"
     PASS=$((PASS+1))
@@ -189,8 +189,8 @@ fi
 ### CHECK VALID DIR
 $BINDIR/seqfu check  --verbose --debug --dir "$FILES/reads" > "$TEMPFILENAME" 2> "$TEMPFILENAME.log"
 EXIT=$?
-WC=$(cat "$TEMPFILENAME" | wc -l)
-WC_ERR=$(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l)
+WC=$(getnumber $(cat "$TEMPFILENAME" | wc -l))
+WC_ERR=$(getnumber $(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l))
 
 
 

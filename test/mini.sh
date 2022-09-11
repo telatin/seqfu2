@@ -24,6 +24,9 @@ BOLD='\033[1m'
 YELLOW='\033[1;33m'
 ERRORS=0
 
+getnumber() {
+  echo "$1" | grep -o '[0-9]*'
+}
 count() {
     
     "$BINDIR"/seqfu count "$1" | cut -f 2
