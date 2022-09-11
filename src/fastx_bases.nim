@@ -2,7 +2,7 @@
 import readfq
 import strformat
 import tables, strutils
-from os import fileExists
+from os import fileExists,  dirExists
 import docopt
 import ./seqfu_utils
 
@@ -18,7 +18,11 @@ proc toString(c: CountTableRef[char], raw: bool, t: bool): string =
     display_total_bases = if t:  ($bases).insertSep(',')
                           else: $bases
 
-  
+  let cg = if 'C' in c and 'G' in c: c['C'] + c['G']
+           elif 'C' in c: c['C']
+           elif 'G' in c: c['G']
+           else: 0
+
   for base in @['A', 'C', 'G', 'T', 'N']:
       let
         count = if base in c: c[base]
@@ -31,6 +35,7 @@ proc toString(c: CountTableRef[char], raw: bool, t: bool): string =
           bases_array.add($count)
       else:
         bases_array.add(fmt"{float(100 * c['A'] / bases):.2f}")
+  # OTHER
   let 
     other = bases - normal
   if raw:
@@ -40,7 +45,13 @@ proc toString(c: CountTableRef[char], raw: bool, t: bool): string =
       bases_array.add($other)
   else:
     bases_array.add(fmt"{float(100 * other / bases):.2f}")
-  result = fmt"{display_total_bases}{'\t'}{bases_array[0]}{'\t'}{bases_array[1]}{'\t'}{bases_array[2]}{'\t'}{bases_array[3]}{'\t'}{bases_array[4]}{'\t'}{bases_array[5]}"
+
+  # GC
+  let
+    gc_ratio = if cg > 0: float(100 * cg / bases)
+               else: 0.0
+  
+  result = fmt"{display_total_bases}{'\t'}{bases_array[0]}{'\t'}{bases_array[1]}{'\t'}{bases_array[2]}{'\t'}{bases_array[3]}{'\t'}{bases_array[4]}{'\t'}{bases_array[5]}{'\t'}{gc_ratio:.2f}"
     
     
 
@@ -84,17 +95,17 @@ Options:
       files.add("-")
     else:
       for file in args["<inputfile>"]:
-        files.add(file)
+        if (not fileExists(file) or  dirExists(file))and file != "-":
+          stderr.writeLine("Skipping ", file, ": not found or not a file")
+          continue
+        else:
+          echoVerbose(file, verbose)
+          files.add(file)
     
     
     if bool(args["--header"]):
-      echo "#Filename\tTotal\tA\tC\tG\tT\tN\tOther"
+      echo "#Filename\tTotal\tA\tC\tG\tT\tN\tOther\t%GC"
     for filename in files:
-      if not fileExists(filename) and filename != "-":
-        stderr.writeLine("Skipping ", filename, ": not found")
-        continue
-      else:
-        echoVerbose(filename, verbose)
 
 
       var 
