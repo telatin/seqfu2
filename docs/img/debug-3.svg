@@ -19,30 +19,30 @@
         font-weight: 700;
     }
 
-    .terminal-3704433994-matrix {
+    .terminal-2592812362-matrix {
         font-family: Fira Code, monospace;
         font-size: 20px;
         line-height: 24.4px;
         font-variant-east-asian: full-width;
     }
 
-    .terminal-3704433994-title {
+    .terminal-2592812362-title {
         font-size: 18px;
         font-weight: bold;
         font-family: arial;
     }
 
-    .terminal-3704433994-r1 { fill: #c5c8c6 }
+    .terminal-2592812362-r1 { fill: #c5c8c6 }
     </style>
 
     <defs>
-    <clipPath id="terminal-3704433994-clip-terminal">
+    <clipPath id="terminal-2592812362-clip-terminal">
       <rect x="0" y="0" width="975.0" height="72.19999999999999" />
     </clipPath>
-    <clipPath id="terminal-3704433994-line-0">
+    <clipPath id="terminal-2592812362-line-0">
     <rect x="0" y="1.5" width="976" height="24.65"/>
             </clipPath>
-<clipPath id="terminal-3704433994-line-1">
+<clipPath id="terminal-2592812362-line-1">
     <rect x="0" y="25.9" width="976" height="24.65"/>
             </clipPath>
     </defs>
@@ -54,12 +54,12 @@
             <circle cx="44" cy="0" r="7" fill="#28c840"/>
             </g>
         
-    <g transform="translate(9, 41)" clip-path="url(#terminal-3704433994-clip-terminal)">
+    <g transform="translate(9, 41)" clip-path="url(#terminal-2592812362-clip-terminal)">
     
-    <g class="terminal-3704433994-matrix">
-    <text class="terminal-3704433994-r1" x="0" y="20" textLength="329.4" clip-path="url(#terminal-3704433994-line-0)">$&#160;find&#160;/home/&#160;-name&#160;&quot;seqfu&quot;</text><text class="terminal-3704433994-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-3704433994-line-0)">
-</text><text class="terminal-3704433994-r1" x="0" y="44.4" textLength="597.8" clip-path="url(#terminal-3704433994-line-1)">find:&#160;‘/home/runneradmin/.ssh’:&#160;Permission&#160;denied</text><text class="terminal-3704433994-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-3704433994-line-1)">
-</text><text class="terminal-3704433994-r1" x="0" y="68.8" textLength="500.2" clip-path="url(#terminal-3704433994-line-2)">/home/runner/work/seqfu2/seqfu2/bin/seqfu</text><text class="terminal-3704433994-r1" x="976" y="68.8" textLength="12.2" clip-path="url(#terminal-3704433994-line-2)">
+    <g class="terminal-2592812362-matrix">
+    <text class="terminal-2592812362-r1" x="0" y="20" textLength="329.4" clip-path="url(#terminal-2592812362-line-0)">$&#160;find&#160;/home/&#160;-name&#160;&quot;seqfu&quot;</text><text class="terminal-2592812362-r1" x="976" y="20" textLength="12.2" clip-path="url(#terminal-2592812362-line-0)">
+</text><text class="terminal-2592812362-r1" x="0" y="44.4" textLength="500.2" clip-path="url(#terminal-2592812362-line-1)">/home/runner/work/seqfu2/seqfu2/bin/seqfu</text><text class="terminal-2592812362-r1" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-2592812362-line-1)">
+</text><text class="terminal-2592812362-r1" x="0" y="68.8" textLength="597.8" clip-path="url(#terminal-2592812362-line-2)">find:&#160;‘/home/runneradmin/.ssh’:&#160;Permission&#160;denied</text><text class="terminal-2592812362-r1" x="976" y="68.8" textLength="12.2" clip-path="url(#terminal-2592812362-line-2)">
 </text>
     </g>
     </g>
