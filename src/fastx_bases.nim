@@ -61,7 +61,7 @@ proc fastx_bases(argv: var seq[string]): int =
     let args = docopt("""
 Usage: bases [options] [<inputfile> ...]
 
-Print the DNA bases in the input files
+Print the DNA bases, and %GC content, in the input files
 
 Options:
   -c, --raw-counts       Print counts and not ratios
