@@ -36,8 +36,10 @@ include ./fu_rotate
 include ./fastx_stats2
 include ./fastx_count_threads
 include ./fastx_list
+include ./fastx_bases
 
 var progs = {
+       "bases": fastx_bases,
        "cat": fastx_cat,
        "ilv": fastq_interleave,       
          "interleave": fastq_interleave,
@@ -86,7 +88,8 @@ proc main(args: var seq[string]): int =
     helps = {  "interleave [ilv]"  :  "interleave FASTQ pair ends",
                "deinterleave [dei]": "deinterleave FASTQ",
                "derep [der]"       : "feature-rich dereplication of FASTA/FASTQ files",
-#"check"             : "check FASTQ file for errors",
+               "check"             : "check FASTQ file for errors",
+               "bases"             : "count bases in FASTA/FASTQ files",
 #              "merge [mrg]"       : "join Paired End reads",
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",

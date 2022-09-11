@@ -5,11 +5,18 @@ import strutils
 
 
 type
+  qualityStrategy = tuple
+    first: bool
+    lowest: bool
+    highers: bool
+    recalculate: bool
+type
   mergeOptions = object
     minlen: int
     minid: float
     start: int
     accepted_identity: float
+    quality_method: qualityStrategy
 
 type
   joinedRecord = object
@@ -89,9 +96,19 @@ Usage: merge [options] -1 File_R1
   Options:
   -1, --R1 FILE                First paired-end file
   -2, --R2 FILE                Second paired-end file, can be automatically inferred  
+
+  Merging options:
   -i, --minid FLOAT            Minimum identity [default: 0.80]
   -m, --minlen INT             Minimum overlap [default: 20]
   --accepted-identity FLOAT    Accept fusion when identity is above FLOAT [default: 0.96]
+  --keep-first                 Print the first in pair when unable to merge
+  
+  Quality handling (mutually exclusive):
+  --raw-qual                   Use raw quality (precendence to R1)
+  --higher                     Use the higher quality
+  --recalibrate                Calculate new PHRED score
+
+  Other options:
   -v, --verbose                Print verbose messages
   -h, --help                   Show this help
 """, version=version(), argv=argv)
@@ -106,11 +123,16 @@ Usage: merge [options] -1 File_R1
   
   var 
     sourceOptions: mergeOptions
+  
 
+  let
+    qualityMethod = (first: true, lowest: false, highers: false, recalculate: false)
   try:
     sourceOptions.minlen = parseInt($args["--minlen"])
     sourceOptions.minid  = parseFloat($args["--minid"])
     sourceOptions.accepted_identity = parseFloat($args["--accepted-identity"])
+    sourceOptions.quality_method = qualityMethod
+
   except Exception as e:
     stderr.writeLine("Error parsing options. Check --help.", "\n", e.msg)
     quit(1)
