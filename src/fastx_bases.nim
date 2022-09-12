@@ -6,13 +6,19 @@ from os import fileExists,  dirExists
 import docopt
 import ./seqfu_utils
 
-proc toString(c: CountTableRef[char], raw: bool, t: bool): string =
+proc toString(c: CountTableRef[char], raw: bool, t, u: bool): string =
   var
     bases = 0
     normal = 0
     bases_array = newSeq[string]()
   for k, v in c:
     bases += v
+
+  let
+    lowerRaw = if 'L' in c: c['L']
+              else: 0
+  
+  bases -= lowerRaw
 
   let
     display_total_bases = if t:  ($bases).insertSep(',')
@@ -22,6 +28,8 @@ proc toString(c: CountTableRef[char], raw: bool, t: bool): string =
            elif 'C' in c: c['C']
            elif 'G' in c: c['G']
            else: 0
+    
+
 
   for base in @['A', 'C', 'G', 'T', 'N']:
       let
@@ -34,7 +42,7 @@ proc toString(c: CountTableRef[char], raw: bool, t: bool): string =
         else:
           bases_array.add($count)
       else:
-        bases_array.add(fmt"{float(100 * c['A'] / bases):.2f}")
+        bases_array.add(fmt"{float(100 * c[base] / bases):.2f}")
   # OTHER
   let 
     other = bases - normal
@@ -51,7 +59,12 @@ proc toString(c: CountTableRef[char], raw: bool, t: bool): string =
     gc_ratio = if cg > 0: float(100 * cg / bases)
                else: 0.0
   
-  result = fmt"{display_total_bases}{'\t'}{bases_array[0]}{'\t'}{bases_array[1]}{'\t'}{bases_array[2]}{'\t'}{bases_array[3]}{'\t'}{bases_array[4]}{'\t'}{bases_array[5]}{'\t'}{gc_ratio:.2f}"
+  var caseRatio = ""
+  if u:
+    let 
+      upperRatio = float(100 * (bases - lowerRaw) / bases)
+    caseRatio = fmt"{'\t'}{float(upperRatio):.2f}"
+  result = fmt"{display_total_bases}{'\t'}{bases_array[0]}{'\t'}{bases_array[1]}{'\t'}{bases_array[2]}{'\t'}{bases_array[3]}{'\t'}{bases_array[4]}{'\t'}{bases_array[5]}{'\t'}{gc_ratio:.2f}{caseRatio}"
     
     
 
@@ -68,6 +81,7 @@ Options:
   -t, --thousands        Print thousands separator
   -a, --abspath          Print absolute path 
   -b, --basename         Print the basename of the file
+  -u, --uppercase-ratio  Print the uppercase/total ratio
   -H, --header           Print header
   -v, --verbose          Verbose output
   --debug                Debug output
@@ -83,6 +97,7 @@ Options:
       thousands     = bool(args["--thousands"])
       basename      = bool(args["--basename"])
       abspath       = bool(args["--abspath"])
+      uppercaseRatio= bool(args["--uppercase-ratio"])
     
     if bool(args["--debug"]):
       stderr.writeLine args
@@ -104,7 +119,10 @@ Options:
     
     
     if bool(args["--header"]):
-      echo "#Filename\tTotal\tA\tC\tG\tT\tN\tOther\t%GC"
+      let upperHeader = if uppercaseRatio: "\tUpperRatio"
+                        else: ""
+      echo fmt"#Filename{'\t'}Total{'\t'}A{'\t'}C{'\t'}G{'\t'}T{'\t'}N{'\t'}Other{'\t'}%GC{upperHeader}"
+
     for filename in files:
 
 
@@ -120,9 +138,12 @@ Options:
         
         for base in record.sequence:
           counts.inc(base.toUpperAscii())
-      
+          if uppercaseRatio:
+            if base != base.toUpperAscii():
+              counts.inc('L')
+        
       
       let displayname = if not basename and not abspath: filename
                         elif basename: extractFilename(filename) 
                         else: absolutePath(filename)
-      echo display_name, "\t", counts.toString(raw_counts, thousands)
+      echo display_name, "\t", counts.toString(raw_counts, thousands, uppercaseRatio)

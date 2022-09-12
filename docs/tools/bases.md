@@ -15,13 +15,14 @@ Calculates the composition of DNA sequences
 ```text
 Usage: bases [options] [<inputfile> ...]
 
-Print the DNA bases in the input files
+Print the DNA bases, and %GC content, in the input files
 
 Options:
   -c, --raw-counts       Print counts and not ratios
   -t, --thousands        Print thousands separator
   -a, --abspath          Print absolute path 
   -b, --basename         Print the basename of the file
+  -u, --uppercase-ratio  Print the uppercase/total ratio
   -H, --header           Print header
   -v, --verbose          Verbose output
   --debug                Debug output
@@ -41,6 +42,7 @@ The output is a table with the following columns (`-H` to print the header):
 7. Ratio of **N** bases over total bases (`-c` to print raw counts)
 8. Ratio of **Other** characters (either IUPAC DNA or invalid chars) over total bases (`-c` to print raw counts)
 9. %GC ratio
+10. Ratio of **Uppercase** bases over total bases (if enabled by `-u`)
 
 ### Example
 

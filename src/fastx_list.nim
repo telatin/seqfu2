@@ -23,6 +23,8 @@ proc getListFromFile(filename: string, opts: ListOptions): Table[string, int] =
       name = line
       stripped = ""
 
+    if line.startsWith("#"):
+      continue
     # remove first char if it is ">" or "@"
     if line[0] == '>' or line[0] == '@':
       name = line[1 .. ^1]
@@ -85,7 +87,8 @@ Other options:
       minLength    : parseInt($args["--min-len"])
     )
     var sequenceList = getListFromFile($args["<LIST>"], opts)
-    
+    if verbose:
+      stderr.writeLine "List loaded: ", len(sequenceList)
     if len(  @(args["<FASTQ>"]) ) == 0:
       stderr.writeLine("No files specified. Use '-' to read STDIN, --help for help.")
 
