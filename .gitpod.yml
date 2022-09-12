@@ -9,7 +9,7 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - before: nimble install --depsOnly
+  - before: nimble install --accept --depsOnly
 
 vscode:
   extensions:
