@@ -6,7 +6,7 @@ TEMPFILENAME=$(mktemp)
 ### SINGLE END
 "$BINDIR"/seqfu bases "$FILES"/{base,base_extra,bases_lower}.fa > "$TEMPFILENAME"
 "$BINDIR"/seqfu bases -c "$FILES"/{base,base_extra,bases_lower}.fa > "$TEMPFILENAME.raw"
-"$BINDIR"/seqfu bases -u "$FILES"/upper-{lower,none,only}.fa > "$TEMPFILENAME.upper"
+"$BINDIR"/seqfu bases "$FILES"/upper-{lower,none,only}.fa > "$TEMPFILENAME.upper"
 WC=$(getnumber $(cat "$TEMPFILENAME" | wc -l))
 
 
@@ -36,7 +36,7 @@ else
 fi 
 
 MSG="Output is a table with 9 columns"
-EXP=9
+EXP=10
 if [[ $EXP == $NUM_COLS ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $NUM_COLS)"
     PASS=$((PASS+1))
