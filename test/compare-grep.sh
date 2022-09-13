@@ -1,3 +1,5 @@
+#!/bin/bash
+
 for FILE in data/numbers.fa data/filt.fa.gz;
 do
   for PATTERN in 12$ filt.598..;

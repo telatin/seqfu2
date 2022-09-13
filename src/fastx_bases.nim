@@ -31,6 +31,7 @@ type BaseCompOpts = ref object
   nice: bool
   show_uppercase: bool
   digits: int
+
 proc `$`(comp: FileComposition): string =
   return fmt"{comp.bases}{'\t'}{comp.num_a}{'\t'}{comp.num_c}{'\t'}{comp.num_g}{'\t'}{comp.num_t}{'\t'}{comp.num_n}{'\t'}{comp.num_other}{'\t'}{comp.num_lower}{'\t'}{comp.ratio_gc}{'\t'}{comp.ratio_upper}"
 
@@ -52,18 +53,25 @@ proc numberToString[T](s: T, opts: BaseCompOpts): string =
     return number
 
 proc toComposition(dict: CountTableRef, filename: string, total: int, opts: BaseCompOpts): FileComposition =
+  let 
+    val_A = dict['A'] - 1
+    val_C = dict['C'] - 1
+    val_G = dict['G'] - 1
+    val_T = dict['T'] - 1
+    val_N = dict['N'] - 1
+    val_L = dict['L'] - 1
   result = FileComposition(
     name: filename,
     bases: total,
-    num_a: dict['A'],
-    num_c: dict['C'],
-    num_g: dict['G'],
-    num_t: dict['T'],
-    num_n: dict['N'],
-    num_other: total - dict['A'] - dict['C'] - dict['G'] - dict['T'] - dict['N'],
-    num_lower: dict['L'],
-    ratio_gc: float(dict['G'] + dict['C']) / float(total),
-    ratio_upper: float(total - dict['L']) / float(total)
+    num_a: val_A,
+    num_c: val_C,
+    num_g: val_G,
+    num_t: val_T,
+    num_n: val_N,
+    num_other: total - val_A - val_C - val_G - val_T - val_N,
+    num_lower: val_L,
+    ratio_gc: float(val_G + val_C) / float(total),
+    ratio_upper: float(total - val_L) / float(total)
   )
 
 proc splitToSeq(tabbedStr, filename: string): seq[string] =
@@ -233,13 +241,8 @@ proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
 
 
 proc newDNAtable(): CountTableRef[char] =
-  result = newCountTable[char]()
-  result['A'] = 0
-  result['C'] = 0
-  result['G'] = 0
-  result['T'] = 0
-  result['N'] = 0
-  result['L'] = 0
+  result = newCountTable[char]("ACGTNL")
+  
   return
 
 proc fastx_bases(argv: var seq[string]): int =
@@ -294,7 +297,7 @@ Options:
       show_uppercase: uppercaseRatio,
       digits: digits
     )
-    
+
 
     # Check if we have files, otherwise add "-" for STDIN
     if args["<inputfile>"].len() == 0:
@@ -308,7 +311,6 @@ Options:
           stderr.writeLine("Skipping ", file, ": not found or not a file")
           continue
         else:
-          echoVerbose(file, verbose)
           files.add(file)
     
     
@@ -321,6 +323,8 @@ Options:
     var
       countTables = newTable[string, FileComposition]()
 
+    if verbose:
+      stderr.writeLine("Startup: ", files.len(), " files")
     # ITERATE: files
     for filename in files:
 
@@ -332,6 +336,8 @@ Options:
         #total_seqs   = 0
         counts       = newDNAtable()
       
+      if verbose:
+        stderr.writeLine("Parsing: ", filename)
       # ITERATE: records
       for record in readfq(filename):
         #total_seqs += 1
