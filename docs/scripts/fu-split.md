@@ -1,6 +1,4 @@
----
-sort: 1
----
+
 # fu-split
 
 ```note

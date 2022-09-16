@@ -1,6 +1,4 @@
----
-sort: 17
----
+
 # seqfu metadata
 
 Given one (or more) directories containing sequencing reads,

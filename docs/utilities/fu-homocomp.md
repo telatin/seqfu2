@@ -1,6 +1,3 @@
----
-sort: 11
----
 
 # fu-homocom
 

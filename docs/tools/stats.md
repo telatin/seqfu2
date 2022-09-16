@@ -1,6 +1,4 @@
----
-sort: 4
----
+
 # seqfu stats
 
 *stats*  is one of the core subprograms of *SeqFu*.

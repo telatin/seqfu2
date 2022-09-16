@@ -1,6 +1,4 @@
----
-sort: 10
----
+
 # fu-shred
 
 A program to systematically shotgun a reference

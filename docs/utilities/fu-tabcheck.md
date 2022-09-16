@@ -1,6 +1,3 @@
----
-sort: 8
----
 
 # fu-tabcheck
 

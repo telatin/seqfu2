@@ -1,6 +1,4 @@
----
-sort: 1
----
+
 # seqfu interleave
 
 *interleave* (or *ilv*) is one of the core subprograms of *SeqFu*.

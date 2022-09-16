@@ -91,6 +91,6 @@ seqfu view --qual-chars data/qualities.fq
 
 ## fu-msa
 
-![`fu-msa ./data/msa.fa --screenshot`](docs/img/screenshot-fu-msa.svg "SeqFu MSA viewer")
+![`fu-msa ./data/msa.fa --screenshot`](docs/img/screenshot-fu-msa-1.svg "SeqFu MSA viewer")
 
-![`fu-msa ./data/msa.faa --screenshot`](docs/img/screenshot-fu-msa.svg "SeqFu MSA viewer")
+![`fu-msa ./data/msa.faa --screenshot`](docs/img/screenshot-fu-msa-2.svg "SeqFu MSA viewer")

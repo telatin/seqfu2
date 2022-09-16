@@ -1,6 +1,4 @@
----
-sort: 9
----
+
 # seqfu derep
 
 *derep*  is one of the core subprograms of *SeqFu*, that allows 

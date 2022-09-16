@@ -1,6 +1,3 @@
----
-sort: 7
----
 
 # fu-16Sregion
 

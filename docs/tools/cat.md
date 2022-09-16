@@ -1,6 +1,3 @@
----
-sort: 14
----
 # seqfu cat
 
 Concatenate multiple FASTA/FASTQ files, in a similar way of the GNU `cat` utility.

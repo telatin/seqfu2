@@ -1,6 +1,4 @@
----
-sort: 2
----
+
 # fu-cov
 
 A program to filter the output of assembly programs using the

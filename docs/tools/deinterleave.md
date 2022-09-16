@@ -1,6 +1,4 @@
----
-sort: 2
----
+
 # seqfu deinterleave
 
 *deinterleave* (or *dei*) is one of the core subprograms of *SeqFu*.

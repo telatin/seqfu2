@@ -1,6 +1,4 @@
----
-sort: 18
----
+
 # seqfu list
 
 Extract sequences from sequence files using a list of requested items.

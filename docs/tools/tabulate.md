@@ -1,6 +1,4 @@
----
-sort: 16
----
+
 # seqfu tabulate
 
 ```note

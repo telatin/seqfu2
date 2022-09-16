@@ -1,6 +1,3 @@
----
-sort: 5
----
 
 # fu-multirelabel
 

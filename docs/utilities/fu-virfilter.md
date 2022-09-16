@@ -1,6 +1,3 @@
----
-sort: 12
----
 
 # fu-virfilter
 

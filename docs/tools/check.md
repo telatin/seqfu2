@@ -1,7 +1,3 @@
----
-sort: 20
----
-
 # seqfu check
 
 ```note

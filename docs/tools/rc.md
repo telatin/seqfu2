@@ -1,6 +1,4 @@
----
-sort: 12
----
+
 # seqfu rc
 
 *rc*  is one of the core subprograms of *SeqFu*, that allows 

@@ -1,6 +1,4 @@
----
-sort: 7
----
+
 # seqfu view
 
 *view*  is one of the core subprograms of *SeqFu*.

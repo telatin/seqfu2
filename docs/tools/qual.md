@@ -1,6 +1,4 @@
----
-sort: 13
----
+
 # seqfu qual
 
 *qual* allows to detect the range of qualities of a FASTQ file, returning the possible encodings.

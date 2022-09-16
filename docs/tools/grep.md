@@ -1,6 +1,4 @@
----
-sort: 8
----
+
 # seqfu grep
 
 *grep*  is one of the core subprograms of *SeqFu*.

@@ -1,6 +1,4 @@
----
-sort: 6
----
+
 # seqfu tail
 
 *tail*  is one of the core subprograms of *SeqFu*.

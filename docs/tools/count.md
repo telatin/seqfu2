@@ -1,6 +1,4 @@
----
-sort: 3
----
+
 # seqfu count
 
 *count* (or *cnt*) is one of the core subprograms of *SeqFu*.

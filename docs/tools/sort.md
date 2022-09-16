@@ -1,6 +1,4 @@
----
-sort: 10
----
+
 # seqfu sort
 
 *sort*  is one of the core subprograms of *SeqFu*, that allows 

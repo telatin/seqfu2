@@ -1,6 +1,4 @@
----
-sort: 19
----
+
 
 # seqfu rotate
 

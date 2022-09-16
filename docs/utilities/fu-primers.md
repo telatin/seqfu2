@@ -1,6 +1,4 @@
----
-sort: 1
----
+
 # fu-primers
 
 A program to remove primers from the raw output (FASTQ)
