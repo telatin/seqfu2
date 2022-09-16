@@ -83,3 +83,7 @@ seqfu view --qual-chars data/qualities.fq
 ## fu-extract
 
 ![`fu-extract --help`](docs/img/screenshot-fu-extract.svg "SeqFu fu-extract")
+
+## fu-msa
+
+![`fu-msa ./data/msa.fa --screenshot`](docs/img/screenshot-fu-msa.svg "SeqFu MSA viewer")

@@ -15,15 +15,7 @@ Interactive **multiple sequence alignment** viewer from the Command Line.
 ```text
 Usage:
     full [options] <MSAFILE>
-
-  Options:
-    -m, --mouse             Enable mouse
-    -n, --norefresh         Disable autorefresh
-    -w, --label-width INT   Sequence label width [default: 20]
-    -s, --seqindex INT      Start visualization at this sequence [default: 0]
-    -p, --seqpos INT        Start visualization at this nucleotide [default: 0]
-    -j, --jumpsize INT      Jump size (big jump is 10X) [default: 10]
-
+  
   Keys:
     Scroll Horizontally     Left and Right arrow
       By 10 bases           L, K
@@ -39,6 +31,23 @@ Usage:
     Rotate color scheme     Tab
     Refresh screen          F5
     Resize seq labels       -,+
+    Search                  / (seqname, ":INT", "#SEQ")
+    Quit                    Q, CtrlC
+
+  Options:
+    -m, --mouse               Enable mouse
+    -n, --norefresh           Disable autorefresh
+    -j, --jumpsize INT        Jump size (big jump is 10X) [default: 10]
+
+  Visualization settings:
+    -i, --seqindex INT        Start visualization at this sequence [default: 0]
+    -p, --seqpos INT          Start visualization at this nucleotide [default: 0]
+    -w, --label-width INT     Sequence label width [default: 20]
+    -s, --setting-string STR  Settings string (overrrides all other settings) is in the
+                              format Seq:{seqindex}:{seqpos}:{labelwidth} and is the 
+                              return value of the program when it is closed.
+
+    More documentation online at https://telatin.github.io/seqfu2/
 ```
 
 ## Keyboard 
@@ -86,3 +95,23 @@ Usage:
   * Click in a nucleotide to set that position as first (scroll right)
   * Click to the sequence name area (left) to scroll left
 
+### Resuming session
+
+When pressing quit (`Q`) the program will print a configuration string like: `Seq:0:6:20`
+that can be used to resume the session at the same position with:
+
+```bash
+fu-msa {input_file} --setting-string Seq:0:6:20
+```
+
+The settings string is in the format `Seq:{seqindex}:{seqpos}:{labelwidth}`
+
+### Colors
+
+* DNA: `A` (red), `C` (cyan), `G` (green), `T` (yellow)
+* Protein: ["Lesk" scheme](https://www.bioinformatics.nl/~berndb/aacolour.html):
+  * Hydrophobic, green
+  * Small non polar, yellow (should be orange)
+  * Polar, magenta
+  * Negative charge, red
+  * Positive charge, cyan (should be blue)

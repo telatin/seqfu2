@@ -25,6 +25,7 @@ type
     gaps: seq[bool]
     consensus: string
     common: string
+    protein: bool
 
   # All the settings for "rendering" an MSA
   coordinates = object
@@ -37,15 +38,19 @@ type
     mouse: bool
     click_x, click_y: int
     exit_x, exit_y: int
+    protein: bool
 
 let
   noCoord : seqCoord = (seqIndex: -1, baseIndex: -1)
 
-proc exitProc(c: seqCoord = noCoord)   =
+proc exitProc(c: coordinates, screenshot: bool)   =
+  if screenshot == true:
+    quit(0)
+    
   illwillDeinit()
   showCursor()
-  if c.seqIndex > -1:
-    echo "Seq:" & $(c.seqIndex) & ":" & $(c.baseIndex)
+  if c.firstbase > -1:
+    echo "Seq:" & $(c.firstseq) & ":" & $(c.firstbase) & ":" & $(c.labelwidth)
   quit(0)
 
 proc exitDefProc {.noconv.} =
@@ -107,7 +112,7 @@ proc readMSA(f: string): msa =
     seqs = newSeq[string]()
     names = newSeq[string]()
     length = -1
-  
+    prot = false
   # Load sequences
   for record in readfq(f):
     seqs.add(record.sequence)
@@ -116,6 +121,11 @@ proc readMSA(f: string): msa =
       length = len(record.sequence)
     elif length != len(record.sequence):
       stderr.writeLine("ERROR: Sequence length mismatch: ", record.name, "is", len(record.sequence), "but previous sequences have length", length)
+    
+    if prot == false and ('L' in record.sequence or 'J' in record.sequence or 'E' in record.sequence or 'M' in record.sequence):
+      prot = true
+  
+  result.protein = prot
   result.seqs = seqs
   result.names = names
   result.common = "?".repeat(length)
@@ -167,21 +177,40 @@ proc writeSeq(tb: var TerminalBuffer, s: string, bg: seq[bool], line, start: int
         fgColor = fgWhite
 
     if coords.colortype == base or coords.colortype == both:
-      case c.toUpperAscii()
-      of 'A':
-        fgColor = fgRed
-      of 'C':
-        fgColor = fgCyan
-      of 'G':
-        fgColor = fgGreen
-      of 'T':
-        if coords.colortype == base:
-          fgColor = fgYellow
-        elif bg[i] == true:
-          fgColor = fgBlack
+      if coords.protein == false:
+        case c.toUpperAscii()
+        of 'A':
+          fgColor = fgRed
+        of 'C':
+          fgColor = fgCyan
+        of 'G':
+          fgColor = fgGreen
+        of 'T':
+          if coords.colortype == base:
+            fgColor = fgYellow
+          elif bg[i] == true:
+            fgColor = fgBlack
+        else:
+          fgColor = fgWhite
       else:
-        fgColor = fgWhite
-    
+        # PROTEIN (Lesk https://www.bioinformatics.nl/~berndb/aacolour.html)
+        let aa = c.toUpperAscii()
+        if aa in "CVILPFYMW":         # Hydrophobic, green
+          fgColor = fgGreen
+        elif aa in "GAST":            # Small non polar, yellow (orange)
+          if coords.colortype == base:
+            fgColor = fgYellow
+          elif bg[i] == true:
+            fgColor = fgBlack
+        elif aa in "NQH":             # Polar, magenta
+          fgColor = fgMagenta
+        elif aa in "DE":              # - CHARGE: red
+          fgColor = fgRed
+        elif aa in "KR":           # Positively charged
+          fgColor = fgCyan
+        else:
+            fgColor = fgWhite
+      
     tb.write(start + 1 + i, line, styleBright, bgColor, fgColor, $c, fgWhite, bgBlack)
 
 proc getRuler(start, width: int): string =
@@ -200,7 +229,29 @@ proc getRuler(start, width: int): string =
       result &= " "
     pos += 1 + span
  
-
+proc parseSettingsString(s: string): seq[int] =
+  let
+    dataString = s.split(":")
+  
+  if s == "nil":
+    return
+  if len(dataString) != 4:
+    stderr.writeLine "Invalid settings string. Must be in the format 'Seq:INDEX:BASE:LABELWIDTH', got len=", len(dataString), " form ", s
+    quit(1)
+    
+  if dataString[0] != "Seq":
+    stderr.writeLine "Invalid settings string. Must be in the format 'Seq:INDEX:BASE:LABELWIDTH', got len=", len(dataString), " form ", s
+    quit(1)
+  
+  try:
+    result.add(parseInt(dataString[1]))
+    result.add(parseInt(dataString[2]))
+    result.add(parseInt(dataString[3]))
+  except:
+    stderr.writeLine("Invalid settings string, should be Seq:INDEX:BASE:LABELWIDTH")
+    quit(1)
+  
+  return
 proc getStartingHighlight(startPos, seqWidth, padding, totalWidth: int): screenCoord =
   let
     # What % of the sequence is visible?
@@ -282,6 +333,8 @@ proc drawSeqs(MSA: msa, coords: coordinates) =
     nameSpacer = " ".repeat(MAX_LEN - len(name))
   tb.write(1, offset - 1,   fgRed, fmt"{name}{nameSpacer} ")
 
+  # Draw ruler label (before the ruler itself)
+  tb.write(0, 2, fgWhite, bgBlack, fmt" ".repeat(MAX_LEN + 1))
   # Draw consensus and ruler (starting from MAX_LEN (seq label))
   for screenPos in MAX_LEN + 1 ..< tb.width :
     let
@@ -290,8 +343,8 @@ proc drawSeqs(MSA: msa, coords: coordinates) =
            else: bgBlack
 
     # Draw ruler
+    
     tb.write(screenPos, 2, fgWhite, rulerBg, fmt"{rulerText[screenPos - (MAX_LEN + 1)]}")
-
     # Draw consensus
     if basePos < len(MSA.consensus):
       let
@@ -365,15 +418,7 @@ proc main() =
   let args = docopt("""
   Usage:
     full [options] <MSAFILE>
-
-  Options:
-    -m, --mouse             Enable mouse
-    -n, --norefresh         Disable autorefresh
-    -w, --label-width INT   Sequence label width [default: 20]
-    -s, --seqindex INT      Start visualization at this sequence [default: 0]
-    -p, --seqpos INT        Start visualization at this nucleotide [default: 0]
-    -j, --jumpsize INT      Jump size (big jump is 10X) [default: 10]
-
+  
   Keys:
     Scroll Horizontally     Left and Right arrow
       By 10 bases           L, K
@@ -392,6 +437,20 @@ proc main() =
     Search                  / (seqname, ":INT", "#SEQ")
     Quit                    Q, CtrlC
 
+  Options:
+    -m, --mouse               Enable mouse
+    -n, --norefresh           Disable autorefresh
+    -j, --jumpsize INT        Jump size (big jump is 10X) [default: 10]
+
+  Visualization settings:
+    -i, --seqindex INT        Start visualization at this sequence [default: 0]
+    -p, --seqpos INT          Start visualization at this nucleotide [default: 0]
+    -w, --label-width INT     Sequence label width [default: 20]
+    -s, --setting-string STR  Settings string (overrrides all other settings) is in the
+                              format Seq:{seqindex}:{seqpos}:{labelwidth} and is the 
+                              return value of the program when it is closed.
+    --screenshot              Do not clean the screen on exit
+
     More documentation online at https://telatin.github.io/seqfu2/
   """, version="1.0", argv=commandLineParams())
   
@@ -401,8 +460,15 @@ proc main() =
   
   let
     msa = readMSA($args["<MSAFILE>"])
-    optFirstBase = parseInt($args["--seqpos"])
-    optFirstSeq  = parseInt($args["--seqindex"])
+    optSettings = parseSettingsString($args["--setting-string"])
+    optFirstBase = if len(optSettings) > 0: optSettings[1]
+                   else: parseInt($args["--seqpos"])
+    optFirstSeq  = if len(optSettings) > 0: optSettings[0]
+                   else: parseInt($args["--seqindex"])
+    optLabelWidth = if len(optSettings) > 0: optSettings[2]
+                   else: parseInt($args["--label-width"])
+  
+  # Override?
   var
     readTerm = false
     query = newSeq[Key]()
@@ -412,13 +478,14 @@ proc main() =
     coord  = coordinates(firstseq: optFirstSeq, 
       firstbase: optFirstBase, 
       colortype: base, 
-      labelwidth: parseInt($args["--label-width"]),
+      labelwidth: optLabelWidth,
       message: "[Help: H|Hor scroll: L,K|Vert: A,Z...]",
       mouse: bool(args["--mouse"]),
       click_x: 0,
       click_y: 0,
       exit_x: -1,
-      exit_y: -1
+      exit_y: -1,
+      protein: msa.protein
     )
 
   illwillInit(fullscreen=true, mouse=true)
@@ -462,7 +529,7 @@ proc main() =
     
     case key
  
-    of Key.Escape, Key.Q: exitProc(c)
+    of Key.Escape, Key.Q: exitProc(coord, bool(args["--screenshot"]))
 
     # SCROLL LEFT
     of Key.Left:

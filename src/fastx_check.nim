@@ -156,7 +156,7 @@ proc gatherFqFiles(dir: string, no_paired, debug: bool): (seq[string], seq[strin
       for ext in fqext:
         if ext in path.toLower() and  path notin files:
           if debug:
-            stderr.writeLine "#DEBUG: Adding file: " & path
+            stderr.writeLine "#DEBUG_INIT: Adding file: " & path
           files.add(path)
   if no_paired == true:
     singleEnd = files
@@ -272,6 +272,11 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
     if bool(args["--debug"]):
       stderr.writeLine "#DEBUG_SINGLE: ", len(seList), " SE files and ", len(peList), " PE files"
   
+  if bool(args["--debug"]):
+    for file in seList:
+      stderr.writeLine "#DEBUG_PRE_RUN: SE: ", file
+    for file in peList:
+      stderr.writeLine "#DEBUG_PRE_RUN: SE: ", file
   if true:
     for file in seList:
       if bool(args["--debug"]):
