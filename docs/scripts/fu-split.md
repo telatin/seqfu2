@@ -69,3 +69,7 @@ with the `--for-tag` and `--rev-tag` options (default: `_R1` and `_R2`).
 ## Binary
 
 Export `$SEQFU_BIN` to specify the path to SeqFu, otherwise will default to `seqfu` (as in `$PATH`).
+
+## Splashscreen
+
+![Screenshot of "seqfu split"]({{site.baseurl}}/img/screenshot-fu-split.svg "SeqFu split")

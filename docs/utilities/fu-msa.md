@@ -115,3 +115,7 @@ The settings string is in the format `Seq:{seqindex}:{seqpos}:{labelwidth}`
   * Polar, magenta
   * Negative charge, red
   * Positive charge, cyan (should be blue)
+
+### Screenshot
+
+![Screenshot of "seqfu MSA view"]({{site.baseurl}}/img/screenshot-fu-msa.svg "SeqFu MSA view")

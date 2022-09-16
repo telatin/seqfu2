@@ -217,7 +217,10 @@ proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
   # 8. Other
   # 9. GC
   # 10. Uppercase
-  result = @[c.name]
+
+  result = if opts.abspath: @[absolutePath(c.name)]
+           elif opts.basename: @[extractFilename(c.name)]
+           else: @[c.name]
   result.add((c.bases).numberToString(opts))
   if opts.raw_counts:
     result.add((c.num_a).numberToString(opts))
