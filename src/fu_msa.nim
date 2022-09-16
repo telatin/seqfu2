@@ -45,6 +45,7 @@ let
 
 proc exitProc(c: coordinates, screenshot: bool)   =
   if screenshot == true:
+    showCursor()
     quit(0)
     
   illwillDeinit()
@@ -527,6 +528,8 @@ proc main() =
         drawSeqs(msa, coord)
       continue
     
+    if bool(args["--screenshot"]):
+      exitProc(coord, true)
     case key
  
     of Key.Escape, Key.Q: exitProc(coord, bool(args["--screenshot"]))
