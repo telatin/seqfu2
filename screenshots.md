@@ -80,9 +80,14 @@ seqfu view --qual-chars data/qualities.fq
 
 ![`fu-nanotags --help`](docs/img/screenshot-fu-nanotags.svg "SeqFu fu-nanotags")
 
-## fu-extract
 
-![`fu-extract --help`](docs/img/screenshot-fu-extract.svg "SeqFu fu-extract")
+## fu-split
+
+![`pwd && find .. -name "msa.*"`](docs/img/screenshot-ls.svg "Find MSA")
+
+## fu-split
+
+![`fu-split --help`](docs/img/screenshot-fu-split.svg "SeqFu split")
 
 ## fu-msa
 
