@@ -62,7 +62,7 @@ seqfu view --qual-chars data/qualities.fq
 
 ## tab
 
-![`seqfu tab --help`](docs/img/screenshot-rc.svg "SeqFu tab")
+![`seqfu tab --help`](docs/img/screenshot-tab.svg "SeqFu tab")
 
 ## lanes
 
