@@ -1,7 +1,3 @@
----
-sort: 21
----
-
 # seqfu bases
 
 Counts the number of A, C, G, T and Ns in FASTA and FASTQ files.
