@@ -1,6 +1,6 @@
 #!/bin/bash
-ORFFOR=$("$BINDIR"/seqfu orf "$FILES"/orf.fa.gz --min-size 500 | grep ">" | wc -l)
-ORFREV=$("$BINDIR"/seqfu orf "$FILES"/orf.fa.gz --min-size 500  --scan-reverse | grep ">" | wc -l)
+ORFFOR=$("$BINDIR"/fu-orf "$FILES"/orf.fa.gz --min-size 500 | grep ">" | wc -l)
+ORFREV=$("$BINDIR"/fu-orf "$FILES"/orf.fa.gz --min-size 500  --scan-reverse | grep ">" | wc -l)
 
 if [[ $ORFFOR -eq 1 ]]; then
     echo -e "$OK: ONE large ORF found in forward mode"
@@ -17,8 +17,8 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
-CODE1=$("$BINDIR"/seqfu orf "$FILES"/codons.fa --min-size 3 --min-read-len 6 -c 1 | grep -v ">")
-CODE5=$("$BINDIR"/seqfu orf "$FILES"/codons.fa --min-size 3 --min-read-len 6 -c 5 | grep -v ">")
+CODE1=$("$BINDIR"/fu-orf "$FILES"/codons.fa --min-size 3 --min-read-len 6 -c 1 | grep -v ">")
+CODE5=$("$BINDIR"/fu-orf "$FILES"/codons.fa --min-size 3 --min-read-len 6 -c 5 | grep -v ">")
 if [[ $CODE1 != $CODE5 ]]; then
     PASS=$((PASS+1))
     echo -e "$OK: Genetic code implemented"
