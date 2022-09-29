@@ -1,5 +1,14 @@
 ## Release history
 
+### version 1.15.0
+
+* New SeqFu check program to validate the integrity of FASTQ datasets
+* Bug fix in seqfu qual that was printing debug information in non-debug runs
+
+#### 1.15.3
+
+* Added SeqFu bases to evaluate the composition of FASTX files
+
 ### version 1.14.0
 
 * **Seqfu grep** will die if fed with non existing files (to ensure no wrong parameters were passed)
