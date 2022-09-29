@@ -31,6 +31,7 @@ include ./fastx_metadata
 include ./fastx_tabulate
 include ./fastx_check
 include ./fu_rotate
+include ./fastx_orf
 
 # Experimental
 include ./fastx_stats2
@@ -39,6 +40,7 @@ include ./fastx_list
 include ./fastx_bases
 
 var progs = {
+       "orf": fastx_orf,
        "bases": fastx_bases,
        "cat": fastx_cat,
        "ilv": fastq_interleave,       

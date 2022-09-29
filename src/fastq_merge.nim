@@ -91,7 +91,9 @@ proc joinreads(R1, raw_R2: FastxRecord, o: mergeOptions): joinedRecord =
 proc fastq_merge(argv: var seq[string]): int {.gcsafe.} =
     
   let args = docopt("""
-Usage: merge [options] -1 File_R1
+Usage:
+  merge [options] -1 File_R1 [-2 File_R2]
+  merge [options] File_R1
 
   Options:
   -1, --R1 FILE                First paired-end file
