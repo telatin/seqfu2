@@ -1,5 +1,6 @@
 import threadpool
 import readfq
+import iterutils
 import docopt, strutils, tables, math
 import os
 import ./seqfu_utils
@@ -8,6 +9,21 @@ const NimblePkgVersion {.strdefine.} = "undef"
  
 const version = if NimblePkgVersion == "undef": "<preprelease>"
                 else: NimblePkgVersion
+
+
+template echoVerbose(things: varargs[string, `$`]) =
+  if verbose == true:
+    stderr.writeLine(things)
+ 
+template db(things: varargs[string, `$`]) =
+  if debug == true:
+  
+    stderr.writeLine(things)
+
+template initClosure(id,iter:untyped) =
+  let id = iterator():auto{.closure.} =
+    for x in iter:
+      yield x
 
 var
   verbose = false
@@ -23,16 +39,13 @@ type
       code: int,
       minreadlength: int]
 
-proc length(self:FastxRecord): int = 
+proc length(self:FQRecord): int = 
   ## returns length of sequence
-  self.seq.len()
+  self.sequence.len()
 
-# proc `$`(s: FastxRecord): string = 
-#   "@" & s.name & " " & s.comment & "\n" & s.seq & "\n+\n" & s.qual
-
-iterator codons(self: FastxRecord) : string = 
+iterator codons(self: FQRecord) : string = 
   var i = 0
-  var s = self.seq.toUpperAscii
+  var s = self.sequence.toUpperAscii
   while i < self.length - 2:
     let codon = s[i .. i+2]
     if codon.len == 3:
@@ -65,7 +78,7 @@ proc num2kmer*(num, klen:int):string =
     n = n - p*baseNum
   kmer
 
-proc translate*(self:FastxRecord, code = 1): FastxRecord = 
+proc translateFastx*(self:FQRecord, code = 1): FQRecord = 
   ## translates a nucleotide sequence with the given genetic code number: 
   ##    https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi for codes
   var codeMap = 
@@ -105,22 +118,16 @@ proc translate*(self:FastxRecord, code = 1): FastxRecord =
     else:
       transeq.add('-')
   result = self
-  result.seq = transeq.join
+  db(">>>", len(transeq), ", ", transeq[^1])
+  db("Translated ", transeq.join)
+  result.sequence = transeq.join
 
-template echoVerbose(things: varargs[string, `$`]) =
-  if verbose == true:
-    stderr.writeLine(things)
- 
-template db(things: varargs[string, `$`]) =
-  if debug == true:
-  
-    stderr.writeLine(things)
  
  
 
-proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
+proc translateAll(input: FQRecord, opts: mergeCfg): seq[FQRecord] =
   var
-    rawprots : seq[FastxRecord]
+    rawprots : seq[FQRecord]
     seqs = @[input]
   db("Translating: " , input.name, " min=", opts.minorf)
   if opts.scanreverse == true:
@@ -128,18 +135,18 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
 
   # First translate all the frames
   for sequence in seqs:
-    if len(sequence.seq) < opts.minreadlength:
+    if len(sequence.sequence) < opts.minreadlength:
       
       break
     for frame in @[0, 1, 2]:
       let
-        dna = sequence.seq[frame .. ^1]
+        dna = sequence.sequence[frame .. ^1]
       var
-        obj : FastxRecord
+        obj : FQRecord
       obj.name = if opts.scanreverse == false or sequence == input: "+" &  $frame
                 else: "-" & $frame
-      obj.seq = dna
-      obj.seq = obj.translate(opts.code).seq 
+      obj.sequence = dna
+      obj.sequence = obj.translateFastx(opts.code).sequence
       rawprots.add( obj )
   
   # Then split on STOP codons
@@ -149,20 +156,20 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
       start = 0
      
 
-    for i, aa in translatedRecord.seq:
+    for i, aa in translatedRecord.sequence:
       #db("i=", i, " aa=", aa, " orf=", orf, " len=", len(translatedRecord.seq))
-      if aa == '*' or i == len(translatedRecord.seq) - 1:
+      if aa == '*' or i == len(translatedRecord.sequence) - 1:
         
-        orf = if aa == '*': translatedRecord.seq[start ..< i]
-              else: translatedRecord.seq[start .. i]
+        orf = if aa == '*': translatedRecord.sequence[start ..< i]
+              else: translatedRecord.sequence[start .. i]
         db(" orf=",orf)
         if len(orf) >= opts.minorf:
            
           var
-            obj : FastxRecord
+            obj : FQRecord
           db( " ORF: ", $i)
           obj.name = translatedRecord.name & " start=" & $start
-          obj.seq = orf
+          obj.sequence = orf
           result.add( obj )
            
         start = i + 1
@@ -172,7 +179,7 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
 #[      
   for translatedseq in rawprots:
      
-    let translations : seq = translatedseq.seq.split('-')
+    let translations : seq = translatedseq.sequence.split('-')
      
     for t in translations:
       if len(t) > minOrfSize:
@@ -180,16 +187,16 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
          
         for orf in orfs:
           if len(orf) > minOrfSize:
-            var s: FastxRecord
+            var s: FQRecord
             s.name = translatedseq.name
-            s.seq = orf
+            s.sequence = orf
             result.add(s)
 ]#      
   
-proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90): FastxRecord {.discardable.} = 
+proc mergePair(R1, R2: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): FQRecord {.discardable.} = 
   var REV = revcompl(R2) 
-  var max = if R1.seq.high > REV.seq.high: REV.seq.high
-          else:  R1.seq.high
+  var max = if R1.sequence.high > REV.sequence.high: REV.sequence.high
+          else:  R1.sequence.high
   
   var max_score = 0.0
   var pos = 0
@@ -197,10 +204,10 @@ proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90
 
   for i in minlen .. max:
     var
-      s1 = R1.seq[R1.seq.high - i .. R1.seq.high]
-      s2 = REV.seq[0 .. 0 + i ]
-      #q1 = R1.qual[R1.seq.high - i .. R1.seq.high]
-      #q2 = R2.qual[R2.seq.high - i .. R2.seq.high]
+      s1 = R1.sequence[R1.sequence.high - i .. R1.sequence.high]
+      s2 = REV.sequence[0 .. 0 + i ]
+      #q1 = R1.qual[R1.sequence.high - i .. R1.sequence.high]
+      #q2 = R2.qual[R2.sequence.high - i .. R2.sequence.high]
       score = 0.0
       
 
@@ -221,15 +228,15 @@ proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90
   # Fix mismatches
   if max_score > min_id:
     result.name = R1.name
-    result.seq = R1.seq & REV.seq[pos + 1 .. ^1]
-    result.qual = R1.qual & REV.qual[pos + 1 .. ^1]
+    result.sequence = R1.sequence & REV.sequence[pos + 1 .. ^1]
+    result.quality = R1.quality & REV.quality[pos + 1 .. ^1]
   else:
     result = R1
 
-proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
+proc processPair(R1, R2: FQRecord, opts: mergeCfg): string =
   var
-    orfs: seq[FastxRecord]
-    s1: FastxRecord
+    orfs: seq[FQRecord]
+    s1: FQRecord
     joined = false
     counter = 0
 
@@ -250,22 +257,22 @@ proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
   for peptide in orfs:
     counter += 1
     
-    result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.seq & "\n"
+    result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.sequence & "\n"
 
 
-proc processSingle(R1: FastxRecord, opts: mergeCfg): string =
+proc processSingle(R1: FQRecord, opts: mergeCfg): string =
   var
-    orfs: seq[FastxRecord]
+    orfs: seq[FQRecord]
     counter = 0
-  
+    
   orfs.add( translateAll(R1, opts))
   
   for peptide in orfs:
     counter += 1
-    result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.seq & "\n"
+    result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.sequence & "\n"
 
     
-proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
+proc parseArray(pool: seq[FQRecord], opts: mergeCfg): string =
   for i in 0 .. pool.high:
     if i mod 2 == 1:
       try:
@@ -274,7 +281,7 @@ proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
         result &= processPair(pool[i - 1], pool[i], opts) 
         quit()
 
-proc parseArraySingle(pool: seq[FastxRecord], opts: mergeCfg): string =
+proc parseArraySingle(pool: seq[FQRecord], opts: mergeCfg): string =
   for i in 0 .. pool.high:
     try:
       result &= processSingle(pool[i], opts)  
@@ -314,17 +321,18 @@ proc printCodes() =
     
 See also: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"""
 
-#proc main(argv: var seq[string]): int =
 proc fastx_orf(argv: var seq[string]): int =
   let args =  docopt("""
-  Usage: 
-    orf [options] <InputFile>  
-    orf [options] -1 File_R1.fq
-    orf [options] -1 File_R1.fq -2 File_R2.fq
-    orf --help | --codes
-
+  fu-orf
+ 
   Extract ORFs from Paired-End reads.
 
+  Usage: 
+  fu-orf [options] <InputFile>  
+  fu-orf [options] -1 File_R1.fq
+  fu-orf [options] -1 File_R1.fq -2 File_R2.fq
+  fu-orf --help | --codes
+  
   Input files:
     -1, --R1 FILE           First paired end file
     -2, --R2 FILE           Second paired end file
@@ -446,31 +454,35 @@ proc fastx_orf(argv: var seq[string]): int =
     echoVerbose("Single end mode")
     singleEnd = true
   
-
-  var R1 = xopen[GzFile](fileR1)
-  defer: R1.close()
-  var read1: FastxRecord
+  var
+    read1, read2: FQRecord
   echoVerbose("Reading R1:" & fileR1)
 
 
   
-  var readspool : seq[FastxRecord]
+  var readspool : seq[FQRecord]
   var responses = newSeq[FlowVar[string]]()
 
   if not singleEnd:
     ##
     ## Paired End Mode
     ##
-    var R2 = xopen[GzFile](fileR2)
-    defer: R2.close()
-    var read2: FastxRecord
-    echoVerbose("Reading R2:" & fileR2, verbose)
-    while R1.readFastx(read1):
+    initClosure(f1,readfq(fileR1))
+    #creates a new closure iterator, 'f1'
+
+    initClosure(f2,readfq(fileR2))
+    #creates a new closure iterator, 'f2'
+    
+    for raw_read_1, raw_read_2 in zip(f1,f2):
+      read1 = raw_read_1
+      read2 = raw_read_2
+     
+      
       counter += 1
       if prefix != "nil":
         read1.name = prefix & $counter
         read2.name = prefix & $counter
-      R2.readFastx(read2)
+  
       
       readspool.add(read1)
       readspool.add(read2)  
@@ -487,9 +499,11 @@ proc fastx_orf(argv: var seq[string]): int =
     ##
     ## Single End Mode
     ##
-    while R1.readFastx(read1):
+    for fq_record in readfq(fileR1):
       counter += 1
+      read1= fq_record
 
+      
       if prefix != "nil":
         read1.name = prefix & $counter
          
@@ -505,3 +519,6 @@ proc fastx_orf(argv: var seq[string]): int =
     let s = ^resp
     stdout.write(s)
 
+
+when isMainModule:
+  main_helper(fastx_orf)

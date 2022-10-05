@@ -1,6 +1,5 @@
-import klib
-import strformat
-import tables, strutils
+import readfq
+import tables
 from os import fileExists
 import docopt
 import ./seqfu_utils
@@ -58,26 +57,21 @@ Options:
       else:
         echoVerbose(filename, verbose)
 
-      var 
-        f = xopen[GzFile](filename)
-        r: FastxRecord
-        
-      defer: f.close()
-
-      
-      while f.readFastx(r):
+      for record in readfq(filename):
+        var
+          r = record
         let comment = if len(r.comment) > 0 and not args["--strip-comments"]: " " & r.comment
                       else: ""
         if args["--only-rev"]:
-          r.seq = reverse(r.seq)
+          r.sequence = reverse(r.sequence)
         else:
-          r.seq = revcompl(r.seq)
+          r.sequence = revcompl(r.sequence)
 
-        if len(r.qual) > 0:
-          r.qual = reverse(r.qual)
-          echo '@', r.name, comment, "\n", r.seq, "\n+\n", r.qual
+        if len(r.quality) > 0:
+          r.quality = reverse(r.quality)
+          echo '@', r.name, comment, "\n", r.sequence, "\n+\n", r.quality
         else:
-          echo '>', r.name, comment, "\n", r.seq
+          echo '>', r.name, comment, "\n", r.sequence
 
  
 #[
@@ -138,12 +132,12 @@ Options:
         let comment = if len(r.comment) > 0 and not args["--strip-comments"]: " " & r.comment
                       else: ""
         if args["--only-rev"]:
-          outRecord.sequence = reverse(r.sequence)
+          outRecord.sequence = reverse(r.sequenceuence)
         else:
-          outRecord.sequence = revcompl(r.sequence)
+          outRecord.sequence = revcompl(r.sequenceuence)
 
-        if len(r.quality) > 0:
-          outRecord.quality = reverse(r.quality)
+        if len(r.qualityity) > 0:
+          outRecord.quality = reverse(r.qualityity)
           echo '@', outRecord.name, comment, "\n", outRecord.sequence, "\n+\n", outRecord.quality
         else:
           echo '>', outRecord.name, comment, "\n", outRecord.sequence

@@ -8,9 +8,7 @@ import re
 when not defined(windows):
   import posix
 
-let
-  debug = if getEnv("seqfu_debug", "0") != "0": true
-          else: false
+
 
 const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 
@@ -230,6 +228,7 @@ proc echoVerbose*(msg: string, print: bool) =
 # Common variables for switches
 var
    verbose*:        bool    # verbose mode
+   debug*:          bool    # debug mode
    check*:          bool    # enable basic checks
    stripComments*:  bool    # strip comments in output sequence
    forceFasta*:     bool
@@ -237,6 +236,9 @@ var
    defaultQual*     = 33
    lineWidth*       = 0
 
+
+debug = if getEnv("seqfu_debug", "0") != "0": true
+          else: false
 
 proc reverse*(str: string): string =
   result = ""

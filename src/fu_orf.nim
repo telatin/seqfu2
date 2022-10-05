@@ -1,6 +1,5 @@
 import threadpool
 import klib
-import readfq
 import docopt, strutils, tables, math
 import os
 import ./seqfu_utils
@@ -169,7 +168,23 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
         start = i + 1
         orf = ""
       
-  
+
+#[      
+  for translatedseq in rawprots:
+     
+    let translations : seq = translatedseq.seq.split('-')
+     
+    for t in translations:
+      if len(t) > minOrfSize:
+        let orfs = t.split('*')
+         
+        for orf in orfs:
+          if len(orf) > minOrfSize:
+            var s: FastxRecord
+            s.name = translatedseq.name
+            s.seq = orf
+            result.add(s)
+]#      
   
 proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90): FastxRecord {.discardable.} = 
   var REV = revcompl(R2) 
@@ -301,15 +316,11 @@ See also: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"""
 
 proc main(argv: var seq[string]): int =
   let args =  docopt("""
-  fu-orf
- 
-  Extract ORFs from Paired-End reads.
-
   Usage: 
-  fu-orf [options] <InputFile>  
-  fu-orf [options] -1 File_R1.fq
-  fu-orf [options] -1 File_R1.fq -2 File_R2.fq
-  fu-orf --help | --codes
+    orf [options] <InputFile>  
+    orf [options] -1 File_R1.fq
+    orf [options] -1 File_R1.fq -2 File_R2.fq
+    orf --help | --codes
   
   Input files:
     -1, --R1 FILE           First paired end file
@@ -335,8 +346,6 @@ proc main(argv: var seq[string]): int =
     --verbose               Print verbose log
     --debug                 Print debug log  
     --help                  Show help
-
-  [DEPRECATED see 'seqfu orf']
   """, version=version, argv=argv)
 
   var
@@ -388,7 +397,11 @@ proc main(argv: var seq[string]): int =
     quit(1)
 
   echoVerbose("SeqFu ORF")
-
+#[
+    if len(fileR1) == 0:
+    verbose("Missing required parameters: -1 FILE1 [-2 FILE2]", true)
+    quit(0)
+ ]#
 
   if args["<InputFile>"]:
     fileR1 = $args["<InputFile>"]

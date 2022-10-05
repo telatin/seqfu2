@@ -1,4 +1,3 @@
-#import klib
 import readfq
 import strformat
 import tables, strutils

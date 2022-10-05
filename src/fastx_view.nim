@@ -1,4 +1,4 @@
-import klib
+import readfq
 import tables, strutils
 from os import fileExists
 import docopt
@@ -247,12 +247,8 @@ Options:
     stderr.writeLine("Error: input file not found: ", $args["<inputfile>"])
     quit(1)
 
-  var 
-    f = xopen[GzFile]($args["<inputfile>"])
-    read: FastxRecord
-  
-  defer: f.close()
-  while f.readFastx(read):
+
+  for read in readfq($args["<inputfile>"]):
     # Print seq name
     if args["--nocolor"]:
       echo "@", read.name, "\t", read.comment
@@ -260,23 +256,23 @@ Options:
       echo "@", (read.name).bold, "\t", (read.comment).fgLightGray
       
     if $args["--oligo1"] != "nil":
-      let matches = findPrimerMatches(read.seq, $args["--oligo1"], matchThs, maxMismatches, minMatches)
-      let forString = highlightOligoMatches(read.seq, matches, len($args["--oligo1"]), bgBlue)
+      let matches = findPrimerMatches(read.sequence, $args["--oligo1"], matchThs, maxMismatches, minMatches)
+      let forString = highlightOligoMatches(read.sequence, matches, len($args["--oligo1"]), bgBlue)
       if forString.isOnlySpaces == false:
         echo forString
     if $args["--oligo2"] != "nil":
-      let matches = findPrimerMatches(read.seq, $args["--oligo2"], matchThs, maxMismatches, minMatches)
-      let revString = highlightOligoMatches(read.seq, matches, len($args["--oligo2"]), bgRed)
+      let matches = findPrimerMatches(read.sequence, $args["--oligo2"], matchThs, maxMismatches, minMatches)
+      let revString = highlightOligoMatches(read.sequence, matches, len($args["--oligo2"]), bgRed)
       if revString.isOnlySpaces == false:
         echo revString
-    echo read.seq
+    echo read.sequence
     if args["--qual-chars"]:
-      echo qualToColor(read.qual, thresholdValues, colorOutput)
+      echo qualToColor(read.quality, thresholdValues, colorOutput)
     else:
       if args["--ascii"]:
-        echo qualToAscii(read.qual, thresholdValues, colorOutput)
+        echo qualToAscii(read.quality, thresholdValues, colorOutput)
       else:
-        echo qualToUnicode(read.qual, thresholdValues, colorOutput)
+        echo qualToUnicode(read.quality, thresholdValues, colorOutput)
 
   if args["--verbose"]:
     stderr.writeLine("Encoding: ", ce)     

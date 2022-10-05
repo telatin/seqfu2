@@ -1,3 +1,12 @@
+# --------------------------------------------
+#                  LEGACY GREP 
+# --------------------------------------------
+
+#[
+   This is the original implementation made using
+   klib instead of readfq
+]#
+
 import klib
 import tables, strutils
 from os import fileExists

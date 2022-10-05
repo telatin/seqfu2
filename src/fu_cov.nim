@@ -1,5 +1,5 @@
 import klib
- 
+import readfq
 import docopt
 import strutils
 import stats
@@ -140,9 +140,7 @@ proc main(args: var seq[string]): int =
         echo "FATAL ERROR: File ", filename, " not found."
         quit(1)
 
-      var f = xopen[GzFile](filename)
-      defer: f.close()
-      var r: FastxRecord
+      
       if args["--verbose"]:
         stderr.writeLine "Reading ", filename
 
@@ -151,10 +149,10 @@ proc main(args: var seq[string]): int =
       #var match: array[1, string]
 
 
-      while f.readFastx(r):
+      for r in readfq(filename):
         c+=1
-        total_bases += len(r.seq)
-        lenStats.push(len(r.seq))
+        total_bases += len(r.sequence)
+        lenStats.push(len(r.sequence))
         var cov = getCovFromString(r.name & " " & r.comment)
 
         # Coverage check
@@ -168,20 +166,20 @@ proc main(args: var seq[string]): int =
             continue
 
         # Contig length filter
-        if optminlen > 0 and len(r.seq) < optminlen:
+        if optminlen > 0 and len(r.sequence) < optminlen:
           skip_short += 1
           continue
-        if optmaxlen > 0 and len(r.seq) > optmaxlen:
+        if optmaxlen > 0 and len(r.sequence) > optmaxlen:
           skip_long += 1
           continue
 
 
         pf += 1
-        bases_printed += len(r.seq)
+        bases_printed += len(r.sequence)
         if args["--sort"] == false:
-          echo ">", r.name, " ", r.comment, "\n", r.seq;
+          echo ">", r.name, " ", r.comment, "\n", r.sequence;
         else:
-          covTable.add((name: r.name, comment: r.comment, cov: cov, length: len(r.seq), sequence: r.seq))
+          covTable.add((name: r.name, comment: r.comment, cov: cov, length: len(r.sequence), sequence: r.sequence))
     let
       ratio = 100.0 * float(bases_printed) / float(total_bases)
 
