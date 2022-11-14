@@ -37,6 +37,3 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 
 {% include list.liquid all=true %}
 
-<p>
-Follow me on <a rel="me" href="https://mas.to/@seqfu">Mastodon</a>
-</p>
