@@ -13,7 +13,10 @@ remote_theme:  telatin/docs-theme
 plugins:
   - jekyll-remote-theme
   - jemoji
-
+  
+google:
+  gtag4: "G-Q12CPTSQD"
+  
 markdown: CommonMarkGhPages
 commonmark:
   options: ['SMART']
