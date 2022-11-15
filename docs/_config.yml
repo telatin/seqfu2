@@ -15,8 +15,11 @@ plugins:
   - jemoji
   
 google:
-  gtag4: "G-Q12CPTSQD"
+  gtag4: "G-Q12CPTSQDT"
   
+google_analytics: 'UA-185637-20'
+google_tag4: 'G-Q12CPTSQDT'
+
 markdown: CommonMarkGhPages
 commonmark:
   options: ['SMART']
