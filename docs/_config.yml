@@ -8,7 +8,7 @@ readme_index:
 
 theme: null
 
-remote_theme: rundocs/jekyll-rtd-theme
+remote_theme:  telatin/docs-theme 
 
 plugins:
   - jekyll-remote-theme
