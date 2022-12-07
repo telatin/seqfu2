@@ -1,4 +1,4 @@
-import klib
+#import klib
 import readfq
 import docopt
 import strutils
