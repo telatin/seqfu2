@@ -21,8 +21,8 @@ else:
   const libz = "libz.so.1"
   const libc = "libc.so.6"
 
-const 
-  Whitespace = {' ', '\t'}
+#const 
+#  Whitespace = {' ', '\t'}
 type
   gzFile = pointer
 

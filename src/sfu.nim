@@ -35,7 +35,7 @@ include ./fu_rotate
 
 # Experimental
 include ./fastx_stats2
-include ./fastx_count_threads
+include ./fastx_count_threads_off
 include ./fastx_list
 include ./fastx_bases
 
@@ -51,8 +51,8 @@ var progs = {
          "derep": fastx_derep, 
          "dereplicate": fastx_derep, 
          "uniques": fastx_derep, 
-       "cnt": fastx_count_threads,      # Experimental     
-         "count": fastx_count_threads,  # Experimental
+       "cnt": fastx_count_threads_off,      # Experimental     
+         "count": fastx_count_threads_off,  # Experimental
        "st" : fastx_stats,            
          "stats": fastx_stats_v2,
          "stat": fastx_stats_v2,

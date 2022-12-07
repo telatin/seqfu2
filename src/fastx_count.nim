@@ -80,7 +80,7 @@ Options:
         continue
       
       let
-        (dir, filenameNoExt, extension) = splitFile(filename)
+        (_, filenameNoExt, extension) = splitFile(filename)
         (sampleId, direction) = extractTag(filenameNoExt, pattern1, pattern2)
         
    

@@ -1,7 +1,7 @@
 
 import tables, strutils, sequtils
 import os
-import threadpool
+#import threadpool
 import readfq
 import docopt
 import ./seqfu_utils
@@ -27,6 +27,7 @@ type
     flist: seq[string]    # List of files (for debugging if files > 0)
     fields: Table[string, string]
 
+#[
 proc init(s: sample, name: string, path = "", file1 = "", file2 = "", count = 0) =
     var files = 0
     s.name = name
@@ -39,7 +40,7 @@ proc init(s: sample, name: string, path = "", file1 = "", file2 = "", count = 0)
     if len(file2) > 0:
       files += 1
     s.files = files 
-
+]#
 proc `$`(a: sample): string =
   return $(a.name) & " -> (" & $(a.file1) & ";" & $(a.file2) & "): " & $(a.count) & " in " & $(a.files)
 
@@ -219,7 +220,7 @@ Options:
   --pe                   Enforce paired-end reads (not supported)
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column
-  -t, --threads INT      Number of simultaneously opened files [default: 2]
+  -t, --threads INT      Number of simultaneously opened files (legacy: ignored) 
 
   FORMAT SPECIFIC OPTIONS
   -P, --project INT      Project ID (only for irida)
@@ -228,12 +229,14 @@ Options:
   --meta-default STR     Default value for metadata, used in MetaPhage [default: Cond]
 
   -v, --verbose          Verbose output
+  --debug                Debug output
   -h, --help             Show this help
 
   """, version=version(), argv=argv)
 
     verbose = args["--verbose"]
-     
+    if bool(args["--debug"]):
+      stderr.writeLine("Args: " & $args)
     var
       outFmt: string
       forTag, revTag, splitString: string
@@ -252,7 +255,7 @@ Options:
       revTag = $args["--rev-tag"]
       splitString = $args["--split"]
       posList = @[args["--pos"]]
-      threads = parseInt($args["--threads"])
+      threads = 0
       addCounts = args["--counts"]
       addPath   = args["--add-path"]
       enforcePe   = args["--pe"]
@@ -260,10 +263,10 @@ Options:
       stderr.writeLine("Error: unexpected parameter value. ", e.msg)
       quit(1)
     
-    setMaxPoolSize(threads)   
+    #setMaxPoolSize(threads)   
 
     var
-      responses = newSeq[FlowVar[sample]]()
+      responses = newSeq[sample]()
       samples = newSeq[sample]()
       peCount = 0
       seCount = 0
@@ -321,15 +324,15 @@ Options:
           isSe += 1
 
         if addCounts:
-          let file1 = joinPath(dir, sample.file1)
-          responses.add(spawn countReads(sample))
+          #let file1 = joinPath(dir, sample.file1)
+          responses.add(countReads(sample))
         else:
           samples.add(sample)
 
     
     if addCounts:
-      for resp in responses:  
-        let s = ^resp
+      for s in responses:  
+        
         if verbose:
           stderr.writeLine("Counted reads for: ", s.name)
         samples.add(s)

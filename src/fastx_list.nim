@@ -21,7 +21,7 @@ proc getListFromFile(filename: string, opts: ListOptions): Table[string, int] =
   for line in lines filename: 
     var
       name = line
-      stripped = ""
+      #stripped = ""
 
     if line.startsWith("#"):
       continue

@@ -10,12 +10,13 @@ proc keepSeq(pool: var seq, sequence: FQRecord, max: int): bool {.discardable.} 
     pool.delete(0)
   pool.add(sequence)
   return true
-
+#[
 proc keepSeq_v1(pool: var seq, sequence: FastxRecord, max: int): bool {.discardable.} = 
   if pool.len >= max:
     pool.delete(0)
   pool.add(sequence)
   return true
+]#
 proc fastx_tail_v2(argv: var seq[string]): int =
     let args = docopt("""
 Usage: tail [options] [<inputfile> ...]

@@ -51,8 +51,9 @@ proc joinreads(R1, raw_R2: FastxRecord, o: mergeOptions): joinedRecord =
     var
       s1 = R1.seq[R1.seq.high - i .. R1.seq.high]
       s2 = R2.seq[0 .. 0 + i ]
-      q1 = R1.qual[R1.seq.high - i .. R1.seq.high]
-      q2 = raw_R2.qual[raw_R2.seq.high - i .. raw_R2.seq.high]
+      
+      #q1 = R1.qual[R1.seq.high - i .. R1.seq.high]
+      #q2 = raw_R2.qual[raw_R2.seq.high - i .. raw_R2.seq.high]
       score = 0.0
       
 
@@ -152,8 +153,8 @@ Usage:
     quit(1)
   
 
-  initClosure(getR1,readfq(file_R1))
-  initClosure(getR2,readfq(file_R2))
+  #initClosure(getR1,readfq(file_R1))
+  #initClosure(getR2,readfq(file_R2))
 
   let
     opt = sourceOptions

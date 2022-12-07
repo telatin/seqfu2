@@ -47,13 +47,13 @@ Options:
     for filename in files:
       var 
         f = xopen[GzFile](filename)
-        y = 0
+        #y = 0
         r: FastxRecord
         
       defer: f.close()
       var 
         c  = 0
-        printed = 0
+        #printed = 0
         seqTable = initTable[string, string]()
                
       while f.readFastx(r):

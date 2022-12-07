@@ -26,7 +26,7 @@ $(BIN)/seqfu: src/sfu.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-primers: src/fu_primers.nim
-	nim c $(NIMPARAM) --out:$@ $<
+	nim c --threads:on $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-shred: src/fu_shred.nim
 	nim c $(NIMPARAM) --out:$@ $<
@@ -35,13 +35,13 @@ $(BIN)/fu-nanotags: src/fu_nanotags.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-orf: src/fu_orf.nim
-	nim c $(NIMPARAM) --out:$@ $<
+	nim c --threads:on $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-sw: src/fu_sw.nim
-	nim c $(NIMPARAM) --out:$@ $<
+	nim c --threads:on $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-homocomp: src/fu_homocomp.nim
-	nim c $(NIMPARAM) --out:$@ $<
+	nim c --threads:on $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-multirelabel: src/fu_multirelabel.nim
 	nim c $(NIMPARAM) --out:$@ $<

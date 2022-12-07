@@ -183,7 +183,7 @@ Options:
     #echo pretty(%*seqFiles)
     if useJson:
       try:
-        writeFile($args["--json"], pretty(%*seqFiles))
+        writeFile(jsonFile, pretty(%*seqFiles))
       except Exception as e:
-        stderr.writeLine("ERROR: ", e.msg, "\n", "Unable to write JSON to ", $args["--json"], " (dumping here):\n")
+        stderr.writeLine("ERROR: ", e.msg, "\n", "Unable to write JSON to ", jsonFile, " (dumping here):\n")
         stderr.writeLine( pretty(%*seqFiles))

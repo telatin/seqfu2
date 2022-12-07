@@ -420,8 +420,8 @@ proc mergeSeqs*(f, r: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): F
     var
       s1 = f.sequence[f.sequence.high - i .. f.sequence.high]
       s2 = rc.sequence[0 .. 0 + i ]
-      q1 = f.quality[f.sequence.high - i .. f.sequence.high]
-      q2 = r.quality[r.sequence.high - i .. r.sequence.high]
+      #q1 = f.quality[f.sequence.high - i .. f.sequence.high]
+      #q2 = rc.quality[r.sequence.high - i .. r.sequence.high]
       score = 0.0
       
 
@@ -443,7 +443,7 @@ proc mergeSeqs*(f, r: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): F
   if max_score > min_id:
     result.name = f.name
     result.sequence = f.sequence & rc.sequence[pos + 1 .. ^1]
-    result.quality = f.quality & rc.quality[pos + 1 .. ^1]
+    result.quality  = f.quality  & rc.quality[pos + 1 .. ^1]
   else:
     result = f
 
@@ -606,6 +606,8 @@ proc getIndex(s: string): string =
   if len(split) > 2:
     return split[^1]
 
+# TODO: Declared not used
+#[
 proc getIndexFromFile(f: string, max = 250): string =
 
   var
@@ -628,3 +630,4 @@ proc getIndexFromFile(f: string, max = 250): string =
 
   except Exception:
     return ""
+]#
