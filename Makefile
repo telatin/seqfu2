@@ -14,7 +14,7 @@ PYTARGETS=$(BIN)/fu-split
 all: $(TARGETS) $(PYTARGETS)
 
 src/deps.txt:
-	nimble seqfu
+	nimble install -y --depsOnly
 	touch $@
 
 src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim src/deps.txt
