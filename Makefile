@@ -36,7 +36,7 @@ $(BIN)/fu-shred: src/fu_shred.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-nanotags: src/fu_nanotags.nim
-	nim c $(NIMPARAM) --out:$@ $<
+	nim c  --threads:on $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-orf: src/fu_orf.nim
 	nim c --threads:on $(NIMPARAM) --out:$@ $<
@@ -66,7 +66,7 @@ $(BIN)/fu-tabcheck: src/fu_tabcheck.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-16Sregion: src/dadaist2_region.nim
-	nim c $(NIMPARAM) --out:$@ $<
+	nim c  --threads:on $(NIMPARAM) --out:$@ $<
 
 $(BIN)/dadaist2-mergeseqs: src/dadaist2_mergeseqs.nim
 	nim c $(NIMPARAM) --out:$@ $<
