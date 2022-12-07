@@ -5,6 +5,7 @@
 # SeqFu
 
 [![Seqfu-Test](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml)
+[![pages-build-deployment](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment)
 ![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
 [![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/seqfu?label=Bioconda%20Downloads)](https://anaconda.org/bioconda/seqfu)
@@ -20,6 +21,8 @@ SeqFu is available for Linux and MacOS.
 * A compiled program delivering high performance analyses
 * Supports FASTA/FASTQ files, also Gzip compressed
 * A growing collection of handy utilities, also for quick inspection of the datasets
+* UNIX like commands but specific for sequences like `seqfu cat`, `seqfu head`, `seqfu tail`, `seqfu grep`
+* Terminal friendly reports from `seqfu stats` or `seqfu count`...
 
 Can be easily [installed](installation) via conda:
 
@@ -36,3 +39,4 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 ## Contents
 
 {% include list.liquid all=true %}
+

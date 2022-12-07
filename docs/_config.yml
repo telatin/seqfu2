@@ -8,11 +8,17 @@ readme_index:
 
 theme: null
 
-remote_theme: rundocs/jekyll-rtd-theme
+remote_theme:  telatin/docs-theme 
 
 plugins:
   - jekyll-remote-theme
   - jemoji
+  
+google:
+  gtag4: "G-Q12CPTSQDT"
+  
+google_analytics: 'UA-185637-20'
+google_tag4: 'G-Q12CPTSQDT'
 
 markdown: CommonMarkGhPages
 commonmark:

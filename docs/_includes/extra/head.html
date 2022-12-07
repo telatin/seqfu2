@@ -1,0 +1,27 @@
+
+
+	
+{% if site.gtag4 %}
+<!-- Google tag (gtag.js), e.g. telatin/G-Q12CPTSQDT -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ site.gtag4 }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '{{ site.gtag4 }}');
+</script>
+{% endif %}
+
+{% if site.google_analytics %}
+<!-- Google tag (gtag.js) legacy, e.g. telatin/UA-185637-20 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '{{ site.google_analytics }}');
+
+</script>
+{% endif %}
