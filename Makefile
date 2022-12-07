@@ -13,7 +13,11 @@ PYTARGETS=$(BIN)/fu-split
 
 all: $(TARGETS) $(PYTARGETS)
 
-src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim
+src/deps.txt:
+	nimble seqfu
+	touch $@
+
+src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim src/deps.txt
 	touch $@ 
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split

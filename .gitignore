@@ -1,4 +1,5 @@
 *.dmp
+src/deps.txt
 tax/*
 tax
 bin/*

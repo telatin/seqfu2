@@ -28,3 +28,6 @@ namedBin = {
 }.toTable()
 
  
+task seqfu, "Just SeqFu!":
+  withDir "src":
+    exec "nim c -o:../bin/seqfu_test sfu.nim"
