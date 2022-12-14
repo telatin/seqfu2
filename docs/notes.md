@@ -78,3 +78,8 @@ The repository contains some templates to quickly write
 FASTX parser-based applications (in Nim or in Perl).
 
 :package: [seqfu2/templates](https://github.com/telatin/seqfu2/tree/main/templates)
+
+## Outreach
+
+* [Slides](https://www.icloud.com/keynote/0cfGObtl14rWj_q4nZ7lFy7fg#seqfu_2)
+* [Slides, PDF)(http://seqfu.it/slides.pdf)
