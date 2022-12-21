@@ -32,7 +32,7 @@ else
 fi 
 
 EXP=7
-OBS=$(grep . "$SEQFU_TEMP_DIR"/irida.csv | wc -l)
+OBS=$(getnumber $(grep . "$SEQFU_TEMP_DIR"/irida.csv | wc -l))
 MSG="Irida lines: exp=$EXP got=$OBS"
 if [[ $OBS == $EXP ]]; then
     echo -e "$OK: $MSG"

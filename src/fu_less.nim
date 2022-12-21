@@ -3,7 +3,18 @@ import illwill
 import readfq
 import docopt
 import tables
- 
+
+# Custom types
+type
+  FQViewMode = enum
+    fqSE, fqPEinterleaved, fqPEjoined, fqPEinline
+
+# High-order custom types
+type
+  FuLessOptions = object
+    mode: FQViewMode
+    inputFile: string
+    pairedFile: string
 type
   # Color scheme for the MSA
   ColorType = enum

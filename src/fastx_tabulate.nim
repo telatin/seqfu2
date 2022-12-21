@@ -110,10 +110,10 @@ Options:
         tot = len(fields)
         lens = fieldToSeq(fields)
       if verbose and c < 3:
-        stderr.writeLine("Line ", c, ": ", tot, " fields:", lens)
+        stderr.writeLine("Line ", c, ": ", tot, " fields:", lens, "[tot=", lens.tot, "]")
         
-      # FASTA [Name, Comment, sequence]
-      if lens.tot == 3 or (lens[3] == 0):
+      # FASTA [Name, Comment/?, sequence]
+      if lens.tot == 2 or (lens[3] == 0):
         # FASTA: Name, comment, sequence
         let
           name = fields[0]
@@ -122,7 +122,7 @@ Options:
           sequence = fields[2]
         echo '>', name, comment, "\n", sequence
       # FASTQ Single [Name, Comment, Sequence, Quality]
-      elif (lens.tot == 3 and lens[3] > 0) and (lens[4] == 0):
+      elif (lens.tot == 3 ) and (lens[4] == 0):
         # FASTQ-se
         let
           name = fields[0]
