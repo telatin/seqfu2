@@ -37,3 +37,38 @@ else
     echo -e "$FAIL: FQ interleaved sequence tabulated / detabulated 14 expected, got $ILV"
     ERRORS=$((ERRORS+1))
 fi 
+
+## FASTQ SE
+SE_LINES=$(getnumber $("$BINDIR"/seqfu tabulate "$FILES"/comments.fastq | SEQFU_QUIET=1 "$BINDIR"/seqfu tabulate -d | wc -l))
+ 
+if [[ $SE_LINES == "20" ]]; then
+    echo -e "$OK: FASTQ output format: line count $SE_LINES"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: FASTQ output format: line count 20 expected, got $SE_LINES"
+    ERRORS=$((ERRORS+1))
+fi
+
+
+## FASTQ PE
+SE_LINES=$(getnumber $("$BINDIR"/seqfu tabulate "$FILES"/comments.fastq | SEQFU_QUIET=1 "$BINDIR"/seqfu tabulate -d | wc -l))
+ 
+if [[ $SE_LINES == "20" ]]; then
+    echo -e "$OK: FASTQ output format: line count $SE_LINES"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: FASTQ output format: line count 20 expected, got $SE_LINES"
+    ERRORS=$((ERRORS+1))
+fi
+
+
+## FASTA SE
+FA_LINES=$(getnumber $("$BINDIR"/seqfu tabulate "$FILES"/comments.fasta | SEQFU_QUIET=1 "$BINDIR"/seqfu tabulate -d | wc -l))
+ 
+if [[ $FA_LINES == "8" ]]; then
+    echo -e "$OK: FASTA output format: $FA_LINES"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: FASTA output format: 8 expected, got $FA_LINES"
+    ERRORS=$((ERRORS+1))
+fi
