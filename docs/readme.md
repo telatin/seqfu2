@@ -6,7 +6,7 @@
 
 [![Seqfu-Test](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nimtest.yml)
 [![pages-build-deployment](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment)
-![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
+[![GitHub Stars](https://img.shields.io/github/stars/telatin/seqfu2?label=%E2%AD%90%EF%B8%8F)](https://github.com/telatin/seqfu2)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
 [![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/seqfu?label=Bioconda%20Downloads)](https://anaconda.org/bioconda/seqfu)
 
