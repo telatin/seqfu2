@@ -78,6 +78,33 @@ else
     ERRORS=$((ERRORS+1))
 fi 
 
+### BAD PE, DEEP
+"$BINDIR"/seqfu check --deep --dir "$FILES"/check/pe/ > "$TEMPFILENAME"
+IS_OK=$(grep -c "ERR" "$TEMPFILENAME" )
+COUNT=$(cut -f 4 "$TEMPFILENAME" | awk '{ sum += $1 } END { print sum }')
+LIBRARY=$(cut -f 2  "$TEMPFILENAME" )
+EXIT=$?
+
+
+MSG="Checked BAD paired end exit status with --deep"
+EXP=2
+if [[ $IS_OK == $EXP ]]; then
+    echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (expected $EXP, got $IS_OK)"
+    ERRORS=$((ERRORS+1))
+fi 
+MSG="Counts checking BAD paired end exit status with --deep"
+EXP=0
+if [[ $COUNT == $EXP ]]; then
+    echo -e "$OK: $MSG (expected $EXP, got $COUNT)"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (expected $EXP, got $COUNT)"
+    ERRORS=$((ERRORS+1))
+fi 
+
 
 ### BAD SE, SINGLE END, NO DEEP
 "$BINDIR"/seqfu check  "$FILES"/bad.fastq > "$TEMPFILENAME"
