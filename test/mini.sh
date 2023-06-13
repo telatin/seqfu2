@@ -397,7 +397,7 @@ if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
    ERRORS=$((ERRORS+1))
   fi
 else
-  echo -e "$OK: Nimble release $LOCAL_RELEASE != $GH_RELEASE (remote)"
+  echo -e "$OK: Local Nimble release $LOCAL_RELEASE != $GH_RELEASE (remote)"
   PASS=$((PASS+1))
 fi
 

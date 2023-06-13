@@ -5,6 +5,11 @@ import docopt
 import ./seqfu_utils
 import math
 
+type outputFormat = enum
+  sINIT # First value is the default
+  sFASTQ
+  sFASTA
+
 proc get_ee(s: string): float =
   
   # Requires math
@@ -85,6 +90,7 @@ Output:
 
 
     var
+      outputFormat : outputFormat # added: 1.18
       newMod = 0
       appendToName: string
       appendSuffixToName: bool
@@ -146,7 +152,11 @@ Output:
     else:
       for file in args["<inputfile>"]:
         files.add(file)
-    
+    if bool(args["--fasta"]):
+      outputFormat = sFASTA
+    elif bool(args["--fastq"]):
+      outputFormat = sFASTQ
+
     var
       totalPrintedSeqs = 0
       wrongLenCount = 0
@@ -362,19 +372,27 @@ Output:
 
 
           lastName = r.name
+
+          # Set output format
+          if outputFormat == sINIT:
+            if len(r.qual) > 0:
+              outputFormat = sFASTQ
+            else:
+              outputFormat = sFASTA
+
           # Print output
           if formatList:
             echo r.name
             continue
-          elif len(r.qual) > 0:
-            # Record is FASTQ
-            if args["--fasta"]:
-              # Force FASTA
+
+          if outputFormat == sFASTA and len(r.qual) > 0:
               r.qual = ""
-          else:
-            # Record is FASTA
+          elif outputFormat == sFASTQ and len(r.qual) == 0:
             if args["--fastq"]:
               r.qual = repeat(qualToChar(defaultQual), len(r.seq))
+            else:
+              stderr.writeLine("WARNING: found a record without quality (", r.name, "), but you didnt specify --fasta")
+              quit(1)
 
 
           echo printFastxRecord(r)

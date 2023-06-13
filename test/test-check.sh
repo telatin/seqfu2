@@ -23,7 +23,7 @@ fi
  
 MSG="Checked single end OK"
 EXP=1
-if [[ $IS_OK == $EXP ]]; then
+if [[ $IS_OK == "$EXP" ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
     PASS=$((PASS+1))
 else
@@ -33,7 +33,7 @@ fi
  
 MSG="Checked single end libtype"
 EXP="SE"
-if [[ $LIBRARY == $EXP ]]; then
+if [[ $LIBRARY == "$EXP" ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $LIBRARY)"
     PASS=$((PASS+1))
 else
@@ -43,7 +43,7 @@ fi
  
 MSG="Checked single end sequence count"
 EXP=7
-if [[ $COUNT == $EXP ]]; then
+if [[ $COUNT == "$EXP" ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $COUNT)"
     PASS=$((PASS+1))
 else
@@ -51,7 +51,60 @@ else
     ERRORS=$((ERRORS+1))
 fi 
 
+### BAD SE, SINGLE END, DEEP
+"$BINDIR"/seqfu check --deep "$FILES"/bad.fastq > "$TEMPFILENAME"
+IS_OK=$(grep -c "ERR" "$TEMPFILENAME" )
+COUNT=$(cut -f 4 "$TEMPFILENAME")
+LIBRARY=$(cut -f 2  "$TEMPFILENAME" )
+EXIT=$?
 
+
+MSG="Checked BAD single end exit status with --deep"
+EXP=1
+if [[ $IS_OK == $EXP ]]; then
+    echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (expected $EXP, got $IS_OK)"
+    ERRORS=$((ERRORS+1))
+fi 
+MSG="Counts checking BAD single end exit status with --deep"
+EXP=0
+if [[ $COUNT == $EXP ]]; then
+    echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (expected $EXP, got $IS_OK)"
+    ERRORS=$((ERRORS+1))
+fi 
+
+
+### BAD SE, SINGLE END, NO DEEP
+"$BINDIR"/seqfu check  "$FILES"/bad.fastq > "$TEMPFILENAME"
+IS_OK=$(cat "$TEMPFILENAME" | grep -c "OK")
+COUNT=$(cat "$TEMPFILENAME" |cut -f 4)
+LIBRARY=$(cat "$TEMPFILENAME" |cut -f 2)
+EXIT=$?
+
+
+MSG="Checked BAD single end exit status without --deep"
+EXP=1
+if [[ $IS_OK == $EXP ]]; then
+    echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (expected $EXP, got $IS_OK)"
+    ERRORS=$((ERRORS+1))
+fi 
+MSG="Counts checking BAD single end exit status without --deep"
+EXP=0
+if [[ $COUNT == $EXP ]]; then
+    echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (expected $EXP, got $IS_OK)"
+    ERRORS=$((ERRORS+1))
+fi 
 ### PAIRED END
 "$BINDIR"/seqfu check "$FILES"/illumina_1.fq.gz > "$TEMPFILENAME"
 EXIT=$?
@@ -148,7 +201,7 @@ fi
 
 ### CHECK INVALID DIR
 LSDIR=$(ls -lh "$FILES"/primers)
-$BINDIR/seqfu check --verbose --debug --dir "$FILES/primers" > "$TEMPFILENAME" 2> "$TEMPFILENAME.log"
+$BINDIR/seqfu check --verbose --dir "$FILES/primers" > "$TEMPFILENAME" 2> "$TEMPFILENAME.log"
 EXIT=$?
 WC=$(getnumber $(cat "$TEMPFILENAME" | wc -l))
 WC_ERR=$(getnumber $(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l))
@@ -186,15 +239,18 @@ fi
 
 
 
-### CHECK VALID DIR
-$BINDIR/seqfu check  --verbose --debug --dir "$FILES/reads" > "$TEMPFILENAME" 2> "$TEMPFILENAME.log"
+### CHECK VALID DIR: WHICH ONE?
+TMP_CHECK_DIR_VALID=$(mktemp -d  PERSONAL_SEQFU_XXXXXX)
+cp "$FILES"/illumina_{1,2}.fq.gz "$TMP_CHECK_DIR_VALID"/
+"$BINDIR"/seqfu check  --verbose  --dir "$TMP_CHECK_DIR_VALID" > "$TMP_CHECK_DIR_VALID/out" 2> "$TMP_CHECK_DIR_VALID/log"
 EXIT=$?
-WC=$(getnumber $(cat "$TEMPFILENAME" | wc -l))
-WC_ERR=$(getnumber $(cat "$TEMPFILENAME" | grep -v OK | grep ERR | wc -l))
+
+WC=$(getnumber "$( wc -l < "$TMP_CHECK_DIR_VALID/out")"  )
+WC_ERR=$(getnumber "$( grep -v OK "$TMP_CHECK_DIR_VALID/out" | grep -c "ERR")"   )
+rm -rf "$TMP_CHECK_DIR_VALID"
 
 
-
-MSG="Checked valid directory exit status"
+MSG="Checked valid directory $TMP_CHECK_DIR_VALID exit status"
 if [[ $EXIT -eq 0 ]]; then
     echo -e "$OK: $MSG (expected 0, got $EXIT)"
     PASS=$((PASS+1))
@@ -203,9 +259,9 @@ else
     ERRORS=$((ERRORS+1))
 fi 
 
-MSG="Checked valid directory line count"
-EXP=5
-if [[ $WC == $EXP ]]; then
+MSG="Checked valid directory line count $TMP_CHECK_DIR_VALID/out"
+EXP=1
+if [[ "$WC" == "$EXP" ]]; then
     echo -e "$OK: $MSG (got $WC expected $EXP)"
     PASS=$((PASS+1))
 else

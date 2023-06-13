@@ -1,7 +1,8 @@
 # seqfu check
 
 ```note
-Introduced in SeqFu 1.15
+**EXPERIMENTAL**: Introduced in SeqFu 1.15, updated with --deep in 1.18 (see below).
+In SeqFu 2.0 a strict behaviour will be used by default.
 ```
 
 Evaluates the integrity of DNA FASTQ files. 
@@ -20,6 +21,8 @@ Usage: seqfu check [options] <FQFILE> [<REV>]
     <FQDIR>                    the directory containing the FASTQ files
 
   Options:
+    -d, --deep                 Perform a deep check of the file and will not 
+                               lsupport multiline Sanger FASTQ [default: false]
     -n, --no-paired            Disable autodetection of second pair
     -s, --safe-exit            Exit with 0 even if errors are found
     -q, --quiet                Do not print infos, just exit status
@@ -30,6 +33,9 @@ Usage: seqfu check [options] <FQFILE> [<REV>]
 ```
 
 ### Integrity check
+
+:warning: If not using `--deep`, the file is considered valid if `seqfu cat $INPUT > $OUTPUT` would produce a valid file (i.e. if an error is detected at the 100-th sequence, the file
+would be considered valid reporting 99 as total sequences)
 
 A single FASTQ file is considered valid if:
   
@@ -42,6 +48,10 @@ A paired-end set of FASTQ files is considered valid if:
 * the two files have the same number of sequences
 * the first and last sequence of both files has the same name (the last three characters are ignored if the remaining sequence name is greater than 4 characters)
 * the first and last sequence of the two files are not identical (R1 != R2)
+
+### Deep check
+
+If you are parsing NGS files, i.e. FASTQ files, with four lines per record and you expect them to be accepted by any program, use `--deep`.
 
 ### Usage
 

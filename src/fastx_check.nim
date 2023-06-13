@@ -6,6 +6,7 @@ import tables
 import strutils
 import strformat
 import ./seqfu_utils
+import zip/gzipfiles  # Import zip package
  
 
  
@@ -20,7 +21,8 @@ type
     bpCount: int
     isValid: bool
     errors: string
- 
+
+
 proc namesMatch(seqNameFwd, seqNameRev: string): bool =
   let
     MIN_REMAINING_NAME_LENGTH = 4
@@ -35,6 +37,95 @@ proc namesMatch(seqNameFwd, seqNameRev: string): bool =
           else:
             return false
   return false
+
+proc deepCheckStandardFqFile(filename: string): FQcheck =
+  let DNA = "ACGTN"
+  let QUAL = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+  result.filename = filename
+  result.isValid = true
+  result.errors = ""
+
+  if not fileExists(filename):
+    result.errors = "File does not exist;"
+    result.isValid = false
+    return
+
+  let fileReader = if filename.endsWith(".gz"): newGzFileStream(filename) 
+                   else: newFileStream(filename)  # Open gzip file
+  
+
+  var line: string 
+  # Loop over each line in the file
+  var seqNumber = 0
+  var bpTotal   = 0
+  #var emptyLines = 0
+
+  var seqName,seqLine, sepLine, qualLine: string
+  while not fileReader.atEnd():
+    line = fileReader.readLine()
+    
+    if (len(line) == 0):
+      #emptyLines += 1
+      continue
+    
+    if (line[0] == '@'):
+        # Sequence block
+        if (len(line) == 1):
+          result.errors &= "Empty sequence name at sequence" & $seqNumber     & ";"
+          result.isValid = false
+          # DO NOT PARSE FURTHER
+          return
+        seqName = line[1 .. ^1].split(" ")[0].split("\t")[0]
+        seqLine = fileReader.readLine()
+        sepLine = fileReader.readLine()
+        qualLine = fileReader.readLine()
+        if (len(seqLine) == 0 and len(qualLine) == 0):
+          result.errors &= "Empty sequence at sequence" & $seqNumber     & ";"
+          result.isValid = false
+          # DO NOT PARSE FURTHER
+          return
+          
+        if (len(seqLine) != len(qualLine)):
+          result.errors &= "Sequence/Quality mismatch lenght at sequence: " & $seqNumber     & ";"
+          result.isValid = false
+          # DO NOT PARSE FURTHER
+          return
+
+        if (sepLine[0] != '+'):
+          result.errors &= "Invalid separator line at sequence: " & $seqNumber & ": " & seqName     & ";"
+          result.isValid = false
+          # DO NOT PARSE FURTHER
+          return
+        for c in seqLine.toUpper():
+          if c notin DNA:
+            result.errors &= "Invalid character in sequence: <" & $c & "> in " & line     & ";"
+            result.isValid = false
+            # DO NOT PARSE FURTHER
+            return
+        #[for q in qualLine:
+          if q notin QUAL:
+            result.errors &= "Invalid character in sequence: <" & $q & "> in " & line     & ";"
+            result.isValid = false
+        ]#
+
+        # Update records
+        seqNumber += 1
+        bpTotal += len(seqLine)
+
+        if seqNumber == 1:
+          result.firstSeqName = seqName
+          result.firstSeq = seqLine
+
+    result.lastSeqName = seqName
+    result.lastSeq = seqLine
+
+    if result.isValid == false:
+      result.seqCount = -1
+      result.bpCount = -1
+      # Premature exit
+      return
+
+
 
 proc checkFqFile(filename: string): FQcheck =
   let DNA = "ACGTN"
@@ -78,11 +169,14 @@ proc checkFqFile(filename: string): FQcheck =
   result.lastSeqName = name
   result.lastSeq = read_sequence
   
-proc checkPairedFiles(fwdFile, revFile: string): FQcheck =
+proc checkPairedFiles(fwdFile, revFile: string, deep = false): FQcheck =
   let
-    fwd = checkFqFile(fwdFile)
-    rev = checkFqFile(revFile)
-  
+    #fwd = checkFqFile(fwdFile)
+    #rev = checkFqFile(revFile)
+    fwd = if deep == false: checkFqFile(fwdFile)
+          else: deepCheckStandardFqFile(fwdFile)
+    rev = if deep == false: checkFqFile(revFile)
+          else: deepCheckStandardFqFile(revFile)
   result.isValid = true
   result.errors = ""
 
@@ -91,10 +185,10 @@ proc checkPairedFiles(fwdFile, revFile: string): FQcheck =
   # Check individual files
   if fwd.isValid == false:
     result.isValid = false
-    result.errors  &= "R1=" & fwd.errors & ";"
+    result.errors  &= "R1=" & fwd.errors # & ";"
   if rev.isValid == false:
     result.isValid = false
-    result.errors  &= "R2=" & rev.errors & ";"
+    result.errors  &= "R2=" & rev.errors # & ";"
 
   # Check number of sequences
   if fwd.isValid and rev.isValid and fwd.seqCount != rev.seqCount:
@@ -208,9 +302,38 @@ proc toString(fq: FQcheck, nice: bool): string =
     
   status & "\t" & libtag & "\t" & fname & "\t" & countStr & "\t" & bpStr & "\t" & $errnum & "\t" & fq.errors
 
+
+proc toDebugString(fq: FQcheck, nice: bool): string =
+  let
+    paired = if len(fq.filename.split(";")) == 2: true
+             else: false
+    status = if fq.isValid == true: "OK"
+             else: "ERR"
+    libtag = if paired == true: "PE"
+             else: "SE"
+    fname  = if paired == false: fq.filename
+             else: fq.filename.split(";")[0] 
+    errnum = if fq.isValid == true: 0
+             else: len(fq.errors.split(";"))
+    countStr = if fq.seqCount == -1: "-"
+               elif nice: ($fq.seqCount).insertSep(',')
+               else: $(fq.seqCount)
+    bpStr = if fq.bpCount == -1: "-"
+               elif nice: ($fq.bpCount).insertSep(',')
+               else: $(fq.bpCount)
+    
+  "#DEBUG FOR " & fq.filename.split(";")[0] &
+  "\n#------ status: " & status & 
+  "\n#------ library:" & libtag & 
+  "\n#------ counts: " & countStr & 
+  "\n#------ bp:     " & bpStr & 
+  "\n#------ num_err: " & $errnum & 
+  "\n#------ errors:  " & fq.errors
+
 proc `$`(fq: FQcheck): string =
   return toString(fq, false)
 #proc fastx_metadata(argv: var seq[string]): int =
+
 proc fqcheck(args: var seq[string]): int {.gcsafe.} =
   let args = docopt("""
   Usage: seqfu check [options] <FQFILE> [<REV>]
@@ -226,6 +349,8 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
     <FQDIR>                    the directory containing the FASTQ files
 
   Options:
+    -d, --deep                 Perform a deep check of the file and will not 
+                               lsupport multiline Sanger FASTQ [default: false]
     -n, --no-paired            Disable autodetection of second pair
     -s, --safe-exit            Exit with 0 even if errors are found
     -q, --quiet                Do not print infos, just exit status
@@ -282,7 +407,8 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
       if bool(args["--debug"]):
         stderr.writeLine "#DEBUG: Processing SE: ", file
       let 
-        result = checkFqFile(file)
+        result = if args["--deep"] == false: checkFqFile(file)
+                 else: deepCheckStandardFqFile(file)
       if result.isValid == false:
         errors += 1
       totseq += result.seqCount
@@ -291,11 +417,14 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
       if bool(args["--debug"]):
         stderr.writeLine "#DEBUG: Processing PE: ", file
       let 
-        result = checkPairedFiles(file.split(";")[0], file.split(";")[1])
+        result = checkPairedFiles(file.split(";")[0], file.split(";")[1], deep=bool(args["--deep"]))
+
       if result.isValid == false:
         errors += 1
       totseq += result.seqCount
       echo result.toString(bool(args["--thousands"]))
+      if args["--debug"]:
+        echo result.toDebugString(bool(args["--thousands"]))
     
     if args["--verbose"]:
       let
@@ -312,91 +441,3 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
       return 0
     else:
       return errors
-#[ 
-
-  let
-    autoRev = detectPairedFile($args["<FQFILE>"])
-    reverse = if ($args["<REV>"] != "nil"): $args["<REV>"]
-              elif ($args["<REV>"] == "nil" and autoRev != "" and not args["--no-paired"]): autoRev
-              else: ""
-    libtype = if reverse == "": "SE"
-              else: "PE"
-
-  let
-    forCheck = checkFqFile($args["<FQFILE>"])
-    revCheck : FQcheck = if libtype == "PE": checkFqFile(reverse)
-               else: (filename: "", firstSeqName: "", lastSeqName: "", firstSeq: "", lastSeq: "", seqCount: 0, bpCount: 0, isValid: true, errors: "")
-
-  # Runtime infos
-  if args["--verbose"]:
-    let
-      totalTime = cpuTime() - startTime
-      totalSeq  = forCheck.seqCount + revCheck.seqCount
-    if totalTime > 0:
-      let speed = if totalTime > 1: fmt"({int(float(forCheck.seqCount + revCheck.seqCount) / totalTime)} reads/s)"
-                  else: ""
-      stderr.writeLine(fmt"Processed {($totalSeq).insertSep(',')} reads in {totalTime:.2f} seconds {speed}")
-  
-  if libtype == "SE":
-    if args["--verbose"]:
-      stderr.writeLine forCheck
-    if not forCheck.isValid:
-      errors += 1
-  else:
-    if not forCheck.isValid:
-      if args["--verbose"]:
-        stderr.writeLine fmt"Error: Forward file {forCheck.filename} is invalid"
-      errors += 1
-    if not revCheck.isValid:
-      if args["--verbose"]:
-        stderr.writeLine fmt"Error: Reverse file {forCheck.filename} is invalid"
-      errors += 1
-    # Individually check the pairs
-    if forCheck.filename == revCheck.filename:
-      stderr.writeLine fmt"Error: forward and reverse files are the same"
-      errors += 1
-
-
-    if forCheck.seqCount != revCheck.seqCount:
-      stderr.writeLine fmt"Error: sequence counts do not match ({forCheck.seqCount} vs {revCheck.seqCount})"
-      errors += 1
-
-    if not namesMatch(forCheck.firstSeqName, revCheck.firstSeqName):
-      stderr.writeLine fmt"Error: first sequence names do not match ({forCheck.firstSeqName} vs {revCheck.firstSeqName})"
-      errors += 1
-    elif not namesMatch(forCheck.lastSeqName, revCheck.lastSeqName):
-      stderr.writeLine fmt"Error: last sequence names do not match ({forCheck.lastSeqName} vs {revCheck.lastSeqName})"
-      errors += 1
-    if not forCheck.isValid or not revCheck.isValid:
-      errors += 1
-    if forCheck.seqCount != revCheck.seqCount:
-      stderr.writeLine fmt"ERROR: Sequence count mismatch: {forCheck.seqCount} vs {revCheck.seqCount}"
-      errors += 1
-  
-
-    if args["--verbose"]:
-      if errors > 0:
-        stderr.writeLine "Files:     ", forCheck.filename,     ",", revCheck.filename
-        stderr.writeLine "First seq: ", forCheck.firstSeqName, ",", revCheck.firstSeqName
-        stderr.writeLine "Last seq:  ", forCheck.lastSeqName,  ",", revCheck.lastSeqName
-        stderr.writeLine "Seq count: ", forCheck.seqCount,     ",", revCheck.seqCount
-        stderr.writeLine "BP count:  ", forCheck.bpCount,      ",", revCheck.bpCount, " (ignored)"
-      else:
-        stderr.writeLine "Files:     ", forCheck.filename, ",", revCheck.filename
-        stderr.writeLine "First seq: ", forCheck.firstSeqName 
-        stderr.writeLine "Last seq:  ", forCheck.lastSeqName 
-        stderr.writeLine "Seq count: ", forCheck.seqCount 
-        stderr.writeLine "BP count:  ", forCheck.bpCount, ",", revCheck.bpCount, " (ignored)"
-
-
-  let status = if errors == 0: "OK"
-              else: "ERROR"
-
-  if not bool(args["--quiet"]):
-    echo status, "\t", libtype ,"\t", args["<FQFILE>"]
-
-  return errors
-]#
-
-#when isMainModule:
-#  main_helper(fqcheck)
