@@ -19,9 +19,11 @@ Options:
   --gc                   Also print %GC
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
   --precision INT        Number of decimal places to round to [default: 2]
+  --noheader             Do not print header
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
+
 ### Sorting
 
 ```note

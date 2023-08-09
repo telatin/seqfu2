@@ -267,7 +267,7 @@ fi
 
 
 ### CHECK VALID DIR: WHICH ONE?
-TMP_CHECK_DIR_VALID=$(mktemp -d  PERSONAL_SEQFU_XXXXXX)
+TMP_CHECK_DIR_VALID=$(mktemp -d  SEQFU_TMPDIR_XXXXXX)
 cp "$FILES"/illumina_{1,2}.fq.gz "$TMP_CHECK_DIR_VALID"/
 "$BINDIR"/seqfu check  --verbose  --dir "$TMP_CHECK_DIR_VALID" > "$TMP_CHECK_DIR_VALID/out" 2> "$TMP_CHECK_DIR_VALID/log"
 EXIT=$?

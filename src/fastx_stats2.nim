@@ -45,7 +45,8 @@ proc display_nice(statsList: seq[FastxStats], opt: statsOptions) =
     outputTable = newUnicodeTable()
    
   outputTable.separateRows = false
-  outputTable.setHeaders(header)
+  if opt.header:
+    outputTable.setHeaders(header)
 
   for stats in statsList:
       let
@@ -89,6 +90,7 @@ Options:
   --gc                   Also print %GC
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
   --precision INT        Number of decimal places to round to [default: 2]
+  --noheader             Do not print header
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
@@ -103,6 +105,7 @@ Options:
     printAbs = bool(args["--abs-path"])
     nice     = bool(  args["--nice"] )
     printJson = bool(args["--json"])
+    printHeader = not bool(args["--noheader"])
     multiQCheader = """# plot_type: 'table'
 # section_name: 'SeqFu stats'
 # description: 'Statistics on sequence lengths of a set of FASTA/FASTQ files, generated with <a href="https://telatin.github.io/seqfu2">SeqFu """ & version() & """</a>'
@@ -170,7 +173,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
       basename: printBasename,
       precision: sfuPrecision,
       thousands: bool(args["--thousands"]),
-      header: true,
+      header: printHeader,
       gc: bool(args["--gc"]),
       scaffolds: false,
       delim: sep,
