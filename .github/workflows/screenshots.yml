@@ -22,10 +22,11 @@ jobs:
       - name: Setup Nim environment
         # You may pin to the exact commit or the version.
         # uses: jiro4989/setup-nim-action@5bbc93d889ba575ed95cde254faa197193690456
-        uses: jiro4989/setup-nim-action@v1.1.4
+        uses: jiro4989/setup-nim-action@v1
         with:
           # The Nim version to download (if necessary) and use. Example: 1.0.2
-          nim-version: 1.6.6
+          nim-version: 1.6.14
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: nimble build --passL:-lz -d:useLibzipSrc -d:release --opt:speed -Y
       - run: chmod +x ./scripts/* && cp -v ./scripts/* ./bin/
       - run: export PATH="$PATH":"$PWD"/bin/ && bin/seqfu version && bash test/mini.sh
