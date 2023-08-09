@@ -1,6 +1,11 @@
 
 # fu-shred
 
+
+```note
+Since 1.18 paired end support was enabled
+```
+
 A program to systematically shotgun a reference
 (i.e. this does **not** simulate
 a random shotgun library preparation, but produce
@@ -23,12 +28,15 @@ Usage: fu-shred [options]  [<fastq-file>...]
                                provided will be printed in FASTA [default: 40]
     -r, --add-rc               Print every other read in reverse complement
     -b, --basename             Prepend the file basename to the read name
-    --split-basename  CHAR     Split the file basename at this character [default: .]
+    --split-basename STRING    Split the file basename at this character [default: .]
     --prefix-separator STRING  Join the basename with the rest of the read name with this [default: _]
+    -f, --frag-len INT         Total fragment length [default: 500]
+    -o, --out-prefix STR       If specified, will run in paired end mode, and will output two files
+                               with this prefix, one for each end. If not specified, will output
+                               to STDOUT in single end mode.
 
     -v, --verbose              Verbose output
     -h, --help                 Show this help
-
 ```
 
 ## Input
@@ -49,6 +57,13 @@ will be split at the first `.`, but this can be changed with `--split-basename S
 If a mix of forward and reverse reads is required, `--add-rc` will reverse complement every other read. If you
 want to test every read and its reverse complement, run the program _without_ `--add-rc` and make a reverse 
 complement of the whole dataset with `seqfu rc`.
+
+## Paired end mode
+
+If you specify `--out-prefix STR`, the program will run in paired end mode, and will output two files with this
+prefix, one for each end. The fist step is to generate a "read" as long as the fragment (`--frag-len`) and then
+the first bases (`--read-len`) will be used as the first read, and the last bases as the second read. The second
+read is reverse complemented
 
 ## Output
 

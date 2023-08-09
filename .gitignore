@@ -25,3 +25,4 @@ noise/
 rich_codex_*.log
 init.sh
 nimbledeps
+data/phage/t7.fa.*

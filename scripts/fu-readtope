@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+# Compatibility notes:
+# subprocess.devnull is new in Python 3.3.
+from __future__ import print_function
+__VERSION__ = "0.2.0"
+import sys, os, re
+import subprocess
+
+def rc(seq):
+    return seq.translate(str.maketrans("NATCGnatcg", "NTAGCntagc"))[::-1]
+
+if __name__ == "__main__":
+    import argparse
+    args = argparse.ArgumentParser(description="Convert sequence in paired end reads")
+
+    args.add_argument("-i", "--input", metavar="FILE", help="Input file (default: stdin)", type=argparse.FileType("r"), default=sys.stdin)
+    args.add_argument("-l", "--read-length", help="Read length (default: 100)", type=int, default=100)
+    args.add_argument("-1", "--output-1", metavar="R1", help="Output file (default: stdout)", type=argparse.FileType("w"), required=True)
+    args.add_argument("-2", "--output-2", metavar="R2", help="Output file (default: stdout)", type=argparse.FileType("w"))
+    args.add_argument("-v", "--version", action="version", version="%(prog)s " + __VERSION__)
+    args.add_argument("--verbose", action="store_true")
+    args = args.parse_args()
+
+    # IF no R2, replace R1 with R2
+    if args.output_2 is None:
+        args.output_2 = args.output_1.replace("_R1.", ".R2.").replace("_1.", "_2.")
+        if args.output_2.name == args.output_1.name:
+            raise ValueError("Output file names are the same")
+        
+    cmd = ["seqfu", "tabulate", args.input]
+    if args.verbose:
+        print(" ".join(cmd), file=sys.stderr)
+    
+    # Run the program in python2x compatible way
+    if sys.version_info[0] < 3:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+
+    # Read the output
+    for line in p.stdout:
+        line = line.rstrip("\r\n")
+        if line.startswith("#"):
+            continue
+        fields = line.split("\t")
+        if len(fields) < 3:
+            continue
+        print(fields[0], fields[1], sep="\t", file=args.output_1)
+        print(fields[0], rc(fields[2]), sep="\t", file=args.output_2)
