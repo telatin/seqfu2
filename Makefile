@@ -13,7 +13,7 @@ PYTARGETS=$(BIN)/fu-split
 
 all: $(TARGETS) $(PYTARGETS)
 
-sources/: src/sfu.nim
+sources/: src/sfu.nim s
 	mkdir -p sources
 	nim c --cc:gcc $(NIMPARAM) --nimcache:sources/ --genScript ./src/sfu.nim
 	bash test/convert.sh sources/compile_sfu.sh
@@ -22,7 +22,7 @@ src/deps.txt:
 	nimble install -y --depsOnly
 	touch $@
 
-src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim src/deps.txt
+src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim src/deps.txt seqfu.nimble
 	touch $@ 
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split

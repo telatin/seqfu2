@@ -32,20 +32,24 @@ Usage: fu-16Sregion [options] [<FASTQ-File>]
 
 ## Example output
 
-A tabular report, per read, is provided with the following columns:
+A tabular report, per read, is provided with the following columns
+
 * Read name
 * Primary target region
 * Alignment score
 * Region of the reference sequence covered (coordinates)
 
 The **main** output is given as two columns: 
+
 * regions detected in the same read (e.g. "V3,V4")
 * fraction of reads with the combination
 
 Example:
+
 ```text
-V3,V4	0.83
+V3-V4  0.83
 ```
+
 This is only reported when the number of reads / total reads is above `--min-fraction`.
 
 When activating the `--verbose` switch, some more information will be 
@@ -69,6 +73,7 @@ M05517:39:000000000-CNNWR:1:1105:14501:23779  score:2225  alignment:340..641  re
 
 To check paired-end reads, they can be processed independently or merged (if they overlap) before. 
 SeqFu merge can be used for this purpose:
+
 ```
 seqfu merge -1 read_R1.fq -2 read_R2.fq | fu-16region
 ```

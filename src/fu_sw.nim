@@ -2,113 +2,99 @@ import docopt
 import readfq
 import strformat
 import os, strutils, sequtils
- 
 import threadpool
-import neo
-import tables, algorithm
- 
 import ./seqfu_utils
 
-const NimblePkgVersion {.strdefine.} = "undef"
+const NimblePkgVersion = "undef"
 const programVersion = if NimblePkgVersion == "undef": "X.9"
                        else: NimblePkgVersion
-let
-  programName = "fu-sw"
-   
+let programName = "fu-sw"
 
-
-var
-  poolsize = 200
-
-
+var poolsize = 200
 
 type
   swAlignment* = object
-   top, bottom, middle: string
-   score, length: int
-   pctid: float
-   queryStart, queryEnd, targetStart, targetEnd: int
+    top*, bottom*, middle*: string
+    score*, length*: int
+    pctid*: float
+    queryStart*, queryEnd*, targetStart*, targetEnd*: int
 
 type
   swWeights* = object
-    match, mismatch, gap, gapopening: int
-    minscore: int
+    match*, mismatch*, gap*, gapopening*: int
+    minscore*: int
 
 let
-  swDefaults = swWeights(
+  swDefaults* = swWeights(
     match:       6,
     mismatch:   -4,
     gap:        -6,
     gapopening: -6,
     minscore:    1 )
 
- 
- 
- 
 
-proc simpleSmithWaterman(alpha, beta: string, weights: swWeights): swAlignment =
+proc makeMatrix*[T](rows, cols: int, initValue: T): seq[seq[T]] =
+  var result: seq[seq[T]] = newSeq[seq[T]](rows)
+  for i in 0..<rows:
+    result[i] = newSeq[T](cols)
+    for j in 0..<cols:
+      result[i][j] = initValue
+  return result
 
-  # Constants defining path sources
+proc simpleSmithWaterman*(alpha, beta: string, weights: swWeights): swAlignment =
   const
-     cNone    = -1
-     cUp      = 1
-     cLeft    = 2
-     cDiag    = 3
-     mismatchChar = ' '
-     matchChar    = '|'
+    cNone    = -1
+    cUp      = 1
+    cLeft    = 2
+    cDiag    = 3
+    mismatchChar = ' '
+    matchChar    = '|'
 
-  # swMatrix: scores
-  # swHelper: path sources [cNone,...]
   var
-    swMatrix = makeMatrix(len(alpha) + 1,   len(beta) + 1,     proc(i, j: int): int = 0  )
-    swHelper = constantMatrix(len(alpha) + 1, len(beta) + 1,    -1)
+    swMatrix: seq[seq[int]]
+    swHelper: seq[seq[int]]
     iMax, jMax, scoreMax = -1
 
-  # Initialize the matrix
-  for t, x in swMatrix:
-    let
-      (i, j) = t
+  swMatrix = makeMatrix(len(alpha) + 1, len(beta) + 1, 0)
+  swHelper = makeMatrix(len(alpha) + 1, len(beta) + 1, -1)
 
-    # Set first row and col to zeros
-    if i == 0 or j == 0:
-      swMatrix[i, j] = 0
-      swHelper[i, j] = cNone
-    else:
-      # Set each cell to max(0, up, diag, left)
-      let
-        score= if alpha[i - 1] == beta[j - 1]: weights.match
-               else: weights.mismatch
-
-        top  = swMatrix[i,   j-1] + weights.gap
-        left = swMatrix[i-1, j]   + weights.gap
-        diag = swMatrix[i-1, j-1] + score
-
-      if diag < 0 and left < 0 and top < 0:
-        swMatrix[i,j] = 0
-        swHelper[i,j] = cNone
-        continue
-
-      # Check which is the max and set provenance in swHelper
-      if diag >= top:
-        if diag >= left:
-          swMatrix[i,j] = diag
-          swHelper[i,j] = cDiag
-        else:
-          swMatrix[i,j] = left
-          swHelper[i,j] = cLeft
+  for i in 0..len(alpha):
+    for j in 0..len(beta):
+      if i == 0 or j == 0:
+        swMatrix[i][j] = 0
+        swHelper[i][j] = cNone
       else:
-        if top >= left:
-          swMatrix[i,j] = top
-          swHelper[i,j] = cUp
-        else:
-          swMatrix[i,j] = left
-          swHelper[i,j] = cLeft
+        let
+          score = if alpha[i - 1] == beta[j - 1]: weights.match
+                 else: weights.mismatch
+          top = swMatrix[i][j - 1] + weights.gap
+          left = swMatrix[i - 1][j] + weights.gap
+          diag = swMatrix[i - 1][j - 1] + score
 
-      # Keep Max score and its coordinates
-      if swMatrix[i,j] > scoreMax:
-        scoreMax = swMatrix[i,j]
-        iMax = i
-        jMax = j
+        if diag < 0 and left < 0 and top < 0:
+          swMatrix[i][j] = 0
+          swHelper[i][j] = cNone
+          continue
+
+        if diag >= top:
+          if diag >= left:
+            swMatrix[i][j] = diag
+            swHelper[i][j] = cDiag
+          else:
+            swMatrix[i][j] = left
+            swHelper[i][j] = cLeft
+        else:
+          if top >= left:
+            swMatrix[i][j] = top
+            swHelper[i][j] = cUp
+          else:
+            swMatrix[i][j] = left
+            swHelper[i][j] = cLeft
+
+        if swMatrix[i][j] > scoreMax:
+          scoreMax = swMatrix[i][j]
+          iMax = i
+          jMax = j
 
 
   # Find alignment (path)
@@ -130,13 +116,13 @@ proc simpleSmithWaterman(alpha, beta: string, weights: swWeights): swAlignment =
     return
 
   while true:
-    if swHelper[I, J] == cNone:
+    if swHelper[I][J] == cNone:
       result.queryStart  = I
       result.targetStart = J
       result.queryEnd    += I
       result.targetEnd   += J
       break
-    elif swHelper[I, J] == cDiag:
+    elif swHelper[I][J] == cDiag:
       alignString1 &= alpha[I-1]
       alignString2 &= beta[J-1]
       result.queryEnd += 1
@@ -152,7 +138,7 @@ proc simpleSmithWaterman(alpha, beta: string, weights: swWeights): swAlignment =
       I -= 1
       J -= 1
 
-    elif swHelper[I, J] == cLeft:
+    elif swHelper[I][J] == cLeft:
       alignString1 &= alpha[I-1]
       alignString2 &= "-"
       matchString  &= " "
@@ -176,7 +162,7 @@ proc simpleSmithWaterman(alpha, beta: string, weights: swWeights): swAlignment =
 
 
 type
-  primerOptions = object
+  primerOptions* = object
     primers: seq[string]
     minMatches, maxMismatches: int
     matchThs: float

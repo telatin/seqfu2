@@ -1,11 +1,11 @@
 # Package
-version       = "1.18.0"
+version       = "1.19.0"
 author        = "Andrea Telatin"
 description   = "SeqFu command-line tools"
 license       = "MIT"
 
 # Dependencies
-requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argparse",  "colorize", "neo", "zip", "datamancer", "illwill#v0.2.0"
+requires "nim >= 1.2", "docopt", "terminaltables", "readfq", "iterutils", "argparse",  "colorize", "zip", "datamancer", "illwill#v0.2.0"
 
 srcDir = "src"
 binDir = "bin" 

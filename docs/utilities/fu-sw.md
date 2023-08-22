@@ -60,3 +60,9 @@ Score: 312 (100.00%)    Length: 52      Strand: -       Query: 0-52     Target: 
  ||||||||||||||||||||||||||||||||||||||||||||||||||||
  CGCATAATGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGG
 ```
+
+## Release note
+
+From 1.19.0 the algorithm has been rewritten using only standard libraries,
+while the initial implementation used the neo library for storing matrices.
+This resulted in a 2X speedup.
