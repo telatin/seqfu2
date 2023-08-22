@@ -1,6 +1,8 @@
-
-
 # fu-nanotags
+
+```note
+Experimental utility. Feedback for this tool is welcome.
+```
 
 Search for tags (one or more sequences) in long reads using _Smith-Waterman_ 
 alignment.
@@ -8,7 +10,7 @@ The tag has to be at the beginning of the read (specifying the region to scan
 with `--cut INT`) or at the end (revserse complemented). If `--cut=0` the search
 is in the full read.
 
-```
+```text
 Usage: fu-nanotags [options] -q QUERY [<fastq-file>...]
 
   Options:
@@ -42,7 +44,8 @@ The program will print to the **standard error** the number of passing reads per
 and the grand total. 
 
 Example:
-```
+
+```text
 tradis/fastq_1.fq	60.00% (18/30) sequences printed, of which 8 in reverse strand.
 tradis/fastq_2.fq.gz	53.75% (2150/4000) sequences printed, of which 949 in reverse strand.
 Total	53.80% (2168/4030) sequences printed, of which 957 in reverse strand.

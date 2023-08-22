@@ -1,6 +1,10 @@
 
 # fu-16Sregion
 
+```note
+This utility is still in development, but feedback is welcome.
+```
+
 Align paired-end, or single-end, reads against a 16S
 reference sequence to determine
 the hypervariable regions sequences via local alignment.
