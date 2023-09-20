@@ -1,0 +1,31 @@
+
+name: Seqfu-Test
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        nim:
+          - '1.6.x'
+          - '2.0.x'
+    name: Nim ${{ matrix.nim }} sample
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup nim
+        uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: ${{ matrix.nim }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nimble build -Y
