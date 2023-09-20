@@ -28,7 +28,7 @@ jobs:
       - name: NIM Lang Alpine
        # You may pin to the exact commit or the version.
        # uses: skynet-core/nim@5c3d72356c8763b02fb045a14d7d83a563cd2b12
-        uses: skynet-core/nim@v1.2
+        uses: telatin/nim-action@v1.2.1
         with:
           # Command to run
           command: echo "--threads:on" >> nim.cfg && sudo apk add zlib-dev python3 perl  && cp  /usr/bin/python3  /usr/bin/python && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
