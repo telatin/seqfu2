@@ -9,7 +9,7 @@ DATA=./data
 VERSION := $(shell grep version seqfu.nimble  | grep  -o "[0-9]\\+\.[0-9]\\+\.[0-9]\\+")
 NIMPARAM :=  --gc:arc -d:NimblePkgVersion=$(VERSION) -d:release --opt:speed 
 TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-homocomp $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck $(BIN)/byteshift $(BIN)/SeqCountHelper $(BIN)/fu-secheck
-PYTARGETS=$(BIN)/fu-split $(BIN)/fu-pecheck
+PYTARGETS=$(BIN)/fu-split $(BIN)/fu-pecheck $(BIN)/fu-readtope
 
 all: $(TARGETS) $(PYTARGETS)
 
@@ -45,6 +45,12 @@ $(BIN)/fu-pecheck: $(SCRIPTS)/fu-pecheck
 	cp -f $(SCRIPTS)/fu-pecheck $(BIN)/fu-pecheck
 	sed '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(SCRIPTS)/fu-pecheck > $(BIN)/fu-pecheck
 	chmod 555 $(BIN)/fu-pecheck
+
+$(BIN)/fu-readtope: $(SCRIPTS)/fu-readtope
+	chmod +x $(SCRIPTS)/fu-readtope
+	cp -f $(SCRIPTS)/fu-readtope $(BIN)/fu-readtope
+	sed '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(SCRIPTS)/fu-readtope > $(BIN)/fu-readtope
+	chmod 555 $(BIN)/fu-readtope
 $(BIN)/seqfu: src/sfu.nim
 	nim c $(NIMPARAM) --out:$@ $<
 

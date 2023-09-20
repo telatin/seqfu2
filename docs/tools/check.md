@@ -2,7 +2,7 @@
 
 ```note
 **EXPERIMENTAL**: Introduced in SeqFu 1.15, updated with --deep in 1.18 (see below).
-In SeqFu 2.0 a strict behaviour will be used by default.
+In SeqFu 2.0 a strict behaviour will be used by default, see **fu-pecheck** and **fu-secheck**.
 ```
 
 Evaluates the integrity of DNA FASTQ files. 

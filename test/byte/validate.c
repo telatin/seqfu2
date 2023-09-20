@@ -94,7 +94,45 @@ int main(int argc, char *argv[]) {
     int seq_len    = 0;
     int valid      = 1;
 
-    while (gzgets(fp, line, sizeof(line))) {  // Use gzgets instead of fgets
+    char first_char;
+    // read the first character
+    if (gzread(fp, &first_char, 1) != 1) {
+        fprintf(stderr, "ERROR: File is empty\n");
+        return 1;
+    }
+
+    if (first_char == '>') {
+        while (gzgets(fp, line, sizeof(line))) {
+            line_count++;
+            if (line_count == 1 || line[0] == '>') {
+                // header
+                seq_count++;
+                line[strcspn(line, "\n")] = 0;
+                char *seq_name = strtok(line, " ");
+                if (seq_count == 1) {
+                    strcpy(first_seq, seq_name);
+                }
+                strcpy(last_seq, seq_name+1);
+            } else {
+                // sequence
+                line[strcspn(line, "\n")] = 0;
+                seq_len = strlen(line);
+
+                // Check if the line is only composed by A, C, G, T and N
+                for (int i = 0; i < seq_len; i++) {
+                    if (line[i] != 'A' && line[i] != 'C' && line[i] != 'G' && line[i] != 'T' && line[i] != 'N') {
+                        // print to stderr the error
+                        
+                        fprintf(stderr,"ERROR: Line %d in sequence %d contains an invalid character: %c\n", line_count, seq_count, line[i]);
+                        valid = 0;
+                        break;
+                    }
+                }
+            }
+        }
+
+    } else if (first_char == '@') {
+        while (gzgets(fp, line, sizeof(line))) {  // Use gzgets instead of fgets
         line_count++;
         
         if (line_count % 4 == 1) {
@@ -111,7 +149,7 @@ int main(int argc, char *argv[]) {
             strcpy(last_seq, seq_name);
 
             // check if first character is '@'
-            if (line[0] != '@') {
+            if (line_count != 1 && line[0] != '@') {
                 printf("ERROR: Line %d in sequence %d does not start with '@'\n", line_count, seq_count);
                 valid = 0;
                 break;
@@ -163,6 +201,9 @@ int main(int argc, char *argv[]) {
 
     }
 
+    }
+    
+    
     // create status_string
     char status[4];
     if (valid) {
