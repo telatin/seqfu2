@@ -1,3 +1,19 @@
+/*
+   Description:
+   This program reads a FASTQ file (compressed with zlib) and validates its format.
+   It checks that the file follows the FASTQ format rules, such as having the '@' character
+   at the beginning of the sequence identifier lines, containing only valid DNA characters,
+   and optionally checking the quality scores for valid ASCII values.
+
+   Usage:
+   ./fastq_validator [-s] [-o offset] filename
+
+   Parameters:
+   -s            : Validate quality (optional).
+   -o OFFSET     : The offset for quality score (optional, default: 33).
+   filename      : The name of the file to be processed (optional, default: stdin)
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +36,7 @@ int main(int argc, char *argv[]) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-s") == 0) {
             opt_strict = 1;
-        } else if (strcmp(argv[i], "-o") == 0 && i < argc - 1) {
+        } else if (i < argc - 1 && strcmp(argv[i], "-o") == 0 ) {
             opt_offset = atol(argv[i + 1]);
             i++;
         } else if (strcmp(argv[i], "-v") == 0) {
@@ -124,7 +140,7 @@ int main(int argc, char *argv[]) {
         } else if (line_count % 4 == 0) {
             line[strcspn(line, "\n")] = 0;
             if (seq_len != strlen(line)) {
-                fprintf(stderr,"ERROR: Line %d in sequence %d has a different length than the sequence: %ld vs %d\n", line_count, seq_count, strlen(line), seq_len);
+                fprintf(stderr,"ERROR: Line %d in sequence %d has a different length than the sequence: %ld vs %d\n", line_count, seq_count, (long)(line ? strlen(line) : 0), seq_len);
                 valid = 0;
                 break;
             } 

@@ -5,7 +5,7 @@ description   = "SeqFu command-line tools"
 license       = "MIT"
 
 # Dependencies
-requires "nim >= 1.2", "docopt", "terminaltables", "readfq#head", "iterutils", "argparse",  "colorize", "zip", "datamancer >= 0.3", "illwill#v0.2.0"
+requires "nim >= 1.2", "docopt=0.6.8", "terminaltables", "readfq#head", "iterutils", "argparse",  "colorize", "zip", "datamancer >= 0.3", "illwill#v0.2.0"
 
 srcDir = "src"
 binDir = "bin" 
@@ -28,6 +28,3 @@ namedBin = {
 }.toTable()
 
  
-task seqfu, "Just SeqFu!":
-  withDir "src":
-    exec "nim c -o:../bin/seqfu_test sfu.nim"

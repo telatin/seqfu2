@@ -32,7 +32,7 @@ $(BIN)/fu-secheck: test/byte/validate.c
 	gcc -O3 -o $@ $< -lz
 
 $(BIN)/SeqCountHelper: test/byte/count.cpp
-	g++ -O3 -o $@ $<
+	g++ -O3 -o $@ $< -lz
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split
 	chmod +x $(SCRIPTS)/fu-split
