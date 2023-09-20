@@ -3,7 +3,6 @@ import readfq
 import strformat, math
 import strutils
 import os
-import tables
 import re
 when not defined(windows):
   import posix

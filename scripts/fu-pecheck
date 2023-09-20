@@ -1,0 +1,246 @@
+#!/usr/bin/env python
+  
+
+from __future__ import print_function
+__VERSION__ = "0.3.0"
+import sys, os, re
+import subprocess
+import threading
+from queue import Queue
+class FastqValidity:
+    def __init__(self, status, size, first, last):
+        self.status = status
+        self.size = size
+        self.first = first
+        self.last = last
+        self.validate()
+    
+    def validate(self):
+        # Check if status is OK or ERR
+        if self.status not in ["OK", "ERR"]:
+            raise ValueError("Status is not OK or ERR")
+        # Check if size is a positive integer
+        if not self.size.isdigit():
+            raise ValueError("Size is not a positive integer")
+        else:
+            self.size = int(self.size)
+        
+    def __str__(self) -> str:
+        return( "\t".join([self.status, str(self.size), self.first, self.last])        )
+        
+
+class PEValidity:
+    def __init__(self, R1, R2) -> None:
+        self.R1 = R1
+        self.R2 = R2
+        self.status = "ERR"
+        self.valid = False
+        self.length = None
+        self.validate()
+
+    def validate(self):
+        self.valid = True
+        if self.R1.status != "OK":
+            self.valid = False
+        if self.R2.status != "OK":
+            self.valid = False
+        if self.R1.size != self.R2.size:
+            self.valid = False
+        else:
+            self.length = int(self.R1.size)
+        
+        if self.R1.first != self.R2.first:
+            self.valid = False
+        if self.R1.last != self.R2.last:
+            self.valid = False
+        
+        if self.valid:
+            self.status = "OK"
+    def __str__(self) -> str:
+        return "\t".join([self.status, str(self.length), self.R1.first, self.R1.last])
+        
+    
+
+
+
+
+def checkFile(filename, verbose=False, result_queue=None):
+    cmd = ["fu-secheck", filename]
+    output = None
+    if verbose:
+        print("[checkFile] %s" % " ".join(cmd), file=sys.stderr)
+    
+    try:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p.stdout.read().decode("utf-8")
+    except Exception as e:
+        print("[checkFile] Error:", e, file=sys.stderr)
+        return False
+
+    try:
+        line = output.split("\n")[0]
+        (status, size, first, last) = line.split("\t")[:4]
+    except Exception as e:
+        print("[checkFile] Exception:", e, file=sys.stderr)
+        print("[checkFile] Error:",output, file=sys.stderr)
+        return False
+    
+    if verbose and not status == "OK":
+        print("[checkFile] Error: ", filename, " not valid", file=sys.stderr)
+     
+    result_queue.put(FastqValidity(status, size, first, last))
+
+def getBin(bin=None):
+    if bin:
+        return bin
+    # check env variable SEQFU_BIN
+    if "SEQFU_BIN" in os.environ:
+        return os.environ["SEQFU_BIN"]
+    else:
+        return "seqfu"  
+
+
+def checkSeqfuVersion(minver="1.13.0", verbose=False):
+    versionRequested = minver.split(".")
+    versionOk = False
+    versionDetected = ["-", "-", "-"]
+    cmd = [getBin(), "--version"]
+    if verbose:
+        print("[getVersion] %s, requested %s" %  (" ".join(cmd), minver), 
+            file=sys.stderr)
+    try:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        version = p.stdout.read().decode("utf-8").split("\n")[0].strip().split(".")
+
+        if len(version) < 3:
+            versionDetected[0] = version     
+
+        if verbose:
+            print("[getVersion.cmd] seqfu version: %s" % '.'.join(version), file=sys.stderr)
+
+        versionDetected = version
+
+        # Compare semver
+        if version[0] < versionRequested[0]:
+            if verbose:
+                print("\tMajor version too low: %s < %s" % (version[0], minver.split(".")[0]), file=sys.stderr)
+            return versionOk, versionDetected
+        elif version[0] == versionRequested[0]:
+            # 1.x.f == 1.y.z
+            if version[1] < versionRequested[1]:
+                if verbose:
+                    print("\tMiddle version too low: %s < %s" % (version[0], versionRequested[0]), file=sys.stderr)
+                return versionOk, versionDetected
+            elif version[1] == versionRequested[1]:
+                if version[2] < versionRequested[2]:
+                    if verbose:
+                        print("\tLast version too low: %s < %s" % (version[0], minver.split(".")[0]), file=sys.stderr)
+                    return versionOk, versionDetected
+                else:
+                    versionOk = True
+                    return versionOk, versionDetected
+            else:
+                versionOk = True
+                return versionOk, versionDetected
+        elif version[0] > versionRequested[0]:
+            versionOk = True
+            return versionOk, versionDetected
+    except Exception as e:
+        print("Error: `seqfu` not found:", e, file=sys.stderr)
+        return versionOk, versionDetected
+
+    return versionOk, [getBin(), "x", "x"]
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Validate FASTQ files")
+    parser.add_argument("DIR",  help="Input directory")
+    parser.add_argument("--for-tag", help="Tag to use for the forward reads output (default: %(default)s", default="_R1")
+    parser.add_argument("--rev-tag", help="Tag to use for the forward reads output (default: %(default)s", default="_R2")
+    parser.add_argument("--verbose", action="store_true", help="Verbose output")
+    # version
+    parser.add_argument("--version", action="version", version="%(prog)s " + __VERSION__)
+    args = parser.parse_args()
+
+
+    try:
+        checked, version = checkSeqfuVersion("1.21.0", args.verbose)
+    except Exception as e:
+        print(checkSeqfuVersion("1.21.0", args.verbose))
+        print("Error:", e, file=sys.stderr)
+        sys.exit(1)
+    if not checked:
+        print("Error: seqfu version 1.21.0 or higher is required, %s found" % ".".join(version), file=sys.stderr)
+        sys.exit(1)
+
+    # Check if DIR exists
+    if not os.path.exists(args.DIR):
+        print("Error: Directory %s not found" % args.DIR, file=sys.stderr)
+        sys.exit(1)
+    
+    # Check if DIR is a directory
+    if not os.path.isdir(args.DIR):
+        print("Error: %s is not a directory" % args.DIR, file=sys.stderr)
+        sys.exit(1)
+    
+    # Get all files in DIR
+    files = [os.path.join(args.DIR, f) for f in os.listdir(args.DIR) if os.path.isfile(os.path.join(args.DIR, f))]
+    files = [f for f in files if f.endswith(".fastq") or f.endswith(".fq") or f.endswith(".fastq.gz") or f.endswith(".fq.gz")]
+    files = sorted(files)
+
+    # Check if there are files
+    if len(files) == 0:
+        print("Error: No FASTQ files found in %s" % args.DIR, file=sys.stderr)
+        sys.exit(1)
+
+    # Check if there are pairs
+    # pairs = {
+    #   "sample" : [R1, R2],...
+    # }
+    pairs = {}
+    for f in files:
+        basename = os.path.basename(f)
+        if args.for_tag in f:
+            sampleName = basename.split(args.for_tag)[0]
+            if sampleName not in pairs:
+                pairs[sampleName] = [f, None]
+            else:
+                pairs[sampleName][0] = f
+        elif args.rev_tag in f:
+            sampleName = basename.split(args.rev_tag)[0]
+            if sampleName not in pairs:
+                pairs[sampleName] = [None, f]
+            else:
+                pairs[sampleName][1] = f
+
+    for key, value in pairs.items():
+        if value[0] is None:
+            print("Error: Sample %s is missing R1" % key, file=sys.stderr)
+            continue
+        if value[1] is None:
+            print("Error: Sample %s is missing R2" % key, file=sys.stderr)
+            continue
+
+        
+        #s1 = checkFile(value[0], args.verbose)
+        #s2 = checkFile(value[1], args.verbose)
+ 
+        result_queue = Queue()
+        # Create thread objects for the two checkFile calls
+        thread1 = threading.Thread(target=checkFile, args=(value[0], args.verbose, result_queue))
+        thread2 = threading.Thread(target=checkFile, args=(value[1], args.verbose, result_queue))
+
+        # Start both threads
+        thread1.start()
+        thread2.start()
+
+        # Wait for both threads to finish
+        thread1.join()
+        thread2.join()
+
+        # Retrieve results from the threads
+        s1 = result_queue.get()
+        s2 = result_queue.get()
+
+        PE = PEValidity(s1, s2)
+        print(key, "\t",PE, sep="")

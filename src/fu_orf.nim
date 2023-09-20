@@ -27,9 +27,6 @@ proc length(self:FastxRecord): int =
   ## returns length of sequence
   self.seq.len()
 
-# proc `$`(s: FastxRecord): string = 
-#   "@" & s.name & " " & s.comment & "\n" & s.seq & "\n+\n" & s.qual
-
 iterator codons(self: FastxRecord) : string = 
   var i = 0
   var s = self.seq.toUpperAscii
@@ -69,7 +66,7 @@ proc translate*(self:FastxRecord, code = 1): FastxRecord =
   ## translates a nucleotide sequence with the given genetic code number: 
   ##    https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi for codes
   var codeMap = 
-    ["FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+    ["FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG", # 1: The Standard Code
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
@@ -78,11 +75,11 @@ proc translate*(self:FastxRecord, code = 1): FastxRecord =
      "", "",
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-     "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+     "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG", # 11: The Bacterial, Archaeal and Plant Plastid Code
      "FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG",
      "FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-     "",
+     "FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG", # 15 [Restored] Blepharisma Nuclear Code
      "FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
      "", "", "", "",
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
@@ -284,7 +281,7 @@ proc parseArraySingle(pool: seq[FastxRecord], opts: mergeCfg): string =
   
 
 proc printCodes() =
-  echo """NCBI Genetics Codes: 
+  echo """NCBI Genetic Codes: 
 
   1.  The Standard Code
   2.  The Vertebrate Mitochondrial Code
@@ -298,6 +295,7 @@ proc printCodes() =
   12. The Alternative Yeast Nuclear Code
   13. The Ascidian Mitochondrial Code
   14. The Alternative Flatworm Mitochondrial Code
+  15. The Blepharisma Nuclear Code [from v1.20.0]
   16. Chlorophycean Mitochondrial Code
   21. Trematode Mitochondrial Code
   22. Scenedesmus obliquus Mitochondrial Code
@@ -316,6 +314,8 @@ See also: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"""
 
 proc main(argv: var seq[string]): int =
   let args =  docopt("""
+  fu-orf - extract ORF from nucleotide sequences
+
   Usage: 
     orf [options] <InputFile>  
     orf [options] -1 File_R1.fq
@@ -388,7 +388,7 @@ proc main(argv: var seq[string]): int =
     quit(0)
 
   let
-    validCodes = @[1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33]
+    validCodes = @[1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33]
   
   if not validCodes.contains(code):
     printCodes()
@@ -397,11 +397,6 @@ proc main(argv: var seq[string]): int =
     quit(1)
 
   echoVerbose("SeqFu ORF")
-#[
-    if len(fileR1) == 0:
-    verbose("Missing required parameters: -1 FILE1 [-2 FILE2]", true)
-    quit(0)
- ]#
 
   if args["<InputFile>"]:
     fileR1 = $args["<InputFile>"]
