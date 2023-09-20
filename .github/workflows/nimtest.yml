@@ -5,8 +5,8 @@ name: Seqfu-Nim-2
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
+  #push:
+  #  branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -31,4 +31,4 @@ jobs:
         uses: telatin/nim-action@v1.2.1
         with:
           # Command to run
-          command: choosenim 1.6.14 && echo "--threads:on" >> nim.cfg && sudo apk add zlib-dev python3 perl  && cp  /usr/bin/python3  /usr/bin/python && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
+          command: echo "--threads:on" >> nim.cfg && sudo apk add zlib-dev python3 perl  && cp  /usr/bin/python3  /usr/bin/python && nim --version && nimble --version && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
