@@ -144,7 +144,7 @@ proc printManifest(samples: seq[sample]) =
   if isPe > 0:
     echo "sample-id", "\t", "forward-absolute-filepath", "\t", "reverse-absolute-filepath"
   else:
-    echo "sample-id", "\t", "absolute-path"
+    echo "sample-id", "\t", "absolute-filepath"
 
   for s in samples:
     if isPe > 0:

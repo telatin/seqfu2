@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+import pandas as pd
+import argparse
+import sys
+import os
+
+def strip_suffix(column_name, suffixes):
+    for suffix in suffixes:
+        if column_name.endswith(suffix):
+            return column_name[:-len(suffix)]
+    return column_name
+def calculate_rpkm(counts_df, gene_size_df):
+    # Calculate RPKM: counts per kilobase (of gene length) per million reads
+    # Divide counts by gene length and multiply by 1e3 (to get counts per kilobase)
+    rpkm_df = counts_df.divide(gene_size_df["Length"], axis=0) * 1e3
+    
+    # Calculate the sum of counts per sample
+    total_counts_per_sample = rpkm_df.sum(axis=0)
+    
+    # Divide the counts per sample by the sum and multiply by 1e6 (to get per million reads)
+    rpkm_df = rpkm_df.divide(total_counts_per_sample, axis=1) * 1e6
+    
+    return rpkm_df
+
+def calculate_tpm(counts_df):
+    # Calculate TPM
+    tpm_df = counts_df.divide(counts_df.sum(axis=0), axis=1) * 1e6
+
+    # print the sum of each column to show the normalization
+    print(tpm_df.sum(axis=0))
+    return tpm_df
+def gff_to_genesize(filename, key):
+    """
+    Parse a GFF file and extract gene IDs and sizes based on the specified key.
+
+    Args:
+    filename (str): The path to the GFF file.
+    key (str): The GFF field to use as the key (e.g., 'locus_tag' or 'ID').
+
+    Returns:
+    pd.DataFrame: A DataFrame containing gene IDs and their sizes.
+    """
+    gene_data = []  # Store gene ID and size information
+
+    with open(filename, 'r') as gff_file:
+        #ID=cds-WP_004843348.1;Parent=gene-RGna_RS00030;Dbxref=Genbank:WP_004843348.1,GeneID:57431973;Name=WP_004843348.1;gbkey=CDS;inference=COORDINATES: similar to AA sequence:RefSeq:WP_003417601.1;locus_tag=RGna_RS00030;product=YdcP family protein;protein_id=WP_004843348.1;transl_table=11
+        for line in gff_file:
+            if not line.strip() or line.startswith('#'):
+                continue
+
+            fields = line.strip().split('\t')
+            attributes = fields[8].split(';')
+            
+            # Initialize variables for gene ID and size
+            gene_id = None
+            gene_size = int(fields[4]) - int(fields[3]) + 1
+            for attribute in attributes:
+                key_value = attribute.strip().split('=')
+                if len(key_value) == 2:
+                    key_field, value = key_value
+                    if key_field.strip().startswith(key):
+                        gene_id = value.strip()
+                        
+
+            if gene_id and gene_size:
+                gene_data.append([gene_id, gene_size])
+            else:
+                print(f"Warning: gene_id or gene_size is missing: {attributes}", file=sys.stderr)
+
+    # Create a DataFrame from the extracted data
+    gene_size_df = pd.DataFrame(gene_data, columns=['Gene_ID', 'Length'])
+    
+    return gene_size_df
+def main():
+    parser = argparse.ArgumentParser(description="Calculate RPKM or TPM from featureCounts output.")
+    parser.add_argument("counts_file", help="Input featureCounts file (with gene counts)")
+    parser.add_argument("-o", "--output", help="Output file (default: stdout)")
+    parser.add_argument("-g", "--gene_size_file", required=False, help="Gene size file (with gene lengths)")
+    parser.add_argument("-t", "--tag", default="locus_tag", help="GFF tag to use as gene ID (default: %(default)s)")
+    parser.add_argument("--keep", action="store_true", help="Keep the original column names")
+    parser.add_argument("--rpkm", action="store_true", help="Calculate RPKM")
+    parser.add_argument("--tpm", action="store_true", help="Calculate TPM")
+    args = parser.parse_args()
+
+    if not args.rpkm and not args.tpm:
+        print("Please specify either --rpkm or --tpm.")
+        return
+
+    # Read gene counts data
+    counts_df = pd.read_csv(args.counts_file, sep="\t", comment="#", index_col=0)
+
+    gene_size_df = None
+    # If Start and End, calculate gene length
+    if "Start" in counts_df.columns and "End" in counts_df.columns:
+        # Remove non numeric entries from End and Start, then convert to int
+        counts_df["End"] = pd.to_numeric(counts_df["End"], errors="coerce")
+        counts_df["Start"] = pd.to_numeric(counts_df["Start"], errors="coerce")
+        counts_df.dropna(subset=["End", "Start"], inplace=True)
+        counts_df["Length"] = counts_df["End"] - counts_df["Start"] + 1
+    
+        # create gene_size_df from counts_df
+        gene_size_df = counts_df[["Length"]]
+
+    print(gene_size_df)
+    # Remove these columns, if present, Chr Start   End Strand
+    for col in ["Chr", "Start", "End", "Strand", "Length"]:
+        if col in counts_df.columns:
+            counts_df.drop(col, axis=1, inplace=True)
+    
+    # Read gene size data
+    if args.gene_size_file:
+        if args.gene_size_file.endswith(".gff"):
+            gene_size_df = gff_to_genesize(args.gene_size_file, args.tag)
+        else:
+            gene_size_df = pd.read_csv(args.gene_size_file, sep="\t", index_col=0)
+
+
+    # for each column name, use the "basename()" function an strip any of the suffixes
+    if not args.keep:
+        print("Stripping suffixes from column names")
+        # convert each colunmn name to its os.basename()
+        counts_df.columns = [os.path.basename(col) for col in counts_df.columns]
+        # strip any of the suffixes
+        counts_df.columns = [strip_suffix(col, [".bam", ".sam", ".cram"]) for col in counts_df.columns]
+    # Check if gene_size_df has the same index as counts_df
+    if not gene_size_df.index.equals(counts_df.index):
+        print("Gene IDs in counts file and gene size file do not match.")
+        return
+    
+    print(counts_df.head())
+    if args.rpkm:
+        result_df = calculate_rpkm(counts_df, gene_size_df)
+    elif args.tpm:
+        result_df = calculate_tpm(counts_df)
+
+    # Print or save the result
+    if args.output:
+        result_df.to_csv(args.output, sep="\t")
+    else:
+        print(result_df.to_csv(sep="\t"))
+
+if __name__ == "__main__":
+    main()
