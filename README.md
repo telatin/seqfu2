@@ -30,6 +30,22 @@ Telatin A, Fariselli P, Birolo G.
 and Reproducible Manipulation of Sequence Files*.
 Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
 
+```bibtex
+@article{seqfu,
+  title        = {SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files},
+  author       = {Telatin, Andrea and Fariselli, Piero and Birolo, Giovanni},
+  year         = 2021,
+  journal      = {Bioengineering},
+  volume       = 8,
+  number       = 5,
+  doi          = {10.3390/bioengineering8050059},
+  issn         = {2306-5354},
+  url          = {https://www.mdpi.com/2306-5354/8/5/59},
+  article-number = 59,
+  pubmedid     = 34066939
+}
+```
+
 ## 📙 Full documentation
 
  The full documentation is available at:
