@@ -21,7 +21,9 @@ type
       minorf: int, 
       scanreverse: bool,
       code: int,
+      translate: bool,
       minreadlength: int]
+
 
 proc length(self:FastxRecord): int = 
   ## returns length of sequence
@@ -128,7 +130,9 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
     if len(sequence.seq) < opts.minreadlength:
       
       break
-    for frame in @[0, 1, 2]:
+    let frames = if opts.translate: @[0]
+                 else: @[0, 1, 2]
+    for frame in frames :
       let
         dna = sequence.seq[frame .. ^1]
       var
@@ -332,6 +336,7 @@ proc main(argv: var seq[string]): int =
     -r, --scan-reverse      Also scan reverse complemented sequences
     -c, --code INT          NCBI Genetic code to use [default: 1]
     -l, --min-read-len INT  Minimum read length to process [default: 25]
+    -t, --translate         Consider input CDS
   
   Paired-end optoins:
     -j, --join              Attempt Paired-End joining
@@ -357,6 +362,7 @@ proc main(argv: var seq[string]): int =
     prefix : string
     singleEnd = true
     code: int
+    translate: bool
      
   debug = args["--debug"]
   try:
@@ -365,9 +371,10 @@ proc main(argv: var seq[string]): int =
     code = parseInt($args["--code"])
     minreadlen = parseInt($args["--min-read-len"])
     minOrfSize = parseInt($args["--min-size"])
-    verbose = args["--verbose"]
+    verbose = bool(args["--verbose"])
     poolSize = parseInt($args["--pool-size"])
     prefix = $args["--prefix"]
+    
     mergeOptions = (join: args["--join"] or false,  
       minId: parseFloat($args["--min-identity"]), 
       minOverlap: parseInt($args["--min-overlap"]), 
@@ -375,6 +382,7 @@ proc main(argv: var seq[string]): int =
       minorf: minOrfSize, 
       scanreverse: args["--scan-reverse"] or false,
       code: code,
+      translate: bool(args["--translate"]),
       minreadlength: minreadlen)
   except:
     stderr.writeLine("Use fu-orf --help")

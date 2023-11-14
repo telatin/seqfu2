@@ -22,11 +22,11 @@
    ./program_name [-u] [-s start_byte] [-j step_size] [-m max_byte] filename
 
    Options:
-   -u          : Reverts modifications made to the file (optional).
+   -u           : Reverts modifications made to the file (optional).
    -s start_byte: The starting byte position for byte manipulation (optional, default: 128).
    -j step_size : The step size for byte manipulation (optional, default: 64).
    -m max_byte  : The maximum byte cap for file size (optional, default: 256000).
-   filename    : The name of the file to be processed.
+   filename     : The name of the file to be processed.
 
 
    Andrea Telatin, QIB, 2021
