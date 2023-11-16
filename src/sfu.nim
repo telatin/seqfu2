@@ -18,9 +18,9 @@ include ./fastx_count
 include ./fastx_view
 include ./fastx_head
 include ./fastx_tail
-include ./fastx_stats
+include ./legacy_fastx_stats
 include ./fastx_sort
-include ./fastx_grep # legacy
+include ./legacy_fastx_grep # legacy
 include ./fastx_grep2
 include ./fastq_merge_lanes
 include ./fastx_rc
@@ -34,7 +34,7 @@ include ./fu_rotate
 
 
 # Experimental
-include ./fastx_stats2
+include ./fastx_stats_v2
 include ./fastx_count_threads_off
 include ./fastx_list
 include ./fastx_bases

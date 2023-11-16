@@ -1,6 +1,6 @@
 import klib
 import re
-import md5
+import checksums/md5
 import json
 import tables, strutils
 from os import fileExists

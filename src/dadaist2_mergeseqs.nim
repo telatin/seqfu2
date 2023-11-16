@@ -1,7 +1,7 @@
 import parsecsv, strutils, strformat
 import docopt
 import os
-import md5
+import checksums/md5
 #import posix
 import ./seqfu_utils
 

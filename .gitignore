@@ -26,4 +26,5 @@ noise/
 rich_codex_*.log
 init.sh
 nimbledeps
+nimbledeps-old/
 data/phage/t7.fa.*

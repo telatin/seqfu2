@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
         } else if (line_count % 4 == 0) {
             line[strcspn(line, "\n")] = 0;
             if (seq_len != strlen(line)) {
-                fprintf(stderr,"ERROR: Line %d in sequence %d has a different length than the sequence: %ld vs %d\n", line_count, seq_count, (long)(line ? strlen(line) : 0), seq_len);
+                fprintf(stderr, "ERROR: Line %d in sequence %d has a different length than the sequence: %ld vs %d\n", line_count, seq_count, (long)(line != NULL ? strlen(line) : 0), seq_len);
                 valid = 0;
                 break;
             } 

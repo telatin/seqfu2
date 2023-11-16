@@ -1,7 +1,7 @@
 import docopt
 import readfq
 import strformat
-import os, strutils, sequtils
+import os, strutils
 import threadpool
 import ./seqfu_utils
 
