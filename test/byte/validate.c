@@ -141,12 +141,12 @@ int main(int argc, char *argv[]) {
 
             // seq name: remove first character and split to the first space
         
-            char *seq_name = strtok(line+1, " ");
+            char *seq_name = strtok(line, " ");
             
             if (seq_count == 0) {
                 strcpy(first_seq, seq_name);
             }
-            strcpy(last_seq, seq_name);
+            strcpy(last_seq, seq_name+1);
 
             // check if first character is '@'
             if (line_count != 1 && line[0] != '@') {
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
         } else if (line_count % 4 == 0) {
             line[strcspn(line, "\n")] = 0;
             if (seq_len != strlen(line)) {
-                fprintf(stderr, "ERROR: Line %d in sequence %d has a different length than the sequence: %ld vs %d\n", line_count, seq_count, (long)(line != NULL ? strlen(line) : 0), seq_len);
+                fprintf(stderr, "ERROR: Line %d in sequence %d has a different length than the sequence: %ld vs %d\n", line_count, seq_count, (long)(strlen(line) + 1), seq_len);
                 valid = 0;
                 break;
             } 
