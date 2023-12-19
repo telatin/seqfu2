@@ -1,5 +1,5 @@
 
-# fu-split
+# fu-pecheck
 
 ```note
 Preliminary version
