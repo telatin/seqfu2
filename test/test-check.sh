@@ -244,7 +244,7 @@ else
 fi 
 
 MSG="Checked INVALID directory line count"
-EXP=13
+EXP=14
 if [[ $WC == $EXP ]]; then
     echo -e "$OK: $MSG (got $WC expected $EXP)"
     PASS=$((PASS+1))
