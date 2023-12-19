@@ -347,7 +347,7 @@ proc print_seq*(record: FastxRecord, outputFile: File) =
     name = record.name
     seqstring : string
 
-  if not stripComments:
+  if not stripComments and len(record.comment) > 0:
     name.add(" " & record.comment)
 
   if len(record.qual) > 0 and (len(record.seq) != len(record.qual)):
