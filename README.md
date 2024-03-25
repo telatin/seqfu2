@@ -25,8 +25,10 @@ conda install -y -c conda-forge -c bioconda "seqfu>1.10"
 
 ### Build from source
 
-Building the Nim programs alone would just require a `nimble build`, but this would leave out some other utilities.
-There is a `make` (Makefile) building system. Since Nim is not so popular, I describe a full installation:
+Building the Nim programs alone would just require a `nimble build`,
+but this would leave out some other utilities.
+There is a `make` (Makefile) building system. Since Nim is not so popular,
+I describe a full installation:
 
 ```bash
 # Do you have building tools? You will need C and make, in Ubuntu:
