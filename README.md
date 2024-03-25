@@ -23,6 +23,32 @@ Seqfu can be easily installed via Miniconda:
 conda install -y -c conda-forge -c bioconda "seqfu>1.10"
 ```
 
+### Build from source
+
+Building the Nim programs alone would just require a `nimble build`, but this would leave out some other utilities.
+There is a `make` (Makefile) building system. Since Nim is not so popular, I describe a full installation:
+
+```bash
+# Do you have building tools? You will need C and make, in Ubuntu:
+sudo apt install build-essential
+
+# Install zlib
+sudo apt install zlib1g-dev
+
+# Install Nim 2.0
+curl https://nim-lang.org/choosenim/init.sh -sSf | sh
+
+# Clone this repo
+git clone https://github.com/telatin/seqfu2
+
+# Compile and test
+cd seqfu2
+make
+make test
+
+# All binaries are in bin (move them in a location in your $PATH)
+```
+
 ## 📰 Citation
 
 Telatin A, Fariselli P, Birolo G.
