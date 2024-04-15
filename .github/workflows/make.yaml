@@ -1,0 +1,40 @@
+
+name: Seqfu-Make-Build
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        gcc-version: [10, 12]
+    name: Build with make
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup nim
+        uses: jiro4989/setup-nim-action@v1
+        with:
+          nim-version: 2.0.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: sudo apt install -y zlib1g-dev gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }}
+
+        # Build and demo overwriting some variables
+      - name: Build
+        run: make CC=gcc-${{ matrix.gcc-version }} CXX=g++-${{ matrix.gcc-version }} CFLAGS="-O2 -Wall" CXXFLAGS="-std=c++11 -O2 -Wall"
+
+      - name: Test
+        run: make test
+          
