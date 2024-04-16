@@ -6,6 +6,11 @@ BIN=./bin
 SCRIPTS=./scripts
 SOURCE=./src
 DATA=./data
+CC=gcc
+CFLAGS=-O3
+CXX=g++
+CXXFLAGS=-std=c++11 -O3
+LDLIBS=-lz
 VERSION := $(shell grep version seqfu.nimble  | grep  -o "[0-9]\\+\.[0-9]\\+\.[0-9]\\+")
 NIMPARAM :=  --gc:orc -d:NimblePkgVersion=$(VERSION) -d:release --opt:speed 
 TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-homocomp $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck $(BIN)/byteshift $(BIN)/SeqCountHelper $(BIN)/fu-secheck
@@ -15,7 +20,7 @@ all: $(TARGETS) $(PYTARGETS)
 
 sources/: src/sfu.nim s
 	mkdir -p sources
-	nim c --cc:gcc $(NIMPARAM) --nimcache:sources/ --genScript ./src/sfu.nim
+	nim c --cc:$(CC) $(NIMPARAM) --nimcache:sources/ --genScript ./src/sfu.nim
 	bash test/convert.sh sources/compile_sfu.sh
 
 src/deps.txt:
@@ -26,13 +31,13 @@ src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim src/deps.txt seqfu.nimble
 	touch $@ 
 
 $(BIN)/byteshift: test/byte/shifter.c
-	gcc -O3 -o $@ $<
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 $(BIN)/fu-secheck: test/byte/validate.c
-	gcc -O3 -o $@ $< -lz
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
 $(BIN)/SeqCountHelper: test/byte/count.cpp
-	g++ -std=c++11 -O3 -o $@ $< -lz
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split
 	chmod +x $(SCRIPTS)/fu-split
