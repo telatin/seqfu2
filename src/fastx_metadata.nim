@@ -5,6 +5,9 @@ import os
 import readfq
 import docopt
 import ./seqfu_utils
+import std/random
+import std/paths
+import md5
 
 # Global settings
 var
@@ -13,9 +16,13 @@ var
   isSe: int
 
 type
+  metadataSettings = ref object
+    addCounts, addPath: bool
+    abspath, basename: bool
+
+type
   sample = ref object
     name : string         # Required: sample ID
-
     path : string         # Full path to the containing directory
     file1: string         # Filename R1
     file2: string         # Filename R2
@@ -27,25 +34,18 @@ type
     flist: seq[string]    # List of files (for debugging if files > 0)
     fields: Table[string, string]
 
-#[
-proc init(s: sample, name: string, path = "", file1 = "", file2 = "", count = 0) =
-    var files = 0
-    s.name = name
-    s.path = path
-    s.file1 = file1
-    s.file2 = file2
-    s.count = count
-    if len(file1) > 0:
-      files += 1
-    if len(file2) > 0:
-      files += 1
-    s.files = files 
-]#
+
 proc `$`(a: sample): string =
   return $(a.name) & " -> (" & $(a.file1) & ";" & $(a.file2) & "): " & $(a.count) & " in " & $(a.files)
 
 proc scanDirectory(dir: string, forTag = "_R1", revTag = "_R2", separator = "_", posList: seq[Value]): Table[string, sample] =
-  #result = newTable[string, sample]()
+  #[process and categorize files within a specified directory based on custom tagging and naming conventions. 
+    - dir (string): The directory to scan for files.
+    - forTag (string, optional): A tag identifying forward reads in filenames. Defaults to "_R1".
+    - revTag (string, optional): A tag identifying reverse reads in filenames. Defaults to "_R2".
+    - separator (string, optional): The character used to separate elements in filenames. Defaults to "_".
+    - posList (sequence of Value): A sequence of positions used to construct sample names from filenames.
+  ]#
   if dirExists(dir):
     let files = toSeq(walkDir(dir, relative=true))
     for f in files:
@@ -70,13 +70,35 @@ proc scanDirectory(dir: string, forTag = "_R1", revTag = "_R2", separator = "_",
 
 
 proc countReads(filename: string): int =
+    # counts the number of records in a given file
   result = 0
   for rec in readfq(filename):
     result += 1
 
 proc countReads(s: sample): sample =
+
+  #counts the number of records in a file specified by the sample object and updates the count field of the sample object accordingly.
   result = s
   result.count = countReads( joinPath(s.path, s.file1))
+
+proc printAmpliseq(samples: seq[sample]) =
+  var 
+    runDict = initTable[string, string]()
+    runId = 0
+  let
+    SEPARATOR = "\t"
+    runs = @["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "J1", "K1", "L1", "M1", "N1", "O1", "P1", "Q1", "R1", "S1", "T1", "U1", "V1", "W1", "X1", "Y1", "Z1" ]
+  echo fmt"sampleID{'\t'}forwardReads{'\t'}reverseReads{'\t'}run"
+  for s in samples:
+    let files = if len(s.file2) > 0 : s.file1 & SEPARATOR & s.file2
+                else: s.file1
+    let abs1 = joinPath(s.path, s.file1)
+    let abs2 = if len(s.file2) > 0 : joinPath(s.path, s.file2)
+               else: ""
+    let dirname =  parentDir(abs1)
+    let runCode = getMD5(dirname)
+    echo s.name, SEPARATOR, abs1, SEPARATOR, abs2, SEPARATOR, runCode
+
 
 proc printLotus(samples: seq[sample]) =
   echo "#SampleID\tfastqFile"
@@ -202,6 +224,7 @@ proc fastx_metadata(argv: var seq[string]): int =
       "lotus": "lOTUs mappint file",
       "irida": "IRIDA uploader file",
       "metaphage": "Metaphage metadata file",
+      "ampliseq": "AmpliSeq metadata file",
     }.toTable
 
 
@@ -217,10 +240,11 @@ Options:
   --pos INT...           Which part of the filename is the Sample ID [default: 1]
 
   -f, --format TYPE      Output format: dadaist, irida, manifest, metaphage, qiime1, qiime2  [default: manifest]
-  --pe                   Enforce paired-end reads (not supported)
+  -R, --rand-meta INT    Add a random metadata column with INT categories
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column
   -t, --threads INT      Number of simultaneously opened files (legacy: ignored) 
+  --pe                   Enforce paired-end reads (not supported)
 
   FORMAT SPECIFIC OPTIONS
   -P, --project INT      Project ID (only for irida)
@@ -272,6 +296,10 @@ Options:
       seCount = 0
       skipCount = 0
 
+    # ---------------------
+    # PARAMETERS VALIDATION
+    # ---------------------
+
     # Parameters validation: input dir
     if len(args["<dir>"]) == 0:
       stderr.writeLine("SeqFu metadata\nERROR: Specify (at least) one input directory. Use --help for more info.")
@@ -289,15 +317,23 @@ Options:
       stderr.writeLine("SeqFu metadata\nERROR: Invalid value for --meta-part. It must be > 1.")
       quit(1)
 
+    # ---------------------
+    # SCAN DIRECTORIES
+    # =====================
     for dir in args["<dir>"]:
+      # Check if input is a directory
       if not  dirExists(dir):
         stderr.writeLine("Error: input item '", dir, "' is not a directory: specify directory(ies) and not file(s).")
         quit(1)
 
+      # Print if --verbose
       if verbose:
         stderr.writeLine("Processing directory: ", dir)
       
       let filesInPath = scanDirectory(dir.normalizedPath().absolutePath(), forTag, revTag, splitString, posList)
+
+      # FILE LOOP
+      # ---------------------
       for sample in filesInPath.values:
         if verbose:
           stderr.writeLine(" - Processing: ", sample.name)
@@ -370,6 +406,8 @@ Options:
         printQiime2(samples)
       of "lotus":
         printLotus(samples)
+      of "ampliseq":
+        printAmpliseq(samples)
       of "irida":
         if projectID == 0:
           stderr.writeLine("ERROR: Project ID not specified")

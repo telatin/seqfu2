@@ -12,7 +12,10 @@ when not defined(windows):
 const NimblePkgVersion {.strdefine.} = "<NimblePkgVersion>"
 
 proc version*(): string =
-  return NimblePkgVersion
+  if len(NimblePkgVersion) == 0:
+    return "0.0.0"
+  else:
+    return NimblePkgVersion
 
 type
   fileNameStrand* = tuple
@@ -230,6 +233,7 @@ var
    debug*:          bool    # debug mode
    check*:          bool    # enable basic checks
    stripComments*:  bool    # strip comments in output sequence
+   stripName*:      bool    # strip name in output sequence
    forceFasta*:     bool
    forceFastq*:     bool
    defaultQual*     = 33

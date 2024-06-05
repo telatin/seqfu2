@@ -20,6 +20,11 @@ proc get_ee(s: string): float =
     result += P
 
 
+proc addZeros(n: string, digits: int): string =
+  result = $n
+  while result.len() < digits:
+    result = "0" & result
+
 proc fastx_cat(argv: var seq[string]): int =
     let args = docopt("""
 Usage: cat [options] [<inputfile> ...]
@@ -43,6 +48,7 @@ Sequence name:
   --split CHAR           Split basename at this char [default: .]
   --part INT             After splitting the basename, take this part [default: 1]
   --basename-sep STRING  Separate basename from the rest with this [default: _]
+  --zero-pad INT         Zero pad the counter to INT digits [default: 0]
 
 Sequence comments:
   -s, --strip-comments   Remove original sequence comments
@@ -69,7 +75,9 @@ Filtering:
 Output:
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
+  --report FILE          Save a report to FILE (original name, new name)
   --list                 Output a list of sequence names 
+  --anvio                Output in Anvio format (-p c_ -s -z --zeropad 12 --report rename_report.txt)
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
   --debug                Debug output
@@ -77,10 +85,11 @@ Output:
 
   """, version=version(), argv=argv)
 
-    verbose = args["--verbose"]
-    stripComments = args["--strip-comments"]
-    forceFasta = args["--fasta"]
-    forceFastq = args["--fastq"]
+    verbose = bool(args["--verbose"])
+    stripComments = bool(args["--strip-comments"])
+    stripName = bool(args["--strip-name"])
+    forceFasta = bool(args["--fasta"])
+    forceFastq = bool(args["--fastq"])
     defaultQual = parseInt($args["--fastq-qual"])
 
     let
@@ -90,7 +99,10 @@ Output:
 
 
     var
+      stripName = false
       outputFormat : outputFormat # added: 1.18
+      reportFileName: string
+      renameReport : string = ""
       newMod = 0
       appendToName: string
       appendSuffixToName: bool
@@ -112,7 +124,11 @@ Output:
       maxNs: int
       maxEe: float
       debug: bool
+      zeropad: int
     try:
+      #stripName = bool(args["--strip-name"])
+      reportFileName = $args["--report"]
+      zeropad = parseInt($args["--zero-pad"])
       debug = bool(args["--debug"])
       appendToName = $args["--append"]
       appendSuffixToName = if len(appendToName) > 0: true
@@ -135,16 +151,32 @@ Output:
       splitPart = parseInt($args["--part"]) - 1
       maxNs = parseInt($args["--max-ns"])
       maxEe = parseFloat($args["--max-ee"])
+      prefix = if $args["--prefix"] != "nil": $args["--prefix"]
+               else: ""
     except Exception as e:
       stderr.writeLine("Error: unexpected parameter value. ", e.msg)
       quit(1)
 
-    if args["--strip-name"] and not args["--prefix"] and not args["--basename"]:
+
+
+
+    if stripName and not args["--prefix"] and not args["--basename"]:
       stderr.writeLine("WARNING: Suppressing names is not recommended.")
       
     if args["--prefix"]:
       prefix = $args["--prefix"]
 
+    # ANVIO
+    if bool(args["--anvio"]):
+      # Report name if not set
+      if $args["--report"] == "nil":
+        reportFileName = "rename_report.txt"
+
+      # Set parameters
+      stripName = true
+      stripComments = true
+      prefix = "c_"
+      zeropad = 12
     if args["<inputfile>"].len() == 0:
       if getEnv("SEQFU_QUIET") == "":
         stderr.writeLine("[seqfu cat] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
@@ -176,6 +208,7 @@ Output:
         
       defer: f.close()
       var 
+        
         currentSeqCount    = 0
         currentPrintedSeqs = 0
         totBp              = 0
@@ -318,20 +351,23 @@ Output:
             else:
               baseNamePrefix = lastPathPart(filename)  
 
-            #if not args["--strip-name"]:
+            #if not stripName:
             baseNamePrefix &= basenameSeparatorString
             newName = baseNamePrefix 
 
 
           # Prepare sequence name
-          if prefix != "" or (args["--strip-name"] and not args["--prefix"]):
+          if prefix != "" or (stripName and not args["--prefix"]):
             # PREFIX to be added 
             if printBasename:
               seqNumber = $currentPrintedSeqs
             else:
               seqNumber = $totalPrintedSeqs
 
-            if args["--strip-name"]:
+            if zeropad > 0:
+              seqNumber = addZeros(seqNumber, zeropad)
+
+            if stripName:
               #if len(prefix) > 0:
               #  prefix &= separator
               newName &= prefix & seqNumber
@@ -341,7 +377,7 @@ Output:
               newName &= prefix & original_name #& separator & seqNumber
           else:
               if printBasename:
-                if not args["--strip-name"]:
+                if not stripName:
                   newName &= original_name
                 else:
                   # add suffix if you strip basename
@@ -394,7 +430,9 @@ Output:
               stderr.writeLine("WARNING: found a record without quality (", r.name, "), but you didnt specify --fasta")
               quit(1)
 
-
+          # REPORT: original_name\t r.name
+          if $args["--report"] != "nil":
+            renameReport &= r.name & "\t" & original_name & "\n"
           echo printFastxRecord(r)
 
       # File parsed
@@ -403,4 +441,12 @@ Output:
       if printLast:
         stderr.writeLine("Last:", lastName)
       
+    if reportFileName != "nil":
+      try:
+        var f = open(reportFileName, fmWrite)
+        defer: f.close()
+        f.write(renameReport)
+      except Exception:
+        stderr.writeLine("Unable to write MultiQC report to ", $args["--multiqc"],": printing to STDOUT instead.")
+        echo renameReport
  

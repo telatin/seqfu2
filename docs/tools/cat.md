@@ -11,8 +11,9 @@ Options:
   -k, --skip STEP        Print one sequence every STEP [default: 0]
   --skip-first INT       Skip the first INT records [default: -1]
   --jump-to STR          Start from the record after the one named STR
-                         (overrides --skip-first!)
-  
+                         (overrides --skip-first)
+  --print-last           Print the name of the last sequence to STDERR (Last:NAME)
+
 Sequence name:
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -z, --strip-name       Remove the original sequence name
@@ -23,6 +24,7 @@ Sequence name:
   --split CHAR           Split basename at this char [default: .]
   --part INT             After splitting the basename, take this part [default: 1]
   --basename-sep STRING  Separate basename from the rest with this [default: _]
+  --zero-pad INT         Zero pad the counter to INT digits [default: 0]
 
 Sequence comments:
   -s, --strip-comments   Remove original sequence comments
@@ -49,7 +51,9 @@ Filtering:
 Output:
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
+  --report FILE          Save a report to FILE (original name, new name)
   --list                 Output a list of sequence names 
+  --anvio                Output in Anvio format (-p c_ -s -z --zeropad 12 --report rename_report.txt)
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
   --debug                Debug output
@@ -67,6 +71,11 @@ by adding `-`.
 It is possible to mix FASTA and FASTQ files, and by default the program will produce a mixed output.
 Using `--fasta` or `--fastq` will force a specific output formats. For FASTA sequences a default quality values will be used.
 Using `--list` the simple list of records matching the criteria will be printed.
+
+## Anvi'o shortcut
+
+If you use `--anvio` you will automatically suppress names and comments, and add a prefix `c_` to the sequence names and leading zeros to the counter, and write the report to `rename_report.txt`.
+If you specify a different `--report` file, this will of course override the default report file.
 
 ## Splashscreen
 
