@@ -99,7 +99,6 @@ Output:
 
 
     var
-      stripName = false
       outputFormat : outputFormat # added: 1.18
       reportFileName: string
       renameReport : string = ""

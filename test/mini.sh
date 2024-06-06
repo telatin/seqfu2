@@ -306,7 +306,7 @@ if [[ $("$BIN" cat -z -p test_ "$iMini" | head -n 1) == ">test_1 comment" ]]; th
   echo -e "$OK: cat: prefix"
   PASS=$((PASS+1))
 else
-  echo -e "$FAIL: cat: prefix not found"
+  echo -e "$FAIL: cat: prefix stripped didnt work: got $( "$BIN" cat -z -p test_ "$iMini" | head -n 1)"
   ERRORS=$((ERRORS+1))
 fi
 
