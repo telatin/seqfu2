@@ -22,6 +22,7 @@ STAR='\033[1;34m->\033[0m'
 NOTE='\033[0;34m'
 BOLD='\033[1m'
 YELLOW='\033[1;33m'
+NC='\033[0m'
 ERRORS=0
 
 getnumber() {
@@ -329,12 +330,16 @@ else
 fi
  
 echo ""
+SEARCH_DONE=0
 for TEST in "$DIR"/test-*.sh;
 do
   UTIL=$(basename "$TEST" | cut -f 1 -d '.' | cut -f 2 -d -)
   PREVPASS=$PASS
   PREVERR=$ERRORS
 
+  if [[ $SEARCH_DONE -eq 1 ]]; then
+    break
+  fi
   if [[ ! -z ${1+x} ]] && [[ "$1" != "$UTIL" ]]; then
     echo Skipping $UTIL: looking for $1
     continue
@@ -349,8 +354,13 @@ do
     then
       echo -e "$FAIL: Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed"
     else
-      echo -e "$NOTE# Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed"
+      echo -e "$NOTE# Finished with $((PASS-PREVPASS)) passed, $((ERRORS-PREVERR)) failed${NC}"
     fi
+  fi
+
+  if [[ ! -z ${1+x} ]] && [[ "$1" == "$UTIL" ]]; then
+    SEARCH_DONE=1
+    break
   fi
 done
 

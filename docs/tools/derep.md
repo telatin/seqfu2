@@ -66,4 +66,4 @@ and generating a single "dereplicated file" at the end, propagating the correct 
 
 ## Screenshot
 
-![Screenshot of "seqfu derep"]({{site.baseurl}}img/screenshot-derep.svg "SeqFu derep")
+![Screenshot of "seqfu derep"]({{site.baseurl}}/img/screenshot-derep.svg "SeqFu derep")
