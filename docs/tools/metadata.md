@@ -1,12 +1,11 @@
-
 # seqfu metadata
 
-Given one (or more) directories containing sequencing reads,
-will produce a metadata file extracting the ID from the filename
-and optionally adding the file paths or read counts.
+Given one (or more) directories containing sequencing reads, this tool produces a metadata file by extracting the ID from the filename and optionally adding file paths or read counts.
 
+## Usage
 ```
 Usage: metadata [options] [<dir>...]
+       metadata formats
 
 Prepare mapping files from directory containing FASTQ files
 
@@ -16,11 +15,19 @@ Options:
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
   --pos INT...           Which part of the filename is the Sample ID [default: 1]
 
-  -f, --format TYPE      Output format: dadaist, irida, manifest, metaphage, qiime1, qiime2  [default: manifest]
-  --pe                   Enforce paired-end reads (not supported)
+  -f, --format TYPE      Output format: dadaist, irida, manifest, metaphage, qiime1, qiime2, lotus, ampliseq, rnaseq, bactopia, mag [default: manifest]
   -p, --add-path         Add the reads absolute path as column 
-  -c, --counts           Add the number of reads as a property column
-  -t, --threads INT      Number of simultaneously opened files [default: 2]
+  -c, --counts           Add the number of reads as a property column (experimental)
+  -t, --threads INT      Number of simultaneously opened files (legacy: ignored) 
+  --pe                   Enforce paired-end reads (not supported)
+  --ont                  Long reads (Oxford Nanopore) [default: false]
+
+  GLOBAL OPTIONS
+  --abs                  Force absolute path
+  --basename             Use basename instead of full path
+  --force-tsv            Force '\t' separator, otherwise selected by the format
+  --force-csv            Force ',' separator, otherwise selected by the format
+  -R, --rand-meta INT    Add a random metadata column with INT categories
 
   FORMAT SPECIFIC OPTIONS
   -P, --project INT      Project ID (only for irida)
@@ -29,89 +36,66 @@ Options:
   --meta-default STR     Default value for metadata, used in MetaPhage [default: Cond]
 
   -v, --verbose          Verbose output
+  --debug                Debug output
   -h, --help             Show this help
 ```
 
 ## Output formats
 
-* manifest (used as import manifest for [Qiime2](https://qiime2.org/) artifacts)
-* qiime1, qiime2 (forward-compatible [qiime1](http://qiime.org/) mapping file; a dedicated [Qiime2](https://qiime2.org/) metadata file is under development)
-* dadaist ([Dadaist2](quadram-institute-bioscience.github.io/dadaist2) compatible metadata)
-* lotus ([Lotus](http://lotus2.earlham.ac.uk/) mapping file - tested with Lotus1)
-* irida ([IRIDA uploader](https://github.com/phac-nml/irida-uploader) sample sheet. Requires `-P PROJECTID`)
-* metaphage ([MetaPhage](https://mattiapandolfovr.github.io/MetaPhage), use `--meta-split`, `--meta-part` and `--meta-default` to customize a Treatment column)
+SeqFu metadata now supports the following output formats:
+
+1. **manifest**: Used as import manifest for [Qiime2](https://qiime2.org/) artifacts.
+2. **qiime1**: Forward-compatible [Qiime1](http://qiime.org/) mapping file.
+3. **qiime2**: [Qiime2](https://qiime2.org/) metadata file.
+4. **dadaist**: [Dadaist2](https://quadram-institute-bioscience.github.io/dadaist2) compatible metadata.
+5. **lotus**: [Lotus](http://lotus2.earlham.ac.uk/) mapping file (tested with Lotus1).
+6. **irida**: [IRIDA uploader](https://github.com/phac-nml/irida-uploader) sample sheet. Requires `-P PROJECTID`.
+7. **metaphage**: [MetaPhage](https://mattiapandolfovr.github.io/MetaPhage) metadata file. Use `--meta-split`, `--meta-part`, and `--meta-default` to customize a Treatment column.
+8. **ampliseq**: [nf-core/ampliseq](https://nf-co.re/ampliseq) metadata file.
+9. **rnaseq**: [nf-core/rnaseq](https://nf-co.re/rnaseq) metadata file.
+10. **bactopia**: [Bactopia](https://bactopia.github.io/) FOFN (File of File Names) file.
+11. **mag**: [nf-core/mag](https://nf-co.re/mag) metadata file.
+
+## New Features
+
+- Support for `--format bactopia` to generate Bactopia FOFN files.
+- Added `--ont` option for long reads (Oxford Nanopore Technology).
+- Enhanced support for various bioinformatics pipelines (ampliseq, rnaseq, mag).
 
 ## Examples
 
-### Manifest
+### Manifest (default)
 
-```
+```bash
 seqfu metadata ./MiSeq_SOP/
 ```
 
-Will produce this output:
+Output:
 ```
 sample-id	forward-absolute-filepath	reverse-absolute-filepath
 F3D0	/Users/telatin/MiSeq_SOP/F3D0_S188_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D0_S188_L001_R2_001.fastq.gz
 F3D1	/Users/telatin/MiSeq_SOP/F3D1_S189_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D1_S189_L001_R2_001.fastq.gz
-F3D141	/Users/telatin/MiSeq_SOP/F3D141_S207_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D141_S207_L001_R2_001.fastq.gz
-F3D142	/Users/telatin/MiSeq_SOP/F3D142_S208_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D142_S208_L001_R2_001.fastq.gz
-F3D143	/Users/telatin/MiSeq_SOP/F3D143_S209_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D143_S209_L001_R2_001.fastq.gz
-F3D144	/Users/telatin/MiSeq_SOP/F3D144_S210_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D144_S210_L001_R2_001.fastq.gz
-F3D145	/Users/telatin/MiSeq_SOP/F3D145_S211_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D145_S211_L001_R2_001.fastq.gz
-F3D146	/Users/telatin/MiSeq_SOP/F3D146_S212_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D146_S212_L001_R2_001.fastq.gz
-F3D147	/Users/telatin/MiSeq_SOP/F3D147_S213_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D147_S213_L001_R2_001.fastq.gz
-F3D148	/Users/telatin/MiSeq_SOP/F3D148_S214_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D148_S214_L001_R2_001.fastq.gz
-F3D149	/Users/telatin/MiSeq_SOP/F3D149_S215_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D149_S215_L001_R2_001.fastq.gz
-F3D150	/Users/telatin/MiSeq_SOP/F3D150_S216_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D150_S216_L001_R2_001.fastq.gz
-F3D2	/Users/telatin/MiSeq_SOP/F3D2_S190_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D2_S190_L001_R2_001.fastq.gz
-F3D3	/Users/telatin/MiSeq_SOP/F3D3_S191_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D3_S191_L001_R2_001.fastq.gz
-F3D5	/Users/telatin/MiSeq_SOP/F3D5_S193_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D5_S193_L001_R2_001.fastq.gz
-F3D6	/Users/telatin/MiSeq_SOP/F3D6_S194_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D6_S194_L001_R2_001.fastq.gz
-F3D7	/Users/telatin/MiSeq_SOP/F3D7_S195_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D7_S195_L001_R2_001.fastq.gz
-F3D8	/Users/telatin/MiSeq_SOP/F3D8_S196_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D8_S196_L001_R2_001.fastq.gz
-F3D9	/Users/telatin/MiSeq_SOP/F3D9_S197_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/F3D9_S197_L001_R2_001.fastq.gz
-Mock	/Users/telatin/MiSeq_SOP/Mock_S280_L001_R1_001.fastq.gz	/Users/telatin/MiSeq_SOP/Mock_S280_L001_R2_001.fastq.gz
+...
 ```
 
-### Qiime mapping file
+### Qiime1 mapping file
 
-Note that `-f qiime2` will add a second header line.
-
-```
+```bash
 seqfu metadata MiSeq_SOP -f qiime1 --add-path --counts
 ```
 
 Output:
-
 ```
 #SampleID	Counts	Paths
 F3D0	7793	F3D0_S188_L001_R1_001.fastq.gz,F3D0_S188_L001_R2_001.fastq.gz
 F3D1	5869	F3D1_S189_L001_R1_001.fastq.gz,F3D1_S189_L001_R2_001.fastq.gz
-F3D141	5958	F3D141_S207_L001_R1_001.fastq.gz,F3D141_S207_L001_R2_001.fastq.gz
-F3D142	3183	F3D142_S208_L001_R1_001.fastq.gz,F3D142_S208_L001_R2_001.fastq.gz
-F3D143	3178	F3D143_S209_L001_R1_001.fastq.gz,F3D143_S209_L001_R2_001.fastq.gz
-F3D144	4827	F3D144_S210_L001_R1_001.fastq.gz,F3D144_S210_L001_R2_001.fastq.gz
-F3D145	7377	F3D145_S211_L001_R1_001.fastq.gz,F3D145_S211_L001_R2_001.fastq.gz
-F3D146	5021	F3D146_S212_L001_R1_001.fastq.gz,F3D146_S212_L001_R2_001.fastq.gz
-F3D147	17070	F3D147_S213_L001_R1_001.fastq.gz,F3D147_S213_L001_R2_001.fastq.gz
-F3D148	12405	F3D148_S214_L001_R1_001.fastq.gz,F3D148_S214_L001_R2_001.fastq.gz
-F3D149	13083	F3D149_S215_L001_R1_001.fastq.gz,F3D149_S215_L001_R2_001.fastq.gz
-F3D150	5509	F3D150_S216_L001_R1_001.fastq.gz,F3D150_S216_L001_R2_001.fastq.gz
-F3D2	19620	F3D2_S190_L001_R1_001.fastq.gz,F3D2_S190_L001_R2_001.fastq.gz
-F3D3	6758	F3D3_S191_L001_R1_001.fastq.gz,F3D3_S191_L001_R2_001.fastq.gz
-F3D5	4448	F3D5_S193_L001_R1_001.fastq.gz,F3D5_S193_L001_R2_001.fastq.gz
-F3D6	7989	F3D6_S194_L001_R1_001.fastq.gz,F3D6_S194_L001_R2_001.fastq.gz
-F3D7	5129	F3D7_S195_L001_R1_001.fastq.gz,F3D7_S195_L001_R2_001.fastq.gz
-F3D8	5294	F3D8_S196_L001_R1_001.fastq.gz,F3D8_S196_L001_R2_001.fastq.gz
-F3D9	7070	F3D9_S197_L001_R1_001.fastq.gz,F3D9_S197_L001_R2_001.fastq.gz
-Mock	4779	Mock_S280_L001_R1_001.fastq.gz,Mock_S280_L001_R2_001.fastq.gz
+...
 ```
 
 ### IRIDA uploader
 
-```
-seqfu metadata -f irida  -P 123 data/pe/
+```bash
+seqfu metadata -f irida -P 123 data/pe/
 ```
 
 Output:
@@ -121,7 +105,25 @@ sample1,123,sample1_R1.fq.gz,sample1_R2.fq.gz
 sample2,123,sample2_R1.fq.gz,sample2_R2.fq.gz
 ```
 
+### Bactopia FOFN
 
-## Screenshot
+```bash
+seqfu metadata -f bactopia data/pe/
+```
 
-![Screenshot of "seqfu metadata"]({{site.baseurl}}/img/screenshot-metadata.svg "SeqFu metadata")
+Output:
+```
+sample	runtype	r1	r2
+sample1	paired-end	/path/to/data/pe/sample1_R1.fq.gz	/path/to/data/pe/sample1_R2.fq.gz
+sample2	paired-end	/path/to/data/pe/sample2_R1.fq.gz	/path/to/data/pe/sample2_R2.fq.gz
+```
+
+## Notes
+
+- The `--ont` option is useful for projects involving Oxford Nanopore long reads.
+- Use `--add-path` to include full file paths in the output (when supported by the format).
+- The `--counts` option adds read counts to the output (experimental feature, not supported by all formats).
+- Format-specific options (like `--project` for IRIDA) are required for certain output types.
+- Use `--verbose` for detailed processing information and `--debug` for troubleshooting.
+
+For more information on each format and its specific options, please refer to the respective tool's documentation.
