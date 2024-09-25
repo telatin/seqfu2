@@ -1,24 +1,25 @@
 #!/bin/bash
 set -euxo pipefail
-gh() {
+check_gh() {
     # Check if `gh` command is available
-    if ! command -v gh > /dev/null; then
-        echo "The CLI utility 'gh' was not found"
+    if command -v gh >/dev/null 2>&1; then
+        echo "OK: GitHub CLI 'gh' found"
+        gh --version
         return 0
     else
-        echo "OK: CLI utility 'gh' found"
-	return 1
+        echo "ERROR: GitHub CLI 'gh' was not found"
+        echo "Please install it from https://cli.github.com/"
+        return 1
     fi
 }
-
  
 getversion() {
   new_tag="v$(grep version "$DIR"/../seqfu.nimble | cut -f 2 -d \")"
   # check if gh()
-  if gh; then
+  if check_gh; then
     new_tag=$(gh release list -L 1 | grep -o "v\d\+\.\d\+\.\d\+")
   else
-    echo "Could not get remote release""
+    echo "Could not get remote release"
   fi
 }
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
