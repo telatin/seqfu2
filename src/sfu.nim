@@ -17,8 +17,7 @@ include ./fastx_derep
 include ./fastx_count
 include ./fastx_view
 include ./fastx_head
-include ./fastx_tail
-include ./legacy_fastx_stats
+include ./fastx_tail 
 include ./fastx_sort
 include ./legacy_fastx_grep # legacy
 include ./fastx_grep2
@@ -53,10 +52,9 @@ var progs = {
          "uniques": fastx_derep, 
        "cnt": fastx_count_threads_off,      # Experimental     
          "count": fastx_count_threads_off,  # Experimental
-       "st" : fastx_stats,            
+       "st" : fastx_stats_v2,            
          "stats": fastx_stats_v2,
          "stat": fastx_stats_v2,
-       "oldstats": fastx_stats,        # Experimental
        "list": fastx_list,              # Experimental
         "lst": fastx_list,              # Experimental
        "count-legacy": fastx_count, 

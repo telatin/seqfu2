@@ -25,7 +25,10 @@ proc toSequence(s: FastxStats, o: statsOptions): seq[string] =
   fields.add(fmtFloat(float(s.max), 0, fmt))
   if o.gc:
     fields.add(fmtFloat(float(s.gc), o.precision, fmt))
-  
+  if o.index:
+    fields.add(fmtFloat(float(s.l50), 0, fmt))
+    fields.add(fmtFloat(float(s.l75), 0, fmt))
+    fields.add(fmtFloat(float(s.l90), 0, fmt))
   return fields
 
 proc toDelimitedString(s: seq[string], o: statsOptions): string =
@@ -40,6 +43,8 @@ proc display_nice(statsList: seq[FastxStats], opt: statsOptions) =
 
   if opt.gc:
     header.add("%GC")
+  if opt.index:
+    header.add(@["L50", "L75","L90"])
   
   let
     outputTable = newUnicodeTable()
@@ -63,6 +68,8 @@ proc display_delimited(statsList: seq[FastxStats], opt: statsOptions): string =
 
   if opt.gc:
     header.add("%GC")
+  if opt.index:
+    header.add(@["L50", "L75","L90"])
 
   if opt.header:
     result &= join(header, opt.delim) & "\n"
@@ -88,6 +95,7 @@ Options:
   -t, --thousands        Add thousands separator (only tabbed/nice output)
   --csv                  Separate output by commas instead of tabs
   --gc                   Also print %GC
+  --index                Also print contig index (L50, L90)
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
   --precision INT        Number of decimal places to round to [default: 2]
   --noheader             Do not print header
@@ -175,6 +183,7 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
       thousands: bool(args["--thousands"]),
       header: printHeader,
       gc: bool(args["--gc"]),
+      index: bool(args["--index"]),
       scaffolds: false,
       delim: sep,
       fields: @[]

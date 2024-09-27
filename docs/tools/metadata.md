@@ -4,8 +4,9 @@ Given one (or more) directories containing sequencing reads, this tool produces 
 
 ## Usage
 ```
-Usage: metadata [options] [<dir>...]
-       metadata formats
+Usage: 
+  metadata [options] [<dir>...]
+  metadata formats
 
 Prepare mapping files from directory containing FASTQ files
 
@@ -15,7 +16,7 @@ Options:
   -s, --split STR        Separator used in filename to identify the sample ID [default: _]
   --pos INT...           Which part of the filename is the Sample ID [default: 1]
 
-  -f, --format TYPE      Output format: dadaist, irida, manifest, metaphage, qiime1, qiime2, lotus, ampliseq, rnaseq, bactopia, mag [default: manifest]
+  -f, --format TYPE      Output format: dadaist, irida, manifest,... list to list [default: manifest]
   -p, --add-path         Add the reads absolute path as column 
   -c, --counts           Add the number of reads as a property column (experimental)
   -t, --threads INT      Number of simultaneously opened files (legacy: ignored) 
@@ -38,6 +39,7 @@ Options:
   -v, --verbose          Verbose output
   --debug                Debug output
   -h, --help             Show this help
+
 ```
 
 ## Output formats
@@ -111,6 +113,8 @@ sample2,123,sample2_R1.fq.gz,sample2_R2.fq.gz
 seqfu metadata -f bactopia data/pe/
 ```
 
+For ONT data, add `--ont`
+
 Output:
 ```
 sample	runtype	r1	r2
@@ -120,7 +124,6 @@ sample2	paired-end	/path/to/data/pe/sample2_R1.fq.gz	/path/to/data/pe/sample2_R2
 
 ## Notes
 
-- The `--ont` option is useful for projects involving Oxford Nanopore long reads.
 - Use `--add-path` to include full file paths in the output (when supported by the format).
 - The `--counts` option adds read counts to the output (experimental feature, not supported by all formats).
 - Format-specific options (like `--project` for IRIDA) are required for certain output types.
