@@ -29,3 +29,4 @@ nimbledeps
 nimbledeps-old/
 data/phage/t7.fa.*data/filt.fa
 data/phage/t7.fa.*
+releases/seqfu2*

@@ -430,7 +430,7 @@ Output:
               quit(1)
 
           # REPORT: original_name\t r.name
-          if $args["--report"] != "nil":
+          if $args["--report"] != "nil" or bool(args["--anvio"]) == true:
             renameReport &= r.name & "\t" & original_name & "\n"
           echo printFastxRecord(r)
 
