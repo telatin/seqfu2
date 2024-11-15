@@ -142,6 +142,8 @@ Other options:
             totalLength += len(record.sequence)
 
           for i, q in record.quality:
+            if i > maxLen:
+              break
             let 
               quality_ord = q.ord
               quality_enc = charToQual(q)
