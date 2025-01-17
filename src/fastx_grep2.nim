@@ -19,7 +19,6 @@ Name and comment search:
   -f, --full             The string or pattern covers the whole name
                          (mainly used without -c)
   -w, --word             The string or pattern is a whole word
-                         (only effective with -c, as names do not contain spaces)
   -i, --ignore-case      Ignore case when matching names (is already enabled with regexes)
 
 Sequence search:
@@ -36,7 +35,7 @@ General options:
 
   """, version=version(), argv=argv)
 
-    verbose       = args["--verbose"] 
+    verbose       = bool(args["--verbose"])
   
     var
       files        : seq[string]  
@@ -134,7 +133,7 @@ General options:
           
           # Search only in name
           else:
-            if matchFull:
+            if matchFull or matchWord:
               # the string should be equal to the whole name
               if optQueryString != readNameOnly:
                 print_this_sequence = invertMatch

@@ -76,7 +76,8 @@ Output:
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
   --report FILE          Save a report to FILE (original name, new name)
-  --list                 Output a list of sequence names 
+  --list                 Output a list of sequence names
+  --long                 Output a list, with sequence name and comments 
   --anvio                Output in Anvio format (-p c_ -s -z --zeropad 12 --report rename_report.txt)
   -q, --fastq-qual INT   FASTQ default quality [default: 33]
   -v, --verbose          Verbose output
@@ -105,6 +106,7 @@ Output:
       newMod = 0
       appendToName: string
       appendSuffixToName: bool
+      fullList: bool
       formatList: bool
       maxBp: int
       skip   : int
@@ -133,7 +135,8 @@ Output:
       appendSuffixToName = if len(appendToName) > 0: true
                            else: false
       basenameSeparatorString = $args["--basename-sep"]
-      formatList = args["--list"]
+      formatList = bool(args["--list"]) or (bool(args["--long"]))
+      fullList = bool(args["--long"])
       skip =  parseInt($args["--skip"])
       skip_first = parseInt($args["--skip-first"])
       maxBp = parseint($args["--max-bp"])
@@ -417,7 +420,10 @@ Output:
 
           # Print output
           if formatList:
-            echo r.name
+            if fullList:
+              echo r.name, ' ', r.comment
+            else:
+              echo r.name
             continue
 
           if outputFormat == sFASTA and len(r.qual) > 0:

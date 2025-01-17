@@ -276,6 +276,7 @@ proc main(args: var seq[string]): int =
     target = $args["--target"] 
     pctid = parseFloat($args["--pct-id"])
 
+  verbose = bool(args["--verbose"])
 
   let
     optMatch = parseInt($args["--score-match"])
@@ -318,7 +319,7 @@ proc main(args: var seq[string]): int =
     targets = newSeq[FQRecord]()
   
 
-
+  echo("Query\tTarget\tScore\tPctID\tLength\tStrand\tQuery_span\tTarget_span")
   for s in readfq(target):
     if $args["--id"] == "nil" or ($args["--id"] != "nil" and s.name == $args["--id"]):
       targets.add(s)
@@ -326,9 +327,9 @@ proc main(args: var seq[string]): int =
   let tab = "\t"
   for s in readfq(query):
     let r = revcompl(s)
-    echo("# QUERY: ", s.name)
+    if verbose:
+      stderr.write("# Query: ", s.name)
     for target in targets:
-      echo("## TARGET: ", target.name)
       let alnFor = simpleSmithWaterman(s.sequence, target.sequence, alnParameters)
       let alnRev = simpleSmithWaterman(r.sequence, target.sequence, alnParameters)
       var rev = 0
@@ -339,12 +340,12 @@ proc main(args: var seq[string]): int =
         rev += 1
         
         if aln.pctid >= pctid:
-          echo(fmt"Score: {aln.score} ({aln.pctid:.2f}%){tab}Length: {aln.length}{tab}Strand: {strand}{tab}Query: {aln.queryStart}-{aln.queryEnd}{tab}Target: {aln.targetStart}-{aln.targetEnd}")
+          echo(fmt"{s.name}{tab}{target.name}{tab}{aln.score}{tab}{aln.pctid:.2f}{tab}{aln.length}{tab}{strand}{tab}{aln.queryStart}-{aln.queryEnd}{tab}{aln.targetStart}-{aln.targetEnd}")
           if args["--showaln"]:
             echo(' ', aln.top)
             echo(' ', aln.middle)
             echo(' ', aln.bottom)
-      echo()
+            echo()
 
 
 

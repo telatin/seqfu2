@@ -253,11 +253,19 @@ else
   ERRORS=$((ERRORS+1))
 fi
 
-if [[ $("$BINDIR"/fu-sw -q "$FILES"/query.fa -t "$FILES"/target.fa | grep -c 'Score') -eq 2 ]]; then
+if [[ $("$BINDIR"/fu-sw -q "$FILES"/query.fa -t "$FILES"/target.fa | grep -c -w '^Query') -eq 1 ]]; then
   echo -e "$OK: fu-sw tested"
   PASS=$((PASS+1))
 else
-  echo -e "$FAIL: fu-sw test failed: != 2"
+  echo -e "$FAIL: fu-sw header: test failed: != 1"
+  ERRORS=$((ERRORS+1))
+fi
+
+if [[ $("$BINDIR"/fu-sw -q "$FILES"/query.fa -t "$FILES"/target.fa | grep -c '16S_') -eq 2 ]]; then
+  echo -e "$OK: fu-sw tested"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: fu-sw alignments: test failed: != 2"
   ERRORS=$((ERRORS+1))
 fi
 ## STREAMING
