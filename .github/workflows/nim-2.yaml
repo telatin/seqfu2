@@ -27,4 +27,4 @@ jobs:
         with:
           nim-version: ${{ matrix.nim }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: sudo apt install -y python3 zlib1g-dev && command -v python3 && nimble install -Y && echo "--threads:on" >> nim.cfg && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
+      - run: sudo apt install -y python3 zlib1g-dev libpcre3-dev && command -v python3 && nimble install -Y && echo "--threads:on" >> nim.cfg && nimble build --nimcache:/tmp/.cache --nimbleDir:/tmp/.nimble --gcc.exe:gcc --gcc.linkerexe:gcc --passL:-lz -d:useLibzipSrc -d:release --opt:speed -y && chmod +x ./scripts/* && cp scripts/* bin/ && ./bin/seqfu --version && export PATH="$PATH":bin/ && bash test/mini.sh
