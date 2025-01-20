@@ -1,0 +1,111 @@
+base_path: "../../data"
+
+datasets:
+  illumina_paired:
+    path: "illumina_1.fq.gz"
+    pair_path: "illumina_2.fq.gz"
+    description: "Paired-end Illumina reads"
+    format: "fastq"
+    compressed: true
+    paired: true
+    expected_sequences: 1000
+
+  amplicon:
+    path: "filt.fa.gz"
+    description: "Filtered amplicon sequences"
+    format: "fasta"
+    compressed: true
+    expected_sequences: 18664
+    expected_bp: 24299931
+    expected_n50: 316
+
+  sort:
+    path: "sort.fa.gz"
+    description: "Test file for sorting"
+    format: "fasta"
+    compressed: true
+
+  mini:
+    path: "mini.fa.gz"
+    description: "Small test file"
+    format: "fasta"
+    compressed: true
+
+  numbers:
+    path: "numbers.fa"
+    description: "Test file with numbered sequences"
+    format: "fasta"
+    compressed: false
+    expected_sequences: 1000
+
+  prot:
+    path: "prot.faa"
+    description: "Protein sequences"
+    format: "fasta"
+    compressed: false
+    protein: true
+
+  prot2:
+    path: "prot2.faa"
+    description: "Second protein sequence file"
+    format: "fasta"
+    compressed: false
+    protein: true
+
+  test:
+    path: "test.fa"
+    description: "Test sequences"
+    format: "fasta"
+    compressed: false
+
+  test_fasta:
+    path: "test.fasta"
+    description: "Test sequences with .fasta extension"
+    format: "fasta"
+    compressed: false
+
+  test_fastq:
+    path: "test.fastq"
+    description: "Test sequences in FASTQ format"
+    format: "fastq"
+    compressed: false
+
+  test2_fastq:
+    path: "test2.fastq"
+    description: "Second test sequences in FASTQ format"
+    format: "fastq"
+    compressed: false
+
+  test4:
+    path: "test_4.fa.gz"
+    description: "Compressed test sequences"
+    format: "fasta"
+    compressed: true
+
+  gc_full:
+    path: "gc/1.fa"
+    description: "100% GC content test file"
+    format: "fasta"
+    compressed: false
+    expected_gc: 1.00
+
+  gc_zero:
+    path: "gc/2.fa"
+    description: "0% GC content test file"
+    format: "fasta"
+    compressed: false
+    expected_gc: 0.00
+
+  gc_half:
+    path: "gc/3.fa"
+    description: "50% GC content test file"
+    format: "fasta"
+    compressed: false
+    expected_gc: 0.50
+
+  interleaved:
+    path: "interleaved.fq.gz"
+    description: "Interleaved paired-end reads"
+    format: "fastq"
+    compressed: true
+    paired: true

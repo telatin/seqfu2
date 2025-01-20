@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 export SEQFU_QUIET=1
@@ -13,7 +12,7 @@ EXIT=$?
 
 MSG="Checked single end exit status"
 EXP=0
-if [[ $EXIT == $EXP ]]; then
+if [[ $EXIT == "$EXP" ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $EXIT)"
     PASS=$((PASS+1))
 else
@@ -61,7 +60,7 @@ EXIT=$?
 
 MSG="Checked BAD single end exit status with --deep"
 EXP=1
-if [[ $IS_OK == $EXP ]]; then
+if [[ $IS_OK == "$EXP" ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
     PASS=$((PASS+1))
 else
@@ -70,7 +69,7 @@ else
 fi 
 MSG="Counts checking BAD single end exit status with --deep"
 EXP=0
-if [[ $COUNT == $EXP ]]; then
+if [[ $COUNT == "$EXP" ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $IS_OK)"
     PASS=$((PASS+1))
 else
@@ -161,7 +160,7 @@ fi
  
 MSG="Checked paired end libtype"
 EXP="PE"
-if [[ $LIBRARY == $EXP ]]; then
+if [[ $LIBRARY == "$EXP" ]]; then
     echo -e "$OK: $MSG (expected $EXP, got $LIBRARY)"
     PASS=$((PASS+1))
 else
