@@ -3,6 +3,10 @@
 
 *stats*  is one of the core subprograms of *SeqFu*.
 
+```note
+Version prior to v1.22.1 were calculatin auN incorrectly
+```
+
 ```text
 Usage: stats [options] [<inputfile> ...]
 
@@ -29,6 +33,7 @@ Options:
 ```note
 Sorting added in SeqFu 1.11. 
 ```
+
 To sort by filename (ascending alphabetical order) add `--sort filename`.
 Numerical values are sorted from the largest (descending), supported values are:
 * *n50*, *n75* or *N90*
