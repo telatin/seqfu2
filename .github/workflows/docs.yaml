@@ -1,4 +1,4 @@
-name: docs-yaml
+name: Deploy Jekyll site to Pages
 
 on:
   push:
@@ -39,11 +39,12 @@ jobs:
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         env:
           JEKYLL_ENV: production
+          JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Authenticate GitHub API calls
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/_site  # Upload the built site
+          path: ./docs/_site
 
   deploy:
     environment:
