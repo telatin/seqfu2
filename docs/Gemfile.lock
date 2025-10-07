@@ -41,7 +41,7 @@ GEM
     execjs (2.10.0)
     faraday (0.17.6)
       multipart-post (>= 1.2, < 3)
-    ffi (1.17.2-arm64-darwin)
+    ffi (1.17.2)
     forwardable-extended (2.6.0)
     gemoji (4.1.0)
     github-pages (232)
@@ -222,13 +222,15 @@ GEM
       rb-inotify (~> 0.9, >= 0.9.10)
     logger (1.7.0)
     mercenary (0.3.6)
+    mini_portile2 (2.8.9)
     minima (2.5.1)
       jekyll (>= 3.5, < 5.0)
       jekyll-feed (~> 0.9)
       jekyll-seo-tag (~> 2.1)
     minitest (5.25.5)
     multipart-post (2.4.1)
-    nokogiri (1.18.10-arm64-darwin)
+    nokogiri (1.18.10)
+      mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     octokit (4.22.0)
       faraday (>= 0.9)
@@ -265,6 +267,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   faraday (< 1)
