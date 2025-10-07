@@ -40,7 +40,8 @@ jobs:
         env:
           JEKYLL_ENV: production
           JEKYLL_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Authenticate GitHub API calls
-      
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
