@@ -1,6 +1,8 @@
 ---
-sort: 11
-title: trim
+layout: default
+title: seqfu trim
+parent: Core Tools
+nav_order: 11
 ---
 
 # trim

@@ -1,10 +1,36 @@
 ---
 layout: default
-title: version 1.3.6
+title: History
 parent: Releases
 ---
 
 ## Release history
+
+### version 1.22
+
+* Added `seqfu cat --anvio`
+* Added layouts to `seqfu metadata`, now supporting nf-core/rnaseq and nf-core/ampliseq
+* Improved `seqfu derep`
+
+### version 1.20
+
+* Improved `seqfu interleave/deinterleave`
+* Migration to Nim 2.0
+* Added `--translate` to `fu-orf`
+* Faster smith-waterman `fu-sw`
+
+### version 1.18
+
+* Added paired end support to `fu-shred`
+
+### version 1.17
+
+* Bugfixes and removal of thread library 
+
+### version 1.16
+
+* Added amino-acid color scheme for `fu-msa`
+* Bugfixes in `seqfu check` and `seqfu bases`
 
 ### version 1.15.0
 

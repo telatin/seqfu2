@@ -533,7 +533,7 @@
   },"76": {
     "doc": "Home",
     "title": "SeqFu",
-    "content": ". | :package: See the repository | :dvd: releases | . A general-purpose program to manipulate and parse information from FASTA/FASTQ files, supporting gzipped input files. Includes functions to interleave and de-interleave FASTQ files, to rename sequences and to count and print statistics on sequence lengths. SeqFu is available for Linux and MacOS. | A compiled program delivering high performance analyses | Supports FASTA/FASTQ files, also Gzip compressed | A growing collection of handy utilities, also for quick inspection of the datasets | UNIX like commands but specific for sequences like seqfu cat, seqfu head, seqfu tail, seqfu grep | Terminal friendly reports from seqfu stats or seqfu count… | . Can be easily installed via conda: . conda install -c conda-forge -c bioconda \"seqfu&gt;1.0\" . ",
+    "content": ". | 📦 See the repository | 💾 releases | . A general-purpose program to manipulate and parse information from FASTA/FASTQ files, supporting gzipped input files. Includes functions to interleave and de-interleave FASTQ files, to rename sequences and to count and print statistics on sequence lengths. SeqFu is available for Linux and MacOS. | A compiled program delivering high performance analyses | Supports FASTA/FASTQ files, also Gzip compressed | A growing collection of handy utilities, also for quick inspection of the datasets | UNIX like commands but specific for sequences like seqfu cat, seqfu head, seqfu tail, seqfu grep | Terminal friendly reports from seqfu stats or seqfu count… | . Can be easily installed via conda: . conda install -c conda-forge -c bioconda \"seqfu&gt;1.0\" . ",
     "url": "/seqfu2/#seqfu",
     
     "relUrl": "/#seqfu"
@@ -993,90 +993,97 @@
     
     "relUrl": "/tools/tail.html#screenshot"
   },"142": {
-    "doc": "trim",
+    "doc": "seqfu trim",
     "title": "trim",
     "content": "The trim command trims FASTQ sequences from the 3’ end when quality drops below a threshold in a sliding window. ",
-    "url": "/seqfu2/tools/trim.html",
+    "url": "/seqfu2/tools/trim.html#trim",
     
-    "relUrl": "/tools/trim.html"
+    "relUrl": "/tools/trim.html#trim"
   },"143": {
-    "doc": "trim",
+    "doc": "seqfu trim",
     "title": "Usage",
     "content": "seqfu trim [options] [&lt;inputfile&gt; ...] . ",
     "url": "/seqfu2/tools/trim.html#usage",
     
     "relUrl": "/tools/trim.html#usage"
   },"144": {
-    "doc": "trim",
+    "doc": "seqfu trim",
     "title": "Options",
     "content": "| Option | Description | Default | . | -w, --window-size INT | Window size for quality calculation | 5 | . | -q, --min-avg-qual INT | Minimum average quality within window | 20 | . | --offset INT | Quality offset (33 for Illumina) | 33 | . | -o, --output FILE | Output filename | stdout | . | -v, --verbose | Verbose output | off | . | -h, --help | Show help |   | . ",
     "url": "/seqfu2/tools/trim.html#options",
     
     "relUrl": "/tools/trim.html#options"
   },"145": {
-    "doc": "trim",
+    "doc": "seqfu trim",
     "title": "Description",
     "content": "This command scans the quality scores of FASTQ sequences using a sliding window of the specified size. When the average quality within the window drops below the specified threshold, it trims the sequence from that position, discarding all subsequent bases. This is useful for removing low-quality regions from the 3’ end of sequencing reads, which often contain more errors as the sequencing reaction progresses. ",
     "url": "/seqfu2/tools/trim.html#description",
     
     "relUrl": "/tools/trim.html#description"
   },"146": {
-    "doc": "trim",
+    "doc": "seqfu trim",
     "title": "Examples",
     "content": "Trim sequences when the quality drops below 20 in a window of 5 bases: . seqfu trim input.fastq -o output.fastq . Use a more stringent quality threshold: . seqfu trim -q 25 input.fastq -o output.fastq . Change the window size: . seqfu trim -w 10 -q 20 input.fastq -o output.fastq . ",
     "url": "/seqfu2/tools/trim.html#examples",
     
     "relUrl": "/tools/trim.html#examples"
   },"147": {
+    "doc": "seqfu trim",
+    "title": "seqfu trim",
+    "content": " ",
+    "url": "/seqfu2/tools/trim.html",
+    
+    "relUrl": "/tools/trim.html"
+  },"148": {
     "doc": "Usage Guide",
     "title": "Short guide",
     "content": "SeqFu is composed by a main program with multiple subprograms, and a set of utilities. Check the complete documentation for each tool, that contains the detailed documentation. SeqFu has tools for: . | Make life easier when working from the command line (seqfu head, seqfu tail, seqfu rc…) | Provide a visual feedback of datasets (like seqfu view) | Get statistics (seqfu count and seqfu stats) | Perform common operations with a reliable tool (seqfu interleave, seqfu deinterleave) | Perform specialistic operations with added ease of use or features | . ",
     "url": "/seqfu2/usage#short-guide",
     
     "relUrl": "/usage#short-guide"
-  },"148": {
+  },"149": {
     "doc": "Usage Guide",
     "title": "Main program",
     "content": "If invoked without parameters, SeqFu will print the list of subprograms: . SeqFu - Sequence Fastx Utilities version: 1.8.5 · count [cnt] : count FASTA/FASTQ reads, pair-end aware · deinterleave [dei] : deinterleave FASTQ · derep [der] : feature-rich dereplication of FASTA/FASTQ files · interleave [ilv] : interleave FASTQ pair ends · lanes [mrl] : merge Illumina lanes · list [lst] : print sequences from a list of names · metadata [met] : print a table of FASTQ reads (mapping files) · sort [srt] : sort sequences by size (uniques) · stats [st] : statistics on sequence lengths · cat : concatenate FASTA/FASTQ files · grep : select sequences with patterns · head : print first sequences · rc : reverse complement strings or files · tab : tabulate reads to TSV (and viceversa) · tail : view last sequences · view : view sequences with colored quality and oligo matches Type 'seqfu version' or 'seqfu citation' to print the version and paper, respectively. Add --help after each command to print its usage. ",
     "url": "/seqfu2/usage#main-program",
     
     "relUrl": "/usage#main-program"
-  },"149": {
+  },"150": {
     "doc": "Usage Guide",
     "title": "Subprograms",
     "content": "SeqFu is bundled with an (increasing) set of utilities sharing the FASTX parsing library: . | fu-orf to extract ORFs from Paired-End libraries | fu-cov to extract contigs from the most commonly used assembly programs using the coverage information printed in the headers | fu-homocomp to compress homopolymers (e.g. for Nanopore applications) | … | See the full list. | . ",
     "url": "/seqfu2/usage#subprograms",
     
     "relUrl": "/usage#subprograms"
-  },"150": {
+  },"151": {
     "doc": "Usage Guide",
     "title": "Usage Guide",
     "content": " ",
     "url": "/seqfu2/usage",
     
     "relUrl": "/usage"
-  },"151": {
+  },"152": {
     "doc": "seqfu view",
     "title": "seqfu view",
     "content": "view is one of the core subprograms of SeqFu. It can be used to visually inspect a FASTQ file printing colored bars for quality scores and highlighting oligonucleotide matches. Usage: view [options] &lt;inputfile&gt; [&lt;input_reverse&gt;] View a FASTA/FASTQ file for manual inspection, allowing to search for an oligonucleotide. Options: -o, --oligo1 OLIGO Match oligo, with ambiguous IUPAC chars allowed (rev. compl. search is performed), color blue -r, --oligo2 OLIGO Second oligo to be scanned for, color red -q, --qual-scale STR Quality thresholds, seven values separated by columns [default: 3:15:25:28:30:35:40] --match-ths FLOAT Oligo matching threshold [default: 0.75] --min-matches INT Oligo minimum matches [default: 5] --max-mismatches INT Oligo maxmimum mismataches [default: 2] --ascii Use simple ASCII chars instead of UNICODE to render the quality values -Q, --qual-chars Show quality characters instead of bars -n, --nocolor Disable colored output --verbose Show extra information -h, --help Show this help . ",
     "url": "/seqfu2/tools/view.html",
     
     "relUrl": "/tools/view.html"
-  },"152": {
+  },"153": {
     "doc": "seqfu view",
     "title": "Example output",
     "content": "The quality scores are rendered as colored bars (grey, red, yellow, green) of different heights. Matching oligos are rendered as blue arrows (forward) or red arrows (reverse). ",
     "url": "/seqfu2/tools/view.html#example-output",
     
     "relUrl": "/tools/view.html#example-output"
-  },"153": {
+  },"154": {
     "doc": "seqfu view",
     "title": "Important hints",
     "content": "Disabling wordwrap . SeqFu view is designed for a manual inspection, and thus it’s very convenient to pipe the output to less to avoid being misled by word-wraps: . seqfu view sequence.fq | less -SR . (in less: -S prevents word-wrap, and -R will preserve the colored output) . Encoding of “graphical” bars . The graphical rendering of the quality values is done using Unicode characters (UTF-8 encoding), thus requiring both the host system and the terminal emulator to support UTF-8. A simple test to check if your terminal supports Unicode is to type: . echo -e '\\xe2\\x82\\xac' . If you see the Euro character (€) then your terminal fully supports UTF-8. If not, you can use --ascii or --qual-chars. The following screenshot shows how quality scores are rendered using the different options: . | Default view with quality scale | . | Graphical representation of the quality with ASCII characters | . | Quality encoded as in the FASTQ file, but colored | . ",
     "url": "/seqfu2/tools/view.html#important-hints",
     
     "relUrl": "/tools/view.html#important-hints"
-  },"154": {
+  },"155": {
     "doc": "seqfu view",
     "title": "Screenshot",
     "content": ". ",

@@ -55,34 +55,8 @@ back_to_top_text: "Back to top"
 last_edit_timestamp: true
 last_edit_time_format: "%b %e %Y at %I:%M %p"
 
-# Collections for organized content
-collections_dir: .
-collections:
-  tools:
-    permalink: "/:collection/:path/"
-    output: true
-  utilities:
-    permalink: "/:collection/:path/"
-    output: true
-  scripts:
-    permalink: "/:collection/:path/"
-    output: true
-
-# Just the Docs specific settings
-just_the_docs:
-  collections:
-    tools:
-      name: Core Tools
-      nav_exclude: false
-      search_exclude: false
-    utilities:
-      name: Utilities
-      nav_exclude: false
-      search_exclude: false
-    scripts:
-      name: Helper Utilities
-      nav_exclude: false
-      search_exclude: false
+# Navigation is handled via front matter in individual pages
+# using parent, nav_order, and has_children properties
 
 # Plugins
 plugins:
