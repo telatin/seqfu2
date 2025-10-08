@@ -4,6 +4,7 @@ title: Usage Guide
 nav_order: 7
 permalink: /usage
 ---
+
 # Short guide
 
 *SeqFu* is composed by a main program with multiple subprograms, and a set of utilities.
