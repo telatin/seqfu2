@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu check
+parent: Core Tools
+---
+
 # seqfu check
 
 ```note

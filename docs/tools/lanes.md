@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu lanes
+parent: Core Tools
+---
+
 
 # seqfu lanes
 

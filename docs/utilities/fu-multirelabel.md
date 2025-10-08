@@ -1,3 +1,9 @@
+---
+layout: default
+title: fu-multirelabel
+parent: Utilities
+---
+
 
 # fu-multirelabel
 

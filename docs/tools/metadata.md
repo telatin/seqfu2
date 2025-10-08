@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu metadata
+parent: Core Tools
+---
+
 # seqfu metadata
 
 Given one (or more) directories containing sequencing reads, this tool produces a metadata file by extracting the ID from the filename and optionally adding file paths or read counts.

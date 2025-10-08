@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu list
+parent: Core Tools
+---
+
 
 # seqfu list
 

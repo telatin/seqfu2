@@ -1,3 +1,9 @@
+---
+layout: default
+title: fu-nanotags
+parent: Utilities
+---
+
 # fu-nanotags
 
 ```note

@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu tail
+parent: Core Tools
+---
+
 
 # seqfu tail
 

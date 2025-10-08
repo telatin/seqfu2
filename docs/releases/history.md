@@ -1,3 +1,9 @@
+---
+layout: default
+title: version 1.3.6
+parent: Releases
+---
+
 ## Release history
 
 ### version 1.15.0

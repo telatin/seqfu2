@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu cat
+parent: Core Tools
+---
+
 # seqfu cat
 
 Concatenate multiple FASTA/FASTQ files, in a similar way of the GNU `cat` utility.

@@ -1,0 +1,1087 @@
+{"0": {
+    "doc": "Releases",
+    "title": "Releases",
+    "content": " ",
+    "url": "/seqfu2/releases/README.html",
+    
+    "relUrl": "/releases/README.html"
+  },"1": {
+    "doc": "Helper Utilities",
+    "title": "Helper Utilities",
+    "content": "Python scripts based on SeqFu binaries. Export $SEQFU_BIN to specify the path to SeqFu, otherwise will default to seqfu (as in $PATH). ",
+    "url": "/seqfu2/scripts/README.html",
+    
+    "relUrl": "/scripts/README.html"
+  },"2": {
+    "doc": "Utilities",
+    "title": "Utilities",
+    "content": "All these programs are automatically installed with SeqFu, but are accessible via independent binaries rather than the core tool seqfu. :warning: The core tools have a strict API validation to ensure forward-compatibility of the commands, that is not guaranteed in the external utilities. SeqFu utilities . Other utilities . Some tools required by Dadaist2 are written using the SeqFu templates and routines, and being SeqFu a dependency of Dadaist2 they are shipped with SeqFu, and they have the dadaist2- prefix. ",
+    "url": "/seqfu2/utilities/README.html",
+    
+    "relUrl": "/utilities/README.html"
+  },"3": {
+    "doc": "Core Tools",
+    "title": "Core Tools",
+    "content": "Each of the following tools can be invoked as a subcommand of SeqFu. Invoking seqfu will display a list of internal commands: . SeqFu - Sequence Fastx Utilities version: 1.0.0 • count [cnt] : count FASTA/FASTQ reads, pair-end aware • deinterleave [dei] : deinterleave FASTQ • derep [der] : feature-rich dereplication of FASTA/FASTQ files • interleave [ilv] : interleave FASTQ pair ends • lanes [mrl] : merge Illumina lanes • sort [srt] : sort sequences by size (uniques) • stats [st] : statistics on sequence lengths • cat : concatenate FASTA/FASTQ files • grep : select sequences with patterns • head : print first sequences • rc : reverse complement strings or files • tail : view last sequences • view : view sequences with colored quality and oligo matches Add --help after each command to print usage . Manual pages . ",
+    "url": "/seqfu2/tools/README.html",
+    
+    "relUrl": "/tools/README.html"
+  },"4": {
+    "doc": "seqfu bases",
+    "title": "seqfu bases",
+    "content": "Counts the number of A, C, G, T and Ns in FASTA and FASTQ files. Introduced in SeqFu 1.15.1 as experimental feature . Calculates the composition of DNA sequences . Usage: bases [options] [&lt;inputfile&gt; ...] Print the DNA bases, and %GC content, in the input files Options: -c, --raw-counts Print counts and not ratios -t, --thousands Print thousands separator -a, --abspath Print absolute path -b, --basename Print the basename of the file -n, --nice Print terminal table -d, --digits INT Number of digits to print [default: 2] -H, --header Print header (auto enabled with --nice) -v, --verbose Verbose output --debug Debug output --help Show this help . Output . The output is a table with the following columns (-H to print the header): . | Filename (-a for absolute path, -b for basename) | Total bases (-t to add thousand separator) | Ratio of A bases over total bases (-c to print raw counts) | Ratio of C bases over total bases (-c to print raw counts) | Ratio of G bases over total bases (-c to print raw counts) | Ratio of T bases over total bases (-c to print raw counts) | Ratio of N bases over total bases (-c to print raw counts) | Ratio of Other characters (either IUPAC DNA or invalid chars) over total bases (-c to print raw counts) | %GC ratio | Ratio of Uppercase bases over total bases (if enabled by -u) | . Example . A simple example: . seqfu bases --header data/illumina_* #Filename Total A C G T N Other %GC data/illumina_1.fq.gz 630 18.57 18.57 18.57 18.57 18.57 0.00 59.21 data/illumina_2.fq.gz 630 21.43 21.43 21.43 21.43 21.43 0.00 60.48 data/illumina_nocomm.fq 630 18.57 18.57 18.57 18.57 18.57 0.00 59.21 . when using -n the output is a nice table: . ┌─────────────────────┬───────┬────────┬────────┬────────┬────────┬──────┬───────┬────────┬───────────┐ │ File │ Bases │ A │ C │ G │ T │ N │ Other │ %GC │ Uppercase │ ├─────────────────────┼───────┼────────┼────────┼────────┼────────┼──────┼───────┼────────┼───────────┤ │ data/base_at.fa │ 33 │ 42.42 │ 0.00 │ 0.00 │ 57.58 │ 0.00 │ 0.00 │ 0.00 │ 100.00 │ │ data/bases_lower.fa │ 15 │ 33.33 │ 26.67 │ 20.00 │ 13.33 │ 6.67 │ 0.00 │ 46.67 │ 0.00 │ │ data/base_c.fa │ 5 │ 0.00 │ 100.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ 100.00 │ 0.00 │ │ data/base.fa │ 2 │ 50.00 │ 50.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ 50.00 │ 100.00 │ │ data/upper-none.fa │ 7 │ 42.86 │ 14.29 │ 28.57 │ 14.29 │ 0.00 │ 0.00 │ 42.86 │ 0.00 │ │ data/base_t.fa │ 5 │ 0.00 │ 0.00 │ 0.00 │ 100.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ │ data/base_a.fa │ 5 │ 100.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ 100.00 │ │ data/upper-lower.fa │ 10 │ 50.00 │ 50.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ 50.00 │ 50.00 │ │ data/base_g.fa │ 1 │ 0.00 │ 0.00 │ 100.00 │ 0.00 │ 0.00 │ 0.00 │ 100.00 │ 100.00 │ │ data/upper-only.fa │ 9 │ 44.44 │ 11.11 │ 44.44 │ 0.00 │ 0.00 │ 0.00 │ 55.56 │ 100.00 │ │ data/base_extra.fa │ 20 │ 50.00 │ 0.00 │ 0.00 │ 0.00 │ 0.00 │ 50.00 │ 0.00 │ 100.00 │ │ data/base_cg.fa │ 25 │ 0.00 │ 52.00 │ 48.00 │ 0.00 │ 0.00 │ 0.00 │ 100.00 │ 100.00 │ └─────────────────────┴───────┴────────┴────────┴────────┴────────┴──────┴───────┴────────┴───────────┘ . ",
+    "url": "/seqfu2/tools/bases.html",
+    
+    "relUrl": "/tools/bases.html"
+  },"5": {
+    "doc": "seqfu cat",
+    "title": "seqfu cat",
+    "content": "Concatenate multiple FASTA/FASTQ files, in a similar way of the GNU cat utility. Usage: cat [options] [&lt;inputfile&gt; ...] Concatenate multiple FASTA or FASTQ files. Options: -k, --skip STEP Print one sequence every STEP [default: 0] --skip-first INT Skip the first INT records [default: -1] --jump-to STR Start from the record after the one named STR (overrides --skip-first) --print-last Print the name of the last sequence to STDERR (Last:NAME) Sequence name: -p, --prefix STRING Rename sequences with prefix + incremental number -z, --strip-name Remove the original sequence name -a, --append STRING Append this string to the sequence name [default: ] --sep STRING Sequence name fields separator [default: _] -b, --basename Prepend file basename to the sequence name (before prefix) --split CHAR Split basename at this char [default: .] --part INT After splitting the basename, take this part [default: 1] --basename-sep STRING Separate basename from the rest with this [default: _] --zero-pad INT Zero pad the counter to INT digits [default: 0] Sequence comments: -s, --strip-comments Remove original sequence comments --comment-sep CHAR Comment separator [default: ] --add-len Add 'len=LENGTH' to the comments --add-initial-len Add 'original_len=LENGTH' to the comments --add-gc Add 'gc=%GC' to the comments --add-initial-gc Add 'original_gc=%GC' to the comments --add-name Add 'original_name=INITIAL_NAME' to the comments --add-ee Add 'ee=EXPECTED_ERROR' to the comments --add-initial-ee Add 'original_ee=EXPECTED_ERROR' to the comments Filtering: -n, --max-ns INT Discard sequences with more than INT Ns [default: -1] -m, --min-len INT Discard sequences shorter than INT [default: 1] -x, --max-len INT Discard sequences longer than INT, 0 to ignore [default: 0] --max-ee FLOAT Discard sequences with higher than FLOAT expected error [default: -1.0] --trim-front INT Trim INT base from the start of the sequence [default: 0] --trim-tail INT Trim INT base from the end of the sequence [default: 0] --truncate INT Keep only the first INT bases, 0 to ignore [default: 0] Negative values to print the last INT bases --max-bp INT Stop printing after INT bases [default: 0] Output: --fasta Force FASTA output --fastq Force FASTQ output --report FILE Save a report to FILE (original name, new name) --list Output a list of sequence names --anvio Output in Anvio format (-p c_ -s -z --zeropad 12 --report rename_report.txt) -q, --fastq-qual INT FASTQ default quality [default: 33] -v, --verbose Verbose output --debug Debug output -h, --help Show this help . ",
+    "url": "/seqfu2/tools/cat.html",
+    
+    "relUrl": "/tools/cat.html"
+  },"6": {
+    "doc": "seqfu cat",
+    "title": "Input",
+    "content": "One or more FASTA or FASTQ files. If no files are provided, the program will read from standard input. Additionally, you can add standard input to the list of input files. by adding -. ",
+    "url": "/seqfu2/tools/cat.html#input",
+    
+    "relUrl": "/tools/cat.html#input"
+  },"7": {
+    "doc": "seqfu cat",
+    "title": "Output",
+    "content": "It is possible to mix FASTA and FASTQ files, and by default the program will produce a mixed output. Using --fasta or --fastq will force a specific output formats. For FASTA sequences a default quality values will be used. Using --list the simple list of records matching the criteria will be printed. ",
+    "url": "/seqfu2/tools/cat.html#output",
+    
+    "relUrl": "/tools/cat.html#output"
+  },"8": {
+    "doc": "seqfu cat",
+    "title": "Anvi’o shortcut",
+    "content": "If you use --anvio you will automatically suppress names and comments, and add a prefix c_ to the sequence names and leading zeros to the counter, and write the report to rename_report.txt. If you specify a different --report file, this will of course override the default report file. ",
+    "url": "/seqfu2/tools/cat.html#anvio-shortcut",
+    
+    "relUrl": "/tools/cat.html#anvio-shortcut"
+  },"9": {
+    "doc": "seqfu cat",
+    "title": "Splashscreen",
+    "content": ". ",
+    "url": "/seqfu2/tools/cat.html#splashscreen",
+    
+    "relUrl": "/tools/cat.html#splashscreen"
+  },"10": {
+    "doc": "seqfu check",
+    "title": "seqfu check",
+    "content": "**EXPERIMENTAL**: Introduced in SeqFu 1.15, updated with --deep in 1.18 (see below). In SeqFu 2.0 a strict behaviour will be used by default, see **fu-pecheck** and **fu-secheck**. Evaluates the integrity of DNA FASTQ files. Usage: seqfu check [options] &lt;FQFILE&gt; [&lt;REV&gt;] seqfu check [options] --dir &lt;FQDIR&gt; Check the integrity of FASTQ files, returns non zero if an error occurs. Will print a table with a report. Input is a single dataset: &lt;FQFILE&gt; the forward read file &lt;REV&gt; the reverse read file or a directory of FASTQ files (--dir): &lt;FQDIR&gt; the directory containing the FASTQ files Options: -d, --deep Perform a deep check of the file and will not lsupport multiline Sanger FASTQ [default: false] -n, --no-paired Disable autodetection of second pair -s, --safe-exit Exit with 0 even if errors are found -q, --quiet Do not print infos, just exit status -v, --verbose Verbose output -t, --thousands Print numbers with thousands separator --debug Debug output -h, --help Show this help . Integrity check . :warning: If not using --deep, the file is considered valid if seqfu cat $INPUT &gt; $OUTPUT would produce a valid file (i.e. if an error is detected at the 100-th sequence, the file would be considered valid reporting 99 as total sequences) . A single FASTQ file is considered valid if: . | each record has the same sequence and quality length | only A,C,G,T,N characters are present in the sequence | . A paired-end set of FASTQ files is considered valid if: . | each file is individually valid | the two files have the same number of sequences | the first and last sequence of both files has the same name (the last three characters are ignored if the remaining sequence name is greater than 4 characters) | the first and last sequence of the two files are not identical (R1 != R2) | . Deep check . If you are parsing NGS files, i.e. FASTQ files, with four lines per record and you expect them to be accepted by any program, use --deep. Usage . To test a single file: . seqfu check test_file.fq.gz . To test a pair of files: . seqfu check test_R1.fq.gz [test_R2.fq.gz] . Note that if supplying a single file but a matching pair is detected (e.g. test_R1.fq.gz is supplied and test_R2.fq.gz is found), the check will be performed on both files. To test all files in a directory: . seqfu check --dir test_dir . Other options . | --no-paired disables the autodetection of the second pair (i.e. force single end check) | --thousands will add a thousands separator to the output | --quiet will not print data, but only the exit status will be used | --verbose will print more information (including processing speed) | --debug will print debug information | --safe-exit will always exit with 0, even if errors are found (useful in pipelines) | . Exit status . If an error is identified in at least one file, the program will exit with non zero status, unless the --safe-exit option is used. Output . The output is a table with the following columns: . | Status (OK or ERR) | Library type (SE or PE) | Filename (the path to the first pair, if PE) | Number of sequences counted (if PE: number of sequences in both files) or - if the dataset is not valid | Number of bases (if PE: total number of bases in both files) or - if the dataset is not valid | Number of errors | List of detected errors (if any) | . Example . Example of output for a directory containing 3 Paired End datasets: . OK PE /tmp/data/16S_R1.fq.gz 12274 3694474 0 OK PE /tmp/data/16Snano_R1.fq.gz 468 140868 0 OK PE /tmp/data/illumina_1.fq.gz 14 1260 0 . Example of errors (can be reproduced using the data directory of the repository) . seqfu check --dir data/primers . OK SE data/primers/16S_merge.fq.gz 6137 2596981 0 OK SE data/primers/16S_vsearch_merge.fq.gz 3935 1818111 0 ERR SE data/primers/artificial.fq.gz - - 2 Invalid character in sequence: &lt; &gt; in R2.REV+.middle; OK SE data/primers/its-merge.fq.gz 7299 1504898 0 OK SE data/primers/se.fq.gz 234 70434 0 OK SE data/primers/small.fq 4 360 0 OK PE data/primers/16S_R1.fq.gz 12274 3694474 0 OK PE data/primers/16Snano_R1.fq.gz 468 140868 0 ERR PE data/primers/art_R1.fq.gz 7 - 5 R2=Invalid character in sequence: &lt; &gt; in R2.REV+.middle;;First sequence names do not match (R1.startFOR+, R2.startREV+);Last sequence names do not match (R1.FOR1+.start-middle, ); OK PE data/primers/its_R1.fq.gz 16000 3387804 0 OK PE data/primers/itsfilt_R1.fq.gz 15618 3272396 0 OK PE data/primers/pico_R1.fq.gz 24 7224 0 . ",
+    "url": "/seqfu2/tools/check.html",
+    
+    "relUrl": "/tools/check.html"
+  },"11": {
+    "doc": "seqfu count",
+    "title": "seqfu count",
+    "content": "count (or cnt) is one of the core subprograms of SeqFu. It’s used to count the sequences in FASTA/FASTQ files, and it’s paired-end aware so it will print the count of both files in a single line, but checking that both files have the same number of sequences. In version 1.5 the program has been redesigned to parse multiple files simultaneously. Usage: count [options] [&lt;inputfile&gt; ...] Options: -a, --abs-path Print absolute paths -b, --basename Print only filenames -u, --unpair Print separate records for paired end files -f, --for-tag R1 Forward tag [default: auto] -r, --rev-tag R2 Reverse tag [default: auto] -t, --threads INT Working threads [default: 4] -v, --verbose Verbose output -h, --help Show this help . Streaming . Input from stream is supported. Example output . Output is a TSV text with three columns: sample name, number of reads and type (“SE” for Single End, “Paired” for Paired End) . data/test.fastq 3 SE data/comments.fastq 5 SE data/test2.fastq 3 SE data/qualities.fq 5 SE data/illumina_1.fq.gz 7 Paired . In case of errors will print a warning: . ERROR: Different counts in data/longerone_R1.fq.gz and data/longerone_R2.fq.gz # data/longerone_R1.fq.gz: 7 # data/longerone_R2.fq.gz: 2 . Multithreading . Performance improvement measured on the MiSeq SOP dataset from mothur: . | Command | Mean [ms] | Min [ms] | Max [ms] | Relative | . | seqfu count ../mothur-sop/*.fastq -t 4 | 142.5 ± 5.8 | 127.3 | 152.3 | 1.00 | . | seqfu count ../mothur-sop/*.fastq -t 1 | 416.5 ± 15.2 | 397.8 | 440.9 | 2.92 ± 0.16 | . | seqfu count-legacy ../mothur-sop/*.fastq | 539.2 ± 16.6 | 519.6 | 577.4 | 3.78 ± 0.19 | . ",
+    "url": "/seqfu2/tools/count.html",
+    
+    "relUrl": "/tools/count.html"
+  },"12": {
+    "doc": "seqfu count",
+    "title": "Legacy algorithm",
+    "content": "Usage: count-legacy [options] [&lt;inputfile&gt; ...] Options: -a, --abs-path Print absolute paths -b, --basename Print only filenames -u, --unpair Print separate records for paired end files -f, --for-tag R1 Forward string, like _R1 [default: auto] -r, --rev-tag R2 Reverse string, like _R2 [default: auto] -m, --multiqc FILE Save report in MultiQC format -v, --verbose Verbose output -h, --help Show this help . MultiQC output . Using the --multiqc OUTPUTFILE option it’s possible to save a MultiQC compatible file (we recommend to use the projectname_mqc.tsv filename format). After coolecting all the MultiQC files in a directory, using multiqc -f . will generate the MultiQC report. MultiQC itself can be installed via Bioconda with conda install -y -c bioconda multiqc. To understand how to use MultiQC, if you never did so, check their excellent documentation. Screenshot . ",
+    "url": "/seqfu2/tools/count.html#legacy-algorithm",
+    
+    "relUrl": "/tools/count.html#legacy-algorithm"
+  },"13": {
+    "doc": "seqfu deinterleave",
+    "title": "seqfu deinterleave",
+    "content": "deinterleave (or dei) is one of the core subprograms of SeqFu. It’s used to produce two separate FASTQ files from an interleaved file. ilv: interleave FASTQ files Usage: dei [options] -o basename &lt;interleaved-fastq&gt; -o --output-basename \"str\" save output to output_R1.fq and output_R2.fq -f --for-ext \"R1\" extension for R1 file [default: _R1.fq] -r --rev-ext \"R2\" extension for R2 file [default: _R2.fq] -c --check enable careful mode (check sequence names and numbers) -v --verbose print verbose output -s --strip-comments skip comments -p --prefix \"string\" rename sequences (append a progressive number) notes: use \"-\" as input filename to read from STDIN example: dei -o newfile file.fq . Streaming . If a program produce an interleaved output, seqfu deinterleave can be used in a pipe (specifying “-“ as input): . fu-primers -1 file_R1.fq -2 file_R2.fq | seqfu deinterleave -o fileNoPrimers - . ",
+    "url": "/seqfu2/tools/deinterleave.html",
+    
+    "relUrl": "/tools/deinterleave.html"
+  },"14": {
+    "doc": "seqfu deinterleave",
+    "title": "What are interleaved files?",
+    "content": "Paired end sequences can be stored in two separate files (usually denoted with the _R1 and _R2 strings) or in a single sequence where each sequence pair is stored as two subsequent sequences. A simple example is depicted below: . ======================================================================= File_R1.fq File_R2.fq Interleaved.fq ======================================================================= @seq1 @seq1 @seq1 TTTCATTCTGACTGCAACG GGATTAAAAAAAGAGTGTC TTTCATTCTGACTGCAACG + + + IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII @seq2 @seq2 @seq1 GTGTGGATTAAAAAAAAAA TTTTTTTTTTTTTTTTTTT GGATTAAAAAAAGAGTGTC + + + IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII @seq3 @seq3 @seq2 AGAGTGTCTGATAGCA GATAGCAG GTGTGGATTAAAAAAAAAA + + + IIIIIIIIIIIIIIII IIIIIIII IIIIIIIIIIIIIIIIIII @seq2 TTTTTTTTTTTTTTTTTTT + IIIIIIIIIIIIIIIIIII @seq3 AGAGTGTCTGATAGCA + IIIIIIIIIIIIIIII @seq3 GATAGCAG + IIIIIIII . ",
+    "url": "/seqfu2/tools/deinterleave.html#what-are-interleaved-files",
+    
+    "relUrl": "/tools/deinterleave.html#what-are-interleaved-files"
+  },"15": {
+    "doc": "seqfu deinterleave",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/deinterleave.html#screenshot",
+    
+    "relUrl": "/tools/deinterleave.html#screenshot"
+  },"16": {
+    "doc": "seqfu derep",
+    "title": "seqfu derep",
+    "content": "derep is one of the core subprograms of SeqFu, that allows the dereplication of FASTA and FASTQ files. Dereplication, in R. C. Edgard words is A rather obscure name for finding the set of unique sequences. Or, equivalently, the process of finding duplicated (replicate) sequences. In simple words, given a FASTA file, only unique sequences will be printed in the output. A core feature is printing the number of identical sequences found in the original dataset. Dereplication is a step commonly used in NGS sequencing of amplicons, to reduce the computational time dedicated to the analysis of each representative sequence, and some tools will require dereplicated sequences as input (e.g. USEARCH). Usage: derep [options] [&lt;inputfile&gt; ...] Options: -k, --keep-name Do not rename sequence, but use the first sequence name -i, --ignore-size Do not count 'size=INT;' annotations (they will be stripped in any case) -m, --min-size=MIN_SIZE Print clusters with size equal or bigger than INT sequences [default: 0] -p, --prefix=PREFIX Sequence name prefix [default: seq] -5, --md5 Use MD5 as sequence name (overrides other parameters) -j, --json=JSON_FILE Save dereplication metadata to JSON file -s, --separator=SEPARATOR Sequence name separator [default: .] -w, --line-width=LINE_WIDTH FASTA line width (0: unlimited) [default: 0] -l, --min-length=MIN_LENGTH Discard sequences shorter than MIN_LEN [default: 0] -x, --max-length=MAX_LENGTH Discard sequences longer than MAX_LEN [default: 0] -c, --size-as-comment Print cluster size as comment, not in sequence name --add-len Add length to sequence -v, --verbose Print verbose messages -h, --help Show this help . ",
+    "url": "/seqfu2/tools/derep.html",
+    
+    "relUrl": "/tools/derep.html"
+  },"17": {
+    "doc": "seqfu derep",
+    "title": "Size values",
+    "content": "By default the program will add the number of identical sequences found to the sequence name, as USEARCH does: For example, if a sequence is found 18.335 times in the input file, the output will contain a sequence with “;size=18335” in the name (unless --ignore-size is passed). The term “size” can be confusing, but it was adopted for compatibility with USEARCH/VSERACH. &gt;seq.1;size=18335 CTTGGTCATTTAGAGGAAGTAAAAGTCGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTACAGTATTCTTTTTGCCAGCGCTTAATTGCGCGGCGAAAAAACCTTACACACAGTGTTTTTTGTTATTACAAGAACTTTTGCTTTGGTCTGGACTAGAAATAGTTTGGGCCAGAGGTTTACTGAACTAAACTTCAATATTTATATTGAATTGTTATTTATTTAATTGTCAATTTGTTGATTAAATTCAAAAAATCTTCAAAACTTTCAACAACGGATCTCTTGGTTCTCGCATCGATGAAGAACGCAGC &gt;seq.2;size=4085 CTTGGTCATTTAGAGGAAGTAAAAGTCGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTATTGAAGTTTAACTCAGAGGGTTGTAGCTGGCTCCTCCAAGAGCATGTGCACGCCCTTTGTCTTTACTCTTTTCCACCTGTGCACCTTTTGTAGACCATGAGTGAACTCTCGAGAGCGTTGGCAACGACGTGATCGGTTTGGGGATTTGCGTTCAGCTTTCCCTGTAGCTCGTGGTTTATGTCTTATAAACTCTATAGTCTGTTTTGAATGTCTTATGGGTTTTGCGCTGTAATGGTGCGACCTTTATAAACTATACAACTTTTAGCAACGGATCTCTTGGCTCTCGCATCGATGAAGAACGCAGC &gt;seq.3;size=2453 CTTGGTCATTTAGAGGAAGTAAGAGAGAAATGTATAAACTCATAATTGACGAATGATAATTGTTATTGAAGTTTTTGTAAAGGGGCTTCTTTATGAATAAGGGATACACGTTTGACGATATGATTAATACCATGATGCCCCTGGCCCTTTGACGGCTCGGCAAAGGGTGAAGGAATTTACTGCACGGTCAGGCCCTCGTCGCATCGATGAAGAACGCAGC . To keep the size separate from the sequence name it’s possible to used -c (--size-as-comment): . &gt;seq.1 size=18335 CTTGGTCATTTAGAGGAAGTAAAAGTCGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTACAGTATTCTTTTTGCCAGCGCTTAATTGCGCGGCGAAAAAACCTTACACACAGTGTTTTTTGTTATTACAAGAACTTTTGCTTTGGTCTGGACTAGAAATAGTTTGGGCCAGAGGTTTACTGAACTAAACTTCAATATTTATATTGAATTGTTATTTATTTAATTGTCAATTTGTTGATTAAATTCAAAAAATCTTCAAAACTTTCAACAACGGATCTCTTGGTTCTCGCATCGATGAAGAACGCAGC &gt;seq.2 size=4085 CTTGGTCATTTAGAGGAAGTAAAAGTCGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTATTGAAGTTTAACTCAGAGGGTTGTAGCTGGCTCCTCCAAGAGCATGTGCACGCCCTTTGTCTTTACTCTTTTCCACCTGTGCACCTTTTGTAGACCATGAGTGAACTCTCGAGAGCGTTGGCAACGACGTGATCGGTTTGGGGATTTGCGTTCAGCTTTCCCTGTAGCTCGTGGTTTATGTCTTATAAACTCTATAGTCTGTTTTGAATGTCTTATGGGTTTTGCGCTGTAATGGTGCGACCTTTATAAACTATACAACTTTTAGCAACGGATCTCTTGGCTCTCGCATCGATGAAGAACGCAGC &gt;seq.3 size=2453 CTTGGTCATTTAGAGGAAGTAAGAGAGAAATGTATAAACTCATAATTGACGAATGATAATTGTTATTGAAGTTTTTGTAAAGGGGCTTCTTTATGAATAAGGGATACACGTTTGACGATATGATTAATACCATGATGCCCCTGGCCCTTTGACGGCTCGGCAAAGGGTGAAGGAATTTACTGCACGGTCAGGCCCTCGTCGCATCGATGAAGAACGCAGC . ",
+    "url": "/seqfu2/tools/derep.html#size-values",
+    
+    "relUrl": "/tools/derep.html#size-values"
+  },"18": {
+    "doc": "seqfu derep",
+    "title": "Summing dereplicated outputs",
+    "content": "If the input files were already dereplicated printing the “size” of the cluster, derep will sum the size values. This is a feature that to our knowledge is only available in SeqFu and allows to process in parallel multiple samples and generating a single “dereplicated file” at the end, propagating the correct cluster sizes. ",
+    "url": "/seqfu2/tools/derep.html#summing-dereplicated-outputs",
+    
+    "relUrl": "/tools/derep.html#summing-dereplicated-outputs"
+  },"19": {
+    "doc": "seqfu derep",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/derep.html#screenshot",
+    
+    "relUrl": "/tools/derep.html#screenshot"
+  },"20": {
+    "doc": "fu-16Sregion",
+    "title": "fu-16Sregion",
+    "content": "This utility is still in development, but feedback is welcome. Align paired-end, or single-end, reads against a 16S reference sequence to determine the hypervariable regions sequences via local alignment. Can read one FASTA/FASTQ file or data from standard input. Usage: fu-16Sregion [options] [&lt;FASTQ-File&gt;] Options: -r --reference FILE FASTA file with a reference sequence, E. coli 16S by default -j --regions FILE Regions names in JSON format, E. coli variable regions by default -m --min-fraction FLOAT Minimum fraction of reads classified to report a region as detected [default: 0.5] --min-score INT Minimum alignment score (approx. %id * readlen * matchScore) [default: 2000] --max-reads INT Parse up to INT reads then quit [default: 500] Smith-Waterman: --score-match INT Score for a match [default: 10] --score-mismatch INT Score for a mismatch [default: -5] --score-gap INT Score for a gap [default: -10] Other options: --pool-size INT Number of sequences/pairs to process per thread [default: 25] -v --verbose Verbose output --debug Enable diagnostics -h --help Show this help . ",
+    "url": "/seqfu2/utilities/fu-16Sregion.html",
+    
+    "relUrl": "/utilities/fu-16Sregion.html"
+  },"21": {
+    "doc": "fu-16Sregion",
+    "title": "Example output",
+    "content": "A tabular report, per read, is provided with the following columns . | Read name | Primary target region | Alignment score | Region of the reference sequence covered (coordinates) | . The main output is given as two columns: . | regions detected in the same read (e.g. “V3,V4”) | fraction of reads with the combination | . Example: . V3-V4 0.83 . This is only reported when the number of reads / total reads is above --min-fraction. When activating the --verbose switch, some more information will be printed to the standard error, but also a read by read output will be printed (read name, score, target region covered, detected regions and Pass/Fail): . M05517:39:000000000-CNNWR:1:1105:7840:22808 score:2955 alignment:340..805 regions:V3,V4 Pass M05517:39:000000000-CNNWR:1:1105:24801:23102 score:3480 alignment:340..805 regions:V3,V4 Pass M05517:39:000000000-CNNWR:1:1105:9773:23284 score:2835 alignment:340..805 regions:V3,V4 Pass M05517:39:000000000-CNNWR:1:1105:9791:23288 score:2835 alignment:340..805 regions:V3,V4 Pass M05517:39:000000000-CNNWR:1:1105:11642:23566 score:1650 alignment:NA regions: Fail M05517:39:000000000-CNNWR:1:1105:13198:23694 score:1535 alignment:NA regions: Fail M05517:39:000000000-CNNWR:1:1105:15837:23728 score:2240 alignment:340..641 regions:V3,V4 Pass M05517:39:000000000-CNNWR:1:1105:14501:23779 score:2225 alignment:340..641 regions:V3,V4 Pass . ",
+    "url": "/seqfu2/utilities/fu-16Sregion.html#example-output",
+    
+    "relUrl": "/utilities/fu-16Sregion.html#example-output"
+  },"22": {
+    "doc": "fu-16Sregion",
+    "title": "Example use with paired-reads",
+    "content": "To check paired-end reads, they can be processed independently or merged (if they overlap) before. SeqFu merge can be used for this purpose: . seqfu merge -1 read_R1.fq -2 read_R2.fq | fu-16region . ",
+    "url": "/seqfu2/utilities/fu-16Sregion.html#example-use-with-paired-reads",
+    
+    "relUrl": "/utilities/fu-16Sregion.html#example-use-with-paired-reads"
+  },"23": {
+    "doc": "fu-16Sregion",
+    "title": "Region names",
+    "content": "By default the following regions are used, but a new set can be fed in JSON format (each region should contain the start and end values as show in the example) . { \"V1\": { \"start\": 68, \"end\": 99 }, \"V2\": { \"start\": 136, \"end\": 242 }, \"V3\": { \"start\": 338, \"end\": 533 }, \"V4\": { \"start\": 576, \"end\": 682 }, \"V5\": { \"start\": 821, \"end\": 879 }, \"V6\": { \"start\": 970, \"end\": 1046 }, \"V7\": { \"start\": 1117, \"end\": 1294 }, \"V8\": { \"start\": 1435, \"end\": 1465 } } . ",
+    "url": "/seqfu2/utilities/fu-16Sregion.html#region-names",
+    
+    "relUrl": "/utilities/fu-16Sregion.html#region-names"
+  },"24": {
+    "doc": "fu-cov",
+    "title": "fu-cov",
+    "content": "A program to filter the output of assembly programs using the coverage information they print in the sequence names. Extract contig by sequence length and coverage, if provided in the sequence name. Usage: fu-cov [options] [inputfile ...] Arguments: [inputfile ...] Options: -h, --help -v, --verbose Print verbose messages -s, --sort Store contigs in memory, and sort them by descending coverage -c, --min-cov=MIN_COV Minimum coverage (default: 0.0) -l, --min-len=MIN_LEN Minimum length (default: 0) -x, --max-cov=MAX_COV Maximum coverage (default: 0.0) -y, --max-len=MAX_LEN Maximum length (default: 0) -t, --top=TOP Print the first TOP sequences (passing filters) when using --sort (default: 10) . ",
+    "url": "/seqfu2/utilities/fu-cov.html",
+    
+    "relUrl": "/utilities/fu-cov.html"
+  },"25": {
+    "doc": "fu-cov",
+    "title": "Input",
+    "content": "The FASTA output of an assembly program (currently tested with SPAdes, MegaHit, Unicycler, Shovill), as the length of the sequences is clearly checked from the FASTA file itself, while the coverage is found in the sequence description: . Example of contig name from Shovill: . &gt;contig00001 len=596929 cov=9.9 corr=0 origname=NODE_1_length_596929_cov_9.873201_pilon sw=shovill-spades/1.0.4 date=20181128 ACCCGGTAGAATACCGGACTGAGTATCAAAAAGCCGGTTAACTGAAACTGTCCAGGTTTTGGGGTTCAGTTCATGCCGCATCTTATCCGACCTTGTATTATCCCTCCAGTGCAGAGAAAATC ... ",
+    "url": "/seqfu2/utilities/fu-cov.html#input",
+    
+    "relUrl": "/utilities/fu-cov.html#input"
+  },"26": {
+    "doc": "fu-cov",
+    "title": "Output",
+    "content": "A set of filtered contigs in FASTA file. Will print to STDERR a summary like: . 1/1 sequences printed (1 with coverage info) from 1 files. Skipped: 0 too short, 0 too long, then 0 low coverage, 0 high coverage, . Average length: 180.00 bp, [180.0 - 180.0] Average coverage: 9.90X, [9.9-9.9] . ",
+    "url": "/seqfu2/utilities/fu-cov.html#output",
+    
+    "relUrl": "/utilities/fu-cov.html#output"
+  },"27": {
+    "doc": "fu-homocom",
+    "title": "fu-homocom",
+    "content": "Remove all the homopolymers from FASTA and FASTQ files. The output format is the same of the input. Usage: fu-homocompress [options] [&lt;fastq-file&gt;...] Other options: --pool-size INT Number of sequences to process per thread [default: 50] --max-threads INT Maxiumum number of threads to use [default: 4] -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/utilities/fu-homocomp.html",
+    
+    "relUrl": "/utilities/fu-homocomp.html"
+  },"28": {
+    "doc": "fu-homocom",
+    "title": "Example input and output",
+    "content": "@polya ACGTACACGTGACGAAAAAAAAAAAAAACGT + IIIIIIIIIIIIIII!!!!!!!!!!!!!III . will be printed as . @polya ACGTACACGTGACGACGT + IIIIIIIIIIIIIIIIII . ",
+    "url": "/seqfu2/utilities/fu-homocomp.html#example-input-and-output",
+    
+    "relUrl": "/utilities/fu-homocomp.html#example-input-and-output"
+  },"29": {
+    "doc": "fu-index",
+    "title": "fu-index",
+    "content": "Extracts the index (barcode) from Illumina demultiplexed files. Fastx utility A program to print the Illumina INDEX of a set of FASTQ files Usage: fu-index [options] &lt;FASTQ&gt;... Options: -m, --max-reads INT Evaluate INT number of reads, 0 for unlimited [default: 8000] -r, --min-ratio FLOAT Minimum ratio of matches of the top index [default: 0.90] -h, --header Add header to output --verbose Print verbose log --help Show help . ",
+    "url": "/seqfu2/utilities/fu-index.html",
+    
+    "relUrl": "/utilities/fu-index.html"
+  },"30": {
+    "doc": "fu-index",
+    "title": "Input files",
+    "content": "FASTQ files demultiplexed by CASAVA (Illumina). ",
+    "url": "/seqfu2/utilities/fu-index.html#input-files",
+    
+    "relUrl": "/utilities/fu-index.html#input-files"
+  },"31": {
+    "doc": "fu-index",
+    "title": "Example output",
+    "content": "A tabular output contains: . | filename | extracted tag | fraction of the top tag (accounts for errors) | PASS (“PASS” or “–”) if the top tags is &gt;= min-ratio | Instrument code (from 1.12) | Run number (from 1.12) | Flowcell ID (from 1.12) | . data/illumina_1.fq.gz TACGCTGC+CTATTAAG 1.00 PASS A00709 43 HYG25DSXX data/illumina_2.fq.gz TACGCTGC+CTATTAAG 1.00 PASS A00709 43 HYG25DSXX . ",
+    "url": "/seqfu2/utilities/fu-index.html#example-output",
+    
+    "relUrl": "/utilities/fu-index.html#example-output"
+  },"32": {
+    "doc": "fu-msa",
+    "title": "fu-msa",
+    "content": "Preliminary version . Interactive multiple sequence alignment viewer from the Command Line. Usage: full [options] &lt;MSAFILE&gt; Keys: Scroll Horizontally Left and Right arrow By 10 bases L, K By 100 bases ShiftL, ShiftK To the beginning 1 To middle parts 2..9 To the end 0 Scroll Vertically A, Up Arrow/ Z, Down Arrow Jump to top ShiftA, PageUp Jump to bottom ShiftZ, PageDown Rotate color scheme Tab Refresh screen F5 Resize seq labels -,+ Search / (seqname, \":INT\", \"#SEQ\") Quit Q, CtrlC Options: -m, --mouse Enable mouse -n, --norefresh Disable autorefresh -j, --jumpsize INT Jump size (big jump is 10X) [default: 10] Visualization settings: -i, --seqindex INT Start visualization at this sequence [default: 0] -p, --seqpos INT Start visualization at this nucleotide [default: 0] -w, --label-width INT Sequence label width [default: 20] -s, --setting-string STR Settings string (overrrides all other settings) is in the format Seq:{seqindex}:{seqpos}:{labelwidth} and is the return value of the program when it is closed. More documentation online at https://telatin.github.io/seqfu2/ . ",
+    "url": "/seqfu2/utilities/fu-msa.html",
+    
+    "relUrl": "/utilities/fu-msa.html"
+  },"33": {
+    "doc": "fu-msa",
+    "title": "Keyboard",
+    "content": "Horizontal scrolling . | :arrow_left:, :arrow_up: : scroll by one nucleotide | K, L: scroll left and right respectively, by 10 nucleotides | Shift + K, Shift + L: scroll left and right respectively, by 100 nucleotides | End: Move to sequence end | Home: Move to the beginning of the sequence | 1: Move to the first base | 2..9: Move to 20% .. 90% of the sequence | 0: Move to the last base | . Vertical scrolling . | A, Z and :arrow_up:, :arrow_down: : Move up and down by one sequence | Shift + A, Shift + Z: Move to top and move to bottom | . Search . | / Trigger search, then: . | Type the query | Hit Enter to submit or Esc to abort | . | The query can be: . | part of a sequence name | : followed by a sequence index (eg: :0 to go to the first sequence) | # followed by a sequence (eg: #ATTAC to jump to the position of the first occurrence of ATTAC) | . | . Visualization . | Space: toggle consensus sequence from “Consensus” (show bases identical across all the sequences) to “Majority” (show bases shared by 50% of the sequences or more) | Tab: toggle color scheme | -,+: Decrease and increase by one the sequence label width | F5, R: refresh | F6: toggle autorefresh on/off | H: toggle help screen (only major keys are reported) | . Mouse . | M: toggle mouse on/off | When mouse is on: . | Click in a nucleotide to set that position as first (scroll right) | Click to the sequence name area (left) to scroll left | . | . Resuming session . When pressing quit (Q) the program will print a configuration string like: Seq:0:6:20 that can be used to resume the session at the same position with: . fu-msa {input_file} --setting-string Seq:0:6:20 . The settings string is in the format Seq:{seqindex}:{seqpos}:{labelwidth} . Colors . | DNA: A (red), C (cyan), G (green), T (yellow) | Protein: “Lesk” scheme: . | Hydrophobic, green | Small non polar, yellow (should be orange) | Polar, magenta | Negative charge, red | Positive charge, cyan (should be blue) | . | . Screenshot . ",
+    "url": "/seqfu2/utilities/fu-msa.html#keyboard",
+    
+    "relUrl": "/utilities/fu-msa.html#keyboard"
+  },"34": {
+    "doc": "fu-multirelabel",
+    "title": "fu-multirelabel",
+    "content": "A program to rename sequences from multiple files (adding the filename, and or numerical postfix). Will fail if multiple sequence receive the same name. Usage: fu-multirelabel [options] FILE... Options: -b, --basename Prepend file basename to sequence -r, --rename NAME Replace original name with NAME -n, --numeric-postfix Add progressive number (reset at each new basename) -t, --total-postfix Add progressive number (without resetting at each new input file) -d, --split-basename CHAR Remove the final part of basename after CHAR [default: .] -s, --separator STRING Separator between prefix, name, suffix [default: _] --no-comments Strip out comments --comment-separator CHAR Separate comment from name with CHAR [default: TAB] . ",
+    "url": "/seqfu2/utilities/fu-multirelabel.html",
+    
+    "relUrl": "/utilities/fu-multirelabel.html"
+  },"35": {
+    "doc": "fu-multirelabel",
+    "title": "Description",
+    "content": "A list of files (can be specified with wild chars) that can contain sequences with the same name. The program allows to prepend the filename as prefix. ",
+    "url": "/seqfu2/utilities/fu-multirelabel.html#description",
+    
+    "relUrl": "/utilities/fu-multirelabel.html#description"
+  },"36": {
+    "doc": "fu-multirelabel",
+    "title": "Example usage",
+    "content": "fu-multirelabel -b *.fasta &gt; relabeled.fasta . ",
+    "url": "/seqfu2/utilities/fu-multirelabel.html#example-usage",
+    
+    "relUrl": "/utilities/fu-multirelabel.html#example-usage"
+  },"37": {
+    "doc": "fu-nanotags",
+    "title": "fu-nanotags",
+    "content": "Experimental utility. Feedback for this tool is welcome. Search for tags (one or more sequences) in long reads using Smith-Waterman alignment. The tag has to be at the beginning of the read (specifying the region to scan with --cut INT) or at the end (revserse complemented). If --cut=0 the search is in the full read. Usage: fu-nanotags [options] -q QUERY [&lt;fastq-file&gt;...] Options: -q, --query TAGSEQ Sequence string OR file with the sequence(s) to align against reads -s, --showaln Show graphical alignment -c, --cut INT Cut input reads at INT position [default: 300] -x, --disable-rev-comp Do not scan reverse complemented reads Alignment options: -i, --pct-id FLOAT Percentage of identity in the aligned region [default: 80.0] -m, --min-score INT Minimum alignment score (0 for auto) [default: 0] Smith-Waterman parameters: -M, --weight-match INT Match [default: 5] -X, --weight-mismatch INT Mismatch penalty [default: -3] -G, --weight-gap INT Gap penalty [default: -5] Other options: --pool-size INT Number of sequences/pairs to process per thread [default: 25] -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/utilities/fu-nanotags.html",
+    
+    "relUrl": "/utilities/fu-nanotags.html"
+  },"38": {
+    "doc": "fu-nanotags",
+    "title": "Output",
+    "content": "The program will print to the standard output the reasd containing the tag, under the specified alignment criteria. A comment will be added to the reads specifying which tag was found (e.g. tags=tag1;tag4). The program will print to the standard error the number of passing reads per file processed, and the grand total. Example: . tradis/fastq_1.fq 60.00% (18/30) sequences printed, of which 8 in reverse strand. tradis/fastq_2.fq.gz 53.75% (2150/4000) sequences printed, of which 949 in reverse strand. Total 53.80% (2168/4030) sequences printed, of which 957 in reverse strand. ",
+    "url": "/seqfu2/utilities/fu-nanotags.html#output",
+    
+    "relUrl": "/utilities/fu-nanotags.html#output"
+  },"39": {
+    "doc": "fu-nanotags",
+    "title": "Optimisation",
+    "content": "If the tag is 100 bp long and we expect to be at the very beginning (or end) of the read, it’s advisable to reduce the --cut INT parameter accordingly to speedup the alingment step (for example, to 110, to account for a small variation). The current version of the program is single threaded, but a multithreading application will be released. ",
+    "url": "/seqfu2/utilities/fu-nanotags.html#optimisation",
+    
+    "relUrl": "/utilities/fu-nanotags.html#optimisation"
+  },"40": {
+    "doc": "fu-nanotags",
+    "title": "Example",
+    "content": "fu-nanotags -q tag.fa fastq-reads.fq.gz &gt; passed.fq . To inspect the parameters, add --verbose --showaln, possibly redirecting the output to less -S for a preliminary inspection: . fu-nanotags -q tag.fa reads.fq.gz --verbose --showaln 2&gt;&amp;1 | less -S . A fraction of the output is like the following: . # a564e10b-c82e-4e59-98a4-fdc6f1b31acb:test-tag strand=-;score=167;pctid=94.57% &lt; AATGATA-TGCGACCACTGAGATCTACACCTCTCTATACACTC-TT-CCTACACGACGCTCTTCCGATCTTTCGTACGTGAGTTTAAATGTATTTGGCTAAGGTGTATGTAAACTTCCGACTTCAACTG &lt; ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| &lt; AATGATACGGCGACCACCGAGATCTACACCTCTCTATACACTCTTTCCCTACACGACGCTCTTCCGATC--TCGTACGTGAGTTTAAATGTATTTGGCTAAGGTGTATGTAAACTTCCGACTTCAACTG # 132518b1-1522-45ed-9a77-94a3c981ac20:test-tag strand=+;score=531;pctid=90.55% &gt; AATGATACGGCGACCACCGAGATCTACACTATCCCTCTACACTCTTTCCCTACACGACGCTCTTCCGATCTACGTACGTGAGTTTAAATGT-GTTAGCTAAGGTGTATAT-AGCTTCCGACTTCAGC &gt; |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||||||| &gt; AATGATACGGCGACCACCGAGATCTACAC-CTCTCTATACACTCTTTCCCTACACGACGCTCTTCCGATCT-CGTACGTGAGTTTAAATGTATTTGGCTAAGGTGTATGTAAACTTCCGACTTCAAC . ",
+    "url": "/seqfu2/utilities/fu-nanotags.html#example",
+    
+    "relUrl": "/utilities/fu-nanotags.html#example"
+  },"41": {
+    "doc": "fu-orf",
+    "title": "fu-orf",
+    "content": "Extraction of ORFs from raw reads datasets (and other sequence files). Open reading frames are defined as a stretch of aminoacids not interrupted by stop codons: this program does not perform any gene finding procedure and merely extracts ORFs (under the assumption that, running on raw reads, fragments are expected). A major update was introduced with version 1.8.4, with improved reporting (strand and reding frame in the output), improved tests and --scan-reverse option (previously enabled by default). fu-orf Extract ORFs from Paired-End reads. Usage: fu-orf [options] &lt;InputFile&gt; fu-orf [options] -1 File_R1.fq fu-orf [options] -1 File_R1.fq -2 File_R2.fq fu-orf --help | --codes Input files: -1, --R1 FILE First paired end file -2, --R2 FILE Second paired end file ORF Finding and Output options: -m, --min-size INT Minimum ORF size (aa) [default: 25] -p, --prefix STRING Rename reads using this prefix -r, --scan-reverse Also scan reverse complemented sequences -c, --code INT NCBI Genetic code to use [default: 1] -l, --min-read-len INT Minimum read length to process [default: 25] Paired-end optoins: -j, --join Attempt Paired-End joining --min-overlap INT Minimum PE overlap [default: 12] --max-overlap INT Maximum PE overlap [default: 200] --min-identity FLOAT Minimum sequence identity in overlap [default: 0.80] Other options: --codes Print NCBI genetic codes and exit --pool-size INT Size of the sequences array to be processed by each working thread [default: 250] --verbose Print verbose log --debug Print debug log --help Show help . ",
+    "url": "/seqfu2/utilities/fu-orf.html",
+    
+    "relUrl": "/utilities/fu-orf.html"
+  },"42": {
+    "doc": "fu-orf",
+    "title": "Example usage",
+    "content": "Single input file (FASTA or FASTQ): . fu-orf --min-size 500 data/orf.fa.gz . Paired-end Illumina reads: . fu-orf --min-size 29 -1 data/illumina_1.fq.gz -2 data/illumina_2.fq.gz . will produce a FASTA output reporting, as comment, the frame and the total ORFs printed for each sequence: . &gt;filt.1_1 frame=+0 tot=5 RNLIILKMDFFFENFALVGLLYGACQRLNSTKFYLMSTDYLIVKTFNNGSLGSRIDEERS &gt;filt.1_2 frame=+2 tot=5 WSFRGSKSRNKVSVGEPAEGSLKKFNNFENGFFF &gt;filt.1_3 frame=+2 tot=5 KLCFGRPSIWGLPEVKLNQILFNVNRLFNSQNFQQRISWFSHR &gt;filt.1_4 frame=-1 tot=5 NLVEFNLWQAPYRRPTKAKFSKKKSIFKIIKFL &gt;filt.1_5 frame=-2 tot=5 LLNNRLTLNKIWLSLTSGRPHIEGLPKQSFQKKNPFSKLLNFFNDPSAGSPTETLLRLLLPLNDQ &gt;filt.2_1 frame=+0 tot=5 TYNQFFINLSHQIITNSQNFQQRISWFSHRNA &gt;filt.2_2 frame=+1 tot=5 NKLALAVGPACRQRSKLTTNFLSTCHTRLLLIVKTFNNGSLGSRIETQ &gt;filt.2_3 frame=+2 tot=5 WSFRGSKSRNKVSVGEPAEGSLLICLIAPHVFFFETNLLWRWAQPAARGLNLQPIFYQLVTPDYY &gt;filt.2_4 frame=-1 tot=5 KIGCKFRPLAAGWAHRQSKFVSKKNTCGAIKQISNDPSAGSPTETLLRLLLPLNDQ &gt;filt.2_5 frame=-2 tot=5 QVDKKLVVSLDLWRQAGPTAKASLFQRKTHVVQLSKSVMILPQVHLRKPCYDFYFL . ",
+    "url": "/seqfu2/utilities/fu-orf.html#example-usage",
+    
+    "relUrl": "/utilities/fu-orf.html#example-usage"
+  },"43": {
+    "doc": "fu-orf",
+    "title": "Genetic codes",
+    "content": "Genetic codes can be changed using NCBI Genetic Codes. Type fu-orf --codes to print the following list. | 1: The Standard Code | 2: The Vertebrate Mitochondrial Code | 3: The Yeast Mitochondrial Code | 4: The Mold, Protozoan, and Coelenterate Mitochondrial Code and the Mycoplasma/Spiroplasma Code | 5: The Invertebrate Mitochondrial Code | 6: The Ciliate, Dasycladacean and Hexamita Nuclear Code | 9: The Echinoderm and Flatworm Mitochondrial Code | 10: The Euplotid Nuclear Code | 11: The Bacterial, Archaeal and Plant Plastid Code | 12: The Alternative Yeast Nuclear Code | 13: The Ascidian Mitochondrial Code | 14: The Alternative Flatworm Mitochondrial Code | 16: Chlorophycean Mitochondrial Code | 21: Trematode Mitochondrial Code | 22: Scenedesmus obliquus Mitochondrial Code | 23: Thraustochytrium Mitochondrial Code | 24: Rhabdopleuridae Mitochondrial Code | 25: Candidate Division SR1 and Gracilibacteria Code | 26: Pachysolen tannophilus Nuclear Code | 27: Karyorelict Nuclear Code | 28: Condylostoma Nuclear Code | 29: Mesodinium Nuclear Code | 30: Peritrich Nuclear Code | 31: Blastocrithidia Nuclear Code | 33: Cephalodiscidae Mitochondrial UAA-Tyr Code | . ",
+    "url": "/seqfu2/utilities/fu-orf.html#genetic-codes",
+    
+    "relUrl": "/utilities/fu-orf.html#genetic-codes"
+  },"44": {
+    "doc": "fu-pecheck",
+    "title": "fu-pecheck",
+    "content": "Preliminary version . A program to check the integrity of Paired End FASTQ files. usage: fu-pecheck [-h] [--for-tag FOR_TAG] [--rev-tag REV_TAG] [--verbose] [--version] DIR Validate FASTQ files positional arguments: DIR Input directory optional arguments: -h, --help show this help message and exit --for-tag FOR_TAG Tag to use for the forward reads output (default: _R1) --rev-tag REV_TAG Tag to use for the forward reads output (default: _R2) --verbose Verbose output --version show program's version number and exit . This script runs fu-secheck twice and compare the results, and will print a five column table with the following columns: . | Sample basename | Status (OK or ERR) | Number of reads or “None” if the file is corrupt | Name of the first read | Name of the last read | . ",
+    "url": "/seqfu2/scripts/fu-pecheck.html",
+    
+    "relUrl": "/scripts/fu-pecheck.html"
+  },"45": {
+    "doc": "fu-primers",
+    "title": "fu-primers",
+    "content": "A program to remove primers from the raw output (FASTQ) of amplicons, allowing IUPAC degenerate bases and checking for multiple occurrences (dimers/concatamers). Usage: fu-primers [options] -1 &lt;FOR&gt; [-2 &lt;REV&gt;] This program currently only supports paired-end Illumina reads. Options: -1 --first-pair &lt;FOR&gt; First sequence in pair -2 --second-pair &lt;REV&gt; Second sequence in pair (can be guessed) -f --primer-for FOR Sequence of the forward primer [default: CCTACGGGNGGCWGCAG] -r --primer-rev REV Sequence of the reverse primer [default: GGACTACHVGGGTATCTAATCC] -m --min-len INT Minimum sequence length after trimming [default: 50] --primer-thrs FLOAT Minimum amount of matches over total length [default: 0.8] --primer-mismatches INT Maximum number of missmatches allowed [default: 2] --primer-min-matches INT Minimum numer of matches required [default: 8] --primer-pos-margin INT Number of bases from the extremity of the sequence allowed [default: 2] --pattern-R1 &lt;tag-1&gt; Tag in first pairs filenames [default: auto] --pattern-R2 &lt;tag-2&gt; Tag in second pairs filenames [default: auto] -v --verbose Verbose output -h --help Show this help . ",
+    "url": "/seqfu2/utilities/fu-primers.html",
+    
+    "relUrl": "/utilities/fu-primers.html"
+  },"46": {
+    "doc": "fu-shred",
+    "title": "fu-shred",
+    "content": "Since 1.18 paired end support was enabled . A program to systematically shotgun a reference (i.e. this does not simulate a random shotgun library preparation, but produce reads of length L sliding over the reference chromosomes at a step S). This tool is to test the effect of read size alone on alignment and classification methods, and was introduced in SeqFu 1.4. Usage: fu-shred [options] [&lt;fastq-file&gt;...] Systematically produce a \"shotgun\" of input sequences. Can read from standard input. Options: -l, --length INT Segment length [default: 100] -s, --step INT Distance from one segment start to the following [default: 10] -q, --quality INT Quality (constant) for the segment, if -1 is provided will be printed in FASTA [default: 40] -r, --add-rc Print every other read in reverse complement -b, --basename Prepend the file basename to the read name --split-basename STRING Split the file basename at this character [default: .] --prefix-separator STRING Join the basename with the rest of the read name with this [default: _] -f, --frag-len INT Total fragment length [default: 500] -o, --out-prefix STR If specified, will run in paired end mode, and will output two files with this prefix, one for each end. If not specified, will output to STDOUT in single end mode. -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/utilities/fu-shred.html",
+    
+    "relUrl": "/utilities/fu-shred.html"
+  },"47": {
+    "doc": "fu-shred",
+    "title": "Input",
+    "content": "One or more FASTA or FASTQ files. By default will read from STDIN. ",
+    "url": "/seqfu2/utilities/fu-shred.html#input",
+    
+    "relUrl": "/utilities/fu-shred.html#input"
+  },"48": {
+    "doc": "fu-shred",
+    "title": "Parameters",
+    "content": "Main parameters: . | the desired sequence length with --length INT | the distance between the starting site of each read, with --step INT | the quality value of each base, with --quality INT (if you supply -1, the output will be in FASTA format) | . If processing multiple files, it can be convenient to prepend the file basename with --basename. The basename will be split at the first ., but this can be changed with --split-basename STR/CHAR. If a mix of forward and reverse reads is required, --add-rc will reverse complement every other read. If you want to test every read and its reverse complement, run the program without --add-rc and make a reverse complement of the whole dataset with seqfu rc. ",
+    "url": "/seqfu2/utilities/fu-shred.html#parameters",
+    
+    "relUrl": "/utilities/fu-shred.html#parameters"
+  },"49": {
+    "doc": "fu-shred",
+    "title": "Paired end mode",
+    "content": "If you specify --out-prefix STR, the program will run in paired end mode, and will output two files with this prefix, one for each end. The fist step is to generate a “read” as long as the fragment (--frag-len) and then the first bases (--read-len) will be used as the first read, and the last bases as the second read. The second read is reverse complemented . ",
+    "url": "/seqfu2/utilities/fu-shred.html#paired-end-mode",
+    
+    "relUrl": "/utilities/fu-shred.html#paired-end-mode"
+  },"50": {
+    "doc": "fu-shred",
+    "title": "Output",
+    "content": "The generated sequences will be printed to the standard output (STDOUT). Each read has a progressive name generated like this: . | file basename (if --basename is specified) | a string separator (if --basename is specified) | the chromosome name | a string separator | a progressive number | . @k141_1_1 GTCGGAGTCGTTTATCCGCAACATCCTGCTTGCACAGGAGTTTTATAAAAAGGAGTTCGGCATCAAGTCGAAGGATATGTTCCTGCCCGACTGCTTCGGA + IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII @k141_1_2 TCGGGCAGGAACATATCCTTCGACTTGATGCCGAACTCCTTTTTATAAAACTCCTGTGCAAGCAGGATGTTGCGGATAAACGACTCCGACGACGGCATGT + IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII @k141_1_3 AACGACCCGAACATGCCGTCGTCGGAGTCGTTTATCCGCAACATCCTGCTTGCACAGGAGTTTTATAAAAAGGAGTTCGGCATCAAGTCGAAGGATATGT + IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII @k141_1_4 CGACTTGATGCCGAACTCCTTTTTATAAAACTCCTGTGCAAGCAGGATGTTGCGGATAAACGACTCCGACGACGGCATGTTCGGGTCGTTGGCCTCGAAC + IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII @k141_1_5 CGGGGGCTTCGTTCGAGGCCAACGACCCGAACATGCCGTCGTCGGAGTCGTTTATCCGCAACATCCTGCTTGCACAGGAGTTTTATAAAAAGGAGTTCGG + IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII . ",
+    "url": "/seqfu2/utilities/fu-shred.html#output",
+    
+    "relUrl": "/utilities/fu-shred.html#output"
+  },"51": {
+    "doc": "fu-shred",
+    "title": "Shotgun simulation",
+    "content": "If you need to simulate a whole genome shotun, you will need alternative software like ART. ",
+    "url": "/seqfu2/utilities/fu-shred.html#shotgun-simulation",
+    
+    "relUrl": "/utilities/fu-shred.html#shotgun-simulation"
+  },"52": {
+    "doc": "fu-split",
+    "title": "fu-split",
+    "content": "Preliminary version . Split a FASTQ or FASTA files into multiple files, by: . | Number of desired output files (--num-files INT) | Number of (max) sequences per file (--num-seqs INT) | Number of (max) bases per file (--num-bases INT) | . An important component to configure the program is the “output file” string, see below. usage: fu-split [-h] -i INPUT [-I INPUT_REV] -o OUTPUT [--for-tag FOR_TAG] [--rev-tag REV_TAG] (-n NUM_FILES | -s NUM_SEQS | -b NUM_BASES) [--threads THREADS] [--number-char NUMBER_CHAR] [--compress] [--verbose] [--debug] [--version] Split FASTA/FASTQ files into multiple files optional arguments: -h, --help show this help message and exit -i INPUT, --input INPUT Input file -I INPUT_REV, --input-rev INPUT_REV Second input file (reverse pair) -o OUTPUT, --output OUTPUT Output file (add a stretch of 3+ zeroes to specify the progressive number), compression will be detected. Example: parz_0000.fq.gz --for-tag FOR_TAG Tag to use for the forward reads output (default: _R1 --rev-tag REV_TAG Tag to use for the forward reads output (default: _R2 -n NUM_FILES, --num-files NUM_FILES Number of desired files -s NUM_SEQS, --num-seqs NUM_SEQS Number of sequences per file -b NUM_BASES, --num-bases NUM_BASES Number of bases per file --version show program's version number and exit Other options: --threads THREADS Number of threads (-n only) [default: 8 --number-char NUMBER_CHAR Character used to represent the progressive number in output string [default: 0 --compress Force compression of the output files --verbose Verbose mode --debug Debug mode . ",
+    "url": "/seqfu2/scripts/fu-split.html",
+    
+    "relUrl": "/scripts/fu-split.html"
+  },"53": {
+    "doc": "fu-split",
+    "title": "Output file string",
+    "content": "The ideal way to use fu-split is to use the --output option to specify the output file format with this apprach: prefix, progressive number, suffix, where progressive number is a stretch of zeroes as long as you would like the progressive number (zeroes can be changed with --number-char). Example: . | --output parz_0000.fq.gz: forces output in FASTQ format, compressed with Gzip, with four digits of progressive number. | --output parz_000.fa: forces output in FASTA format, uncompressed, with three digits of progressive number. | --output parz: missing the progressive number part, this will be used as prefix, with a four digits progressive number (not recommended, behaviour can change in the future) | . ",
+    "url": "/seqfu2/scripts/fu-split.html#output-file-string",
+    
+    "relUrl": "/scripts/fu-split.html#output-file-string"
+  },"54": {
+    "doc": "fu-split",
+    "title": "Paired end",
+    "content": "Specify both --input and --input-rev to split a paired end FASTQ file. The output file will be differentiated with the --for-tag and --rev-tag options (default: _R1 and _R2). ",
+    "url": "/seqfu2/scripts/fu-split.html#paired-end",
+    
+    "relUrl": "/scripts/fu-split.html#paired-end"
+  },"55": {
+    "doc": "fu-split",
+    "title": "Binary",
+    "content": "Export $SEQFU_BIN to specify the path to SeqFu, otherwise will default to seqfu (as in $PATH). ",
+    "url": "/seqfu2/scripts/fu-split.html#binary",
+    
+    "relUrl": "/scripts/fu-split.html#binary"
+  },"56": {
+    "doc": "fu-split",
+    "title": "Splashscreen",
+    "content": ". ",
+    "url": "/seqfu2/scripts/fu-split.html#splashscreen",
+    
+    "relUrl": "/scripts/fu-split.html#splashscreen"
+  },"57": {
+    "doc": "fu-sw",
+    "title": "fu-sw",
+    "content": "Simple implementation of the Smith-Waterman alignment: . Usage: fu-sw [options] -q QUERY -t TARGET Options: -q --query &lt;FILE&gt; File with the sequence(s) to align against target -t --target &lt;FILE&gt; File with the target sequence(s) -i --id ID Align only against the sequence named `ID` in the target file -s --showaln Show graphical alignment Smith-Waterman options: --score-match INT Score for a match [default: 10] --score-mismatch INT Score for a mismatch [default: -5] --score-gap INT Score for a gap [default: -10] --min-score INT Minimum alignment score [default: 80] --pct-id FLOAT Minimum percentage of identity [default: 85] Other options: --pool-size INT Number of sequences/pairs to process per thread [default: 20] -v --verbose Verbose output -h --help Show this help . ",
+    "url": "/seqfu2/utilities/fu-sw.html",
+    
+    "relUrl": "/utilities/fu-sw.html"
+  },"58": {
+    "doc": "fu-sw",
+    "title": "Input files",
+    "content": "Input files can be in FASTA or FASTQ format, and both query and target can hold multiple sequences even if the common application is to have a single sequence in the target file. If the target file contains multiple sequences but only one is the intended target, the target can be specified with --id parameter. ",
+    "url": "/seqfu2/utilities/fu-sw.html#input-files",
+    
+    "relUrl": "/utilities/fu-sw.html#input-files"
+  },"59": {
+    "doc": "fu-sw",
+    "title": "Example output",
+    "content": "The output will print the alignment score and coordinates in a single line after QUERY and TARGET. If --showaln is specified, a graphical summary of the local alignment is provided. # QUERY: not_in_target ## TARGET: ecoli # QUERY: 16S_1_for_ins ## TARGET: ecoli Score: 406 (97.18%) Length: 69 Strand: + Query: 0-71 Target: 21-90 GCTCAGATTGAACGCTccGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGCAGCTTGCTGC |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| GCTCAGATTGAACGCT--GGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGCAGCTTGCTGC # QUERY: 16S_2_rev ## TARGET: ecoli Score: 312 (100.00%) Length: 52 Strand: - Query: 0-52 Target: 175-227 CGCATAATGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGG |||||||||||||||||||||||||||||||||||||||||||||||||||| CGCATAATGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGG . ",
+    "url": "/seqfu2/utilities/fu-sw.html#example-output",
+    
+    "relUrl": "/utilities/fu-sw.html#example-output"
+  },"60": {
+    "doc": "fu-sw",
+    "title": "Release note",
+    "content": "From 1.19.0 the algorithm has been rewritten using only standard libraries, while the initial implementation used the neo library for storing matrices. This resulted in a 2X speedup. ",
+    "url": "/seqfu2/utilities/fu-sw.html#release-note",
+    
+    "relUrl": "/utilities/fu-sw.html#release-note"
+  },"61": {
+    "doc": "fu-tabcheck",
+    "title": "fu-tabcheck",
+    "content": "An utility to parse CSV/TSV files to check that all the records have the same size. Multiline records are supported using double quotes as field delimiter. Gzipped files are also supported. fu-tabcheck A program inspect TSV and CSV files, that must contain more than 1 column. Double quotes are considered field delimiters, if present. Gzipped files are supported natively. Usage: fu-tabcheck [options] &lt;FILE&gt;... Options: -s --separator CHAR Character separating the values, 'tab' for tab and 'auto' to try tab or commas [default: auto] -c --comment CHAR Comment/Header char [default: #] --verbose Enable verbose mode . ",
+    "url": "/seqfu2/utilities/fu-tabcheck.html",
+    
+    "relUrl": "/utilities/fu-tabcheck.html"
+  },"62": {
+    "doc": "fu-tabcheck",
+    "title": "Output",
+    "content": "Tabular output has these columns: . | File name | Pass/Error | Columns number | Records number | Separator (when using auto both tabs and commas are tested) | . Example: . data/tab.txt.gz Pass 8 7 separator=&lt;tab&gt; data/tab.txt Pass 4 3 separator=&lt;tab&gt; data/tab-multi.tsv Pass 2 4 separator=&lt;tab&gt; data/table.csv Pass 3 3 separator=, data/table.tsv Pass 3 4 separator=&lt;tab&gt; data/table2.tsv Error data/tablegz.tsv.gz Pass 3 4 separator=&lt;tab&gt; . :bulb: Multiline records are supported using double quotes, like: . #ID Description R01 \"this is a cell with a tab inside!\" R02 \"this is a multi-line description\" R03 Last Record . ",
+    "url": "/seqfu2/utilities/fu-tabcheck.html#output",
+    
+    "relUrl": "/utilities/fu-tabcheck.html#output"
+  },"63": {
+    "doc": "fu-tabcheck",
+    "title": "Exit code",
+    "content": "A single file is not a valid table will lead to non-zero exit status. ",
+    "url": "/seqfu2/utilities/fu-tabcheck.html#exit-code",
+    
+    "relUrl": "/utilities/fu-tabcheck.html#exit-code"
+  },"64": {
+    "doc": "fu-virfilter",
+    "title": "fu-virfilter",
+    "content": "Filter sequences from VirFinder predictions CSV file. Usage: fu-virfilter [options] &lt;virfinder&gt; &lt;fasta&gt; Files: &lt;virfinder&gt; VirFinder output file (csv format) &lt;fasta-file&gt; FASTA file to filter Options: -p, --max-pvalue FLOAT Maximum p-value to keep [default: 0.05] -s, --min-score FLOAT Minimum score [default: 0.90] --min-len INT Minimum length [default: 100] --max-len INT Maximum length [default: 1000000] Other options: --sep CHAR Separator [default: ,] -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/utilities/fu-virfilter.html",
+    
+    "relUrl": "/utilities/fu-virfilter.html"
+  },"65": {
+    "doc": "fu-virfilter",
+    "title": "Example input and output",
+    "content": "Virfinder output: . \"\",\"name\",\"length\",\"score\",\"pvalue\" \"1\",\"k141_48132 flag=1 multi=2.0000 len=317\",317,0.805265057231112,0.003813306852036 \"2\",\"k141_58828 flag=1 multi=1.0000 len=302\",302,0.386511266211445,0.27648460774578 \"3\",\"k141_80217 flag=1 multi=2.0000 len=310\",310,0.245554967660862,0.424905660377358 . While the FASTA file is: . &gt;k141_74870 flag=1 multi=2.0000 len=369 AAAGGCGTGTGTGCCTTGAGCCTTAGACCATGTGAATTGTAAATCAGTGTATAGCCGGCGATACCGGTTTTCTTGTTCA TCGCACGGCAGAAGCCTCCATCTATCACAAACAGCTTGCCATTGGCCCTGACAGGGTTCTCTCCCTCTATTGCGTGAAC GGTGTATGTCCATTTATGATATGCGCATCATCATCATACAGCCCGAACTCGTGCAGTATCTGACAGCAGAAGCTCTTAT CGTAATACCTGCTGTAATATGGGTTAGAAGGCTCTTCCCACATGCTCTTGTCTGTAACATATTCCATCTCAAAGGTCTT AAGCCTTCTGCCGCACAGCGGTGATTTTTCTCCTCCCCACAAAAACCACATA &gt;k141_106952 flag=1 multi=2.0000 len=384 GCGGGCGTTACCCCGGAAGCGGCATGGAGGGCCTGGGAGAAACCGTCCCACAGGCTGCGGCTGCAGCGGCAGTCCGCGA GGGAGACCGGATACCAGCGGACCAGGGGGTCGGCCGCGACGCGCCGCCCGGTCCCGCCGGTGAGGATGCGCAGCCCCCC GGATTCTGCGGGCAGGCGGACCTCCAGATCTTCCGTGACCGGGGTCTGACAGGCCAGGACCGAGACCCATTCCTCCCCG CGGCGGAGCGCCACACGGCACTTTCCGCAGGTCCCATTCCCGCCGCAGGGGCTGTCCAGCCAGAGACCGGCCGCACGGC AGGCCTCCATCAGCGTGCTTCCCAGGGGGACGGAGCAGCGCACGTCCGCCGGGAGAAAGCGTACCTGT . ",
+    "url": "/seqfu2/utilities/fu-virfilter.html#example-input-and-output",
+    
+    "relUrl": "/utilities/fu-virfilter.html#example-input-and-output"
+  },"66": {
+    "doc": "seqfu grep",
+    "title": "seqfu grep",
+    "content": "grep is one of the core subprograms of SeqFu. It can be used to select sequences by their name, comments or sequence using IUPAC degenerate oligo as query. Usage: grep [options] [&lt;inputfile&gt; ...] Print sequences selected if they match patterns or contain oligonucleotides Options: -n, --name STRING String required in the sequence name -r, --regex PATTERN Pattern to be matched in sequence name -c, --comment Also search -n and -r in the comment -f, --full The string or pattern covers the whole name (mainly used without -c) -w, --word The string or pattern is a whole word (only effective with -c, as names do not contain spaces) -i, --ignore-case Ignore case when matching names (is already enabled with regexes) -o, --oligo IUPAC Oligonucleotide required in the sequence, using ambiguous bases and reverse complement -A, --append-pos Append matching positions to the sequence comment --max-mismatches INT Maximum mismatches allowed [default: 0] --min-matches INT Minimum number of matches [default: oligo-length] -v, --verbose Verbose output --help Show this help . ",
+    "url": "/seqfu2/tools/grep.html",
+    
+    "relUrl": "/tools/grep.html"
+  },"67": {
+    "doc": "seqfu grep",
+    "title": "Get sequences by name",
+    "content": "In a sequence the name, or id, is the string before the first white space character, while we define as comment all the rest: . &gt;Seq_Name_Here after the name or ID, everything else is the comment ATTACAAACAGTCGATCGTAGCTAGCTAGCTGATC . To extract all the sequences containing “Here” in the name: . seqfu grep -n Here file.fasta . If we also want to extend the search to comments we need to add the -c (or --comment) switch: . seqfu grep -c -n extend file.fasta . Finally, regular expressions are supported only enabling -r (or --regex): . seqfu grep -r -n Seq_N..._ file.fasta . ",
+    "url": "/seqfu2/tools/grep.html#get-sequences-by-name",
+    
+    "relUrl": "/tools/grep.html#get-sequences-by-name"
+  },"68": {
+    "doc": "seqfu grep",
+    "title": "Matching patterns in DNA sequences",
+    "content": "A simple text search (even with regular expressions) cannot be a handy way to identify matches in a DNA/RNA sequence. Using the -o (--oligo) parameter, we scan the sequence for matches of oligonucleotides supporting IUPAC degenerate bases, supporting reverse complement matches and partial matches. &gt;Example CAGATAAAA . if we scan for TTTT we will match the sequence, as it’s in the reverse complement strand: . seqfu -o TTTT file.fasta . We can also use IUPAC bases (N for any base, B for C, G or A…): . seqfu -o TTTTNT file.fasta . ",
+    "url": "/seqfu2/tools/grep.html#matching-patterns-in-dna-sequences",
+    
+    "relUrl": "/tools/grep.html#matching-patterns-in-dna-sequences"
+  },"69": {
+    "doc": "seqfu grep",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/grep.html#screenshot",
+    
+    "relUrl": "/tools/grep.html#screenshot"
+  },"70": {
+    "doc": "seqfu head",
+    "title": "seqfu head",
+    "content": "head is one of the core subprograms of SeqFu. It will print the first sequences of a FASTX file (like GNU head), but can be instructed to skip a number of sequences between each printed one. Usage: head [options] [&lt;inputfile&gt; ...] Select a number of sequences from the beginning of a file, allowing to select a fraction of the reads (for example to print 100 reads, selecting one every 10). Options: -n, --num NUM Print the first NUM sequences [default: 10] -k, --skip SKIP Print one sequence every SKIP [default: 0] -p, --prefix STRING Rename sequences with prefix + incremental number -s, --strip-comments Remove comments -b, --basename prepend basename to sequence name -v, --verbose Verbose output --quiet Don't print warnings --help Show this help Output: --fasta Force FASTA output --fastq Force FASTQ output --sep STRING Sequence name fields separator [default: _] -q, --fastq-qual INT FASTQ default quality [default: 33]``` . ",
+    "url": "/seqfu2/tools/head.html",
+    
+    "relUrl": "/tools/head.html"
+  },"71": {
+    "doc": "seqfu head",
+    "title": "Example",
+    "content": "By default the program prints the first 10 sequences of a file (the number can be changed with -n or --num). Sometimes to have a preview of a file we can add the --skip (or -k for short) parameter to take a sequence every N. The following examples shows the output of seqfu head -n 10, and seqfu head -n 5 -k 4): . ",
+    "url": "/seqfu2/tools/head.html#example",
+    
+    "relUrl": "/tools/head.html#example"
+  },"72": {
+    "doc": "seqfu head",
+    "title": "Input and output",
+    "content": "seqfu head takes as input one ore more FASTA/FASTQ files (or reads from the standard input if no filenames are provided, or - is added to the list). The output will be in the same format as the input, unless --fasta or --fastq are specified to force a different output. ",
+    "url": "/seqfu2/tools/head.html#input-and-output",
+    
+    "relUrl": "/tools/head.html#input-and-output"
+  },"73": {
+    "doc": "seqfu head",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/head.html#screenshot",
+    
+    "relUrl": "/tools/head.html#screenshot"
+  },"74": {
+    "doc": "version 1.3.6",
+    "title": "Release history",
+    "content": "version 1.15.0 . | New SeqFu check program to validate the integrity of FASTQ datasets | Bug fix in seqfu qual that was printing debug information in non-debug runs | . 1.15.3 . | Added SeqFu bases to evaluate the composition of FASTX files | . version 1.14.0 . | Seqfu grep will die if fed with non existing files (to ensure no wrong parameters were passed) | Seqfu grep will match oligos case insensitive by default | Addedd invert match -v to seqfu grep | Improved fu-tabcheck, notably added --inspect option to print columns info | fu-split now can use a different SeqFu than specified in path, setting $SEQFU_BIN or --bin option | fu-split version check fixed | :warning: Bugfix in seqfu tab: was not working with FASTA files | . version 1.13.0 . | seqfu cat now can skip a set of initial sequences (--skip-first INT) or start from a specific sequence (--jump-to) | Minor updates in the test suite, github actions (including rich_codex) and documentation updates | . 1.13.1 . | added fu-split (experimental) | . 1.13.2 . | added --print-last option to seqfu cat and seqfu heda | updated fu-split, with support for paired end reads, improved performance thanks to --print-last, new tests | . version 1.12.0 . | Expanded “fu-index”: also reports run infos, not only indexes | Minor bugfix | . version 1.11.0 . | Improved seqfu stats: added sorting option and JSON output, added GC content, improved test suite. | bugfix Seqfu tabulate -d (detabulate) was too stringent in requiring forward and reverse reads to have the same length 🤦 | . version 1.10.0 . | Added support for MetaPhage to seqfu metadata | Added –header to fu-tabcheck | Minor fixes | . version 1.9.3 . | bugfix: seqfu cat controls the length of operations (truncate, trim) | improved: seqfu cat improved renaming options (basename and strip-name will now add a progressive number automatically) | . version 1.9.2 . | Bugfix on Seqfu Detabulate | . version 1.9.1 . | Fixes #8 | This is a re-release finally with all the necessary commits | . version 1.9.0 . | seqfu grep now has -w (word) and -f (full) match options. default behaviour unchanged. | seqfu cat now has a filter for Ns (–max-ns INT) | seqfu cat now has a filter for the total expected errors (–max-ee FLOAT), and can report –add-ee and –add-initial-ee | Added header line in seqfu metadata when using “irida” formats | . version 1.8.6 . | Enabled seqfu rotate | . version 1.8.4 . | fu-orf . | Fixed bug in fu-orf to allow for single sequences | Introduced -r, --scan-reverse to include reverse complement in the ORF finder | fu-orf also prints frame in the sequence comment | . | Expanded test suite | . version 1.8.3 . | Markdown documentation improvements | Splashscreen for fu-virfilter fixed | Argument parser for fu-cov improved | Now seqfu --version and seqfu version will print the version number and exit | Added test for fu-cov | Added citation in main command and repository | . version 1.8.2 . | Added fu-virfilter to filter VirFinder results | Bugfix in seqfu cat --basename: the last update made it working only when prefix was also specified | . version 1.8.1 . | introduced fu-homocomp to compress homopolymers | . version 1.8.0 . | added seqfu list to extract sequences via a list | . version 1.7.2 . | seqfu grep supports for comments | . version 1.7.1 . | Bugfix release: seqfu cat with no parameters was stripping the reads name | . version 1.7.0 . | Default primer character for oligo matches in seqfu view was Unicode, now Ascii | Updated seqfu cat with improved sequence id renaming handling | Updated seqfu grep to report the oligo matches in the output as sequence comments | . version 1.6.3 . | Removed ambiguity on -q in seqfu head | Minor documentation updates | . version 1.6.0 . | Improved STDIN messages, that can be disabled by $SEQFU_QUIET=1 | Added --format irida in seqfu metadata (for IRIDA uploader) | Added --gc in seqfu qual: will print an additional column with the GC content | Minor improvements on seqfu cat | . version 1.5.4 . | Improved STDIN messages, that can be disabled by $SEQFU_QUIET=1 | Minor improvements on seqfu cat | . version 1.5.2 . | seqfu cat has new options to manipulate the sequence name (like --append STRING) and to add comments (like --add-len, --add-gc) | . version 1.5.0 . | seqfu count now multithreading and redesigned. The output format is identical but the order of the records is not protected (use seqfu count-legacy if needed) | seqfu cat can print a list of sequences matching the criteria (--list) | . version 1.4.0 . | Added fu-shred | Added --reverse-read to fu-nanotags | . ",
+    "url": "/seqfu2/releases/history.html#release-history",
+    
+    "relUrl": "/releases/history.html#release-history"
+  },"75": {
+    "doc": "version 1.3.6",
+    "title": "version 1.3.6",
+    "content": ". | Automatic release system | Documentation updates | Minor updates | . ",
+    "url": "/seqfu2/releases/history.html",
+    
+    "relUrl": "/releases/history.html"
+  },"76": {
+    "doc": "Home",
+    "title": "SeqFu",
+    "content": ". | :package: See the repository | :dvd: releases | . A general-purpose program to manipulate and parse information from FASTA/FASTQ files, supporting gzipped input files. Includes functions to interleave and de-interleave FASTQ files, to rename sequences and to count and print statistics on sequence lengths. SeqFu is available for Linux and MacOS. | A compiled program delivering high performance analyses | Supports FASTA/FASTQ files, also Gzip compressed | A growing collection of handy utilities, also for quick inspection of the datasets | UNIX like commands but specific for sequences like seqfu cat, seqfu head, seqfu tail, seqfu grep | Terminal friendly reports from seqfu stats or seqfu count… | . Can be easily installed via conda: . conda install -c conda-forge -c bioconda \"seqfu&gt;1.0\" . ",
+    "url": "/seqfu2/#seqfu",
+    
+    "relUrl": "/#seqfu"
+  },"77": {
+    "doc": "Home",
+    "title": "Citation",
+    "content": "Telatin A, Fariselli P, Birolo G. SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files. Bioengineering 2021, 8, 59. doi.org/10.3390/bioengineering8050059 . ",
+    "url": "/seqfu2/#citation",
+    
+    "relUrl": "/#citation"
+  },"78": {
+    "doc": "Home",
+    "title": "Home",
+    "content": ". ",
+    "url": "/seqfu2/",
+    
+    "relUrl": "/"
+  },"79": {
+    "doc": "Installation",
+    "title": "Installation",
+    "content": " ",
+    "url": "/seqfu2/installation",
+    
+    "relUrl": "/installation"
+  },"80": {
+    "doc": "Installation",
+    "title": "Install via Miniconda",
+    "content": "The recommended installation method is via BioConda, which is supported from both Linux and macOS. If you have conda installed (how to install it): . # Ensure a recent version will be installed: 0.x is a very old and unsupported tool conda install -c conda-forge -c bioconda \"seqfu&gt;1.10\" . More info on installing conda. :warning: It is possible to compile the program for Windows, but we cannot provide support for this platform at the moment. ",
+    "url": "/seqfu2/installation#install-via-miniconda",
+    
+    "relUrl": "/installation#install-via-miniconda"
+  },"81": {
+    "doc": "Installation",
+    "title": "Pre-compiled binaries",
+    "content": "Pre-compiled core binaries are distributed with the releases, as zip files containing all the tools, labeled as “Linux” and “Darwin” as they target Linux and macOS respectively. When possible, we recommend to install SeqFu via Miniconda (see above), as it provides the full set of tools. ",
+    "url": "/seqfu2/installation#pre-compiled-binaries",
+    
+    "relUrl": "/installation#pre-compiled-binaries"
+  },"82": {
+    "doc": "Installation",
+    "title": "Manual compilation",
+    "content": "Linux and macOS . 1) If nim is not installed, install it (see instructions). We suggest - when available - the choosenim method . 2) Clone the repository (git clone https://github.com/telatin/seqfu2) . 3) Compile with nimble build, that will download the required packages . 4) The binaries will be available in the ./bin directory . ",
+    "url": "/seqfu2/installation#manual-compilation",
+    
+    "relUrl": "/installation#manual-compilation"
+  },"83": {
+    "doc": "seqfu interleave",
+    "title": "seqfu interleave",
+    "content": "interleave (or ilv) is one of the core subprograms of SeqFu. It’s used to produce an interleaved FASTQ file from two separate files containing the forward and the reverse read of a paired-end fragment. ilv: interleave FASTQ files Usage: ilv [options] -1 &lt;forward-pair&gt; [-2 &lt;reverse-pair&gt;] -f --for-tag &lt;tag-1&gt; string identifying forward files [default: auto] -r --rev-tag &lt;tag-2&gt; string identifying forward files [default: auto] -o --output &lt;outputfile&gt; save file to &lt;out-file&gt; instead of STDOUT -c --check enable careful mode (check sequence names and numbers) -v --verbose print verbose output -s --strip-comments skip comments -p --prefix \"string\" rename sequences (append a progressive number) guessing second file: by default &lt;forward-pair&gt; is scanned for _R1. and substitute with _R2. if this fails, the patterns _1. and _2. are tested. example: ilv -1 file_R1.fq &gt; interleaved.fq . ",
+    "url": "/seqfu2/tools/interleave.html",
+    
+    "relUrl": "/tools/interleave.html"
+  },"84": {
+    "doc": "seqfu interleave",
+    "title": "What are interleaved files?",
+    "content": "Paired end sequences can be stored in two separate files (usually denoted with the _R1 and _R2 strings) or in a single sequence where each sequence pair is stored as two subsequent sequences. A simple example is depicted below: . ======================================================================= File_R1.fq File_R2.fq Interleaved.fq ======================================================================= @seq1 @seq1 @seq1 TTTCATTCTGACTGCAACG GGATTAAAAAAAGAGTGTC TTTCATTCTGACTGCAACG + + + IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII @seq2 @seq2 @seq1 GTGTGGATTAAAAAAAAAA TTTTTTTTTTTTTTTTTTT GGATTAAAAAAAGAGTGTC + + + IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII IIIIIIIIIIIIIIIIIII @seq3 @seq3 @seq2 AGAGTGTCTGATAGCA GATAGCAG GTGTGGATTAAAAAAAAAA + + + IIIIIIIIIIIIIIII IIIIIIII IIIIIIIIIIIIIIIIIII @seq2 TTTTTTTTTTTTTTTTTTT + IIIIIIIIIIIIIIIIIII @seq3 AGAGTGTCTGATAGCA + IIIIIIIIIIIIIIII @seq3 GATAGCAG + IIIIIIII . ",
+    "url": "/seqfu2/tools/interleave.html#what-are-interleaved-files",
+    
+    "relUrl": "/tools/interleave.html#what-are-interleaved-files"
+  },"85": {
+    "doc": "seqfu interleave",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/interleave.html#screenshot",
+    
+    "relUrl": "/tools/interleave.html#screenshot"
+  },"86": {
+    "doc": "Overview",
+    "title": "Overview",
+    "content": "SeqFu consists of core programs, accessible as subcommands, and a set of corollary utilities, having the prefix fu-. Type seqfu alone to list the core subprograms, and seqfu {command} --help to access the help of each specific subcommand. To simply print the version type seqfu version and to print the citation seqfu cite. ",
+    "url": "/seqfu2/intro",
+    
+    "relUrl": "/intro"
+  },"87": {
+    "doc": "Overview",
+    "title": "Basic operations: cat, head, tail, grep, rc",
+    "content": "These commands have been inspired by the common GNU commands, and all can read from the standard input. Their usage is quite intuitive, so here we highlight some special feature. seqfu cat can read mixed FASTA and FASTQ files, and be forced to output in either FASTA or FASTQ format. Some basic manipulations are bundled, like: . | Forcing FASTA or FASTQ output | Manipulating sequence name (prefix, suffix, prepend filename, remove comments…) | Add infos in the header (length, gc content, original name) | Filter by length (minimum length, maximum length, trim bases at the beginning or the end…) | … | . seqfu grep can be used to extract sequences by matching oligonucleotides, that would be scanned also in the reverse strand and allowing for mismatches or partial matches. The oligo can be in IUPAC alphabet with ambiguous bases (e.g. degenerate primers). seqfu head can skip a number of sequences (i. e. print the first N sequences taking one every M), to extract a small subset sampling deeper. The reverse complement function (seqfu rc) is unique in taking as input both files and sequences, and properly supports IUPAC degenerate bases. ",
+    "url": "/seqfu2/intro#basic-operations-cat-head-tail-grep-rc",
+    
+    "relUrl": "/intro#basic-operations-cat-head-tail-grep-rc"
+  },"88": {
+    "doc": "Overview",
+    "title": "Getting an idea: view, qual, stats, count",
+    "content": "seqfu view is only for interactive use, and can be used to have a visual feedback on the quality values and on the presence of oligonucleotides: . seqfu stats can print the total number of sequences, bases, average, N50, N75, N90 and AuN, minimum and maximum length of a dataset, both in TSV format and with a nicer console oriented output: . ┌────────────────────┬───────┬──────────┬───────┬─────┬─────┬─────┬────────┬─────┬─────┐ │ File │ #Seq │ Total bp │ Avg │ N50 │ N75 │ N90 │ auN │ Min │ Max │ ├────────────────────┼───────┼──────────┼───────┼─────┼─────┼─────┼────────┼─────┼─────┤ │ filt.fa.gz │ 78730 │ 24299931 │ 308.6 │ 316 │ 316 │ 220 │ 0.385 │ 180 │ 485 │ │ illumina_1.fq.gz │ 7 │ 630 │ 90.0 │ 90 │ 90 │ 90 │ 12.857 │ 90 │ 90 │ │ illumina_2.fq.gz │ 7 │ 630 │ 90.0 │ 90 │ 90 │ 90 │ 12.857 │ 90 │ 90 │ │ illumina_nocomm.fq │ 7 │ 630 │ 90.0 │ 90 │ 90 │ 90 │ 12.857 │ 90 │ 90 │ └────────────────────┴───────┴──────────┴───────┴─────┴─────┴─────┴────────┴─────┴─────┘ . ",
+    "url": "/seqfu2/intro#getting-an-idea-view-qual-stats-count",
+    
+    "relUrl": "/intro#getting-an-idea-view-qual-stats-count"
+  },"89": {
+    "doc": "Overview",
+    "title": "Managing datasets: interleave, deinterleave, lanes",
+    "content": "Very common tasks when dealing with Illumina Paired-End sequences are interleaving and deinterleaving the datasets. seqfu interleave and seqfu deinterleave can do that, with high speed and lower corruption risks. Multiple lanes can be quickly merged with seqfu lanes. ",
+    "url": "/seqfu2/intro#managing-datasets-interleave-deinterleave-lanes",
+    
+    "relUrl": "/intro#managing-datasets-interleave-deinterleave-lanes"
+  },"90": {
+    "doc": "Overview",
+    "title": "Sorting, dereplicating",
+    "content": "seqfu sort can sort sequences by length. seqfu derep can be used to dereplicate datasets, printing the number of identical sequences. In particular, this information can be used also from the input dataset, allowing to dereplicating a set of dereplicated files keeping trace of the number of sequences. ",
+    "url": "/seqfu2/intro#sorting-dereplicating",
+    
+    "relUrl": "/intro#sorting-dereplicating"
+  },"91": {
+    "doc": "seqfu lanes",
+    "title": "seqfu lanes",
+    "content": "This function was called `merge` in a pre-release. lanes is one of the core subprograms of SeqFu, that allows to quickly and easily merge Illumina lanes. Usage: lanes [options] -o &lt;outdir&gt; &lt;input_directory&gt; A program to merge Illumina lanes for a whole directory. Options: -o, --outdir DIR Output directory -e, --extension STR File extension [default: .fastq] -s, --file-separator STR Field separator in filenames [default: _] --comment-separator STR String separating sequence name and its comment [default: TAB] -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/tools/lanes.html",
+    
+    "relUrl": "/tools/lanes.html"
+  },"92": {
+    "doc": "seqfu lanes",
+    "title": "Input",
+    "content": "A directory containing files in the standard Illumina naming scheme, like: . ID1_S99_L001_R1_001.fastq.gz ID1_S99_L001_R2_001.fastq.gz ID1_S99_L002_R1_001.fastq.gz ID1_S99_L002_R2_001.fastq.gz ID1_S99_L003_R1_001.fastq.gz ID1_S99_L003_R2_001.fastq.gz ID1_S99_L004_R1_001.fastq.gz ID1_S99_L004_R2_001.fastq.gz ID2_S99_L001_R1_001.fastq.gz ID2_S99_L001_R2_001.fastq.gz ID2_S99_L002_R1_001.fastq.gz ID2_S99_L002_R2_001.fastq.gz ID2_S99_L003_R1_001.fastq.gz ID2_S99_L003_R2_001.fastq.gz ID2_S99_L004_R1_001.fastq.gz ID2_S99_L004_R2_001.fastq.gz ID3_S99_L001_R1_001.fastq.gz ID3_S99_L001_R2_001.fastq.gz ID3_S99_L002_R1_001.fastq.gz ID3_S99_L002_R2_001.fastq.gz ID3_S99_L003_R1_001.fastq.gz ID3_S99_L003_R2_001.fastq.gz ID3_S99_L004_R1_001.fastq.gz ID3_S99_L004_R2_001.fastq.gz . ",
+    "url": "/seqfu2/tools/lanes.html#input",
+    
+    "relUrl": "/tools/lanes.html#input"
+  },"93": {
+    "doc": "seqfu lanes",
+    "title": "Performance",
+    "content": "If compared with an efficient Bash implementation (as described here), SeqFu is &gt;10X faster. | Command | Mean [ms] | Min [ms] | Max [ms] | Relative | . | seqfu merge -o /tmp/ data/lane | 2.6 ± 0.9 | 1.6 | 10.4 | 1.00 | . | merge_lanes.sh data/lane/ | 31.8 ± 4.0 | 25.4 | 49.5 | 12.42 ± 4.46 | . The merge_lanes.sh script is as follows: . DIR=$PWD cd $1 ls *R1* | cut -d _ -f 1 | sort | uniq \\ | while read id; do \\ cat $id*R1*.fastq.gz &gt; $id.R1.fastq.gz; cat $id*R2*.fastq.gz &gt; $id.R2.fastq.gz; done cd $DIR/ rm $1/*.R{1,2}.* . and the test was performed against the /data/lane directory of SeqFu repository using the hyperfine program. ",
+    "url": "/seqfu2/tools/lanes.html#performance",
+    
+    "relUrl": "/tools/lanes.html#performance"
+  },"94": {
+    "doc": "seqfu list",
+    "title": "seqfu list",
+    "content": "Extract sequences from sequence files using a list of requested items. Introduced in SeqFu 1.8. Usage: list [options] &lt;LIST&gt; &lt;FASTQ&gt;... Print sequences that are present in a list file. Duplicated entries in the list will be ignored Other options: -c, --with-comments Include comments in the list file -p, --partial-match Allow partial matches (UNSUPPORTED) -m, --min-len INT Skip entries smaller than INT [default: 1] -v, --verbose Verbose output -r, --report Print report of found sequences --help Show this help . ",
+    "url": "/seqfu2/tools/list.html",
+    
+    "relUrl": "/tools/list.html"
+  },"95": {
+    "doc": "seqfu list",
+    "title": "Input",
+    "content": "The list file is a simple text file with sequence names, that can contain the comments and they can have a leading &gt; or @ characters (which would be discarded). By default, if comments are present in the list they are ignored and the match is only at the sequence name level, unless the --with-comments option is used. ",
+    "url": "/seqfu2/tools/list.html#input",
+    
+    "relUrl": "/tools/list.html#input"
+  },"96": {
+    "doc": "seqfu list",
+    "title": "Output",
+    "content": "The standard output is in the same format as the input files, either FASTA or FASTQ. With --report the full input list is printed with the total number of sequences printed. Example report: . # SEQUENCES REPORT # Sequence 'protein.1c;size=5372' found 1 times # Sequence 'protein.1d;size=5372' found 1 times # Sequence 'protein.missing' found 0 times # Sequence 'protein.1a;size=5372' found 1 times # Sequence 'protein.1f;size=5372' found 1 times # Sequence 'protein.notfound' found 0 times # Sequence 'protein.1b;size=5372' found 1 times Total sequences found: 5/7 . ",
+    "url": "/seqfu2/tools/list.html#output",
+    
+    "relUrl": "/tools/list.html#output"
+  },"97": {
+    "doc": "seqfu merge",
+    "title": "seqfu merge",
+    "content": "Function under development: APIs and default parameters are likely going to change. This is why you don't see it listed in the main screen of SeqFu (yet). A tool to naively merge paired end reads preserving the quality of the forward read. Usage: merge [options] -1 File_R1 Options: -1, --R1 FILE First paired-end file -2, --R2 FILE Second paired-end file, can be automatically inferred -i, --minid FLOAT Minimum identity [default: 0.80] -m, --minlen INT Minimum overlap [default: 20] --accepted-identity FLOAT Accept fusion when identity is above FLOAT [default: 0.96] -v, --verbose Print verbose messages -h, --help Show this help . ",
+    "url": "/seqfu2/tools/merge.html",
+    
+    "relUrl": "/tools/merge.html"
+  },"98": {
+    "doc": "seqfu merge",
+    "title": "Merging reads",
+    "content": "There are several tools to merge overlapping reads, and some are better than others. In particular if we use tools that correcly interpret the Phred quality scores, then tools like USEARCH and VSEARCH are correcly recalibrating the quality of the overlapping bases. Some tools, however, are expeting quality scores that are more likely produced by a sequencing tool. This experimental module of SeqFu joins the reads in a different way: takes the forward read as is, and extends it with the (reverse complemented) missing part taken from the R2. ",
+    "url": "/seqfu2/tools/merge.html#merging-reads",
+    
+    "relUrl": "/tools/merge.html#merging-reads"
+  },"99": {
+    "doc": "seqfu merge",
+    "title": "Potential uses",
+    "content": "This tool can be used to estimate the overlapping size or the “mergeability” of reads before using the tools of choice. For example: . seqfu merge -1 reads_R1.fq | seqfu head -n 200 | seqfu stats -n . ",
+    "url": "/seqfu2/tools/merge.html#potential-uses",
+    
+    "relUrl": "/tools/merge.html#potential-uses"
+  },"100": {
+    "doc": "seqfu merge",
+    "title": "Output",
+    "content": "The merged reads are printed to the standard output. Also this is somehow unusual compared with most mergin tools, but allows streaming which is a core feature in SeqFu tools. ",
+    "url": "/seqfu2/tools/merge.html#output",
+    
+    "relUrl": "/tools/merge.html#output"
+  },"101": {
+    "doc": "seqfu metadata",
+    "title": "seqfu metadata",
+    "content": "Given one (or more) directories containing sequencing reads, this tool produces a metadata file by extracting the ID from the filename and optionally adding file paths or read counts. ",
+    "url": "/seqfu2/tools/metadata.html",
+    
+    "relUrl": "/tools/metadata.html"
+  },"102": {
+    "doc": "seqfu metadata",
+    "title": "Usage",
+    "content": "Usage: metadata [options] [&lt;dir&gt;...] metadata formats Prepare mapping files from directory containing FASTQ files Options: -1, --for-tag STR String found in filename of forward reads [default: _R1] -2, --rev-tag STR String found in filename of forward reads [default: _R2] -s, --split STR Separator used in filename to identify the sample ID [default: _] --pos INT... Which part of the filename is the Sample ID [default: 1] -f, --format TYPE Output format: dadaist, irida, manifest,... list to list [default: manifest] -p, --add-path Add the reads absolute path as column -c, --counts Add the number of reads as a property column (experimental) -t, --threads INT Number of simultaneously opened files (legacy: ignored) --pe Enforce paired-end reads (not supported) --ont Long reads (Oxford Nanopore) [default: false] GLOBAL OPTIONS --abs Force absolute path --basename Use basename instead of full path --force-tsv Force '\\t' separator, otherwise selected by the format --force-csv Force ',' separator, otherwise selected by the format -R, --rand-meta INT Add a random metadata column with INT categories FORMAT SPECIFIC OPTIONS -P, --project INT Project ID (only for irida) --meta-split STR Separator in the SampleID to extract metadata, used in MetaPhage [default: _] --meta-part INT Which part of the SampleID to extract metadata, used in MetaPhage [default: 1] --meta-default STR Default value for metadata, used in MetaPhage [default: Cond] -v, --verbose Verbose output --debug Debug output -h, --help Show this help . ",
+    "url": "/seqfu2/tools/metadata.html#usage",
+    
+    "relUrl": "/tools/metadata.html#usage"
+  },"103": {
+    "doc": "seqfu metadata",
+    "title": "Output formats",
+    "content": "SeqFu metadata now supports the following output formats: . | manifest: Used as import manifest for Qiime2 artifacts. | qiime1: Forward-compatible Qiime1 mapping file. | qiime2: Qiime2 metadata file. | dadaist: Dadaist2 compatible metadata. | lotus: Lotus mapping file (tested with Lotus1). | irida: IRIDA uploader sample sheet. Requires -P PROJECTID. | metaphage: MetaPhage metadata file. Use --meta-split, --meta-part, and --meta-default to customize a Treatment column. | ampliseq: nf-core/ampliseq metadata file. | rnaseq: nf-core/rnaseq metadata file. | bactopia: Bactopia FOFN (File of File Names) file. | mag: nf-core/mag metadata file. | . ",
+    "url": "/seqfu2/tools/metadata.html#output-formats",
+    
+    "relUrl": "/tools/metadata.html#output-formats"
+  },"104": {
+    "doc": "seqfu metadata",
+    "title": "New Features",
+    "content": ". | Support for --format bactopia to generate Bactopia FOFN files. | Added --ont option for long reads (Oxford Nanopore Technology). | Enhanced support for various bioinformatics pipelines (ampliseq, rnaseq, mag). | . ",
+    "url": "/seqfu2/tools/metadata.html#new-features",
+    
+    "relUrl": "/tools/metadata.html#new-features"
+  },"105": {
+    "doc": "seqfu metadata",
+    "title": "Examples",
+    "content": "Manifest (default) . seqfu metadata ./MiSeq_SOP/ . Output: . sample-id forward-absolute-filepath reverse-absolute-filepath F3D0 /Users/telatin/MiSeq_SOP/F3D0_S188_L001_R1_001.fastq.gz /Users/telatin/MiSeq_SOP/F3D0_S188_L001_R2_001.fastq.gz F3D1 /Users/telatin/MiSeq_SOP/F3D1_S189_L001_R1_001.fastq.gz /Users/telatin/MiSeq_SOP/F3D1_S189_L001_R2_001.fastq.gz ... Qiime1 mapping file . seqfu metadata MiSeq_SOP -f qiime1 --add-path --counts . Output: . #SampleID Counts Paths F3D0 7793 F3D0_S188_L001_R1_001.fastq.gz,F3D0_S188_L001_R2_001.fastq.gz F3D1 5869 F3D1_S189_L001_R1_001.fastq.gz,F3D1_S189_L001_R2_001.fastq.gz ... IRIDA uploader . seqfu metadata -f irida -P 123 data/pe/ . Output: . Sample_Name,Project_ID,File_Forward,File_Reverse sample1,123,sample1_R1.fq.gz,sample1_R2.fq.gz sample2,123,sample2_R1.fq.gz,sample2_R2.fq.gz . Bactopia FOFN . seqfu metadata -f bactopia data/pe/ . For ONT data, add --ont . Output: . sample runtype r1 r2 sample1 paired-end /path/to/data/pe/sample1_R1.fq.gz /path/to/data/pe/sample1_R2.fq.gz sample2 paired-end /path/to/data/pe/sample2_R1.fq.gz /path/to/data/pe/sample2_R2.fq.gz . ",
+    "url": "/seqfu2/tools/metadata.html#examples",
+    
+    "relUrl": "/tools/metadata.html#examples"
+  },"106": {
+    "doc": "seqfu metadata",
+    "title": "Notes",
+    "content": ". | Use --add-path to include full file paths in the output (when supported by the format). | The --counts option adds read counts to the output (experimental feature, not supported by all formats). | Format-specific options (like --project for IRIDA) are required for certain output types. | Use --verbose for detailed processing information and --debug for troubleshooting. | . For more information on each format and its specific options, please refer to the respective tool’s documentation. ",
+    "url": "/seqfu2/tools/metadata.html#notes",
+    
+    "relUrl": "/tools/metadata.html#notes"
+  },"107": {
+    "doc": "About",
+    "title": "About SeqFu",
+    "content": " ",
+    "url": "/seqfu2/about#about-seqfu",
+    
+    "relUrl": "/about#about-seqfu"
+  },"108": {
+    "doc": "About",
+    "title": "Citing",
+    "content": "Telatin A, Fariselli P, Birolo G. SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files. Bioengineering 2021, 8, 59. https://doi.org/10.3390/bioengineering8050059 . ",
+    "url": "/seqfu2/about#citing",
+    
+    "relUrl": "/about#citing"
+  },"109": {
+    "doc": "About",
+    "title": "Why",
+    "content": "There are several tools for the analysis of FASTQ/FASTA files. My personal choice has been (and is) SeqKit, a general purpose toolkit. As many other bioinformaticians, I found myself coding small ad hoc scripts, for example: . | A tool to extract the index from Illumina FASTQ files (taking the most common occurrence from the first 1000 reads) | A tool to extract contigs using a list from a predictor | Scripts to interleave/deinterleave FASTQ files | . The problem was distributing a very small script to users lacking the library I was using (like the excellent pyfastx or our FASTX::Reader). The possibility to distribute self-contained binaries was an option that was both boosting the performance of the program, and solving the dependency hell for minor applications. This led to the start of the project. ",
+    "url": "/seqfu2/about#why",
+    
+    "relUrl": "/about#why"
+  },"110": {
+    "doc": "About",
+    "title": "How",
+    "content": "The main parsing library is klib.nim by Heng Li (lh3/biofast), that provides good performances. For some utilities the readfq library has been used (andreas-wilm/nimreadfq). This is based on the C version of Heng Li’s parsed, wrapped in an object oriented module. ",
+    "url": "/seqfu2/about#how",
+    
+    "relUrl": "/about#how"
+  },"111": {
+    "doc": "About",
+    "title": "About the name",
+    "content": "The name of the program was modeled after “ScriptFu”, a set of macros built in the image manipulation GIMP. Apparently, in the US this might sound offensive. I love it that these guys got away with creating a tool called &#39;seqfu&#39;, and even put it in the title of their paper (https://t.co/dCCUStKTEB). Did the editors/reviewers realize what this word sounds like in English? 😉 h/t @telatin https://t.co/fHvOxsKXKx . &mdash; Steven Salzberg (@StevenSalzberg1) September 19, 2021 . So we after a consultation with Microsoft (and thanks to their previous experience with Minesweep), offer a tool to rename the program to SeqFlower. The renaming script is called flower.sh in the src directory. ",
+    "url": "/seqfu2/about#about-the-name",
+    
+    "relUrl": "/about#about-the-name"
+  },"112": {
+    "doc": "About",
+    "title": "Developer’s details",
+    "content": "Perl module . A Perl version of the parser is available both from MetaCPAN and from Bioconda: . conda install -c bioconda perl-fastx-reader . Templates . The repository contains some templates to quickly write FASTX parser-based applications (in Nim or in Perl). :package: seqfu2/templates . ",
+    "url": "/seqfu2/about#developers-details",
+    
+    "relUrl": "/about#developers-details"
+  },"113": {
+    "doc": "About",
+    "title": "Outreach",
+    "content": ". | Slides | [Slides, PDF)(http://seqfu.it/slides.pdf) | . ",
+    "url": "/seqfu2/about#outreach",
+    
+    "relUrl": "/about#outreach"
+  },"114": {
+    "doc": "About",
+    "title": "About",
+    "content": " ",
+    "url": "/seqfu2/about",
+    
+    "relUrl": "/about"
+  },"115": {
+    "doc": "seqfu qual",
+    "title": "seqfu qual",
+    "content": "qual allows to detect the range of qualities of a FASTQ file, returning the possible encodings. Can be used to detect the last qualified position (). Usage: qual [options] [&lt;FASTQ&gt;...] Quickly check the quality of input files returning the detected encoding and the profile of quality scores. To read from STDIN, use - as filename. -m, --max INT Check the first INT reads [default: 5000] -l, --maxlen INT Maximum read length [default: 1000] -k, --skip INT Print one sequence every INT [default: 1] Qualified position: -w, --wnd INT Sliding window size [default: 4] -q, --wnd-qual FLOAT Minimum quality in the sliding window [default: 30.0] -z, --min-qual FLOAT Stop the sliding windows when quality is below [default: 18.0] Additional output: --gc Print GC content as extra column -p, --profile Quality profile per position (will comment the summary lines) -c, --colorbars Print graphical average quality profile Other options: -v, --verbose Verbose output -O, --offset INT Quality encoding offset [default: 33] --help Show this help . ",
+    "url": "/seqfu2/tools/qual.html",
+    
+    "relUrl": "/tools/qual.html"
+  },"116": {
+    "doc": "seqfu qual",
+    "title": "Example",
+    "content": "Check if a set of files is likely in Illumina 1.8 encoding: . seqfu qual data/primers/* data/primers/16S_R1.fq.gz 7.0 38.0 Sanger;Illumina-1.8; 33.42+/-8.47 249 data/primers/16S_R2.fq.gz 2.0 38.0 Sanger;Illumina-1.8; 31.96+/-9.53 205 data/primers/16Snano_R1.fq.gz 7.0 38.0 Sanger;Illumina-1.8; 33.37+/-8.63 246 data/primers/16Snano_R2.fq.gz 2.0 38.0 Sanger;Illumina-1.8; 32.05+/-9.54 220 data/primers/art_R1.fq.gz 40.0 40.0 Illumina-1.3;Sanger;Illumina-1.5;Solexa;Illumina-1.8; 40.00+/-0.00 95 data/primers/art_R2.fq.gz 40.0 40.0 Illumina-1.3;Sanger;Illumina-1.5;Solexa;Illumina-1.8; 40.00+/-0.00 93 . The artifical datasets (art*) were designed to be compatible with most encodings, while the 16S* files are real Illumina 1.8 sequences. ",
+    "url": "/seqfu2/tools/qual.html#example",
+    
+    "relUrl": "/tools/qual.html#example"
+  },"117": {
+    "doc": "seqfu qual",
+    "title": "Output",
+    "content": "For each file a tab separated record is printed: . | Filename | Minimum quality value | Maximum quality value | Possible encoding (semicolon separated list) | Mean, StDev of the quality value | Last qualified position | GC content (5 decimal positions) if enabled via --gc | . ",
+    "url": "/seqfu2/tools/qual.html#output",
+    
+    "relUrl": "/tools/qual.html#output"
+  },"118": {
+    "doc": "seqfu qual",
+    "title": "Per base statistics",
+    "content": "With the --profile option tabular overview of the quality scores per nucleotide position of the read is printed: . #data/primers/16Snano_R1.fq.gz 40.0 71.0 Sanger;Illumina-1.8; 66.37+/-8.63 #Pos Min Max Mean StDev Skewness 0 27.0 34.0 33.95 0.50 -12.36 1 27.0 34.0 33.97 0.46 -14.78 2 11.0 34.0 33.73 2.28 -9.08 3 23.0 34.0 33.92 0.76 -13.09 4 31.0 34.0 33.99 0.20 -15.20 5 28.0 38.0 37.76 0.86 -7.20 6 10.0 38.0 36.26 3.98 -4.89 ... 298 7.0 37.0 26.34 10.34 -0.58 299 7.0 37.0 25.62 11.23 -0.55 300 7.0 37.0 21.29 9.26 -0.09 . ",
+    "url": "/seqfu2/tools/qual.html#per-base-statistics",
+    
+    "relUrl": "/tools/qual.html#per-base-statistics"
+  },"119": {
+    "doc": "seqfu qual",
+    "title": "Graphical summary",
+    "content": "With the --colorbar option a graphical (Unicode) colored histogram of the average quality per base position is printed after each file. ",
+    "url": "/seqfu2/tools/qual.html#graphical-summary",
+    
+    "relUrl": "/tools/qual.html#graphical-summary"
+  },"120": {
+    "doc": "seqfu qual",
+    "title": "Use with DADA2",
+    "content": "The last column of the tabular report (last qualified position), can be used to automatically detect the truncating position when using DADA2. Dadaist uses SeqFu to automatically detect the qualified region. ",
+    "url": "/seqfu2/tools/qual.html#use-with-dada2",
+    
+    "relUrl": "/tools/qual.html#use-with-dada2"
+  },"121": {
+    "doc": "seqfu rc",
+    "title": "seqfu rc",
+    "content": "rc is one of the core subprograms of SeqFu, that allows to print the reverse complement of sequences, either from input files or provided as strings. IUPAC DNA characters allowed. Usage: rc [options] [&lt;strings-or-files&gt;...] Print the reverse complementary of sequences in files or sequences given as parameters Options: -s, --seq-name NAME Sequence name if coming as string [default: string] --strip-comments Remove sequence comments -v, --verbose Verbose output --help Show this help . ",
+    "url": "/seqfu2/tools/rc.html",
+    
+    "relUrl": "/tools/rc.html"
+  },"122": {
+    "doc": "seqfu rc",
+    "title": "Reverse complement strings",
+    "content": "To print the reverse complement of sequence, for example of universal primers with degenerate bases: . seqfu rc CCTACGGGNGGCWGCAG GGACTACHVGGGTATCTAATCC . will produce: . &gt;string_1 CTGCWGCCNCCCGTAGG &gt;string_2 GGATTAGATACCCBDGTAGTCC . Note: if a single sequence (string) is provided, the output is not in FASTA format but a plain string. This makes easier a programmatic use like: . removePrimersScript.sh --for $FOR --rev $(seqfu rc $REV) . ",
+    "url": "/seqfu2/tools/rc.html#reverse-complement-strings",
+    
+    "relUrl": "/tools/rc.html#reverse-complement-strings"
+  },"123": {
+    "doc": "seqfu rc",
+    "title": "Reverse commplement files",
+    "content": "When supplying input files, the whole file will be complemented. If the file is in FASTQ format the quality will be reversed as well. The program can process multiple files. seqfu rc data/test.fasta . will produce: . &gt;SEQ1_BamHI-EcoRI ACGTGTACCAGCTACGATCGTGTGTAGCTAGCTCGTCAGCTAGCTACGTCGATCACGTACGCTGT &gt;Seq2 with comm GTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGT &gt;Seq3 GGGGGGGGGGGGGGGGGGGGG . ",
+    "url": "/seqfu2/tools/rc.html#reverse-commplement-files",
+    
+    "relUrl": "/tools/rc.html#reverse-commplement-files"
+  },"124": {
+    "doc": "Home",
+    "title": "SeqFu",
+    "content": ". | :package: See the repository | :dvd: releases | . A general-purpose program to manipulate and parse information from FASTA/FASTQ files, supporting gzipped input files. Includes functions to interleave and de-interleave FASTQ files, to rename sequences and to count and print statistics on sequence lengths. SeqFu is available for Linux and MacOS. | A compiled program delivering high performance analyses | Supports FASTA/FASTQ files, also Gzip compressed | A growing collection of handy utilities, also for quick inspection of the datasets | UNIX like commands but specific for sequences like seqfu cat, seqfu head, seqfu tail, seqfu grep | Terminal friendly reports from seqfu stats or seqfu count… | . Can be easily installed via conda: . conda install -c conda-forge -c bioconda \"seqfu&gt;1.0\" . ",
+    "url": "/seqfu2/readme.html#seqfu",
+    
+    "relUrl": "/readme.html#seqfu"
+  },"125": {
+    "doc": "Home",
+    "title": "Citation",
+    "content": "Telatin A, Fariselli P, Birolo G. SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files. Bioengineering 2021, 8, 59. doi.org/10.3390/bioengineering8050059 . ",
+    "url": "/seqfu2/readme.html#citation",
+    
+    "relUrl": "/readme.html#citation"
+  },"126": {
+    "doc": "Home",
+    "title": "Home",
+    "content": ". ",
+    "url": "/seqfu2/readme.html",
+    
+    "relUrl": "/readme.html"
+  },"127": {
+    "doc": "seqfu rotate",
+    "title": "seqfu rotate",
+    "content": "Rotate a sequence setting a new starting position, using a new position or an oligonucleotide. Introduced with SeqFu 1.8.6. sage: fu-rotate [options] -i POS [&lt;fastq-file&gt;...] fu-rotate [options] -m STR [&lt;fastq-file&gt;...] Rotate the sequences of one or more sequence files using coordinates or motifs. Position based: -i, --start-pos POS Restart from base POS, where 1 is the first base [default: 1] Motif based: -m, --motif STR Rotate sequences using motif STR as the new start, where STR is a string of bases -s, --skip-unmached If a motif is provided, skip sequences that do not match the motif -r, --revcomp Also scan for reverse complemented motif Other options: -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/tools/rotate.html",
+    
+    "relUrl": "/tools/rotate.html"
+  },"128": {
+    "doc": "seqfu rotate",
+    "title": "Examples",
+    "content": "Given an input file with a single sequence: . &gt;polyA ACACGTACTACTGAAAAAAAAAACTGCTACTA . Rotate by new position . seqfu rotate -i 14 data/homopolymer.fa . Output: . &gt;polyA AAAAAAAAAACTGCTACTAACACGTACTACTG . Rotate by oligonucleotide . :warning: rotation by oligo will only produce an output if the match is unique . seqfu rotate -m AAAAAAAAAA data/homopolymer.fa . Output: . &gt;polyA AAAAAAAAAACTGCTACTAACACGTACTACTG . Rotate by oligonucleotide (also in reverse) . seqfu rotate -r -m GTTTTTTTTTT data/homopolymer.fa . Output: . &gt;polyA GTTTTTTTTTTCAGTAGTACGTGTTAGTAGCA . ",
+    "url": "/seqfu2/tools/rotate.html#examples",
+    
+    "relUrl": "/tools/rotate.html#examples"
+  },"129": {
+    "doc": "seqfu rotate",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/rotate.html#screenshot",
+    
+    "relUrl": "/tools/rotate.html#screenshot"
+  },"130": {
+    "doc": "seqfu sort",
+    "title": "seqfu sort",
+    "content": "sort is one of the core subprograms of SeqFu, that allows sorting a FASTA/FASTQ file by sequence size. Usage: sort [options] [&lt;inputfile&gt; ...] Sort sequences by size printing only unique sequences Options: -p, --prefix STRING Sequence prefix -s, --strip-comments Remove sequence comments --asc Ascending order -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/tools/sort.html",
+    
+    "relUrl": "/tools/sort.html"
+  },"131": {
+    "doc": "seqfu sort",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/sort.html#screenshot",
+    
+    "relUrl": "/tools/sort.html#screenshot"
+  },"132": {
+    "doc": "seqfu stats",
+    "title": "seqfu stats",
+    "content": "stats is one of the core subprograms of SeqFu. Version prior to v1.22.1 were calculatin auN incorrectly . Usage: stats [options] [&lt;inputfile&gt; ...] Options: -a, --abs-path Print absolute paths -b, --basename Print only filenames -n, --nice Print nice terminal table -j, --json Print json (EXPERIMENTAL) -s, --sort-by KEY Sort by KEY from: filename, counts, n50, tot, avg, min, max descending for values, ascending for filenames [default: none] -r, --reverse Reverse sort order -t, --thousands Add thousands separator (only tabbed/nice output) --csv Separate output by commas instead of tabs --gc Also print %GC --multiqc FILE Saves a MultiQC report to FILE (suggested: name_mqc.txt) --precision INT Number of decimal places to round to [default: 2] --noheader Do not print header -v, --verbose Verbose output -h, --help Show this help . Sorting . Sorting added in SeqFu 1.11. To sort by filename (ascending alphabetical order) add --sort filename. Numerical values are sorted from the largest (descending), supported values are: . | n50, n75 or N90 | count or counts (number of reads) | sum or tot (total bases) | min or minimum (minimum length) | max or maximum (maximum length) | avg or mean (average length) | aun (area under the Nx curve) | . NOTE Specifying an invalid key will result in unsorted results with a warning, but in future releases this might throw an error. Example output . Output is a TSV text with three columns (or CSV using --csv): . File,#Seq,Sum,Avg,N50,N75,N90,Min,Max data/filt.fa.gz,78730,24299931,308.6,316,316,220,180,485 . Screen friendly output . When using -n (--nice) output: . seqfu stats data/filt.fa.gz -n ┌─────────────────┬───────┬──────────┬───────┬─────┬─────┬─────┬───────┬─────┬─────┐ │ File │ #Seq │ Total bp │ Avg │ N50 │ N75 │ N90 │ auN │ Min │ Max │ ├─────────────────┼───────┼──────────┼───────┼─────┼─────┼─────┼───────┼─────┼─────┤ │ data/filt.fa.gz │ 78730 │ 24299931 │ 308.6 │ 316 │ 316 │ 220 │ 0.385 │ 180 │ 485 │ └─────────────────┴───────┴──────────┴───────┴─────┴─────┴─────┴───────┴─────┴─────┘ . ",
+    "url": "/seqfu2/tools/stats.html",
+    
+    "relUrl": "/tools/stats.html"
+  },"133": {
+    "doc": "seqfu stats",
+    "title": "MultiQC output",
+    "content": "Using the --multiqc OUTPUTFILE option it’s possible to save a MultiQC compatible file (we recommend to use the projectname_mqc.tsv filename format). After coolecting all the MultiQC files in a directory, using multiqc -f . will generate the MultiQC report. MultiQC itself can be installed via Bioconda with conda install -y -c bioconda multiqc. To understand how to use MultiQC, if you never did so, check their excellent documentation. ",
+    "url": "/seqfu2/tools/stats.html#multiqc-output",
+    
+    "relUrl": "/tools/stats.html#multiqc-output"
+  },"134": {
+    "doc": "seqfu stats",
+    "title": "Legacy",
+    "content": "The pre 1.11 version of the statistics has been made available via seqfu oldstats. There are no breaking changes at the moment, and an expanded set of tests ensures the compatibility not only of the metrics (unchanged) but also of the output (now supporting sorting options). ",
+    "url": "/seqfu2/tools/stats.html#legacy",
+    
+    "relUrl": "/tools/stats.html#legacy"
+  },"135": {
+    "doc": "seqfu stats",
+    "title": "Benchmark",
+    "content": "A similar functionality is provided by SeqKit, so we compared the performance of SeqFu with SeqKit and n50, both available from bioconda. We used a Linux Virtual Machine running Ubuntu 18.04, with 8 cores and 64 Gb of RAM for the test, with Miniconda (4.9.2) to install the required tools. :warning: SeqKit, by default, omits N50 calculation, that is a core feature (always enabled) in SeqFu. The correct comparison is thus between seqfu stats and seqkit stats --all. Speed evaluate with hyperfine, peak memory usage with this bash script. As dataset we used the Human Genome (see this benchmark page), which contains few large sequences, and the reference genome of the gastrointestinal tract, which is composed by many short sequences instead. The test can be replicated with these commands: . # Download tools (can be done in a new environment) conda install -c conda-forge -c bioconda hyperfine n50=1.3.0 seqkit=0.16.0 seqfu=0.9.6 # Download datasets: many short sequences and few large sequences wget http://downloads.hmpdacc.org/data/reference_genomes/body_sites/Gastrointestinal_tract.nuc.fsa wget ftp://ftp.ensembl.org/pub/release-84/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz # Compare execution times FILE1=Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz FILE2=Gastrointestinal_tract.nuc.fsa for FILE in $FILE1 $FILE2; do hyperfine --export-markdown stat_$(basename $FILE | cut -f1 -d.).md --warmup 1 --min-runs 3 \\ \"seqfu stats $FILE\" \\ \"seqkit stats $FILE\" \\ \"seqkit stats --all $FILE\" \\ \"n50 -x $FILE\" done . The result, for the Human Genome (few large sequences), has been: . | Command | Mean [s] | Min [s] | Max [s] | Relative | . | seqfu stats $FILE | 27.420 ± 0.349 | 27.090 | 27.785 | 1.00 | . | seqkit stats $FILE :warning: | 116.693 ± 0.236 | 116.512 | 116.960 | 4.26 ± 0.05 | . | seqkit stats --all $FILE | 120.435 ± 0.434 | 120.054 | 120.907 | 4.39 ± 0.06 | . | n50 -x $FILE | 34.888 ± 0.628 | 34.167 | 35.316 | 1.27 ± 0.03 | . For the Gastrointestinal reference genomes (many short sequences): . | Command | Mean [s] | Min [s] | Max [s] | Relative | . | seqfu stats $FILE | 6.885 ± 0.307 | 6.602 | 7.211 | 1.82 ± 0.09 | . | seqkit stats $FILE :warning: | 3.793 ± 0.082 | 3.699 | 3.854 | 1.00 | . | seqkit stats --all $FILE | 7.667 ± 0.081 | 7.583 | 7.746 | 2.02 ± 0.05 | . | n50 -x $FILE | 76.377 ± 1.990 | 74.891 | 78.638 | 20.14 ± 0.68 | . ",
+    "url": "/seqfu2/tools/stats.html#benchmark",
+    
+    "relUrl": "/tools/stats.html#benchmark"
+  },"136": {
+    "doc": "seqfu stats",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/stats.html#screenshot",
+    
+    "relUrl": "/tools/stats.html#screenshot"
+  },"137": {
+    "doc": "seqfu tabulate",
+    "title": "seqfu tabulate",
+    "content": "This tool has been introduced with seqfu 1.2.2 . This program converts a sequence file (FASTA or FASTQ) to a tabular file, and vice versa. Several Unix tools can process a stream of information line-by-line, and tabular file can be easily modified and filtered piping serveral programs. This tool will allow to tabulate (convert to TSV) and detabulate (convert to FASTX) sequences. Usage: tabulate [options] [&lt;file&gt;] Convert FASTQ to TSV and viceversa. Single end is a 4 columns table (name, comment, seq, qual), paired end have 4 columns for the R1 and 4 columns for the R2. Paired end reads need to be supplied as interleaved. Options: -i, --interleaved Input is interleaved (paired-end) -d, --detabulate Convert TSV to FASTQ (if reading from file is autodetected) -c, --comment-sep CHAR Separator between name and comment (default: tab) -s, --field-sep CHAR Field separator (default: tab) -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/tools/tabulate.html",
+    
+    "relUrl": "/tools/tabulate.html"
+  },"138": {
+    "doc": "seqfu tabulate",
+    "title": "Tabular format",
+    "content": "The conversion works as follows: . | FASTA files are converted to a 3 columns table: name, comments and sequence | Single-End FASTQ files are converted to a 4 columns table: name, comments, sequence and quality | Paired-End FASTQ (interleaved) files are converted to 8 colums table: R1 name, comments, sequence and quality and R2 name, comments, sequence and quality | . To allow an efficient use of streams, paired-end datasets need to be interleaved (see: seqfu interleave). To make an example this FASTQ file: . @read_1 tag=A ATTACAATTACAATTACAA + EAFFFFFABBBAAAAAAAC @read_2 tag=B GGACAGAATTACAATTTTT + FFFFFFFFABBBAAAAAAA . will become: . read_1 tag=A ATTACAATTACAATTACAA EAFFFFFABBBAAAAAAAC read_2 tag=B GGACAGAATTACAATTTTT FFFFFFFFABBBAAAAAAA . ",
+    "url": "/seqfu2/tools/tabulate.html#tabular-format",
+    
+    "relUrl": "/tools/tabulate.html#tabular-format"
+  },"139": {
+    "doc": "seqfu tabulate",
+    "title": "Conversions",
+    "content": "Sequence to table . A single file can be converted to tabular format. NOTE: If the file is automatically detected as interleaved (the first and second read have the same name) you can omit -i (or --interleave), but we recommend to use it to make the command clearer. seqfu tabulate file.fastq | gzip -c &gt; tabular.tab.gz . Table to sequences . When a file is provided, the input format is automatically detected. Otherwise specify -d (or --detabulate to convert from table to FASTX). seqfu tabulate file.tab &gt; sequences.fq . or, via stream: . cat file.tab.gz | seqfu tabulate --detabulate &gt; sequences.fq . Pipeline . We designed the tool to provide a simple way to make ad hoc modifications via tabular lines, so a full workflow could be: . seqfu interleave ... | seqfu tabulate | CUSTOM_STEP | seqfu tabulate --detabulate | seqfu deinterleave -o basename - . ",
+    "url": "/seqfu2/tools/tabulate.html#conversions",
+    
+    "relUrl": "/tools/tabulate.html#conversions"
+  },"140": {
+    "doc": "seqfu tail",
+    "title": "seqfu tail",
+    "content": "tail is one of the core subprograms of SeqFu. It will print the last sequences of a FASTX file (like GNU tail), but can be instructed to skip a number of sequences between each printed one. Usage: tail [options] [&lt;inputfile&gt; ...] Options: -n, --num NUM Print the first NUM sequences [default: 10] -k, --skip SKIP Print one sequence every SKIP [default: 0] -p, --prefix STRING Rename sequences with prefix + incremental number -s, --strip-comments Remove comments -b, --basename prepend basename to sequence name --fasta Force FASTA output --fastq Force FASTQ output --sep STRING Sequence name fields separator [default: _] -q, --fastq-qual INT FASTQ default quality [default: 33] -v, --verbose Verbose output -h, --help Show this help . ",
+    "url": "/seqfu2/tools/tail.html",
+    
+    "relUrl": "/tools/tail.html"
+  },"141": {
+    "doc": "seqfu tail",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/tail.html#screenshot",
+    
+    "relUrl": "/tools/tail.html#screenshot"
+  },"142": {
+    "doc": "trim",
+    "title": "trim",
+    "content": "The trim command trims FASTQ sequences from the 3’ end when quality drops below a threshold in a sliding window. ",
+    "url": "/seqfu2/tools/trim.html",
+    
+    "relUrl": "/tools/trim.html"
+  },"143": {
+    "doc": "trim",
+    "title": "Usage",
+    "content": "seqfu trim [options] [&lt;inputfile&gt; ...] . ",
+    "url": "/seqfu2/tools/trim.html#usage",
+    
+    "relUrl": "/tools/trim.html#usage"
+  },"144": {
+    "doc": "trim",
+    "title": "Options",
+    "content": "| Option | Description | Default | . | -w, --window-size INT | Window size for quality calculation | 5 | . | -q, --min-avg-qual INT | Minimum average quality within window | 20 | . | --offset INT | Quality offset (33 for Illumina) | 33 | . | -o, --output FILE | Output filename | stdout | . | -v, --verbose | Verbose output | off | . | -h, --help | Show help |   | . ",
+    "url": "/seqfu2/tools/trim.html#options",
+    
+    "relUrl": "/tools/trim.html#options"
+  },"145": {
+    "doc": "trim",
+    "title": "Description",
+    "content": "This command scans the quality scores of FASTQ sequences using a sliding window of the specified size. When the average quality within the window drops below the specified threshold, it trims the sequence from that position, discarding all subsequent bases. This is useful for removing low-quality regions from the 3’ end of sequencing reads, which often contain more errors as the sequencing reaction progresses. ",
+    "url": "/seqfu2/tools/trim.html#description",
+    
+    "relUrl": "/tools/trim.html#description"
+  },"146": {
+    "doc": "trim",
+    "title": "Examples",
+    "content": "Trim sequences when the quality drops below 20 in a window of 5 bases: . seqfu trim input.fastq -o output.fastq . Use a more stringent quality threshold: . seqfu trim -q 25 input.fastq -o output.fastq . Change the window size: . seqfu trim -w 10 -q 20 input.fastq -o output.fastq . ",
+    "url": "/seqfu2/tools/trim.html#examples",
+    
+    "relUrl": "/tools/trim.html#examples"
+  },"147": {
+    "doc": "Usage Guide",
+    "title": "Short guide",
+    "content": "SeqFu is composed by a main program with multiple subprograms, and a set of utilities. Check the complete documentation for each tool, that contains the detailed documentation. SeqFu has tools for: . | Make life easier when working from the command line (seqfu head, seqfu tail, seqfu rc…) | Provide a visual feedback of datasets (like seqfu view) | Get statistics (seqfu count and seqfu stats) | Perform common operations with a reliable tool (seqfu interleave, seqfu deinterleave) | Perform specialistic operations with added ease of use or features | . ",
+    "url": "/seqfu2/usage#short-guide",
+    
+    "relUrl": "/usage#short-guide"
+  },"148": {
+    "doc": "Usage Guide",
+    "title": "Main program",
+    "content": "If invoked without parameters, SeqFu will print the list of subprograms: . SeqFu - Sequence Fastx Utilities version: 1.8.5 · count [cnt] : count FASTA/FASTQ reads, pair-end aware · deinterleave [dei] : deinterleave FASTQ · derep [der] : feature-rich dereplication of FASTA/FASTQ files · interleave [ilv] : interleave FASTQ pair ends · lanes [mrl] : merge Illumina lanes · list [lst] : print sequences from a list of names · metadata [met] : print a table of FASTQ reads (mapping files) · sort [srt] : sort sequences by size (uniques) · stats [st] : statistics on sequence lengths · cat : concatenate FASTA/FASTQ files · grep : select sequences with patterns · head : print first sequences · rc : reverse complement strings or files · tab : tabulate reads to TSV (and viceversa) · tail : view last sequences · view : view sequences with colored quality and oligo matches Type 'seqfu version' or 'seqfu citation' to print the version and paper, respectively. Add --help after each command to print its usage. ",
+    "url": "/seqfu2/usage#main-program",
+    
+    "relUrl": "/usage#main-program"
+  },"149": {
+    "doc": "Usage Guide",
+    "title": "Subprograms",
+    "content": "SeqFu is bundled with an (increasing) set of utilities sharing the FASTX parsing library: . | fu-orf to extract ORFs from Paired-End libraries | fu-cov to extract contigs from the most commonly used assembly programs using the coverage information printed in the headers | fu-homocomp to compress homopolymers (e.g. for Nanopore applications) | … | See the full list. | . ",
+    "url": "/seqfu2/usage#subprograms",
+    
+    "relUrl": "/usage#subprograms"
+  },"150": {
+    "doc": "Usage Guide",
+    "title": "Usage Guide",
+    "content": " ",
+    "url": "/seqfu2/usage",
+    
+    "relUrl": "/usage"
+  },"151": {
+    "doc": "seqfu view",
+    "title": "seqfu view",
+    "content": "view is one of the core subprograms of SeqFu. It can be used to visually inspect a FASTQ file printing colored bars for quality scores and highlighting oligonucleotide matches. Usage: view [options] &lt;inputfile&gt; [&lt;input_reverse&gt;] View a FASTA/FASTQ file for manual inspection, allowing to search for an oligonucleotide. Options: -o, --oligo1 OLIGO Match oligo, with ambiguous IUPAC chars allowed (rev. compl. search is performed), color blue -r, --oligo2 OLIGO Second oligo to be scanned for, color red -q, --qual-scale STR Quality thresholds, seven values separated by columns [default: 3:15:25:28:30:35:40] --match-ths FLOAT Oligo matching threshold [default: 0.75] --min-matches INT Oligo minimum matches [default: 5] --max-mismatches INT Oligo maxmimum mismataches [default: 2] --ascii Use simple ASCII chars instead of UNICODE to render the quality values -Q, --qual-chars Show quality characters instead of bars -n, --nocolor Disable colored output --verbose Show extra information -h, --help Show this help . ",
+    "url": "/seqfu2/tools/view.html",
+    
+    "relUrl": "/tools/view.html"
+  },"152": {
+    "doc": "seqfu view",
+    "title": "Example output",
+    "content": "The quality scores are rendered as colored bars (grey, red, yellow, green) of different heights. Matching oligos are rendered as blue arrows (forward) or red arrows (reverse). ",
+    "url": "/seqfu2/tools/view.html#example-output",
+    
+    "relUrl": "/tools/view.html#example-output"
+  },"153": {
+    "doc": "seqfu view",
+    "title": "Important hints",
+    "content": "Disabling wordwrap . SeqFu view is designed for a manual inspection, and thus it’s very convenient to pipe the output to less to avoid being misled by word-wraps: . seqfu view sequence.fq | less -SR . (in less: -S prevents word-wrap, and -R will preserve the colored output) . Encoding of “graphical” bars . The graphical rendering of the quality values is done using Unicode characters (UTF-8 encoding), thus requiring both the host system and the terminal emulator to support UTF-8. A simple test to check if your terminal supports Unicode is to type: . echo -e '\\xe2\\x82\\xac' . If you see the Euro character (€) then your terminal fully supports UTF-8. If not, you can use --ascii or --qual-chars. The following screenshot shows how quality scores are rendered using the different options: . | Default view with quality scale | . | Graphical representation of the quality with ASCII characters | . | Quality encoded as in the FASTQ file, but colored | . ",
+    "url": "/seqfu2/tools/view.html#important-hints",
+    
+    "relUrl": "/tools/view.html#important-hints"
+  },"154": {
+    "doc": "seqfu view",
+    "title": "Screenshot",
+    "content": ". ",
+    "url": "/seqfu2/tools/view.html#screenshot",
+    
+    "relUrl": "/tools/view.html#screenshot"
+  }
+}

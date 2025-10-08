@@ -1,3 +1,9 @@
+---
+layout: home
+title: Home
+nav_order: 1
+---
+
 <a href="https://telatin.github.io/seqfu2" description="SeqFu documentation">
   <img align="right" width="128" height="128" src="img/seqfu-512.png">
 </a>
@@ -32,11 +38,7 @@ conda install -c conda-forge -c bioconda "seqfu>1.0"
 
 ## Citation
 
-Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust 
-and Reproducible Manipulation of Sequence Files*. 
+Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust
+and Reproducible Manipulation of Sequence Files*.
 Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
-
-## Contents
-
-{% include list.liquid all=true %}
 

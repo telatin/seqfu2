@@ -1,5 +1,8 @@
 ---
-sort: 5
+layout: default
+title: Utilities
+nav_order: 5
+has_children: true
 ---
 
 # Utilities
@@ -11,8 +14,6 @@ independent binaries rather than the core tool _seqfu_.
 that is not guaranteed in the external utilities.
 
 ### SeqFu utilities
-
-{% include list.liquid %}
 
 ### Other utilities
 

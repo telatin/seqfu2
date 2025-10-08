@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu rc
+parent: Core Tools
+---
+
 
 # seqfu rc
 

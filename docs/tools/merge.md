@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu merge
+parent: Core Tools
+---
+
 
 # seqfu merge
 

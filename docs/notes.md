@@ -1,5 +1,7 @@
 ---
-sort: 4
+layout: default
+title: About
+nav_order: 8
 permalink: /about
 ---
 

@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu derep
+parent: Core Tools
+---
+
 
 # seqfu derep
 

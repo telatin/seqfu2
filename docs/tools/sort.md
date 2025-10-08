@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu sort
+parent: Core Tools
+---
+
 
 # seqfu sort
 

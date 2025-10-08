@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu deinterleave
+parent: Core Tools
+---
+
 
 # seqfu deinterleave
 

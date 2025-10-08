@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu tabulate
+parent: Core Tools
+---
+
 
 # seqfu tabulate
 

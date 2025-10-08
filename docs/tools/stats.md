@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu stats
+parent: Core Tools
+---
+
 
 # seqfu stats
 

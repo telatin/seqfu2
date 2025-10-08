@@ -1,3 +1,9 @@
+---
+layout: default
+title: fu-shred
+parent: Utilities
+---
+
 
 # fu-shred
 

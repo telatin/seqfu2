@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu qual
+parent: Core Tools
+---
+
 
 # seqfu qual
 

@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu view
+parent: Core Tools
+---
+
 
 # seqfu view
 

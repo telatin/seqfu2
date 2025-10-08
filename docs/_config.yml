@@ -1,37 +1,121 @@
-github: [metadata]
-repository: telatin/seqfu2
-title: SeqFu docs
-lang: en
-description: "SeqFu - FASTX Sequence Utilities"
+# SeqFu Documentation Site Configuration
 
-readme_index:
-  with_frontmatter: true
+# Site settings
+title: SeqFu Documentation
+description: A general-purpose toolkit to manipulate and parse FASTA/FASTQ files
+baseurl: "/seqfu2"
+url: "https://telatin.github.io"
 
-theme: null
+# Theme configuration
+theme: just-the-docs
+remote_theme: just-the-docs/just-the-docs
 
-remote_theme:  telatin/docs-theme 
+# Color scheme
+color_scheme: light
 
+# Logo
+logo: "/img/seqfu-512.png"
+
+# Search configuration
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: true
+
+# Navigation
+nav_sort: title
+nav_enabled: true
+
+# Enable or disable heading anchors
+heading_anchors: true
+
+# Aux links for the upper right navigation
+aux_links:
+  "GitHub Repository":
+    - "https://github.com/telatin/seqfu2"
+  "Report Issue":
+    - "https://github.com/telatin/seqfu2/issues"
+
+# Makes Aux links open in a new tab
+aux_links_new_tab: true
+
+# Footer
+footer_content: "Copyright &copy; 2019-2025 Andrea Telatin. Distributed by an <a href=\"https://github.com/telatin/seqfu2/blob/main/LICENSE\">MIT license</a>."
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Footer last edited timestamp
+last_edit_timestamp: true
+last_edit_time_format: "%b %e %Y at %I:%M %p"
+
+# Collections for organized content
+collections_dir: .
+collections:
+  tools:
+    permalink: "/:collection/:path/"
+    output: true
+  utilities:
+    permalink: "/:collection/:path/"
+    output: true
+  scripts:
+    permalink: "/:collection/:path/"
+    output: true
+
+# Just the Docs specific settings
+just_the_docs:
+  collections:
+    tools:
+      name: Core Tools
+      nav_exclude: false
+      search_exclude: false
+    utilities:
+      name: Utilities
+      nav_exclude: false
+      search_exclude: false
+    scripts:
+      name: Helper Utilities
+      nav_exclude: false
+      search_exclude: false
+
+# Plugins
 plugins:
-  - jekyll-remote-theme
-  - jemoji
-  
-google:
-  gtag4: "G-Q12CPTSQDT"
-  
-google_analytics: 'UA-185637-20'
-google_tag4: 'G-Q12CPTSQDT'
+  - jekyll-seo-tag
+  - jekyll-github-metadata
+  - jekyll-include-cache
 
-markdown: CommonMarkGhPages
-commonmark:
-  options: ['SMART']
-  extensions: ['table']
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - Contest_
 
-scss: |
-  .header     { background: #44435C}
-  .markdown-body a { color: #46077d}
-  .markdown-body a:hover { color: #7c39b7}
-  .toctree>ul>.toc:not(.current)>a:active  {background: #6c1b7a}
-  a { color: #34334C}
-  .toasts.note .title { background: #caaaf2 }
-  .toasts.note { background: #DFE2E5 }
-  .text-blue { color: #8e8e8e !important }
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+# Sass settings
+sass:
+  style: compressed
+
+# Repository information (for GitHub metadata)
+repository: telatin/seqfu2
+
+# GA tracking (optional - uncomment and add your tracking ID if needed)
+# ga_tracking: UA-XXXXXXXXX-X

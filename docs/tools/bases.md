@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu bases
+parent: Core Tools
+---
+
 # seqfu bases
 
 Counts the number of A, C, G, T and Ns in FASTA and FASTQ files.

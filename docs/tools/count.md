@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu count
+parent: Core Tools
+---
+
 
 # seqfu count
 

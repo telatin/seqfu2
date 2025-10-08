@@ -1,5 +1,8 @@
 ---
-sort: 4
+layout: default
+title: Core Tools
+nav_order: 4
+has_children: true
 ---
 
 # Core Tools
@@ -32,5 +35,3 @@ Add --help after each command to print usage
 
 
 ### Manual pages
-
-{% include list.liquid %}
