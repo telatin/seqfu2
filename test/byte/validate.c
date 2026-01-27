@@ -107,7 +107,8 @@ int main(int argc, char *argv[]) {
             if (line_count == 1 || line[0] == '>') {
                 // header
                 seq_count++;
-                line[strcspn(line, "\n")] = 0;
+                line[MAX_LINE_LENGTH - 1] = '\0';  // Ensure null-termination
+                line[strcspn(line, "\n")] = '\0';
                 char *seq_name = strtok(line, " ");
                 if (seq_count == 1) {
                     strcpy(first_seq, seq_name);
@@ -115,8 +116,9 @@ int main(int argc, char *argv[]) {
                 strcpy(last_seq, seq_name+1);
             } else {
                 // sequence
-                line[strcspn(line, "\n")] = 0;
-                seq_len = strlen(line);
+                line[MAX_LINE_LENGTH - 1] = '\0';  // Ensure null-termination
+                line[strcspn(line, "\n")] = '\0';
+                seq_len = strnlen(line, MAX_LINE_LENGTH);
 
                 // Check if the line is only composed by A, C, G, T and N
                 for (int i = 0; i < seq_len; i++) {
@@ -137,7 +139,8 @@ int main(int argc, char *argv[]) {
         
         if (line_count % 4 == 1) {
             // Remove the trailing newline character
-            line[strcspn(line, "\n")] = 0;
+            line[MAX_LINE_LENGTH - 1] = '\0';  // Ensure null-termination
+            line[strcspn(line, "\n")] = '\0';
 
             // seq name: remove first character and split to the first space
         
@@ -156,8 +159,9 @@ int main(int argc, char *argv[]) {
             }
         }  else if (line_count % 4 == 2) {
             // Remove the trailing newline character
-            line[strcspn(line, "\n")] = 0;
-            seq_len = strlen(line);
+            line[MAX_LINE_LENGTH - 1] = '\0';  // Ensure null-termination
+            line[strcspn(line, "\n")] = '\0';
+            seq_len = strnlen(line, MAX_LINE_LENGTH);
 
             // Check if the line is only composed by A, C, G, T and N
             for (int i = 0; i < seq_len; i++) {
@@ -176,9 +180,11 @@ int main(int argc, char *argv[]) {
                 break;
             }
         } else if (line_count % 4 == 0) {
-            line[strcspn(line, "\n")] = 0;
-            if (seq_len != strlen(line)) {
-                fprintf(stderr, "ERROR: Line %d in sequence %d has a different length than the sequence: %ld vs %d\n", line_count, seq_count, (long)(strlen(line) + 1), seq_len);
+            line[MAX_LINE_LENGTH - 1] = '\0';  // Ensure null-termination
+            line[strcspn(line, "\n")] = '\0';
+            size_t qual_len = strnlen(line, MAX_LINE_LENGTH);
+            if (seq_len != (int)qual_len) {
+                fprintf(stderr, "ERROR: Line %d in sequence %d has a different length than the sequence: %zu vs %d\n", line_count, seq_count, qual_len, seq_len);
                 valid = 0;
                 break;
             } 

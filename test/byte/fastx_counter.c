@@ -4,10 +4,11 @@
 #include <zlib.h>
 
 #define BUFFER_SIZE 1024
+#define MAX_PATH_LEN 4096
 
 // Function to check if the file is gzipped
 int is_gzipped(const char *filename) {
-    int len = strlen(filename);
+    size_t len = strnlen(filename, MAX_PATH_LEN);
     return len > 3 && strcmp(filename + len - 3, ".gz") == 0;
 }
 
@@ -52,7 +53,13 @@ int main(int argc, char *argv[]) {
     while (read_line(file, buffer, gzipped) != NULL) {
         line_number++;
         if (line_number % 4 == 2) { // Sequence line
-            total_length += strlen(buffer) - 1; // -1 to exclude the newline character
+            buffer[BUFFER_SIZE - 1] = '\0';  // Ensure null-termination
+            size_t seq_len = strnlen(buffer, BUFFER_SIZE);
+            // Subtract 1 for newline if present
+            if (seq_len > 0 && buffer[seq_len - 1] == '\n') {
+                seq_len--;
+            }
+            total_length += seq_len;
             total_sequences++;
         }
     }

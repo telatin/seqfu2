@@ -72,7 +72,8 @@ FileResult process_file(const char* filename, bool use_gzip, bool use_verbose) {
     
     // Check if file has .gz extension
     if (!use_gzip && !use_stdin) {
-        int len = strlen(filename);
+        constexpr size_t MAX_PATH_LEN = 4096;
+        size_t len = strnlen(filename, MAX_PATH_LEN);
         if (len > 3 && strcmp(filename + len - 3, ".gz") == 0) {
             use_gzip = true;
         }
