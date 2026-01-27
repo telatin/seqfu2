@@ -37,9 +37,11 @@ include ./fastx_stats_v2
 include ./fastx_count_threads_off
 include ./fastx_list
 include ./fastx_bases
+include ./fastx_trim
 
 var progs = {
 
+       "trim": fastx_trim,
        "bases": fastx_bases,
        "cat": fastx_cat,
        "ilv": fastq_interleave,       
@@ -90,6 +92,7 @@ proc main(args: var seq[string]): int =
                "derep [der]"       : "feature-rich dereplication of FASTA/FASTQ files",
                "check"             : "check FASTQ file for errors",
                "bases"             : "count bases in FASTA/FASTQ files",
+               "trim"              : "trim FASTQ sequences based on quality",
 #              "merge [mrg]"       : "join Paired End reads",
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",
