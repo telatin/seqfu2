@@ -30,7 +30,7 @@ include ./fastx_metadata
 include ./fastx_tabulate
 include ./fastx_check
 include ./fu_rotate
-
+include ./tofasta
 
 # Experimental
 include ./fastx_stats_v2
@@ -82,6 +82,7 @@ var progs = {
         "rot": fastx_rotate,
         "restart": fastx_rotate,
       "check": fqcheck,
+      "tofasta": tofasta
 }.toTable
 
 proc main(args: var seq[string]): int =
@@ -101,7 +102,8 @@ proc main(args: var seq[string]): int =
                "sort [srt]"        : "sort sequences by size (uniques)",
                "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
                "list [lst]"        : "print sequences from a list of names",
-               }.toTable
+               "tofasta"           : "convert multiple formats to FASTA"
+            }.toTable
 
     helps_last = {"cat"            : "concatenate FASTA/FASTQ files",
                   "head"           : "print first sequences",
