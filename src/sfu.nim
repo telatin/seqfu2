@@ -16,6 +16,7 @@ include ./fastq_deinterleave
 include ./fastx_derep
 include ./fastx_count
 include ./fastx_view
+include ./fastx_view_interactive
 include ./fastx_head
 include ./fastx_tail 
 include ./fastx_sort
@@ -69,6 +70,7 @@ var progs = {
          "merge" : fastq_merge,
        "qual": fastx_qual,
        "view": fastx_view,
+       "less": fastx_less,
        "grep": fastx_grep2,
        "grep-legacy": fastx_grep,
        "head": fastx_head_v2,
@@ -112,6 +114,7 @@ proc main(args: var seq[string]): int =
                   "rc"             : "reverse complement strings or files",
                   "tab"            : "tabulate reads to TSV (and viceversa)",
                   "view"           : "view sequences with colored quality and oligo matches",
+                  "less"           : "interactive viewer for sequences (like less)",
                }.toTable
 
   if len(args) == 1 and (args[0] == "--version" or args[0] == "version" or args[0] == "-v"):

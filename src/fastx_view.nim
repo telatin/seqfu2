@@ -7,147 +7,36 @@ import colorize
 import encodings
 
 
-proc qualToAscii*(s: string, v: seq[int], color = false): string =
-  #  1   2   3   4   5   6   7
-  #  Low     Mid     Ok
-  for i in s:
-    let
-      val = charToQual(i)
-    if val <= v[0]:
-      if color == true:
-        result &= "x".fgDarkGray
-      else:
-        result &= "x"
-    elif val <= v[1]:
-      if color == true:
-        result &= "_".fgDarkGray
-      else:
-        result &= "_"
-    elif val <= v[2]:
-      if color == true:
-        result &= "_".fgRed
-      else:
-        result &= "_"
-    elif val <= v[3]:
-      if color == true:
-        result &= "o".fgRed
-      else:
-        result &= "o"
-    elif val <= v[4]:
-      if color == true:
-        result &= "o".fgYellow
-      else:
-        result &= "o"
-    elif val <= v[5]:
-      if color == true:
-        result &= "i".fgYellow
-      else:
-        result &= "i"
-    elif val <= v[6]:
-      if color == true:
-        result &= "i".fgGreen
-      else:
-        result &= "i"
-    else:
-      if color == true:
-        result &= "I".fgGreen
-      else:
-        result &= "I"
+proc formatQualString(s: string, thresholds: seq[int], useAscii: bool, useQualChars: bool, useColor: bool): string =
+  let
+    unicodeGlyphs = ["_", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
+    asciiGlyphs =   ["x", "_", "_", "o", "o", "i", "i", "I"]
+    colors = [fgDarkGray, fgDarkGray, fgRed, fgRed, fgYellow, fgYellow, fgGreen, fgGreen]
 
-
-proc qualToUnicode*(s: string, v: seq[int], color = false): string =
-  #  1   2   3   4   5   6   7
-  #  Low     Mid     Ok
-  for i in s:
-    let
-      val = charToQual(i)
-    if val <= v[0]:
-      if color == true:
-        result &= "_".fgDarkGray
-      else:
-        result &= "_"
-    elif val <= v[1]:
-      if color == true:
-        result &= "▂".fgDarkGray
-      else:
-        result &= "▂"
-    elif val <= v[2]:
-      if color == true:
-        result &= "▃".fgRed
-      else:
-        result &= "▃"
-    elif val <= v[3]:
-      if color == true:
-        result &= "▄".fgRed
-      else:
-        result &= "▄"
-    elif val <= v[4]:
-      if color == true:
-        result &= "▅".fgYellow
-      else:
-        result &= "▅"
-    elif val <= v[5]:
-      if color == true:
-        result &= "▆".fgYellow
-      else:
-        result &= "▆"
-    elif val <= v[6]:
-      if color == true:
-        result &= "▇".fgGreen
-      else:
-        result &= "▇"
+  for qChar in s:
+    let val = charToQual(qChar)
+    var idx = 0
+    if val <= thresholds[0]:    idx = 0
+    elif val <= thresholds[1]:  idx = 1
+    elif val <= thresholds[2]:  idx = 2
+    elif val <= thresholds[3]:  idx = 3
+    elif val <= thresholds[4]:  idx = 4
+    elif val <= thresholds[5]:  idx = 5
+    elif val <= thresholds[6]:  idx = 6
+    else:                      idx = 7
+    
+    var displayChar: string
+    if useQualChars:
+      displayChar = $qChar
+    elif useAscii:
+      displayChar = asciiGlyphs[idx]
     else:
-      if color == true:
-        result &= "█".fgGreen
-      else:
-        result &= "█"
+      displayChar = unicodeGlyphs[idx]
 
-proc qualToColor(s: string, v: seq[int], color = false): string =
-  #  1   2   3   4   5   6   7
-  #  Low     Mid     Ok
-  for i in s:
-    let
-      val = charToQual(i)
-    if val <= v[0]:
-      if color == true:
-        result &= fgDarkGray($i)
-      else:
-        result &= i
-    elif val <= v[1]:
-      if color == true:
-        result &= fgDarkGray($i)
-      else:
-        result &= i
-    elif val <= v[2]:
-      if color == true:
-        result &= fgRed($i)
-      else:
-        result &= i
-    elif val <= v[3]:
-      if color == true:
-        result &= fgRed($i)
-      else:
-        result &= i
-    elif val <= v[4]:
-      if color == true:
-        result &= fgYellow($i)
-      else:
-        result &= i
-    elif val <= v[5]:
-      if color == true:
-        result &= fgYellow($i)
-      else:
-        result &= i
-    elif val <= v[6]:
-      if color == true:
-        result &= fgGreen($i)
-      else:
-        result &= i
+    if useColor:
+      result &= colors[idx](displayChar)
     else:
-      if color == true:
-        result &= fgGreen($i)
-      else:
-        result &= i
+      result &= displayChar
 
 proc isOnlySpaces(s: string): bool =
   for c in s:
@@ -249,11 +138,18 @@ Options:
 
 
   for read in readfq($args["<inputfile>"]):
-    # Print seq name
+    let isFasta = (read.quality.len == 0) # Check if it's a FASTA file
+
     if args["--nocolor"]:
-      echo "@", read.name, "\t", read.comment
+      if isFasta:
+        echo ">", read.name, "\t", read.comment
+      else:
+        echo "@", read.name, "\t", read.comment
     else:
-      echo "@", (read.name).bold, "\t", (read.comment).fgLightGray
+      if isFasta:
+        echo ">", (read.name).bold, "\t", (read.comment).fgLightGray
+      else:
+        echo "@", (read.name).bold, "\t", (read.comment).fgLightGray
       
     if $args["--oligo1"] != "nil":
       let matches = findPrimerMatches(read.sequence, $args["--oligo1"], matchThs, maxMismatches, minMatches)
@@ -266,13 +162,8 @@ Options:
       if revString.isOnlySpaces == false:
         echo revString
     echo read.sequence
-    if args["--qual-chars"]:
-      echo qualToColor(read.quality, thresholdValues, colorOutput)
-    else:
-      if args["--ascii"]:
-        echo qualToAscii(read.quality, thresholdValues, colorOutput)
-      else:
-        echo qualToUnicode(read.quality, thresholdValues, colorOutput)
+    if not isFasta:
+      echo formatQualString(read.quality, thresholdValues, bool(args["--ascii"]), bool(args["--qual-chars"]), colorOutput)
 
   if args["--verbose"]:
     stderr.writeLine("Encoding: ", ce)     

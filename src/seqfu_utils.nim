@@ -346,6 +346,20 @@ proc qualToChar*(q: int): char =
   ## returns character for a given Illumina quality score
   (q+33).char
 
+proc qualToUnicode*(s: string, breaks: seq[int], color=true): string =
+  let Ramp = " ▤▥▦▧▨▩"
+  for c in s:
+    var
+      q = charToQual(c)
+      i = 0
+    for b in breaks:
+      if q > b:
+        i += 1
+    if i >= len(Ramp):
+      i = len(Ramp) - 1
+    result &= Ramp[i]
+
+
 proc print_seq*(record: FastxRecord, outputFile: File) =
   var
     name = record.name
