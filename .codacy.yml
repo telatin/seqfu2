@@ -1,0 +1,14 @@
+engines:
+  markdownlint:
+    enabled: true
+    patterns:
+      - id: MD013
+        enabled: false  # Line length
+      - id: MD024
+        enabled: false  # Multiple headers with same content
+      - id: MD033
+        enabled: false  # Inline HTML
+      - id: MD034
+        enabled: false  # Bare URLs
+      - id: MD041
+        enabled: false  # First line in file should be top-level heading
