@@ -1,0 +1,74 @@
+# NAVIGATION
+----------
+  Up, Down         Scroll one record up/down (or line in wrap mode)
+  A, Z             Scroll one record up/down (alternative)
+  PgUp, PgDown     Scroll one page up/down
+  Ctrl+A, Ctrl+Z   Jump 100 records/lines up/down
+  Home, End        Jump to start/end of file
+
+  Left, Right      Scroll 1bp horizontally (no-wrap mode)
+  L, K             Scroll 25bp left/right
+  Ctrl+L, Ctrl+K   Scroll 250bp left/right
+
+# LINE WRAP MODE
+--------------
+  In line wrap mode (toggle with S), long sequences are wrapped
+  across multiple screen lines. Navigation scrolls by lines,
+  allowing you to view entire long sequences (e.g., Nanopore reads)
+  without jumping to the next record.
+
+# SEARCH
+------
+  /                Enter search mode
+                   - Type pattern and press Enter
+                   - Oligo patterns (ACGTN) search sequences
+                   - Other patterns search names/comments
+  :                Jump to record number (1-based)
+  n                Next search match
+  Shift+N          Previous search match
+
+# DISPLAY OPTIONS
+---------------
+  S                Toggle line wrap ON/OFF
+  T                Cycle theme (Dark/Light/Solarized)
+  R                Toggle record numbers
+  C                Toggle compact FASTQ view (bases colored by quality)
+  U                Toggle quality bars/characters
+  0                Toggle sequence base coloring ON/OFF
+
+# HELP & EXIT
+-----------
+  H, h             Show this help
+  Q, Esc           Quit (or exit help)
+
+# COMMAND LINE OPTIONS
+--------------------
+  -S, --no-line-wrap    Start with line wrap disabled
+  -m, --mouse           Enable mouse support
+  -o, --oligo1 OLIGO    Highlight oligo (blue background)
+  -r, --oligo2 OLIGO    Second oligo (red background)
+  -q, --qual-scale      Quality thresholds
+  --ascii               Use ASCII quality bars
+  -Q, --qual-chars      Show quality characters
+  -n, --nocolor         Disable colors
+
+# COLOR LEGEND
+------------
+  Bases:    A=Red  C=Cyan  G=Green  T=Yellow
+  Quality:  Low=Red  Medium=Yellow  High=Green
+
+  Compact FASTQ view (C):
+    Bases colored by quality score instead of base identity
+    Gray=Very low  Red=Low  Yellow=Medium  Green=Good
+
+  Oligo1 matches:  Blue background
+  Oligo2 matches:  Red background
+  Search matches:  Magenta background
+
+# TIPS
+----
+  - Use line-wrap mode (S) for long sequences
+  - Search for oligos to find primer binding sites
+  - Use themes (T) for different lighting conditions
+
+Press Q or Esc to return to viewer

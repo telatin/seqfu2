@@ -1,6 +1,6 @@
 import readfq
-import tables, strutils, strformat
-from os import fileExists, getEnv
+import tables, strutils, strformat, algorithm
+from os import fileExists, getEnv, sleep
 import docopt
 import ./seqfu_utils
 import illwill
@@ -23,20 +23,21 @@ type
     isFastq: bool
 
   RecordCache = object
-    headRecords: seq[FQRecord]
-    tailRecords: seq[FQRecord]
-    dynamicCache: Table[int, FQRecord]
-    index: seq[RecordIndex]
+    records: seq[FQRecord]       # All loaded records so far
     indexComplete: bool
-    totalRecords: int
+    totalRecords: int            # Known count (grows during loading)
     maxCacheSize: int
     filename: string
+    # Streaming state
+    loadIterator: iterator(): FQRecord {.closure.}
+    batchSize: int               # Records to load per idle frame
 
   ViewerState = object
     filename: string
     fileFormat: string
     currentTheme: int
     firstVisibleRecord: int
+    wrapLineOffset: int  # Line offset within the first visible record (for wrap mode)
     horizontalOffset: int
     lineWrap: bool
     showRecordNumbers: bool
@@ -61,11 +62,21 @@ type
     useAscii: bool
     useQualChars: bool
     noColor: bool
+    helpMode: bool
+    helpScrollOffset: int
+    compactFastqView: bool
+    colorSequence: bool
+    # Windowed search state
+    searchWindowStart: int   # First record index that has been searched
+    searchWindowEnd: int     # Last record index + 1 that has been searched
+    searchComplete: bool     # True if entire file has been searched
 
 # Constants
 const
-  HEAD_CACHE_SIZE = 100
-  TAIL_CACHE_SIZE = 100
+  INITIAL_LOAD = 50          # Records to load before first display
+  BATCH_LOAD = 200           # Records to load per idle frame
+  SEARCH_WINDOW = 500        # Records to search per window/section
+  HELP_TEXT = staticRead("seqfu_less_help.txt")
 
 proc initThemes(): seq[Theme] =
   var themes: seq[Theme] = @[]
@@ -117,59 +128,56 @@ proc parseMemorySize(s: string): int =
   else:
     return parseInt(size)
 
+proc makeReadfqIterator(filename: string): iterator(): FQRecord {.closure.} =
+  ## Create a closure iterator over readfq records
+  result = iterator(): FQRecord {.closure.} =
+    for record in readfq(filename):
+      yield record
+
 proc initCache(filename: string, maxSize: int): RecordCache =
-  result.headRecords = @[]
-  result.tailRecords = @[]
-  result.dynamicCache = initTable[int, FQRecord]()
-  result.index = @[]
+  result.records = @[]
   result.indexComplete = false
   result.totalRecords = 0
   result.maxCacheSize = maxSize
   result.filename = filename
+  result.batchSize = BATCH_LOAD
+  {.cast(gcsafe).}:
+    if fileExists(filename):
+      result.loadIterator = makeReadfqIterator(filename)
 
-proc loadAllRecords(cache: var RecordCache) =
-  if not fileExists(cache.filename):
-    return
+proc loadInitialRecords(cache: var RecordCache, count: int = INITIAL_LOAD) =
+  ## Load the first `count` records (blocking). Called once at startup.
+  {.cast(gcsafe).}:
+    if cache.loadIterator == nil:
+      cache.indexComplete = true
+      return
+    for i in 0 ..< count:
+      let record = cache.loadIterator()
+      if finished(cache.loadIterator):
+        cache.indexComplete = true
+        break
+      cache.records.add(record)
+    cache.totalRecords = cache.records.len
 
-  var count = 0
-  for record in readfq(cache.filename):
-    count += 1
-    if count <= HEAD_CACHE_SIZE:
-      cache.headRecords.add(record)
-    else:
-      cache.tailRecords.add(record)
-      if cache.tailRecords.len > TAIL_CACHE_SIZE:
-        cache.tailRecords.delete(0)
-
-  cache.totalRecords = count
-  cache.indexComplete = true
+proc loadMoreRecords(cache: var RecordCache): bool =
+  ## Load a batch of records. Returns true if there are more to load.
+  ## Call this during idle frames in the main loop.
+  {.cast(gcsafe).}:
+    if cache.indexComplete or cache.loadIterator == nil:
+      return false
+    for i in 0 ..< cache.batchSize:
+      let record = cache.loadIterator()
+      if finished(cache.loadIterator):
+        cache.indexComplete = true
+        return false
+      cache.records.add(record)
+    cache.totalRecords = cache.records.len
+    return true
 
 proc getRecord(cache: var RecordCache, idx: int): FQRecord =
-  if idx < 0 or idx >= cache.totalRecords:
+  if idx < 0 or idx >= cache.records.len:
     return FQRecord()
-
-  # Check head cache
-  if idx < cache.headRecords.len:
-    return cache.headRecords[idx]
-
-  # Check tail cache
-  let tailStartIdx = cache.totalRecords - cache.tailRecords.len
-  if idx >= tailStartIdx:
-    return cache.tailRecords[idx - tailStartIdx]
-
-  # Check dynamic cache
-  if idx in cache.dynamicCache:
-    return cache.dynamicCache[idx]
-
-  # Load from file (inefficient but functional fallback)
-  var count = 0
-  for record in readfq(cache.filename):
-    if count == idx:
-      cache.dynamicCache[idx] = record
-      return record
-    count += 1
-
-  return FQRecord()
+  return cache.records[idx]
 
 proc formatQualChar(qChar: char, thresholds: seq[int], useAscii: bool, useQualChars: bool): tuple[glyph: string, colorIdx: int] =
   let
@@ -204,6 +212,19 @@ proc getBaseColor(c: char, theme: Theme): illwill.ForegroundColor =
   of 'G': return theme.coloredG
   of 'T', 'U': return theme.coloredT
   else: return theme.coloredN
+
+proc getQualityColor(qChar: char, thresholds: seq[int]): tuple[fg: illwill.ForegroundColor, bright: bool] =
+  ## Map quality score to color for compact FASTQ view
+  ## Gray (dim white): very low, Red: low, Yellow: medium, Green: good
+  let val = charToQual(qChar)
+  if val <= thresholds[0]:      # <= 3: very low (gray)
+    return (illwill.fgBlack, true)  # bright black = gray in most terminals
+  elif val <= thresholds[2]:    # <= 25: low (red)
+    return (illwill.fgRed, false)
+  elif val <= thresholds[4]:    # <= 30: medium (yellow)
+    return (illwill.fgYellow, false)
+  else:                         # > 30: good (green)
+    return (illwill.fgGreen, false)
 
 proc isInOligoMatch(pos: int, matches: seq[seq[int]], oligoLen: int): bool =
   if matches.len == 0:
@@ -295,9 +316,19 @@ proc drawStatusBar(tb: var TerminalBuffer, state: ViewerState, theme: Theme, cac
   if state.inputMode:
     statusText = state.inputPrompt & state.inputBuffer & "_"
   else:
-    let loadingIndicator = if cache.indexComplete: "" else: " Loading..."
     let wrapStatus = if state.lineWrap: "ON" else: "OFF"
-    statusText = fmt"{state.firstVisibleRecord + 1}-{lastVisible + 1}/{cache.totalRecords} | Col: {state.horizontalOffset}-{colEnd} | {state.fileFormat} | Wrap:{wrapStatus} | Theme:{themes[state.currentTheme].name}{loadingIndicator}"
+    var wrapLineInfo = ""
+    if state.lineWrap and state.wrapLineOffset > 0:
+      wrapLineInfo = fmt" L+{state.wrapLineOffset}"
+    let totalDisplay = if cache.indexComplete:
+      $cache.totalRecords
+    else:
+      let rounded = (cache.totalRecords div 10000) * 10000
+      if rounded > 0: fmt">{rounded}" else: fmt">{cache.totalRecords}"
+    let loadingIndicator = if cache.indexComplete: "" else: " [Loading...]"
+    let colInfo = if state.lineWrap: "" else: fmt" | Col: {state.horizontalOffset}-{colEnd}"
+    let compactInfo = if state.compactFastqView: " | Compact" else: ""
+    statusText = fmt"{state.firstVisibleRecord + 1}{wrapLineInfo}-{lastVisible + 1}/{totalDisplay}{colInfo} | {state.fileFormat}{compactInfo} | Wrap:{wrapStatus} | Theme:{themes[state.currentTheme].name}{loadingIndicator}"
     if state.statusMessage.len > 0:
       statusText = statusText & " | " & state.statusMessage
 
@@ -334,13 +365,47 @@ proc drawSequenceLine(tb: var TerminalBuffer, record: FQRecord, seqStart, seqEnd
       elif isInOligoMatch(seqPos, oligo2Matches, state.oligo2.len):
         bgCol = illwill.bgRed
 
-      if state.noColor:
+      if state.noColor or not state.colorSequence:
+        tb.setBackgroundColor(bgCol)
         tb.write(x, line, $base)
+        if bgCol != illwill.bgBlack:
+          tb.resetAttributes()
       else:
         tb.setForegroundColor(baseColor)
         tb.setBackgroundColor(bgCol)
         tb.write(x, line, $base)
         tb.resetAttributes()
+    else:
+      tb.write(x, line, " ")
+
+proc drawCompactSequenceLine(tb: var TerminalBuffer, record: FQRecord, seqStart, seqEnd: int,
+                             line, xOffset: int, state: ViewerState, theme: Theme,
+                             oligo1Matches, oligo2Matches, searchOligoMatches: seq[seq[int]]) =
+  ## Draw a single line of sequence with bases colored by quality score (compact FASTQ view)
+  let width = tb.width
+  for x in xOffset ..< width:
+    let seqPos = seqStart + (x - xOffset)
+    if seqPos < seqEnd and seqPos < record.sequence.len:
+      let base = record.sequence[seqPos]
+
+      # Oligo/search match background (same priority as normal mode)
+      var bgCol = illwill.bgBlack
+      if state.searchIsOligo and isInOligoMatch(seqPos, searchOligoMatches, state.searchPattern.len):
+        bgCol = illwill.bgMagenta
+      elif isInOligoMatch(seqPos, oligo1Matches, state.oligo1.len):
+        bgCol = illwill.bgBlue
+      elif isInOligoMatch(seqPos, oligo2Matches, state.oligo2.len):
+        bgCol = illwill.bgRed
+
+      # Color by quality
+      if seqPos < record.quality.len:
+        let (fg, bright) = getQualityColor(record.quality[seqPos], state.qualThresholds)
+        tb.setForegroundColor(fg, bright=bright)
+      else:
+        tb.setForegroundColor(theme.defaultFg)
+      tb.setBackgroundColor(bgCol)
+      tb.write(x, line, $base)
+      tb.resetAttributes()
     else:
       tb.write(x, line, " ")
 
@@ -361,9 +426,34 @@ proc drawQualityLine(tb: var TerminalBuffer, record: FQRecord, seqStart, seqEnd:
     else:
       tb.write(x, line, " ")
 
+proc calcRecordLines(record: FQRecord, width: int, showRecordNumbers: bool, compactFastq: bool = false): int =
+  ## Calculate how many lines a record would take in wrap mode
+  let isFasta = record.quality.len == 0
+
+  # Calculate header lines
+  var headerLen = 1 + record.name.len  # prefix + name
+  if showRecordNumbers:
+    headerLen += 5  # "[123] " approximate
+  if record.comment.len > 0:
+    headerLen += 1 + record.comment.len
+
+  var lines = 1  # First header line
+  if headerLen > width:
+    lines += (headerLen - width + (width - 3)) div (width - 2)  # Wrapped header lines
+
+  # Calculate sequence/quality lines
+  let seqChunks = (record.sequence.len + width - 1) div width  # ceil division
+  if isFasta or compactFastq:
+    lines += seqChunks  # No quality line in FASTA or compact mode
+  else:
+    lines += seqChunks * 2  # sequence + quality for each chunk
+
+  return lines
+
 proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state: ViewerState,
-                theme: Theme, recordNum: int, cache: RecordCache): int =
+                theme: Theme, recordNum: int, cache: RecordCache, skipLines: int = 0): int =
   ## Draw a record and return the number of lines used
+  ## skipLines: number of lines to skip from the beginning (for wrap mode scrolling)
   let
     width = tb.width
     isFasta = record.quality.len == 0
@@ -399,18 +489,26 @@ proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state:
 
   if state.lineWrap:
     # LINE WRAP MODE: wrap header if needed
-    let displayHeader = headerText[0 ..< min(headerText.len, width)]
-    drawHeaderWithHighlight(tb, displayHeader, line, 0, width, state, theme, isSearchMatch)
-    line += 1
+    # Track virtual line number (for skipLines support)
+    var virtualLine = 0
+
+    # First header line
+    if virtualLine >= skipLines:
+      let displayHeader = headerText[0 ..< min(headerText.len, width)]
+      drawHeaderWithHighlight(tb, displayHeader, line, 0, width, state, theme, isSearchMatch)
+      line += 1
+    virtualLine += 1
 
     # Wrap long headers (mainly for FASTQ with long comments)
     var headerPos = width
-    while headerPos < headerText.len and line < tb.height - 1:
-      let remaining = headerText[headerPos ..< min(headerText.len, headerPos + width - 2)]
-      # Draw continuation with highlighting
-      tb.write(0, line, "  ")  # Indent
-      drawHeaderWithHighlight(tb, remaining, line, 2, width, state, theme, isSearchMatch)
-      line += 1
+    while headerPos < headerText.len:
+      if virtualLine >= skipLines and line < tb.height - 1:
+        let remaining = headerText[headerPos ..< min(headerText.len, headerPos + width - 2)]
+        # Draw continuation with highlighting
+        tb.write(0, line, "  ")  # Indent
+        drawHeaderWithHighlight(tb, remaining, line, 2, width, state, theme, isSearchMatch)
+        line += 1
+      virtualLine += 1
       headerPos += width - 2
 
     if line >= tb.height - 1:
@@ -418,20 +516,27 @@ proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state:
 
     # For FASTQ in wrap mode: show sequence chunk then quality chunk, alternating
     var seqPos = 0
-    while seqPos < record.sequence.len and line < tb.height - 1:
+    while seqPos < record.sequence.len:
       let chunkEnd = min(seqPos + width, record.sequence.len)
 
-      # Draw sequence chunk
-      drawSequenceLine(tb, record, seqPos, chunkEnd, line, 0, state, theme, oligo1Matches, oligo2Matches, searchOligoMatches)
-      line += 1
+      # Draw sequence chunk (only if past skipLines)
+      if virtualLine >= skipLines and line < tb.height - 1:
+        if state.compactFastqView and not isFasta:
+          drawCompactSequenceLine(tb, record, seqPos, chunkEnd, line, 0, state, theme, oligo1Matches, oligo2Matches, searchOligoMatches)
+        else:
+          drawSequenceLine(tb, record, seqPos, chunkEnd, line, 0, state, theme, oligo1Matches, oligo2Matches, searchOligoMatches)
+        line += 1
+      virtualLine += 1
 
       if line >= tb.height - 1:
         return line - startLine
 
-      # Draw quality chunk (for FASTQ only)
-      if not isFasta and record.quality.len > 0:
-        drawQualityLine(tb, record, seqPos, chunkEnd, line, 0, state, theme)
-        line += 1
+      # Draw quality chunk (for FASTQ only, skip in compact mode)
+      if not isFasta and record.quality.len > 0 and not state.compactFastqView:
+        if virtualLine >= skipLines and line < tb.height - 1:
+          drawQualityLine(tb, record, seqPos, chunkEnd, line, 0, state, theme)
+          line += 1
+        virtualLine += 1
 
       seqPos = chunkEnd
 
@@ -509,20 +614,107 @@ proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state:
 
     # Sequence line with horizontal offset
     let seqStart = state.horizontalOffset
-    drawSequenceLine(tb, record, seqStart, seqStart + width, line, 0, state, theme, oligo1Matches, oligo2Matches, searchOligoMatches)
+    if state.compactFastqView and not isFasta:
+      drawCompactSequenceLine(tb, record, seqStart, seqStart + width, line, 0, state, theme, oligo1Matches, oligo2Matches, searchOligoMatches)
+    else:
+      drawSequenceLine(tb, record, seqStart, seqStart + width, line, 0, state, theme, oligo1Matches, oligo2Matches, searchOligoMatches)
     line += 1
 
     if line >= tb.height - 1:
       return line - startLine
 
-    # Quality line (for FASTQ)
-    if not isFasta and record.quality.len > 0:
+    # Quality line (for FASTQ, skip in compact mode)
+    if not isFasta and record.quality.len > 0 and not state.compactFastqView:
       drawQualityLine(tb, record, seqStart, seqStart + width, line, 0, state, theme)
       line += 1
 
   return line - startLine
 
+proc renderHelp(state: var ViewerState, themes: seq[Theme]) =
+  var tb = newTerminalBuffer(terminalWidth(), terminalHeight())
+  let theme = themes[state.currentTheme]
+
+  # Clear screen
+  tb.setBackgroundColor(illwill.bgBlack)
+  for y in 0 ..< tb.height:
+    for x in 0 ..< tb.width:
+      tb.write(x, y, " ")
+
+  # Split help text into lines
+  let helpLines = HELP_TEXT.split('\n')
+  let maxScroll = max(0, helpLines.len - (tb.height - 2))  # -2 for top and bottom bars
+
+  # Clamp scroll offset
+  if state.helpScrollOffset < 0:
+    state.helpScrollOffset = 0
+  if state.helpScrollOffset > maxScroll:
+    state.helpScrollOffset = maxScroll
+
+  # Draw top bar
+  tb.setBackgroundColor(illwill.bgBlue)
+  tb.setForegroundColor(illwill.fgWhite, bright=true)
+  let title = "SeqFu Less - Help"
+  let padding = max(0, (tb.width - len(title)) div 2)
+  for x in 0 ..< tb.width:
+    tb.write(x, 0, " ")
+  tb.write(padding, 0, title)
+  tb.resetAttributes()
+
+  # Draw help content with explicit black background for every cell
+  for i in 0 ..< tb.height - 2:
+    let lineIdx = i + state.helpScrollOffset
+    tb.setBackgroundColor(illwill.bgBlack)
+    tb.setForegroundColor(theme.defaultFg)
+    if lineIdx < helpLines.len:
+      let line = helpLines[lineIdx]
+      var displayLine: string
+      var isBold = false
+      if line.len > 0 and line[0] == '#':
+        displayLine = line[1 ..< line.len].strip(leading=true, trailing=false)
+        isBold = true
+      else:
+        displayLine = line
+      if displayLine.len > tb.width - 2:
+        displayLine = displayLine[0 ..< tb.width - 2]
+      if isBold:
+        tb.setForegroundColor(theme.defaultFg, bright=true)
+        tb.setStyle({illwill.styleBright})
+      tb.write(1, i + 1, displayLine)
+      if isBold:
+        tb.setForegroundColor(theme.defaultFg)
+        tb.resetAttributes()
+        tb.setBackgroundColor(illwill.bgBlack)
+      # Fill remaining columns with spaces on black background
+      for x in 1 + displayLine.len ..< tb.width:
+        tb.write(x, i + 1, " ")
+    else:
+      # Empty line: fill with spaces on black background
+      for x in 0 ..< tb.width:
+        tb.write(x, i + 1, " ")
+
+  # Draw status bar
+  tb.setBackgroundColor(illwill.bgBlue)
+  tb.setForegroundColor(illwill.fgWhite, bright=true)
+  let statusY = tb.height - 1
+  for x in 0 ..< tb.width:
+    tb.write(x, statusY, " ")
+
+  let statusText = if maxScroll > 0:
+    fmt"Line {state.helpScrollOffset + 1}-{min(state.helpScrollOffset + tb.height - 2, helpLines.len)}/{helpLines.len} | Use Up/Down to scroll | Press Q or Esc to exit"
+  else:
+    "Press Q or Esc to return to viewer"
+
+  tb.write(1, statusY, statusText[0 ..< min(statusText.len, tb.width - 2)])
+  tb.resetAttributes()
+
+  tb.display()
+
 proc render(state: var ViewerState, cache: var RecordCache, themes: seq[Theme]) =
+  # Check if in help mode
+  if state.helpMode:
+    renderHelp(state, themes)
+    return
+
   var tb = newTerminalBuffer(terminalWidth(), terminalHeight())
   let theme = themes[state.currentTheme]
 
@@ -538,6 +730,7 @@ proc render(state: var ViewerState, cache: var RecordCache, themes: seq[Theme]) 
   # Draw records
   var currentLine = 1  # Start after top bar
   var recordIdx = state.firstVisibleRecord
+  var isFirstRecord = true
 
   while currentLine < tb.height - 1 and recordIdx < cache.totalRecords:
     let record = cache.getRecord(recordIdx)
@@ -545,14 +738,76 @@ proc render(state: var ViewerState, cache: var RecordCache, themes: seq[Theme]) 
       recordIdx += 1
       continue
 
-    let linesUsed = drawRecord(tb, record, currentLine, state, theme, recordIdx, cache)
+    # For the first record in wrap mode, apply the line offset
+    let skipLines = if isFirstRecord and state.lineWrap: state.wrapLineOffset else: 0
+    let linesUsed = drawRecord(tb, record, currentLine, state, theme, recordIdx, cache, skipLines)
     currentLine += linesUsed
     recordIdx += 1
+    isFirstRecord = false
 
   # Draw status bar
   drawStatusBar(tb, state, theme, cache, themes)
 
   tb.display()
+
+proc searchWindowRange(state: var ViewerState, cache: RecordCache, start, stop: int) =
+  ## Search records in range [start, stop) and add matches to state.searchMatches
+  ## Maintains sorted order of searchMatches
+  let query = state.searchPattern
+  if query.len == 0:
+    return
+
+  for i in start ..< stop:
+    if i < 0 or i >= cache.records.len:
+      continue
+    let record = cache.records[i]
+    if state.searchIsOligo:
+      let matches = findPrimerMatches(record.sequence, query, state.matchThs, state.maxMismatches, state.minMatches)
+      if matches[0].len > 0 or matches[1].len > 0:
+        state.searchMatches.add(i)
+        state.searchOligoMatches[i] = matches
+    else:
+      let upperQuery = query.toUpperAscii()
+      if upperQuery in record.name.toUpperAscii() or upperQuery in record.comment.toUpperAscii():
+        state.searchMatches.add(i)
+
+proc extendSearchForward(state: var ViewerState, cache: var RecordCache): bool =
+  ## Extend search window forward by SEARCH_WINDOW records.
+  ## Returns true if new matches were found or there are more records to search.
+  let loadedCount = cache.records.len
+  if state.searchWindowEnd >= loadedCount:
+    if cache.indexComplete:
+      state.searchComplete = true
+      return false
+    else:
+      return false  # Can't search unloaded records yet
+
+  let prevMatchCount = state.searchMatches.len
+  let newEnd = min(state.searchWindowEnd + SEARCH_WINDOW, loadedCount)
+  searchWindowRange(state, cache, state.searchWindowEnd, newEnd)
+  state.searchWindowEnd = newEnd
+
+  if state.searchWindowEnd >= loadedCount and cache.indexComplete:
+    state.searchComplete = true
+
+  return state.searchMatches.len > prevMatchCount
+
+proc extendSearchBackward(state: var ViewerState, cache: var RecordCache): bool =
+  ## Extend search window backward by SEARCH_WINDOW records.
+  ## Returns true if new matches were found.
+  if state.searchWindowStart <= 0:
+    return false
+
+  let prevMatchCount = state.searchMatches.len
+  let newStart = max(0, state.searchWindowStart - SEARCH_WINDOW)
+  searchWindowRange(state, cache, newStart, state.searchWindowStart)
+  state.searchWindowStart = newStart
+
+  # Re-sort matches since we added entries with lower indices
+  if state.searchMatches.len > prevMatchCount:
+    state.searchMatches.sort()
+    return true
+  return false
 
 proc processSearchInput(state: var ViewerState, cache: var RecordCache) =
   let query = state.inputBuffer.strip()
@@ -573,31 +828,45 @@ proc processSearchInput(state: var ViewerState, cache: var RecordCache) =
   state.searchIsOligo = isOligo
   state.searchMatches = @[]
   state.searchOligoMatches.clear()
+  state.searchComplete = false
 
-  if isOligo:
-    # Search for oligo in sequences - store match positions for highlighting
-    for i in 0 ..< cache.totalRecords:
-      let record = cache.getRecord(i)
-      let matches = findPrimerMatches(record.sequence, query, state.matchThs, state.maxMismatches, state.minMatches)
-      if matches[0].len > 0 or matches[1].len > 0:
-        state.searchMatches.add(i)
-        state.searchOligoMatches[i] = matches
-    state.statusMessage = fmt"Found oligo in {state.searchMatches.len} records"
+  # Search a window around the current position
+  let loadedCount = cache.records.len
+  let center = state.firstVisibleRecord
+  let halfWindow = SEARCH_WINDOW div 2
+  state.searchWindowStart = max(0, center - halfWindow)
+  state.searchWindowEnd = min(loadedCount, center + halfWindow)
+
+  searchWindowRange(state, cache, state.searchWindowStart, state.searchWindowEnd)
+
+  # Check if entire file was covered
+  if state.searchWindowStart == 0 and state.searchWindowEnd >= loadedCount and cache.indexComplete:
+    state.searchComplete = true
+
+  let searchNote = if state.searchComplete: ""
+    elif not cache.indexComplete: " (partial, still loading)"
+    else: " (use n/N to search more)"
+
+  if state.searchIsOligo:
+    state.statusMessage = fmt"Found oligo in {state.searchMatches.len} records{searchNote}"
   else:
-    # Search in names and comments (case-insensitive)
-    let upperQuery = query.toUpperAscii()
-    for i in 0 ..< cache.totalRecords:
-      let record = cache.getRecord(i)
-      if upperQuery in record.name.toUpperAscii() or upperQuery in record.comment.toUpperAscii():
-        state.searchMatches.add(i)
-    state.statusMessage = fmt"Found '{query}' in {state.searchMatches.len} records"
+    state.statusMessage = fmt"Found '{query}' in {state.searchMatches.len} records{searchNote}"
 
-  # Jump to first match
+  # Jump to closest match to current position
   if state.searchMatches.len > 0:
+    # Find the match closest to current position
     state.currentSearchIdx = 0
-    state.firstVisibleRecord = state.searchMatches[0]
+    var bestDist = abs(state.searchMatches[0] - center)
+    for i in 1 ..< state.searchMatches.len:
+      let dist = abs(state.searchMatches[i] - center)
+      if dist < bestDist:
+        bestDist = dist
+        state.currentSearchIdx = i
+    state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
+    state.wrapLineOffset = 0
+    state.statusMessage &= fmt" [{state.currentSearchIdx + 1}/{state.searchMatches.len}]"
   else:
-    state.statusMessage = "No matches found"
+    state.statusMessage = "No matches found" & searchNote
 
 proc processJumpInput(state: var ViewerState, cache: RecordCache) =
   let query = state.inputBuffer.strip()
@@ -616,6 +885,7 @@ proc processJumpInput(state: var ViewerState, cache: RecordCache) =
       target = cache.totalRecords - 1
 
     state.firstVisibleRecord = target
+    state.wrapLineOffset = 0  # Reset line offset when jumping
 
     if target + 1 != originalTarget:
       state.statusMessage = fmt"Jumped to {target + 1} (clamped from {originalTarget})"
@@ -626,6 +896,27 @@ proc processJumpInput(state: var ViewerState, cache: RecordCache) =
 
 proc handleKey(key: Key, state: var ViewerState, cache: var RecordCache, themes: seq[Theme]): bool =
   ## Returns false to exit
+
+  # Help mode handling
+  if state.helpMode:
+    case key
+    of Key.Q, Key.Escape:
+      state.helpMode = false
+      state.helpScrollOffset = 0
+    of Key.Up, Key.A:
+      if state.helpScrollOffset > 0:
+        state.helpScrollOffset -= 1
+    of Key.Down, Key.Z:
+      state.helpScrollOffset += 1
+    of Key.PageUp:
+      state.helpScrollOffset = max(0, state.helpScrollOffset - 10)
+    of Key.PageDown:
+      state.helpScrollOffset += 10
+    of Key.Home:
+      state.helpScrollOffset = 0
+    else:
+      discard
+    return true
 
   # Input mode handling
   if state.inputMode:
@@ -693,40 +984,136 @@ proc handleKey(key: Key, state: var ViewerState, cache: var RecordCache, themes:
 
   # Vertical navigation
   of Key.Up, Key.A:
-    if state.firstVisibleRecord > 0:
-      state.firstVisibleRecord -= 1
-      state.statusMessage = ""
+    if state.lineWrap:
+      # In wrap mode, scroll by lines within the current record
+      if state.wrapLineOffset > 0:
+        state.wrapLineOffset -= 1
+        state.statusMessage = ""
+      elif state.firstVisibleRecord > 0:
+        # Move to previous record, start at its last line
+        state.firstVisibleRecord -= 1
+        let prevRecord = cache.getRecord(state.firstVisibleRecord)
+        let totalLines = calcRecordLines(prevRecord, terminalWidth(), state.showRecordNumbers, state.compactFastqView)
+        # Show the last screen's worth of lines from the previous record
+        let screenLines = terminalHeight() - 2  # minus top and bottom bars
+        state.wrapLineOffset = max(0, totalLines - screenLines)
+        state.statusMessage = ""
+    else:
+      if state.firstVisibleRecord > 0:
+        state.firstVisibleRecord -= 1
+        state.statusMessage = ""
 
   of Key.Down, Key.Z:
-    if state.firstVisibleRecord < cache.totalRecords - 1:
-      state.firstVisibleRecord += 1
-      state.statusMessage = ""
+    if state.lineWrap:
+      # In wrap mode, scroll by lines within the current record
+      let currentRecord = cache.getRecord(state.firstVisibleRecord)
+      let totalLines = calcRecordLines(currentRecord, terminalWidth(), state.showRecordNumbers, state.compactFastqView)
+      if state.wrapLineOffset < totalLines - 1:
+        state.wrapLineOffset += 1
+        state.statusMessage = ""
+      elif state.firstVisibleRecord < cache.totalRecords - 1:
+        # Move to next record
+        state.firstVisibleRecord += 1
+        state.wrapLineOffset = 0
+        state.statusMessage = ""
+    else:
+      if state.firstVisibleRecord < cache.totalRecords - 1:
+        state.firstVisibleRecord += 1
+        state.statusMessage = ""
 
   of Key.PageUp:
     let pageSize = max(1, (terminalHeight() - 3) div 4)
-    state.firstVisibleRecord = max(0, state.firstVisibleRecord - pageSize)
+    if state.lineWrap:
+      # In wrap mode, scroll by screen lines
+      let linesToScroll = terminalHeight() - 2
+      if state.wrapLineOffset >= linesToScroll:
+        state.wrapLineOffset -= linesToScroll
+      else:
+        # Need to scroll to previous record(s)
+        var remaining = linesToScroll - state.wrapLineOffset
+        state.wrapLineOffset = 0
+        while remaining > 0 and state.firstVisibleRecord > 0:
+          state.firstVisibleRecord -= 1
+          let prevRecord = cache.getRecord(state.firstVisibleRecord)
+          let prevLines = calcRecordLines(prevRecord, terminalWidth(), state.showRecordNumbers, state.compactFastqView)
+          if prevLines <= remaining:
+            remaining -= prevLines
+          else:
+            state.wrapLineOffset = prevLines - remaining
+            remaining = 0
+    else:
+      state.firstVisibleRecord = max(0, state.firstVisibleRecord - pageSize)
     state.statusMessage = ""
 
   of Key.PageDown:
     let pageSize = max(1, (terminalHeight() - 3) div 4)
-    state.firstVisibleRecord = min(cache.totalRecords - 1, state.firstVisibleRecord + pageSize)
+    if state.lineWrap:
+      # In wrap mode, scroll by screen lines
+      let linesToScroll = terminalHeight() - 2
+      var remaining = linesToScroll
+      while remaining > 0 and state.firstVisibleRecord < cache.totalRecords - 1:
+        let currentRecord = cache.getRecord(state.firstVisibleRecord)
+        let currentLines = calcRecordLines(currentRecord, terminalWidth(), state.showRecordNumbers, state.compactFastqView)
+        let linesRemaining = currentLines - state.wrapLineOffset
+        if linesRemaining <= remaining:
+          remaining -= linesRemaining
+          state.firstVisibleRecord += 1
+          state.wrapLineOffset = 0
+        else:
+          state.wrapLineOffset += remaining
+          remaining = 0
+    else:
+      state.firstVisibleRecord = min(cache.totalRecords - 1, state.firstVisibleRecord + pageSize)
     state.statusMessage = ""
 
   of Key.CtrlA:
-    state.firstVisibleRecord = max(0, state.firstVisibleRecord - 100)
+    if state.lineWrap:
+      # Jump 100 lines up
+      var remaining = 100
+      while remaining > 0 and (state.wrapLineOffset > 0 or state.firstVisibleRecord > 0):
+        if state.wrapLineOffset >= remaining:
+          state.wrapLineOffset -= remaining
+          remaining = 0
+        else:
+          remaining -= state.wrapLineOffset
+          state.wrapLineOffset = 0
+          if state.firstVisibleRecord > 0:
+            state.firstVisibleRecord -= 1
+            let prevRecord = cache.getRecord(state.firstVisibleRecord)
+            let prevLines = calcRecordLines(prevRecord, terminalWidth(), state.showRecordNumbers, state.compactFastqView)
+            state.wrapLineOffset = prevLines - 1
+    else:
+      state.firstVisibleRecord = max(0, state.firstVisibleRecord - 100)
     state.statusMessage = "Jumped 100 up"
 
   of Key.CtrlZ:
-    state.firstVisibleRecord = min(cache.totalRecords - 1, state.firstVisibleRecord + 100)
+    if state.lineWrap:
+      # Jump 100 lines down
+      var remaining = 100
+      while remaining > 0 and state.firstVisibleRecord < cache.totalRecords - 1:
+        let currentRecord = cache.getRecord(state.firstVisibleRecord)
+        let currentLines = calcRecordLines(currentRecord, terminalWidth(), state.showRecordNumbers, state.compactFastqView)
+        let linesRemaining = currentLines - state.wrapLineOffset - 1
+        if linesRemaining >= remaining:
+          state.wrapLineOffset += remaining
+          remaining = 0
+        else:
+          remaining -= linesRemaining + 1
+          state.firstVisibleRecord += 1
+          state.wrapLineOffset = 0
+    else:
+      state.firstVisibleRecord = min(cache.totalRecords - 1, state.firstVisibleRecord + 100)
     state.statusMessage = "Jumped 100 down"
 
   of Key.Home:
     state.firstVisibleRecord = 0
+    state.wrapLineOffset = 0
     state.statusMessage = "Start"
 
   of Key.End:
     state.firstVisibleRecord = max(0, cache.totalRecords - 1)
-    state.statusMessage = "End"
+    state.wrapLineOffset = 0
+    state.statusMessage = if cache.indexComplete: "End" else: fmt"End (loaded {cache.totalRecords} so far)"
 
   # Horizontal navigation
   of Key.Left:
@@ -751,6 +1138,7 @@ proc handleKey(key: Key, state: var ViewerState, cache: var RecordCache, themes:
   # Toggle options
   of Key.S:
     state.lineWrap = not state.lineWrap
+    state.wrapLineOffset = 0  # Reset line offset when toggling wrap mode
     state.statusMessage = if state.lineWrap: "Line wrap ON" else: "Line wrap OFF"
 
   of Key.T:
@@ -760,6 +1148,23 @@ proc handleKey(key: Key, state: var ViewerState, cache: var RecordCache, themes:
   of Key.R:
     state.showRecordNumbers = not state.showRecordNumbers
     state.statusMessage = if state.showRecordNumbers: "Record numbers ON" else: "Record numbers OFF"
+
+  of Key.C:
+    state.compactFastqView = not state.compactFastqView
+    state.wrapLineOffset = 0
+    state.statusMessage = if state.compactFastqView: "Compact FASTQ view ON" else: "Compact FASTQ view OFF"
+
+  of Key.U:
+    state.useQualChars = not state.useQualChars
+    state.statusMessage = if state.useQualChars: "Quality chars ON" else: "Quality bars ON"
+
+  of Key.Zero:
+    state.colorSequence = not state.colorSequence
+    state.statusMessage = if state.colorSequence: "Sequence coloring ON" else: "Sequence coloring OFF"
+
+  of Key.H:
+    state.helpMode = true
+    state.helpScrollOffset = 0
 
   # Search and jump
   of Key.Slash:
@@ -776,16 +1181,77 @@ proc handleKey(key: Key, state: var ViewerState, cache: var RecordCache, themes:
 
   # Navigate search results
   of Key.N:
-    if state.searchMatches.len > 0:
-      state.currentSearchIdx = (state.currentSearchIdx + 1) mod state.searchMatches.len
-      state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
-      state.statusMessage = fmt"Match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+    if state.searchPattern.len > 0:
+      if state.searchMatches.len > 0 and state.currentSearchIdx < state.searchMatches.len - 1:
+        # There's a next match in the current window
+        state.currentSearchIdx += 1
+        state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
+        state.wrapLineOffset = 0
+        state.statusMessage = fmt"Match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+      elif not state.searchComplete:
+        # Try to extend search forward
+        let found = extendSearchForward(state, cache)
+        if found and state.currentSearchIdx < state.searchMatches.len - 1:
+          state.currentSearchIdx += 1
+          state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
+          state.wrapLineOffset = 0
+          state.statusMessage = fmt"Match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+          if not state.searchComplete:
+            state.statusMessage &= " (more to search)"
+        elif state.searchMatches.len > 0:
+          # Wrap around to first match
+          state.currentSearchIdx = 0
+          state.firstVisibleRecord = state.searchMatches[0]
+          state.wrapLineOffset = 0
+          state.statusMessage = fmt"Wrapped: match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+          if not state.searchComplete:
+            state.statusMessage &= " (more to search)"
+        else:
+          state.statusMessage = "No matches found (searching...)"
+      elif state.searchMatches.len > 0:
+        # Search complete, wrap to first match
+        state.currentSearchIdx = 0
+        state.firstVisibleRecord = state.searchMatches[0]
+        state.wrapLineOffset = 0
+        state.statusMessage = fmt"Wrapped: match 1/{state.searchMatches.len}"
+      else:
+        state.statusMessage = "No matches found"
 
   of Key.ShiftN:
-    if state.searchMatches.len > 0:
-      state.currentSearchIdx = (state.currentSearchIdx - 1 + state.searchMatches.len) mod state.searchMatches.len
-      state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
-      state.statusMessage = fmt"Match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+    if state.searchPattern.len > 0:
+      if state.searchMatches.len > 0 and state.currentSearchIdx > 0:
+        # There's a previous match in the current window
+        state.currentSearchIdx -= 1
+        state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
+        state.wrapLineOffset = 0
+        state.statusMessage = fmt"Match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+      elif state.searchWindowStart > 0:
+        # Try to extend search backward
+        let oldLen = state.searchMatches.len
+        let found = extendSearchBackward(state, cache)
+        if found:
+          # Matches were added at the beginning; adjust currentSearchIdx
+          let newEntries = state.searchMatches.len - oldLen
+          state.currentSearchIdx = newEntries - 1  # Last of the newly found (closest to previous window)
+          state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
+          state.wrapLineOffset = 0
+          state.statusMessage = fmt"Match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+        elif state.searchMatches.len > 0:
+          # Wrap to last match
+          state.currentSearchIdx = state.searchMatches.len - 1
+          state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
+          state.wrapLineOffset = 0
+          state.statusMessage = fmt"Wrapped: match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+        else:
+          state.statusMessage = "No matches found"
+      elif state.searchMatches.len > 0:
+        # At start, wrap to last match
+        state.currentSearchIdx = state.searchMatches.len - 1
+        state.firstVisibleRecord = state.searchMatches[state.currentSearchIdx]
+        state.wrapLineOffset = 0
+        state.statusMessage = fmt"Wrapped: match {state.currentSearchIdx + 1}/{state.searchMatches.len}"
+      else:
+        state.statusMessage = "No matches found"
 
   else:
     discard
@@ -804,9 +1270,9 @@ Usage: less [options] <inputfile>
 Interactive viewer for FASTA/FASTQ files (like Unix less for sequences).
 
 Navigation:
-  Up/Down, A/Z         Scroll one record up/down
+  Up/Down, A/Z         Scroll one record (or line in wrap mode)
   PgUp/PgDown          Scroll one page up/down
-  Ctrl+A/Ctrl+Z        Jump 100 records up/down
+  Ctrl+A/Ctrl+Z        Jump 100 records/lines up/down
   Home/End             Jump to start/end
   Left/Right           Scroll 1bp horizontally (no-wrap mode)
   L/K                  Scroll 25bp left/right
@@ -869,6 +1335,7 @@ Options:
     fileFormat: "FASTA",  # Will be updated
     currentTheme: 0,
     firstVisibleRecord: 0,
+    wrapLineOffset: 0,
     horizontalOffset: 0,
     lineWrap: not bool(args["--no-line-wrap"]),
     showRecordNumbers: false,
@@ -884,7 +1351,7 @@ Options:
     inputMode: false,
     inputBuffer: "",
     inputPrompt: "",
-    statusMessage: "Loading...",
+    statusMessage: "",
     isLoading: true,
     mouseEnabled: bool(args["--mouse"]) or getEnv("SEQFU_MOUSE") == "1",
     qualThresholds: thresholds,
@@ -893,33 +1360,27 @@ Options:
     maxMismatches: parseInt($args["--max-mismatches"]),
     useAscii: bool(args["--ascii"]),
     useQualChars: bool(args["--qual-chars"]),
-    noColor: bool(args["--nocolor"])
+    noColor: bool(args["--nocolor"]),
+    helpMode: false,
+    helpScrollOffset: 0,
+    compactFastqView: false,
+    colorSequence: true,
+    searchWindowStart: 0,
+    searchWindowEnd: 0,
+    searchComplete: false
   )
 
-  # Initialize cache and load records
+  # Initialize cache and load only the first screenful
   var cache = initCache(filename, maxCache)
-  loadAllRecords(cache)
+  loadInitialRecords(cache, INITIAL_LOAD)
 
   # Determine file format
-  if cache.headRecords.len > 0:
-    state.fileFormat = if cache.headRecords[0].quality.len > 0: "FASTQ" else: "FASTA"
+  if cache.records.len > 0:
+    state.fileFormat = if cache.records[0].quality.len > 0: "FASTQ" else: "FASTA"
 
-  # Pre-compute oligo matches if specified
-  if state.oligo1.len > 0:
-    for i in 0 ..< cache.totalRecords:
-      let record = cache.getRecord(i)
-      let matches = findPrimerMatches(record.sequence, state.oligo1, state.matchThs, state.maxMismatches, state.minMatches)
-      if matches[0].len > 0 or matches[1].len > 0:
-        state.oligo1Matches[i] = matches
+  # Track how many records have been oligo-scanned
+  var oligoScanIdx = 0
 
-  if state.oligo2.len > 0:
-    for i in 0 ..< cache.totalRecords:
-      let record = cache.getRecord(i)
-      let matches = findPrimerMatches(record.sequence, state.oligo2, state.matchThs, state.maxMismatches, state.minMatches)
-      if matches[0].len > 0 or matches[1].len > 0:
-        state.oligo2Matches[i] = matches
-
-  state.isLoading = false
   state.statusMessage = ""
 
   # Initialize terminal
@@ -938,7 +1399,29 @@ Options:
           if not handleKey(key, state, cache, themes):
             break
 
-        sleep(20)
+        # Incremental loading: load more records during idle frames
+        if not cache.indexComplete:
+          let hadMore = loadMoreRecords(cache)
+          if cache.indexComplete:
+            state.isLoading = false
+            state.statusMessage = fmt"{cache.totalRecords} records loaded"
+
+        # Incremental oligo scanning for newly loaded records
+        if state.oligo1.len > 0 or state.oligo2.len > 0:
+          let scanEnd = min(oligoScanIdx + BATCH_LOAD, cache.records.len)
+          for i in oligoScanIdx ..< scanEnd:
+            let record = cache.records[i]
+            if state.oligo1.len > 0:
+              let matches = findPrimerMatches(record.sequence, state.oligo1, state.matchThs, state.maxMismatches, state.minMatches)
+              if matches[0].len > 0 or matches[1].len > 0:
+                state.oligo1Matches[i] = matches
+            if state.oligo2.len > 0:
+              let matches = findPrimerMatches(record.sequence, state.oligo2, state.matchThs, state.maxMismatches, state.minMatches)
+              if matches[0].len > 0 or matches[1].len > 0:
+                state.oligo2Matches[i] = matches
+          oligoScanIdx = scanEnd
+
+        sleep(16)
     finally:
       illwillDeinit()
       showCursor()
