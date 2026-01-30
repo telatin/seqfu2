@@ -260,8 +260,9 @@ proc isInTextMatch(pos: int, matchStarts: seq[int], patternLen: int): bool =
   return false
 
 proc drawHeaderWithHighlight(tb: var TerminalBuffer, headerText: string, line, startX, endX: int,
-                             state: ViewerState, theme: Theme, isMatch: bool) =
+                             state: ViewerState, theme: Theme, isMatch: bool, commentStartPos: int) =
   ## Draw header text with search highlight if this record matches
+  ## commentStartPos: position where comment starts (for different styling)
   let matchStarts = if isMatch and not state.searchIsOligo and state.searchPattern.len > 0:
     findTextMatches(headerText, state.searchPattern)
   else:
@@ -278,7 +279,13 @@ proc drawHeaderWithHighlight(tb: var TerminalBuffer, headerText: string, line, s
         tb.write(x, line, $c)
         tb.resetAttributes()
       else:
-        tb.setForegroundColor(theme.seqNameFg, bright=true)
+        # Check if we're in the comment portion
+        if commentStartPos >= 0 and charPos >= commentStartPos:
+          # Comment: use seqCommentFg without bold
+          tb.setForegroundColor(theme.seqCommentFg, bright=false)
+        else:
+          # Identifier: use seqNameFg with bold
+          tb.setForegroundColor(theme.seqNameFg, bright=true)
         tb.write(x, line, $c)
     else:
       tb.write(x, line, " ")
@@ -484,6 +491,13 @@ proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state:
   if state.showRecordNumbers:
     headerText &= fmt"[{recordNum + 1}] "
   headerText &= record.name
+
+  # Calculate where comment starts in headerText
+  let commentStartPos = if record.comment.len > 0:
+    headerText.len + 1  # Position after the space we're about to add
+  else:
+    -1  # No comment
+
   if record.comment.len > 0:
     headerText &= " " & record.comment
 
@@ -495,7 +509,7 @@ proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state:
     # First header line
     if virtualLine >= skipLines:
       let displayHeader = headerText[0 ..< min(headerText.len, width)]
-      drawHeaderWithHighlight(tb, displayHeader, line, 0, width, state, theme, isSearchMatch)
+      drawHeaderWithHighlight(tb, displayHeader, line, 0, width, state, theme, isSearchMatch, commentStartPos)
       line += 1
     virtualLine += 1
 
@@ -506,7 +520,12 @@ proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state:
         let remaining = headerText[headerPos ..< min(headerText.len, headerPos + width - 2)]
         # Draw continuation with highlighting
         tb.write(0, line, "  ")  # Indent
-        drawHeaderWithHighlight(tb, remaining, line, 2, width, state, theme, isSearchMatch)
+        # Adjust commentStartPos for the wrapped portion (account for indent and offset)
+        let adjustedCommentStart = if commentStartPos >= 0:
+          commentStartPos - headerPos
+        else:
+          -1
+        drawHeaderWithHighlight(tb, remaining, line, 2, width, state, theme, isSearchMatch, adjustedCommentStart)
         line += 1
       virtualLine += 1
       headerPos += width - 2
@@ -565,7 +584,13 @@ proc drawRecord(tb: var TerminalBuffer, record: FQRecord, startLine: int, state:
             tb.write(x, line, $c)
             tb.resetAttributes()
           else:
-            tb.setForegroundColor(theme.seqNameFg, bright=true)
+            # Check if we're in the comment portion
+            if commentStartPos >= 0 and charPos >= commentStartPos:
+              # Comment: use seqCommentFg without bold
+              tb.setForegroundColor(theme.seqCommentFg, bright=false)
+            else:
+              # Identifier: use seqNameFg with bold
+              tb.setForegroundColor(theme.seqNameFg, bright=true)
             tb.write(x, line, $c)
         else:
           tb.write(x, line, " ")
@@ -1045,7 +1070,7 @@ proc handleKey(key: Key, state: var ViewerState, cache: var RecordCache, themes:
       state.firstVisibleRecord = max(0, state.firstVisibleRecord - pageSize)
     state.statusMessage = ""
 
-  of Key.PageDown:
+  of Key.PageDown, Key.Space:
     let pageSize = max(1, (terminalHeight() - 3) div 4)
     if state.lineWrap:
       # In wrap mode, scroll by screen lines
@@ -1271,7 +1296,7 @@ Interactive viewer for FASTA/FASTQ files (like Unix less for sequences).
 
 Navigation:
   Up/Down, A/Z         Scroll one record (or line in wrap mode)
-  PgUp/PgDown          Scroll one page up/down
+  PgUp/PgDown, Space   Scroll one page up/down
   Ctrl+A/Ctrl+Z        Jump 100 records/lines up/down
   Home/End             Jump to start/end
   Left/Right           Scroll 1bp horizontally (no-wrap mode)

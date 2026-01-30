@@ -3,6 +3,7 @@
   Up, Down         Scroll one record up/down (or line in wrap mode)
   A, Z             Scroll one record up/down (alternative)
   PgUp, PgDown     Scroll one page up/down
+  Space            Scroll one page down
   Ctrl+A, Ctrl+Z   Jump 100 records/lines up/down
   Home, End        Jump to start/end of file
 
