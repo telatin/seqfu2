@@ -34,3 +34,4 @@ _migrate/*
 data/filt.fq
 data/filt.fa
 data/ass.*
+test/bats/
