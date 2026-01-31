@@ -2,6 +2,7 @@
 layout: default
 title: seqfu lanes
 parent: Core Tools
+nav_order: 10
 ---
 
 

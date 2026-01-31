@@ -2,6 +2,7 @@
 layout: default
 title: seqfu grep
 parent: Core Tools
+nav_order: 7
 ---
 
 

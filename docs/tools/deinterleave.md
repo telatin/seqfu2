@@ -2,6 +2,7 @@
 layout: default
 title: seqfu deinterleave
 parent: Core Tools
+nav_order: 5
 ---
 
 

@@ -2,6 +2,7 @@
 layout: default
 title: seqfu bases
 parent: Core Tools
+nav_order: 1
 ---
 
 # seqfu bases

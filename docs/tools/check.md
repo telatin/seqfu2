@@ -2,6 +2,7 @@
 layout: default
 title: seqfu check
 parent: Core Tools
+nav_order: 3
 ---
 
 # seqfu check

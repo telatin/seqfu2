@@ -2,6 +2,7 @@
 layout: default
 title: seqfu cat
 parent: Core Tools
+nav_order: 2
 ---
 
 # seqfu cat

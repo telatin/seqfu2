@@ -2,6 +2,7 @@
 layout: default
 title: seqfu stats
 parent: Core Tools
+nav_order: 19
 ---
 
 

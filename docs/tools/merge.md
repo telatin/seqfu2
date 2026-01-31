@@ -2,6 +2,7 @@
 layout: default
 title: seqfu merge
 parent: Core Tools
+nav_order: 13
 ---
 
 
