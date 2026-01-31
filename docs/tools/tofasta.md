@@ -1,3 +1,9 @@
+---
+layout: default
+title: seqfu tofasta
+parent: Core Tools
+---
+
 # seqfu tofasta
 
 Converts various sequence file formats to FASTA format.
