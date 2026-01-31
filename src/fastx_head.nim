@@ -97,6 +97,7 @@ Output:
         c = 0
         printed = 0
         outRecord: FQRecord
+        lastPrintedName: string
 
       for record in readfq(filename):
         outRecord = record
@@ -117,11 +118,12 @@ Output:
             outRecord.name = prefix & separator & $printed
           if printBasename:
             outRecord.name = getBasename(filename) & separator & outRecord.name
+          lastPrintedName = outRecord.name
           print_seq(outRecord, nil)
 
       # --print-last: report the last printed sequence name (after the loop)
       if printed == num and printLast:
-        stderr.writeLine("Last:", outRecord.name)
+        stderr.writeLine("Last:", lastPrintedName)
 
       if (not args["--quiet"]) and printed < num:
         stderr.writeLine("WARNING: Printed fewer sequences (", printed, "/", num, ") than requested for ", filename, ". Try reducing --skip.")
