@@ -1,154 +1,81 @@
+## seqfu tail — Print the last sequences from FASTA/FASTQ files.
+##
+## Selects sequences from the end of each input file, with optional
+## subsampling via --skip. Must read the entire file to determine the
+## last N sequences. Supports renaming, format conversion, and
+## streaming from stdin.
+
 import readfq
-import strformat
-import tables, strutils
-from os import fileExists, getEnv
+import strutils
+import deques
+import math
+from os import fileExists, dirExists
 import docopt
 import ./seqfu_utils
 
-proc keepSeq(pool: var seq, sequence: FQRecord, max: int): bool {.discardable.} = 
+
+proc keepSeq(pool: var Deque[FQRecord], sequence: FQRecord, max: int) =
+  ## Maintain a sliding window of the last `max` sequences using a deque.
+  ## O(1) per operation, unlike seq.delete(0) which is O(n).
   if pool.len >= max:
-    pool.delete(0)
-  pool.add(sequence)
-  return true
-#[
-proc keepSeq_v1(pool: var seq, sequence: FastxRecord, max: int): bool {.discardable.} = 
-  if pool.len >= max:
-    pool.delete(0)
-  pool.add(sequence)
-  return true
-]#
-proc fastx_tail_v2(argv: var seq[string]): int =
-    let args = docopt("""
-Usage: tail [options] [<inputfile> ...]
-
-Options:
-  -n, --num NUM          Print the first NUM sequences [default: 10]
-  -k, --skip SKIP        Print one sequence every SKIP [default: 0]
-  -p, --prefix STRING    Rename sequences with prefix + incremental number
-  -s, --strip-comments   Remove comments
-  -b, --basename         prepend basename to sequence name
-  --fasta                Force FASTA output
-  --fastq                Force FASTQ output
-  --sep STRING           Sequence name fields separator [default: _]
-  -q, --fastq-qual INT   FASTQ default quality [default: 33]
-  -v, --verbose          Verbose output
-  -h, --help             Show this help
-
-  """, version=version(), argv=argv)
-
-    verbose = args["--verbose"]
-    stripComments = args["--strip-comments"]
-    forceFasta = args["--fasta"]
-    forceFastq = args["--fastq"]
-    defaultQual = parseInt($args["--fastq-qual"])
-    var
-      num, skip : int
-      prefix : string
-      files : seq[string]  
-      printBasename: bool 
-      separator:  string 
-      #lastSequences: seq[FastxRecord]
-      lastSequences = newSeq[FQRecord](0)
+    pool.popFirst()
+  pool.addLast(sequence)
 
 
-    try:
-      num =  parseInt($args["--num"])
-      skip =  parseInt($args["--skip"])
-      printBasename = args["--basename"] 
-      separator = $args["--sep"]
-    except:
-      stderr.writeLine("Error: Wrong parameters!")
-      quit(1)
-
-    if args["--prefix"]:
-      prefix = $args["--prefix"]
-
-    if args["<inputfile>"].len() == 0:
-      if getEnv("SEQFU_QUIET") == "":
-        stderr.writeLine("[seqfu tail] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
-      files.add("-")
-    else:
-      for file in args["<inputfile>"]:
-        files.add(file)
-    
-    
-    for filename in files:
-      echoVerbose(filename, verbose)
-      var
-        y = 0
- 
-      var 
-        c  = 0
-        printed = 0
-      
-      
-      for record in readfq(filename):
-        var
-          outRecord : FQRecord = record
-        c += 1
-
-        if skip > 0:
-          y = c mod skip
-
-        if y == 0:
-          if len(prefix) > 0:
-            outRecord.name = $prefix & separator & $printed
-          if printBasename:
-            outRecord.name = $getBasename(filename) & separator & record.name
-          #printSeq(r, nil)
-          lastSequences.keepSeq(outRecord, num)
-      
-      for tailSeq in lastSequences:
-        printSeq(tailSeq, nil)
-
-#[
-import klib
 proc fastx_tail(argv: var seq[string]): int =
     let args = docopt("""
 Usage: tail [options] [<inputfile> ...]
 
+Print the last sequences from FASTA/FASTQ files. The entire file must
+be read to determine which sequences are last.
+
+If no files are provided, reads from standard input.
+
 Options:
-  -n, --num NUM          Print the first NUM sequences [default: 10]
-  -k, --skip SKIP        Print one sequence every SKIP [default: 0]
+  -n, --num NUM          Print the last NUM sequences [default: 10]
+  -k, --skip SKIP        Print one sequence every SKIP (0 to disable) [default: 0]
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -s, --strip-comments   Remove comments
-  -b, --basename         prepend basename to sequence name
-  --fasta                Force FASTA output
-  --fastq                Force FASTQ output
-  --sep STRING       Sequence name fields separator [default: _]
-  -q, --fastq-qual INT   FASTQ default quality [default: 33]
+  -b, --basename         Prepend basename to sequence name
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
+Output:
+  --fasta                Force FASTA output
+  --fastq                Force FASTQ output
+  --sep STRING           Sequence name fields separator [default: _]
+  -q, --fastq-qual INT   FASTQ default quality [default: 33]
+
   """, version=version(), argv=argv)
 
-    verbose = args["--verbose"]
+    # --- Set global output flags ---
+    verbose       = args["--verbose"]
     stripComments = args["--strip-comments"]
-    forceFasta = args["--fasta"]
-    forceFastq = args["--fastq"]
-    defaultQual = parseInt($args["--fastq-qual"])
-    var
-      num, skip : int
-      prefix : string
-      files : seq[string]  
-      printBasename: bool 
-      separator:  string 
-      #lastSequences: seq[FastxRecord]
-      lastSequences = newSeq[FastxRecord](0)
+    forceFasta    = bool(args["--fasta"])
+    forceFastq    = bool(args["--fastq"])
+    defaultQual   = parseInt($args["--fastq-qual"])
 
+    # --- Parse arguments ---
+    var
+      num, skip    : int
+      prefix       : string
+      files        : seq[string]
+      printBasename: bool
+      separator    : string
 
     try:
-      num =  parseInt($args["--num"])
-      skip =  parseInt($args["--skip"])
-      printBasename = args["--basename"] 
+      num  = parseInt($args["--num"])
+      skip = parseInt($args["--skip"])
+      printBasename = args["--basename"]
       separator = $args["--sep"]
     except:
-      stderr.writeLine("Error: Wrong parameters!")
+      stderr.writeLine("Error: invalid value for --num or --skip (expected integer).")
       quit(1)
 
     if args["--prefix"]:
       prefix = $args["--prefix"]
 
+    # --- Collect input files ---
     if args["<inputfile>"].len() == 0:
       if getEnv("SEQFU_QUIET") == "":
         stderr.writeLine("[seqfu tail] Waiting for STDIN... [Ctrl-C to quit, type with --help for info].")
@@ -156,36 +83,40 @@ Options:
     else:
       for file in args["<inputfile>"]:
         files.add(file)
-    
-    
+
+    # --- Process each file ---
     for filename in files:
+      if filename != "-" and not fileExists(filename):
+        if dirExists(filename):
+          stderr.writeLine("WARNING: Directories are not supported. Skipping ", filename)
+        else:
+          stderr.writeLine("WARNING: File not found, skipping: ", filename)
+        continue
+
       echoVerbose(filename, verbose)
-      var 
-        f = xopen[GzFile](filename)
+
+      var
         y = 0
-        r: FastxRecord
-        
-      defer: f.close()
-      var 
-        c  = 0
-        printed = 0
-      
-      
-      while f.readFastx(r):
+        c = 0
+        lastSequences = initDeque[FQRecord](nextPowerOfTwo(num))
+
+      for record in readfq(filename):
+        var outRecord: FQRecord = record
         c += 1
 
+        # Subsampling: when skip > 0, only consider every skip-th sequence
         if skip > 0:
           y = c mod skip
 
         if y == 0:
           if len(prefix) > 0:
-            r.name = $prefix & separator & $printed
+            outRecord.name = prefix & separator & $c
           if printBasename:
-            r.name = $getBasename(filename) & separator & r.name
-          #printSeq(r, nil)
-          lastSequences.keepSeq(r, num)
-      
-      for tailSeq in lastSequences:
-        printSeq(tailSeq, nil)
+            outRecord.name = getBasename(filename) & separator & record.name
+          lastSequences.keepSeq(outRecord, num)
 
-]#
+      # --- Output the collected tail sequences ---
+      for tailSeq in lastSequences:
+        print_seq(tailSeq, nil)
+
+    return 0
