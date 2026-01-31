@@ -39,7 +39,7 @@ bp() {
 function separator {
   # if length $1 > 0; then
   #   echo -e "\n$1\n"
-  if [[ $1 ]]; then
+  if [[ ${1:-} ]]; then
     echo -e "${YELLOW}\033[1m $1 \033[0m"
   fi
   DIV_BAR="${YELLOW}\033[1m------------------------------------------------------------ \033[0m"
@@ -379,24 +379,30 @@ fi
 ## Check docs
 separator "\n Checking docs"
 
-for SUB in utilities tools;
-do
-  echo " - Utilities sort order in $SUB"
-  # Note: perl not installed in Github CI
-   perl --version >/dev/null && grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | grep -v README | \
-   cut -f 2,3 -d : | \
-   sort | uniq -c | perl -mTerm::ANSIColor -ne  '
-   if ($_=~/^\s*(\S)/)
-     { if ($1 != "1") 
-        { print Term::ANSIColor::color("red"), " >>> RELEASE WARNING:", 
-        Term::ANSIColor::color("reset"), " Wrong sort order: duplicate entry(es)\n"; 
-        die;
-        } 
-     }'  || grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | \
-   rev | \
-   sort -n | \
-   rev 
-done
+# NOTE: sort: fields were removed from documentation in Sep 2022 (commit 7e2366e)
+# This check is no longer relevant as docs now use Jekyll/just-the-docs theme
+# Keeping the section in case future documentation checks are needed
+
+# for SUB in utilities tools;
+# do
+#   echo " - Utilities sort order in $SUB"
+#   # Note: perl not installed in Github CI
+#    perl --version >/dev/null && grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | grep -v README | \
+#    cut -f 2,3 -d : | \
+#    sort | uniq -c | perl -mTerm::ANSIColor -ne  '
+#    if ($_=~/^\s*(\S)/)
+#      { if ($1 != "1")
+#         { print Term::ANSIColor::color("red"), " >>> RELEASE WARNING:",
+#         Term::ANSIColor::color("reset"), " Wrong sort order: duplicate entry(es)\n";
+#         die;
+#         }
+#      }'  || grep ^sort: "$DIR/../docs/$SUB/"[a-z]* | \
+#    rev | \
+#    sort -n | \
+#    rev
+# done
+
+echo " - Documentation check: skipped (sort: fields removed in 2022)"
 
 ## Check release
 separator "\n Checking release (GitHub)"
