@@ -5,6 +5,8 @@ import tables
 import algorithm
 import docopt
 import colorize
+import ./fu_tabcheck
+import ./fu_orf
  
 
 # Suite Version
@@ -77,8 +79,10 @@ var progs = {
        "tail": fastx_tail,
        "tabulate": fastx_tabulate,
             "tab": fastx_tabulate,
+       "tabcheck": seqfuTabcheck,
        "metadata": fastx_metadata,
         "met": fastx_metadata,
+      "orf": seqfuOrf,
       "rotate": fastx_rotate,
         "rot": fastx_rotate,
         "restart": fastx_rotate,
@@ -103,6 +107,7 @@ proc main(args: var seq[string]): int =
                "sort [srt]"        : "sort sequences by size (uniques)",
                "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
                "list [lst]"        : "print sequences from a list of names",
+               "orf"               : "extract ORFs from nucleotide sequences",
                "tofasta"           : "convert multiple formats to FASTA"
             }.toTable
 
@@ -112,6 +117,7 @@ proc main(args: var seq[string]): int =
                   "grep"           : "select sequences with patterns",
                   "rc"             : "reverse complement strings or files",
                   "tab"            : "tabulate reads to TSV (and viceversa)",
+                  "tabcheck"       : "validate TSV/CSV field consistency",
                   "view"           : "view sequences with colored quality and oligo matches",
                   "less"           : "interactive viewer for sequences (like less)",
                }.toTable

@@ -1,4 +1,4 @@
-import threadpool
+import malebolgia
 import klib
 import docopt, strutils, tables, math
 import os
@@ -23,6 +23,11 @@ type
       code: int,
       translate: bool,
       minreadlength: int]
+
+    OrfBatch = object
+      reads: seq[FastxRecord]
+      paired: bool
+      output: string
 
 
 proc length(self:FastxRecord): int = 
@@ -267,21 +272,20 @@ proc processSingle(R1: FastxRecord, opts: mergeCfg): string =
 
     
 proc parseArray(pool: seq[FastxRecord], opts: mergeCfg): string =
-  for i in 0 .. pool.high:
-    if i mod 2 == 1:
-      try:
-        result &= processPair(pool[i - 1], pool[i], opts)  
-      except:
-        result &= processPair(pool[i - 1], pool[i], opts) 
-        quit()
+  if pool.len < 2:
+    return
+  for i in countup(1, pool.high, 2):
+    result &= processPair(pool[i - 1], pool[i], opts)
 
 proc parseArraySingle(pool: seq[FastxRecord], opts: mergeCfg): string =
-  for i in 0 .. pool.high:
-    try:
-      result &= processSingle(pool[i], opts)  
-    except:
-      result &= processSingle(pool[i], opts) 
-      quit()
+  for read in pool:
+    result &= processSingle(read, opts)
+
+proc processOrfBatch(batch: ptr OrfBatch, opts: mergeCfg) {.gcsafe.} =
+  if batch[].paired:
+    batch[].output = parseArray(batch[].reads, opts)
+  else:
+    batch[].output = parseArraySingle(batch[].reads, opts)
   
 
 proc printCodes() =
@@ -316,15 +320,15 @@ proc printCodes() =
     
 See also: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"""
 
-proc main(argv: var seq[string]): int =
-  let args =  docopt("""
-  fu-orf - extract ORF from nucleotide sequences
+proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
+  let doc = """
+  $CMD$ - extract ORF from nucleotide sequences
 
   Usage: 
-    orf [options] <InputFile>  
-    orf [options] -1 File_R1.fq
-    orf [options] -1 File_R1.fq -2 File_R2.fq
-    orf --help | --codes
+    $CMD$ [options] <InputFile>  
+    $CMD$ [options] -1 File_R1.fq
+    $CMD$ [options] -1 File_R1.fq -2 File_R2.fq
+    $CMD$ --help | --codes
   
   Input files:
     -1, --R1 FILE           First paired end file
@@ -351,7 +355,8 @@ proc main(argv: var seq[string]): int =
     --verbose               Print verbose log
     --debug                 Print debug log  
     --help                  Show help
-  """, version=version, argv=argv)
+  """.replace("$CMD$", cmdName)
+  let args =  docopt(doc, version=version, argv=argv)
 
   var
     fileR1, fileR2: string
@@ -362,7 +367,6 @@ proc main(argv: var seq[string]): int =
     prefix : string
     singleEnd = true
     code: int
-    translate: bool
      
   debug = args["--debug"]
   try:
@@ -385,15 +389,15 @@ proc main(argv: var seq[string]): int =
       translate: bool(args["--translate"]),
       minreadlength: minreadlen)
   except:
-    stderr.writeLine("Use fu-orf --help")
+    stderr.writeLine("Use ", cmdName, " --help")
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
-    quit(0)
+    return 1
  
   if args["--codes"]:
     echo "SeqFu ORF"
     echo "--------------------------------------------------------"
     printCodes()
-    quit(0)
+    return 0
 
   let
     validCodes = @[1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33]
@@ -402,7 +406,7 @@ proc main(argv: var seq[string]): int =
     printCodes()
     stderr.writeLine("Invalid genetic code: ", code)
     stderr.writeLine("Valid codes: ", validCodes)
-    quit(1)
+    return 1
 
   echoVerbose("SeqFu ORF")
 
@@ -413,7 +417,7 @@ proc main(argv: var seq[string]): int =
       echoVerbose("Single file: " & fileR1)
     else:
       echo("ERROR: Single file not found:", fileR1)
-      quit(0)
+      return 1
 
   elif len(fileR1) > 0 and fileR2 == "nil":
     singleEnd = true
@@ -421,7 +425,7 @@ proc main(argv: var seq[string]): int =
       echoVerbose("Single end mode [-1]: ", fileR1)
     else:
       echo("ERROR: File not found [-1]:", fileR1)
-      quit(0)
+      return 1
   elif len(fileR1) > 0 and fileR2 != "nil":
     singleEnd = false
     if fileExists(fileR1) and fileExists(fileR2):
@@ -431,17 +435,17 @@ proc main(argv: var seq[string]): int =
         echo("ERROR: File not found [-1]: ", fileR1)
       if not fileExists(fileR2):
         echo("ERROR: File not found [-2]: ", fileR2)
-      quit(0) 
+      return 1
   else:
     echoVerbose("ERROR: Missing required parameters", fileR1, fileR2)
-    quit(0)
+    return 1
 
   if not fileExists(fileR1):
     stderr.writeLine("FATAL ERROR: File [-1] ", fileR1, " not found.")
-    quit(1)
+    return 1
   if fileR2 != "nil" and not fileExists(fileR2):
     stderr.writeLine("FATAL ERROR: File [-2] ", fileR2, " not found.")
-    quit(1)
+    return 1
   elif fileR2 == "nil":
     echoVerbose("Single end mode")
     singleEnd = true
@@ -454,8 +458,9 @@ proc main(argv: var seq[string]): int =
 
 
   
-  var readspool : seq[FastxRecord]
-  var responses = newSeq[FlowVar[string]]()
+  var
+    readspool : seq[FastxRecord]
+    batches = newSeq[OrfBatch]()
 
   if not singleEnd:
     ##
@@ -464,23 +469,31 @@ proc main(argv: var seq[string]): int =
     var R2 = xopen[GzFile](fileR2)
     defer: R2.close()
     var read2: FastxRecord
-    echoVerbose("Reading R2:" & fileR2, verbose)
+    echoVerbose("Reading R2:" & fileR2)
     while R1.readFastx(read1):
+      if not R2.readFastx(read2):
+        stderr.writeLine("ERROR: R2 ended before R1 at read ", counter + 1)
+        return 1
+
       counter += 1
       if prefix != "nil":
         read1.name = prefix & $counter
         read2.name = prefix & $counter
-      R2.readFastx(read2)
       
       readspool.add(read1)
       readspool.add(read2)  
 
       if counter mod poolSize == 0:
-        responses.add(spawn parseArray(readspool, mergeOptions))
-        readspool.setLen(0)
+        batches.add(OrfBatch(reads: readspool, paired: true))
+        readspool = @[]
 
     # Empty queue
-    responses.add(spawn parseArray(readspool, mergeOptions))
+    if readspool.len > 0:
+      batches.add(OrfBatch(reads: readspool, paired: true))
+
+    if R2.readFastx(read2):
+      stderr.writeLine("ERROR: R2 has more reads than R1")
+      return 1
     
 
   else:
@@ -495,15 +508,32 @@ proc main(argv: var seq[string]): int =
          
       readspool.add(read1)
       if counter mod poolSize == 0:
-        responses.add(spawn parseArraySingle(readspool, mergeOptions))
-        readspool.setLen(0)
+        batches.add(OrfBatch(reads: readspool, paired: false))
+        readspool = @[]
 
  
-    responses.add(spawn parseArraySingle(readspool, mergeOptions))
+    if readspool.len > 0:
+      batches.add(OrfBatch(reads: readspool, paired: false))
     
-  for resp in responses:
-    let s = ^resp
-    stdout.write(s)
+  if batches.len > 1:
+    var m = createMaster()
+    m.awaitAll:
+      for i in 0 ..< batches.len:
+        m.spawn processOrfBatch(addr batches[i], mergeOptions)
+  else:
+    for i in 0 ..< batches.len:
+      processOrfBatch(addr batches[i], mergeOptions)
+
+  for b in batches:
+    stdout.write(b.output)
+
+  return 0
+
+proc seqfuOrf*(args: var seq[string]): int =
+  return orfMain(args, "orf")
+
+proc main(argv: var seq[string]): int =
+  return orfMain(argv, "fu-orf")
 
 when isMainModule:
   main_helper(main)
