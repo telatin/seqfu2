@@ -7,7 +7,7 @@ permalink: /usage
 
 # Short guide
 
-*SeqFu* is composed by a main program with multiple subprograms, and a set of utilities.
+*SeqFu* is composed by a main program with multiple subcommands, and a set of utilities.
 Check the complete documentation for each [tool]({{site.baseurl}}/tools), that contains the detailed
 documentation.
 
@@ -25,16 +25,15 @@ SeqFu has tools for:
 If invoked without parameters, *SeqFu* will print the list of subprograms:
 
 ```text
-SeqFu - Sequence Fastx Utilities
-version: 1.8.5
+SeqFu - FASTX Tools
 
   · count [cnt]         : count FASTA/FASTQ reads, pair-end aware
   · deinterleave [dei]  : deinterleave FASTQ
   · derep [der]         : feature-rich dereplication of FASTA/FASTQ files
   · interleave [ilv]    : interleave FASTQ pair ends
   · lanes [mrl]         : merge Illumina lanes
-  · list [lst]          : print sequences from a list of names
   · metadata [met]      : print a table of FASTQ reads (mapping files)
+  · orf                 : extract ORFs from nucleotide sequences
   · sort [srt]          : sort sequences by size (uniques)
   · stats [st]          : statistics on sequence lengths
 
@@ -43,19 +42,25 @@ version: 1.8.5
   · head                : print first sequences
   · rc                  : reverse complement strings or files
   · tab                 : tabulate reads to TSV (and viceversa)
+  · tabcheck            : validate TSV/CSV field consistency
   · tail                : view last sequences
   · view                : view sequences with colored quality and oligo matches
 
-Type 'seqfu version' or 'seqfu citation' to print the version and paper, respectively.
+Type 'seqfu version' or 'seqfu cite' to print the version and paper, respectively.
 Add --help after each command to print its usage.
 ```
 
-## Subprograms
+## Core and Utilities
 
-*SeqFu* is bundled with an (increasing) set of utilities sharing the FASTX parsing library:
+Preferred commands are exposed as `seqfu` subcommands (see **[Core Tools]({{site.baseurl}}/tools/)**), including:
 
-* **fu-orf** to extract ORFs from Paired-End libraries
-* **fu-cov** to extract contigs from the most commonly used assembly programs using the coverage information printed in the headers
-* **fu-homocomp** to compress homopolymers (e.g. for Nanopore applications)
-* ...
-* See the **[full list](https://telatin.github.io/seqfu2/utilities/)**.
+* `seqfu orf` to extract ORFs from nucleotide reads/sequences
+* `seqfu tabcheck` to validate TSV/CSV field consistency
+
+Compatibility binaries are still shipped for existing pipelines:
+
+* `fu-orf` (wrapper for `seqfu orf`)
+* `fu-tabcheck` (wrapper for `seqfu tabcheck`)
+* plus additional standalone utilities such as `fu-cov`, `fu-homocomp`, and others
+
+See the **[full list of utilities]({{site.baseurl}}/utilities/)**.

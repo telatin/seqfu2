@@ -7,8 +7,13 @@ has_children: true
 
 # Utilities
 
-All these programs are automatically installed with SeqFu, but are accessible via
-independent binaries rather than the core tool _seqfu_.
+All these programs are automatically installed with SeqFu and are accessible as
+independent binaries (usually with the `fu-` prefix).
+
+Some utilities are also available as first-class `seqfu` subcommands:
+
+* `seqfu orf` (legacy wrapper: `fu-orf`)
+* `seqfu tabcheck` (legacy wrapper: `fu-tabcheck`)
 
 :warning: The core tools have a strict API validation to ensure forward-compatibility of the commands,
 that is not guaranteed in the external utilities.

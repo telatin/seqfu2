@@ -4,66 +4,34 @@ title: fu-tabcheck
 parent: Utilities
 ---
 
-
 # fu-tabcheck
 
-An utility to parse CSV/TSV files to check that all the
-records have the same size.
-Multiline records are supported using double quotes as
-field delimiter. 
-Gzipped files are also supported.
+`fu-tabcheck` is a compatibility wrapper for `seqfu tabcheck`.
 
-```
-fu-tabcheck
+Preferred command:
 
-  A program inspect TSV and CSV files, that must contain more
-  than 1 column.
-  Double quotes are considered field delimiters, if present.
-  Gzipped files are supported natively.
-
-  Usage: 
-  fu-tabcheck [options] <FILE>...
-
-  Options:
-    -s --separator CHAR   Character separating the values, 'tab' for tab and 'auto'
-                          to try tab or commas [default: auto]
-    -c --comment CHAR     Comment/Header char [default: #]
-    --verbose             Enable verbose mode
-
+```bash
+seqfu tabcheck [options] <FILE>...
 ```
 
-## Output
+Legacy equivalent:
 
-Tabular output has these columns:
-
-* File name
-* Pass/Error
-* Columns number
-* Records number
-* Separator (when using _auto_ both tabs and commas are tested)
-
-Example:
-
-```
-data/tab.txt.gz     Pass    8   7   separator=<tab>
-data/tab.txt        Pass    4   3   separator=<tab>
-data/tab-multi.tsv  Pass    2   4   separator=<tab>
-data/table.csv      Pass    3   3   separator=,
-data/table.tsv      Pass    3   4   separator=<tab>
-data/table2.tsv     Error
-data/tablegz.tsv.gz Pass    3   4   separator=<tab>
+```bash
+fu-tabcheck [options] <FILE>...
 ```
 
-:bulb: Multiline records are supported using double quotes, like:
+Both commands share the same behavior and options:
 
 ```text
-#ID	   Description
-R01    "this is       a cell with a tab inside!"
-R02    "this is a
-multi-line description"
-R03    Last Record
+Options:
+  -s, --separator CHAR   Character separating the values, 'tab' for tab and 'auto'
+                         to try tab or commas [default: auto]
+  -c, --comment CHAR     Comment/Header char [default: #]
+  -i, --inspect          Gather more informations on column content [if valid column]
+  --header               Print a header to the report
+  --verbose              Enable verbose mode
 ```
 
-## Exit code
+## See also
 
-A single file is not a valid table will lead to non-zero exit status.
+For full documentation and examples, see **[seqfu tabcheck]({{site.baseurl}}/tools/tabcheck.html)**.
