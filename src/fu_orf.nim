@@ -2,6 +2,7 @@ import malebolgia
 import klib
 import docopt, strutils, tables, math
 import os
+import osproc
 import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"
@@ -192,16 +193,19 @@ proc translateAll(input: FastxRecord, opts: mergeCfg): seq[FastxRecord] =
             result.add(s)
 ]#      
   
-proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90): FastxRecord {.discardable.} = 
+proc mergePair(R1, R2: FastxRecord, minlen=10, maxlen=200, minid=0.85, identityAccepted=0.90): FastxRecord {.discardable.} = 
   var REV = revcompl(R2) 
-  var max = if R1.seq.high > REV.seq.high: REV.seq.high
-          else:  R1.seq.high
+  var overlapMax = if R1.seq.high > REV.seq.high: REV.seq.high
+                   else: R1.seq.high
+  if overlapMax > maxlen:
+    overlapMax = maxlen
+  if overlapMax < minlen:
+    return R1
   
   var max_score = 0.0
   var pos = 0
-  var str : string
 
-  for i in minlen .. max:
+  for i in minlen .. overlapMax:
     var
       s1 = R1.seq[R1.seq.high - i .. R1.seq.high]
       s2 = REV.seq[0 .. 0 + i ]
@@ -219,7 +223,6 @@ proc mergePair(R1, R2: FastxRecord, minlen=10, minid=0.85, identityAccepted=0.90
     if score > max_score:
       max_score = score
       pos = i
-      str = s1
       if score > identityAccepted:
         break
   # end loop
@@ -240,7 +243,7 @@ proc processPair(R1, R2: FastxRecord, opts: mergeCfg): string =
     counter = 0
 
   if opts.join:
-    s1 = mergePair(R1, R2, opts.minOverlap, opts.minId)
+    s1 = mergePair(R1, R2, opts.minOverlap, opts.maxOverlap, opts.minId)
     
     if length(s1) == length(R1):
       joined = false
@@ -286,6 +289,37 @@ proc processOrfBatch(batch: ptr OrfBatch, opts: mergeCfg) {.gcsafe.} =
     batch[].output = parseArray(batch[].reads, opts)
   else:
     batch[].output = parseArraySingle(batch[].reads, opts)
+
+proc autoInFlightBatches(): int =
+  ## Keep enough in-flight work to saturate workers while bounding memory usage.
+  ## Typical deployments have multi-GB RAM per thread, so a small multiple of CPUs
+  ## gives good throughput without holding the full dataset in memory.
+  var workers = 2
+  try:
+    workers = countProcessors()
+  except:
+    discard
+  result = workers * 4
+  if result < 8:
+    result = 8
+  if result > 128:
+    result = 128
+
+proc flushOrfBatches(batches: var seq[OrfBatch], opts: mergeCfg) =
+  if batches.len == 0:
+    return
+
+  if batches.len > 1:
+    var m = createMaster()
+    m.awaitAll:
+      for i in 0 ..< batches.len:
+        m.spawn processOrfBatch(addr batches[i], opts)
+  else:
+    processOrfBatch(addr batches[0], opts)
+
+  for b in batches:
+    stdout.write(b.output)
+  batches.setLen(0)
   
 
 proc printCodes() =
@@ -352,6 +386,8 @@ proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
     --codes                 Print NCBI genetic codes and exit
     --pool-size INT         Size of the sequences array to be processed
                             by each working thread [default: 250]
+    --in-flight-batches INT Maximum number of read batches retained before
+                            forced processing/flush; 0 = auto [default: 0]
     --verbose               Print verbose log
     --debug                 Print debug log  
     --help                  Show help
@@ -364,6 +400,7 @@ proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
     mergeOptions: mergeCfg
     minreadlen: int
     poolSize : int
+    inFlightBatches: int
     prefix : string
     singleEnd = true
     code: int
@@ -377,6 +414,7 @@ proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
     minOrfSize = parseInt($args["--min-size"])
     verbose = bool(args["--verbose"])
     poolSize = parseInt($args["--pool-size"])
+    inFlightBatches = parseInt($args["--in-flight-batches"])
     prefix = $args["--prefix"]
     
     mergeOptions = (join: args["--join"] or false,  
@@ -392,6 +430,15 @@ proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
     stderr.writeLine("Use ", cmdName, " --help")
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
     return 1
+
+  if poolSize <= 0:
+    stderr.writeLine("ERROR: --pool-size must be greater than 0 (got ", poolSize, ")")
+    return 1
+  if inFlightBatches < 0:
+    stderr.writeLine("ERROR: --in-flight-batches must be >= 0 (got ", inFlightBatches, ")")
+    return 1
+  if inFlightBatches == 0:
+    inFlightBatches = autoInFlightBatches()
  
   if args["--codes"]:
     echo "SeqFu ORF"
@@ -409,6 +456,8 @@ proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
     return 1
 
   echoVerbose("SeqFu ORF")
+  echoVerbose("Pool size: ", poolSize)
+  echoVerbose("In-flight batches: ", inFlightBatches)
 
   if args["<InputFile>"]:
     fileR1 = $args["<InputFile>"]
@@ -486,10 +535,14 @@ proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
       if counter mod poolSize == 0:
         batches.add(OrfBatch(reads: readspool, paired: true))
         readspool = @[]
+        if batches.len >= inFlightBatches:
+          flushOrfBatches(batches, mergeOptions)
 
     # Empty queue
     if readspool.len > 0:
       batches.add(OrfBatch(reads: readspool, paired: true))
+      if batches.len >= inFlightBatches:
+        flushOrfBatches(batches, mergeOptions)
 
     if R2.readFastx(read2):
       stderr.writeLine("ERROR: R2 has more reads than R1")
@@ -510,22 +563,16 @@ proc orfMain*(argv: var seq[string], cmdName = "fu-orf"): int =
       if counter mod poolSize == 0:
         batches.add(OrfBatch(reads: readspool, paired: false))
         readspool = @[]
+        if batches.len >= inFlightBatches:
+          flushOrfBatches(batches, mergeOptions)
 
  
     if readspool.len > 0:
       batches.add(OrfBatch(reads: readspool, paired: false))
+      if batches.len >= inFlightBatches:
+        flushOrfBatches(batches, mergeOptions)
     
-  if batches.len > 1:
-    var m = createMaster()
-    m.awaitAll:
-      for i in 0 ..< batches.len:
-        m.spawn processOrfBatch(addr batches[i], mergeOptions)
-  else:
-    for i in 0 ..< batches.len:
-      processOrfBatch(addr batches[i], mergeOptions)
-
-  for b in batches:
-    stdout.write(b.output)
+  flushOrfBatches(batches, mergeOptions)
 
   return 0
 
