@@ -52,7 +52,7 @@ separator "Minimal test suite"
 echo -e "$OK: Binary running"
 
 BINCOUNT=0
-for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave count;
+for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave tabcheck orf count;
 do
   BINCOUNT=$((BINCOUNT+1))
   echo -e " $STAR $BINCOUNT. $MOD"

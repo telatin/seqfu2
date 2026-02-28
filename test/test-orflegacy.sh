@@ -1,6 +1,8 @@
 #!/bin/bash
 ORFFOR=$("$BINDIR"/fu-orf "$FILES"/orf.fa.gz --min-size 500 | grep ">" | wc -l)
 ORFREV=$("$BINDIR"/fu-orf "$FILES"/orf.fa.gz --min-size 500  --scan-reverse | grep ">" | wc -l)
+SEQFU_ORFFOR=$("$BINDIR"/seqfu orf "$FILES"/orf.fa.gz --min-size 500 | grep ">" | wc -l)
+SEQFU_ORFREV=$("$BINDIR"/seqfu orf "$FILES"/orf.fa.gz --min-size 500 --scan-reverse | grep ">" | wc -l)
 
 if [[ $ORFFOR -eq 1 ]]; then
     echo -e "$OK: ONE large ORF found in forward mode"
@@ -14,6 +16,22 @@ if [[ $ORFREV -eq  2 ]]; then
     PASS=$((PASS+1))
 else
     echo -e "$FAIL: Expected Two large ORFs found in forward/reverse mode [found: $ORFREV]"
+    ERRORS=$((ERRORS+1))
+fi
+
+if [[ $SEQFU_ORFFOR -eq 1 ]]; then
+    echo -e "$OK: seqfu orf forward mode"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: seqfu orf forward mode [found: $SEQFU_ORFFOR]"
+    ERRORS=$((ERRORS+1))
+fi
+
+if [[ $SEQFU_ORFREV -eq 2 ]]; then
+    echo -e "$OK: seqfu orf reverse mode"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: seqfu orf reverse mode [found: $SEQFU_ORFREV]"
     ERRORS=$((ERRORS+1))
 fi
 
