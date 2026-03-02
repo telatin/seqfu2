@@ -34,7 +34,7 @@ Options:
 
 ### Streaming
 
-Input from stream is supported.
+Input from stream (`-`) is supported.
 
 ### Example output
 
@@ -51,13 +51,26 @@ data/illumina_1.fq.gz 7  Paired
 With `-T/--interactive-table`, `seqfu count` opens an interactive table viewer (TUI) instead of printing TSV to stdout.  
 Inside the viewer you can sort columns, filter rows and save the visible table to file.
 
-In case of errors will print a warning:
+In case of pairing/count errors, `seqfu count` prints error diagnostics to stderr and returns a non-zero exit code.
 
-```text
-ERROR: Different counts in data/longerone_R1.fq.gz and data/longerone_R2.fq.gz
-# data/longerone_R1.fq.gz: 7
-# data/longerone_R2.fq.gz: 2
-```
+### Sorting
+
+Sorting can be controlled with `--sort`:
+- `input`: preserve input argument order (default)
+- `name`: sort by filename
+- `counts`: sort by read count (descending)
+- `none`: emit rows in completion order (first completed worker first)
+
+Use `--reverse-sort` to reverse the selected sort order.
+
+### Error handling
+
+Examples of explicit error diagnostics:
+- mismatched paired-end counts (R1 vs R2)
+- reverse-only input without matching R1
+- unreadable/corrupted input files
+
+Error rows are also represented in table/stdout output with `<Error:...>` labels.
 
 ### Multithreading
 

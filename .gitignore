@@ -35,3 +35,8 @@ data/filt.fq
 data/filt.fa
 data/ass.*
 test/bats/
+large
+larger
+trim_pe trim_pe.sh
+fastp-trim.md
+*.fxi

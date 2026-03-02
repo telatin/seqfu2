@@ -46,6 +46,10 @@ proc fastxCountDispatch(argv: var seq[string]): int {.gcsafe.} =
   {.cast(gcsafe).}:
     fastx_count_threads_v3(argv)
 
+proc fastxStatsDispatch(argv: var seq[string]): int {.gcsafe.} =
+  {.cast(gcsafe).}:
+    fastx_stats_v2(argv)
+
 var progs = {
 
        "trim": fastx_trim,
@@ -61,9 +65,9 @@ var progs = {
          "uniques": fastx_derep, 
        "cnt": fastxCountDispatch,       # Experimental
          "count": fastxCountDispatch,   # Experimental
-       "st" : fastx_stats_v2,            
-         "stats": fastx_stats_v2,
-         "stat": fastx_stats_v2,
+       "st" : fastxStatsDispatch,            
+         "stats": fastxStatsDispatch,
+         "stat": fastxStatsDispatch,
        "list": fastx_list,              # Experimental
         "lst": fastx_list,              # Experimental
        "count-legacy": fastx_count, 

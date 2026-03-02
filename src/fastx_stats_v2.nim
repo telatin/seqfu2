@@ -3,6 +3,7 @@ import tables, strutils
 import terminaltables
 import malebolgia
 import json
+import tableview
 from os import fileExists
 import docopt
 import ./seqfu_utils
@@ -63,6 +64,48 @@ proc display_nice(statsList: seq[FastxStats], opt: statsOptions) =
       
     
   outputTable.printTable()
+
+proc getStatsHeader(opt: statsOptions): seq[string] =
+  result = @["File", "#Seq", "Total bp", "Avg", "N50", "N75", "N90", "auN", "Min", "Max"]
+  if opt.gc:
+    result.add("%GC")
+  if opt.index:
+    result.add(@["L50", "L75", "L90"])
+
+proc toStatsTableData(statsList: seq[FastxStats], opt: statsOptions): TableData =
+  var
+    viewOpt = opt
+    headers = getStatsHeader(opt)
+    rows = newSeqOfCap[seq[string]](statsList.len)
+    widths = newSeq[int](headers.len)
+    columnTypes: seq[ColumnType] = @[
+      ctString, ctInt, ctInt, ctFloat, ctInt, ctInt, ctInt, ctFloat, ctInt, ctInt
+    ]
+
+  # Thousands separators make numeric parsing ambiguous for TUI sort/filter.
+  viewOpt.thousands = false
+  if opt.gc:
+    columnTypes.add(ctFloat)
+  if opt.index:
+    columnTypes.add(@[ctInt, ctInt, ctInt])
+
+  for i in 0 ..< headers.len:
+    widths[i] = headers[i].len
+
+  for stat in statsList:
+    let row = stat.toSequence(viewOpt)
+    rows.add(row)
+    for i in 0 ..< min(row.len, widths.len):
+      if row[i].len > widths[i]:
+        widths[i] = row[i].len
+
+  result = TableData(
+    headers: headers,
+    rows: rows,
+    columnWidths: widths,
+    columnTypes: columnTypes,
+    hiddenColumns: newSeq[bool](headers.len)
+  )
    
 proc display_delimited(statsList: seq[FastxStats], opt: statsOptions): string =
   var
@@ -186,6 +229,7 @@ Options:
   -b, --basename         Print only filenames
   -n, --nice             Print nice terminal table
   -j, --json             Print json (EXPERIMENTAL)
+  -T, --interactive-table  Open interactive table view (TUI)
   -s, --sort-by KEY      Sort by KEY from: filename, counts, n50, tot, avg, min, max
                          descending for values, ascending for filenames [default: none]
   -r, --reverse          Reverse sort order
@@ -211,6 +255,7 @@ Options:
     printAbs = bool(args["--abs-path"])
     nice     = bool(  args["--nice"] )
     printJson = bool(args["--json"])
+    interactiveTable = bool(args["--interactive-table"])
     printHeader = not bool(args["--noheader"])
     multiQCheader = """# plot_type: 'table'
 # section_name: 'SeqFu stats'
@@ -253,6 +298,12 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
 """
   if nice and printJson:
     stderr.writeLine("ERROR: --nice and --json are mutually exclusive")
+    return 1
+  if interactiveTable and printJson:
+    stderr.writeLine("ERROR: --interactive-table and --json are mutually exclusive")
+    return 1
+  if interactiveTable and nice:
+    stderr.writeLine("ERROR: --interactive-table and --nice are mutually exclusive")
     return 1
 
   var
@@ -410,6 +461,8 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
     for i in statsList:
       jsonList.add(i.toJsonNode())
     echo $jsonList
+  elif interactiveTable:
+    viewTable(toStatsTableData(statsList, opt), filename = "seqfu stats", hasHeader = opt.header)
   elif nice:
     display_nice(statsList, opt)
   else:

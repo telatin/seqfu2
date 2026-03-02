@@ -286,3 +286,25 @@ else
     ERRORS=$((ERRORS+1))
 fi
 rm -f "$TMPJSON"
+
+# Interactive-table option should be listed in help.
+MSG="--interactive-table option is shown in help"
+if "$BINDIR"/seqfu stats --help 2>&1 | grep -q -- "--interactive-table"; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# Interactive table and JSON are mutually exclusive.
+"$BINDIR"/seqfu stats --json --interactive-table "$iAmpli" >/dev/null 2>/dev/null
+RET=$?
+MSG="--json with --interactive-table exits non-zero"
+if [[ $RET -ne 0 ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi

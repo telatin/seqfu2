@@ -11,7 +11,7 @@ nav_order: 19
 *stats*  is one of the core subprograms of *SeqFu*.
 
 ```note
-Version prior to v1.22.1 were calculatin auN incorrectly
+Versions prior to v1.22.1 were calculating auN incorrectly.
 ```
 
 ```text
@@ -22,12 +22,15 @@ Options:
   -b, --basename         Print only filenames
   -n, --nice             Print nice terminal table
   -j, --json             Print json (EXPERIMENTAL)
+  -T, --interactive-table  Open interactive table view (TUI)
   -s, --sort-by KEY      Sort by KEY from: filename, counts, n50, tot, avg, min, max
                          descending for values, ascending for filenames [default: none]
   -r, --reverse          Reverse sort order
+  --threads INT          Worker threads [default: 8]
   -t, --thousands        Add thousands separator (only tabbed/nice output)
   --csv                  Separate output by commas instead of tabs
   --gc                   Also print %GC
+  --index                Also print contig index (L50, L90)
   --multiqc FILE         Saves a MultiQC report to FILE (suggested: name_mqc.txt)
   --precision INT        Number of decimal places to round to [default: 2]
   --noheader             Do not print header
@@ -51,16 +54,15 @@ Numerical values are sorted from the largest (descending), supported values are:
 * *avg* or *mean* (average length)
 * *aun* (area under the Nx curve)
 
-**NOTE** Specifying an invalid key will result in unsorted results with a warning,
-but in future releases this might throw an error.
+**NOTE** Specifying an invalid key returns a non-zero exit code with an error message.
  
 ### Example output
 
-Output is a TSV text with three columns (or CSV using  `--csv`):
+Output is a TSV table (or CSV with `--csv`):
 
 ```text
-File,#Seq,Sum,Avg,N50,N75,N90,Min,Max
-data/filt.fa.gz,78730,24299931,308.6,316,316,220,180,485
+File,#Seq,Total bp,Avg,N50,N75,N90,auN,Min,Max
+data/filt.fa.gz,78730,24299931,308.65,316,316,220,318.44,180,485
 ```
 
 ### Screen friendly output
@@ -75,7 +77,23 @@ seqfu stats data/filt.fa.gz  -n
 │ data/filt.fa.gz │ 78730 │ 24299931 │ 308.6 │ 316 │ 316 │ 220 │ 0.385 │ 180 │ 485 │
 └─────────────────┴───────┴──────────┴───────┴─────┴─────┴─────┴───────┴─────┴─────┘
 ```
- 
+
+### Interactive table output
+
+Using `-T` (`--interactive-table`) opens the `tableview` TUI instead of printing to stdout.
+Columns keep numeric types (integers/floats), so interactive sorting behaves numerically.
+
+`--interactive-table` is mutually exclusive with `--json` and `--nice`.
+
+### JSON output
+
+Using `-j` (`--json`) prints an array of JSON objects.
+Numeric fields are emitted as JSON numbers (not strings), while `Filename` is a string.
+
+### Multithreading
+
+Use `--threads INT` to process multiple input files in parallel.
+If STDIN (`-`) is used, stats are processed sequentially.
 
 ## MultiQC output
 
