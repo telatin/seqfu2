@@ -11,6 +11,7 @@ CFLAGS=-O3
 CXX=g++
 CXXFLAGS=-std=c++11 -O3
 LDLIBS=-lz
+PTHREADLIBS=-pthread
 VERSION := $(shell grep version seqfu.nimble  | grep  -o "[0-9]\\+\.[0-9]\\+\.[0-9]\\+")
 NIMPARAM :=  --mm:orc -d:NimblePkgVersion=$(VERSION) -d:release --opt:speed --passC:"-Wno-error=incompatible-pointer-types"
 TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-homocomp $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck $(BIN)/byteshift $(BIN)/SeqCountHelper $(BIN)/fu-secheck
@@ -37,7 +38,7 @@ $(BIN)/fu-secheck: test/byte/validate.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
 $(BIN)/SeqCountHelper: test/byte/count.cpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS) $(PTHREADLIBS)
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split
 	chmod +x $(SCRIPTS)/fu-split
