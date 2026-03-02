@@ -37,10 +37,14 @@ include ./tofasta
 
 # Experimental
 include ./fastx_stats_v2
-include ./fastx_count_threads_off
+include ./fastx_count_threads_v3
 include ./fastx_list
 include ./fastx_bases
 include ./fastx_trim
+
+proc fastxCountDispatch(argv: var seq[string]): int {.gcsafe.} =
+  {.cast(gcsafe).}:
+    fastx_count_threads_v3(argv)
 
 var progs = {
 
@@ -55,8 +59,8 @@ var progs = {
          "derep": fastx_derep, 
          "dereplicate": fastx_derep, 
          "uniques": fastx_derep, 
-       "cnt": fastx_count_threads_off,      # Experimental     
-         "count": fastx_count_threads_off,  # Experimental
+       "cnt": fastxCountDispatch,       # Experimental
+         "count": fastxCountDispatch,   # Experimental
        "st" : fastx_stats_v2,            
          "stats": fastx_stats_v2,
          "stat": fastx_stats_v2,
