@@ -1,6 +1,8 @@
 
 import tables, strutils
 import terminaltables
+import malebolgia
+import json
 from os import fileExists
 import docopt
 import ./seqfu_utils
@@ -80,6 +82,101 @@ proc display_delimited(statsList: seq[FastxStats], opt: statsOptions): string =
   
     
 
+type
+  StatsSortKey = enum
+    skNone,
+    skFilename,
+    skCount,
+    skSum,
+    skAvg,
+    skMin,
+    skMax,
+    skN50,
+    skN75,
+    skN90,
+    skAuN
+
+type
+  StatsJob = object
+    filename: string
+    stats: FastxStats
+
+proc parseStatsSortKey(raw: string, outKey: var StatsSortKey): bool =
+  case raw.toLowerAscii()
+  of "none":
+    outKey = skNone
+  of "filename":
+    outKey = skFilename
+  of "count", "counts":
+    outKey = skCount
+  of "sum", "tot":
+    outKey = skSum
+  of "avg", "average", "mean":
+    outKey = skAvg
+  of "min", "minimum":
+    outKey = skMin
+  of "max", "maximum":
+    outKey = skMax
+  of "n50":
+    outKey = skN50
+  of "n75":
+    outKey = skN75
+  of "n90":
+    outKey = skN90
+  of "aun":
+    outKey = skAuN
+  else:
+    return false
+  true
+
+proc compareStatsByKey(a, b: FastxStats, key: StatsSortKey): int =
+  ## Strict comparator: returns 0 for equal values.
+  case key
+  of skNone:
+    0
+  of skFilename:
+    cmp(a.filename, b.filename)
+  of skCount:
+    cmp(a.count, b.count)
+  of skSum:
+    cmp(a.sum, b.sum)
+  of skAvg:
+    cmp(a.avg, b.avg)
+  of skMin:
+    cmp(a.min, b.min)
+  of skMax:
+    cmp(a.max, b.max)
+  of skN50:
+    cmp(a.n50, b.n50)
+  of skN75:
+    cmp(a.n75, b.n75)
+  of skN90:
+    cmp(a.n90, b.n90)
+  of skAuN:
+    cmp(a.auN, b.auN)
+
+proc processStatsJob(job: ptr StatsJob, workerOpt: ptr statsOptions) {.gcsafe.} =
+  job[].stats = getFastxStats(job[].filename, workerOpt[])
+
+proc toJsonNode(s: FastxStats): JsonNode =
+  ## Keep numeric fields as JSON numbers (not quoted strings).
+  result = newJObject()
+  result["Filename"] = %s.filename
+  result["Total"] = %s.sum
+  result["Count"] = %s.count
+  result["Min"] = %s.min
+  result["Max"] = %s.max
+  result["N25"] = %s.n25
+  result["N50"] = %s.n50
+  result["N75"] = %s.n75
+  result["N90"] = %s.n90
+  result["Avg"] = %s.avg
+  result["AuN"] = %s.auN
+  result["gc"] = %s.gc
+  result["L50"] = %s.l50
+  result["L75"] = %s.l75
+  result["L90"] = %s.l90
+
 proc fastx_stats_v2(argv: var seq[string]): int =
   let args = docopt("""
 Usage: stats [options] [<inputfile> ...]
@@ -92,6 +189,7 @@ Options:
   -s, --sort-by KEY      Sort by KEY from: filename, counts, n50, tot, avg, min, max
                          descending for values, ascending for filenames [default: none]
   -r, --reverse          Reverse sort order
+  --threads INT          Worker threads [default: $1]
   -t, --thousands        Add thousands separator (only tabbed/nice output)
   --csv                  Separate output by commas instead of tabs
   --gc                   Also print %GC
@@ -102,7 +200,7 @@ Options:
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
-  """, version=version(), argv=argv)
+  """.multiReplace(("$1", $ThreadPoolSize)), version=version(), argv=argv)
 
   verbose = args["--verbose"]
 
@@ -155,19 +253,31 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
 """
   if nice and printJson:
     stderr.writeLine("ERROR: --nice and --json are mutually exclusive")
-    quit(1)
+    return 1
 
   var
     sfuPrecision = 2
+    threads = 1
     files : seq[string]
     sep = "\t"
     multiQCreport : string = multiQCheader
     statsList : seq[FastxStats]
+    hadInputErrors = false
+
+  let writeMultiQC = $args["--multiqc"] != "nil"
   try:
     sfuPrecision = parseInt($args["--precision"])
   except:
     stderr.writeLine("ERROR: Precision must be an integer: ", $args["--precision"])
-    quit(1)
+    return 1
+  try:
+    threads = parseInt($args["--threads"])
+  except:
+    stderr.writeLine("ERROR: --threads must be an integer >= 1.")
+    return 1
+  if threads < 1:
+    stderr.writeLine("ERROR: --threads must be >= 1.")
+    return 1
 
   if args["--csv"]:
     sep = ","
@@ -188,6 +298,10 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
       delim: sep,
       fields: @[]
     )
+  var workerOpt = opt
+  # MultiQC always exports a GC column, so we force GC computation for the
+  # reader even when --gc is not requested for the main table output.
+  workerOpt.gc = opt.gc or writeMultiQC
     
 
   if args["<inputfile>"].len() == 0:
@@ -203,13 +317,47 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
   #elif not printJson:
   # echo headerFields.join(sep)
 
+  var
+    jobs = newSeqOfCap[StatsJob](files.len)
+    hasStdin = false
   for filename in files:
-    if filename != "-"  and not fileExists(filename):
+    if filename != "-" and not fileExists(filename):
       stderr.writeLine("Error: file <", filename, "> not found or not a file. Skipping.")
+      hadInputErrors = true
       continue
+    if filename == "-":
+      hasStdin = true
+    jobs.add(StatsJob(filename: filename))
 
+  let canParallel = threads > 1 and jobs.len > 1 and (not hasStdin)
+  if canParallel:
+    let parallelChunk = min(threads, ThreadPoolSize)
+    var m = createMaster()
+    if parallelChunk >= ThreadPoolSize:
+      m.awaitAll:
+        for i in 0 ..< jobs.len:
+          m.spawn processStatsJob(addr jobs[i], addr workerOpt)
+    else:
+      var start = 0
+      while start < jobs.len:
+        let stopAt = min(start + parallelChunk, jobs.len)
+        m.awaitAll:
+          for i in start ..< stopAt:
+            m.spawn processStatsJob(addr jobs[i], addr workerOpt)
+        start = stopAt
+  else:
+    if threads > 1 and hasStdin and verbose:
+      stderr.writeLine("INFO: Disabling parallel stats because input includes STDIN ('-').")
+    for i in 0 ..< jobs.len:
+      processStatsJob(addr jobs[i], addr workerOpt)
+
+  for i in 0 ..< jobs.len:
     var
-      stats = getFastxStats(filename, opt)
+      stats = jobs[i].stats
+
+    if stats.count < 0:
+      hadInputErrors = true
+      continue
 
     if printBasename:
       stats.filename = getBasename(stats.filename)
@@ -227,138 +375,41 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
   
   # Sort
   let
-    sortKey = ($args["--sort-by"]).toLower()
-    validKeys = @["none", "n50", "n75", "n90", "min", "max", "sum", "count", "avg", "filename", "counts", "tot", "mean"]
+    sortKeyRaw = $args["--sort-by"]
+  var sortKey = skNone
+  if not parseStatsSortKey(sortKeyRaw, sortKey):
+    stderr.writeLine("ERROR: Invalid sort key: ", sortKeyRaw)
+    return 1
 
-  if sortKey notin validKeys:
-    stderr.writeLine("ERROR: Invalid sort key: ", sortKey)
-    
-
-  if  sortKey == "n50":
+  if sortKey == skNone:
     if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.n50 < b.n50: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.n50 > b.n50: return -1
-        else: return 1
-      )
-  elif  sortKey == "n75":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.n75 < b.n75: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.n75 > b.n75: return -1
-        else: return 1
-      )
-  elif  sortKey == "n90":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.n90 < b.n90: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.n90 > b.n90: return -1
-        else: return 1
-      )
-  elif sortKey == "count" or sortKey == "counts":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.count < b.count: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.count > b.count: return -1
-        else: return 1
-      )
-  elif sortKey == "sum" or sortKey == "tot":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.sum < b.sum: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.sum > b.sum: return -1
-        else: return 1
-      )
-  elif sortKey == "min" or sortKey == "minimum":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.min < b.min: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.min > b.min: return -1
-        else: return 1
-      )
-  elif sortKey == "max" or sortKey == "maximum":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.max < b.max: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.max > b.max: return -1
-        else: return 1
-      )
-  elif sortKey == "average" or sortKey == "avg" or sortKey == "mean":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.avg < b.avg: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.avg > b.avg: return -1
-        else: return 1
-      )
-  elif sortKey == "filename":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.filename > b.filename: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.filename < b.filename: return -1
-        else: return 1
-      )
-  elif  sortKey == "aun":
-    if reverse:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.aun < b.aun: return -1
-        else: return 1
-      )
-    else:
-      sort(statsList, proc(a, b: FastxStats): int =
-        if a.aun > b.aun: return -1
-        else: return 1
-      )
-  elif sortKey == "none":
-    if reverse:
-      # Reverse the list
+      # Preserve input order semantics when sorting is disabled.
       statsList.reverse()
   else:
-    stderr.writeLine("WARNING: sort key <", sortKey, "> not recognized. Not sorting.")
+    # Keep current behavior: filename is ascending, numeric fields descending.
+    let descendingByDefault = sortKey != skFilename
+    sort(statsList, proc(a, b: FastxStats): int =
+      var c = compareStatsByKey(a, b, sortKey)
+      if c == 0:
+        # Deterministic tie-break across all sort keys.
+        c = cmp(a.filename, b.filename)
+      if descendingByDefault:
+        c = -c
+      if reverse:
+        c = -c
+      c
+    )
 
+  if statsList.len == 0 and hadInputErrors:
+    stderr.writeLine("ERROR: no valid FASTA/FASTQ input could be processed.")
+    return 1
 
   if printJson:
     var
-      jsonList: seq[Table[string,string]]
+      jsonList = newJArray()
     for i in statsList:
-      jsonList.add(i.toTable())
-    let jsonString = $jsonList
-    echo jsonString[1 .. ^1]
+      jsonList.add(i.toJsonNode())
+    echo $jsonList
   elif nice:
     display_nice(statsList, opt)
   else:
@@ -396,3 +447,6 @@ Sample	col1	col2	col3	col4	col5	col6	col7	col8	col9	col10
     except Exception:
       stderr.writeLine("Unable to write MultiQC report to ", $args["--multiqc"],": printing to STDOUT instead.")
       echo multiQCreport
+  if hadInputErrors:
+    return 1
+  return 0

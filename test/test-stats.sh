@@ -191,3 +191,98 @@ else
     echo -e "$FAIL: $MSG expected 0.50 got $OUT"
     ERRORS=$((ERRORS+1))
 fi
+
+# Invalid sort key must fail with non-zero exit status.
+"$BINDIR"/seqfu stats --sort-by definitely_not_a_key "$iAmpli" >/dev/null 2>/dev/null
+RET=$?
+MSG="Invalid --sort-by exits non-zero"
+if [[ $RET -ne 0 ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# Malformed input must not be rendered as a fake all-zero data row.
+BAD=$(mktemp)
+echo "this_is_not_fastx" > "$BAD"
+"$BINDIR"/seqfu stats "$BAD" > "$TMP" 2>/dev/null
+RET=$?
+ROWS=$(tail -n +2 "$TMP" | grep -c . || true)
+MSG="Malformed input does not produce a data row and exits non-zero"
+if [[ $RET -ne 0 && $ROWS -eq 0 ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (ret=$RET rows=$ROWS)"
+    ERRORS=$((ERRORS+1))
+fi
+rm -f "$BAD"
+
+# MultiQC output must include numeric GC values even when --gc is not set.
+TMPMQC=$(mktemp)
+"$BINDIR"/seqfu stats --multiqc "$TMPMQC" "$iAmpli" > /dev/null
+GCVAL=$(tail -n 1 "$TMPMQC" | cut -f 11)
+MSG="MultiQC GC is not NaN without --gc"
+if [[ "$GCVAL" != "NaN" && "$GCVAL" != "nan" && -n "$GCVAL" ]]; then
+   echo -e "$OK: $MSG (<$GCVAL>)"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (<$GCVAL>)"
+    ERRORS=$((ERRORS+1))
+fi
+rm -f "$TMPMQC"
+
+# Threaded stats must match single-thread output (input order and sorted order).
+TMPTH1=$(mktemp)
+TMPTH2=$(mktemp)
+"$BINDIR"/seqfu stats --threads 1 "$iAmpli" "$iSort" "$iMini" > "$TMPTH1"
+"$BINDIR"/seqfu stats --threads 2 "$iAmpli" "$iSort" "$iMini" > "$TMPTH2"
+MSG="--threads 2 matches --threads 1 in default output"
+if diff -q "$TMPTH1" "$TMPTH2" >/dev/null; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+"$BINDIR"/seqfu stats --sort-by n50 --threads 1 "$iAmpli" "$iSort" "$iMini" > "$TMPTH1"
+"$BINDIR"/seqfu stats --sort-by n50 --threads 2 "$iAmpli" "$iSort" "$iMini" > "$TMPTH2"
+MSG="--threads 2 matches --threads 1 with sorting"
+if diff -q "$TMPTH1" "$TMPTH2" >/dev/null; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+rm -f "$TMPTH1" "$TMPTH2"
+
+# Invalid thread count must fail.
+"$BINDIR"/seqfu stats --threads 0 "$iAmpli" >/dev/null 2>/dev/null
+RET=$?
+MSG="Invalid --threads exits non-zero"
+if [[ $RET -ne 0 ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# JSON output should keep numeric fields as numbers (not quoted strings).
+TMPJSON=$(mktemp)
+"$BINDIR"/seqfu stats --json "$iAmpli" > "$TMPJSON"
+HAS_NUMERIC_COUNT=$(jq -r '.[0].Count | type' "$TMPJSON" 2>/dev/null || true)
+HAS_STRING_FILENAME=$(jq -r '.[0].Filename | type' "$TMPJSON" 2>/dev/null || true)
+MSG="JSON Count is numeric and Filename is string"
+if [[ "$HAS_NUMERIC_COUNT" == "number" && "$HAS_STRING_FILENAME" == "string" ]]; then
+   echo -e "$OK: $MSG"
+   PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG (CountType=$HAS_NUMERIC_COUNT FilenameType=$HAS_STRING_FILENAME)"
+    ERRORS=$((ERRORS+1))
+fi
+rm -f "$TMPJSON"

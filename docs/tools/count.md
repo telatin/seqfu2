@@ -24,7 +24,10 @@ Options:
   -u, --unpair           Print separate records for paired end files
   -f, --for-tag R1       Forward tag [default: auto]
   -r, --rev-tag R2       Reverse tag [default: auto]
-  -t, --threads INT      Working threads [default: 4]
+  -s, --sort MODE        Sort output: input|name|counts|none [default: input]
+      --reverse-sort     Reverse selected sort order
+  -T, --interactive-table  Open interactive table view (TUI)
+  -t, --threads INT      Working threads [default: 8]
   -v, --verbose          Verbose output
   -h, --help             Show this help
 ```
@@ -44,6 +47,9 @@ data/test2.fastq      3  SE
 data/qualities.fq     5  SE
 data/illumina_1.fq.gz 7  Paired
 ```
+
+With `-T/--interactive-table`, `seqfu count` opens an interactive table viewer (TUI) instead of printing TSV to stdout.  
+Inside the viewer you can sort columns, filter rows and save the visible table to file.
 
 In case of errors will print a warning:
 

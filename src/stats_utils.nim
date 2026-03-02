@@ -43,6 +43,9 @@ proc toTable*(s: FastxStats): Table[string, string] =
 
 proc getFastxStats*(filename: string, o: statsOptions): FastxStats {.discardable.} =
   result.filename = filename
+  # Sentinel for "invalid/unusable stats": callers can skip these rows and
+  # propagate a non-zero exit code instead of printing fake zero summaries.
+  result.count = -1
   var
     totalBases = 0
     nseq  = 0
@@ -93,7 +96,12 @@ proc getFastxStats*(filename: string, o: statsOptions): FastxStats {.discardable
   result.max = ctgSizesKeys[0]
   result.min = ctgSizesKeys[^1]
   result.auN = 0.0
-  result.gc = float(gc) / float(realLen)
+  # %GC excludes ambiguous bases; if no canonical bases were seen, keep 0.0
+  # instead of NaN/Inf so downstream reports (e.g. MultiQC) stay parseable.
+  if o.gc and realLen > 0:
+    result.gc = float(gc) / float(realLen)
+  else:
+    result.gc = 0.0
   var 
     cumulativeLength = 0
     
