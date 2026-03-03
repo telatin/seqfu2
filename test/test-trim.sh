@@ -5,8 +5,18 @@ BIN="$DIR/../bin/seqfu"
 
 OK='\033[0;32mOK\033[0m'
 FAIL='\033[0;31mFAIL\033[0m'
-PASS=0
-ERRORS=0
+IS_SOURCED=0
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+    IS_SOURCED=1
+fi
+
+# When sourced from test/mini.sh, reuse global counters.
+if [[ -z ${PASS+x} ]]; then
+    PASS=0
+fi
+if [[ -z ${ERRORS+x} ]]; then
+    ERRORS=0
+fi
 
 echo "=== SeqFu Trim Integration Tests ==="
 
@@ -200,10 +210,12 @@ fi
 
 rm -f /tmp/test_t* /tmp/test_pe_*
 
-echo ""
-echo -e "Results: $PASS passed, $ERRORS failed"
-if [[ $ERRORS -eq 0 ]]; then
-    echo -e "$OK: All tests passed"
-else
-    exit 1
+if [[ $IS_SOURCED -eq 0 ]]; then
+    echo ""
+    echo -e "Results: $PASS passed, $ERRORS failed"
+    if [[ $ERRORS -eq 0 ]]; then
+        echo -e "$OK: All tests passed"
+    else
+        exit 1
+    fi
 fi

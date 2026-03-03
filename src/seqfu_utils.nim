@@ -243,23 +243,32 @@ var
 debug = if getEnv("seqfu_debug", "0") != "0": true
           else: false
 
-proc reverse*(str: string): string =
-  result = ""
-  for index in countdown(str.high, 0):
-    result.add(str[index])
-
-
-proc translateIUPAC*(c: char): char =
+func buildIupacRcTable(): array[256, char] =
   const
     inputBase = "ATUGCYRSWKMBDHVN"
     rcBase    = "TAACGRYSWMKVHDBN"
-  let
-    base = toUpperAscii(c)
-  let o = inputBase.find(base)
-  if o >= 0:
-    return rcBase[o]
-  else:
-    return base
+
+  for i in 0 .. 255:
+    result[i] = toUpperAscii(char(i))
+
+  for i in 0 ..< inputBase.len:
+    let
+      src = inputBase[i]
+      dst = rcBase[i]
+    result[src.ord] = dst
+    result[toLowerAscii(src).ord] = dst
+
+const iupacRcTable = buildIupacRcTable()
+
+proc reverse*(str: string): string =
+  let n = str.len
+  result = newString(n)
+  for i in 0 ..< n:
+    result[i] = str[n - i - 1]
+
+
+proc translateIUPAC*(c: char): char {.inline.} =
+  iupacRcTable[c.ord]
 
 proc matchIUPAC*(a, b: char): bool =
   # a=primer; b=read
@@ -296,10 +305,10 @@ proc matchIUPAC*(a, b: char): bool =
 
 # Reverse complement
 proc revcompl*(s: string): string =
-  result = ""
-  let rev = reverse(s)
-  for c in rev:
-      result &= c.translateIUPAC
+  let n = s.len
+  result = newString(n)
+  for i in 0 ..< n:
+    result[i] = translateIUPAC(s[n - i - 1])
 
 proc revcompl*(s: FQRecord): FQRecord =
   result.name     = s.name
