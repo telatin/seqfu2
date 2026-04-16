@@ -34,6 +34,7 @@ include ./fastx_tabulate
 include ./fastx_check
 include ./fu_rotate
 include ./tofasta
+include ./fastx_subtract
 
 # Experimental
 include ./fastx_stats_v2
@@ -95,7 +96,8 @@ var progs = {
         "rot": fastx_rotate,
         "restart": fastx_rotate,
       "check": fqcheck,
-      "tofasta": tofasta
+      "tofasta": tofasta,
+      "subtract": fastx_subtract
 }.toTable
 
 proc main(args: var seq[string]): int =
@@ -116,7 +118,8 @@ proc main(args: var seq[string]): int =
                "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
                "list [lst]"        : "print sequences from a list of names",
                "orf"               : "extract ORFs from nucleotide sequences",
-               "tofasta"           : "convert multiple formats to FASTA"
+               "tofasta"           : "convert multiple formats to FASTA",
+               "subtract"          : "print sequences in <file1> absent from <file2>"
             }.toTable
 
     helps_last = {"cat"            : "concatenate FASTA/FASTQ files",
