@@ -44,7 +44,9 @@ Output: sequences A and C (in the same order they appear in `all.fa`).
 The format (FASTA or FASTQ) is preserved from the input, including quality
 scores when subtracting FASTQ files.
 
-## Strict mode (default)
+## Modes
+
+### Strict mode (default)
 
 By default `subtract` enforces that `<file2>` is a strict subset of `<file1>`.
 If any sequence name in `<file2>` is not found in `<file1>`, the program
@@ -59,7 +61,7 @@ Use --relaxed to suppress this error.
 This makes `subtract` safe to use in pipelines where an unexpected mismatch
 should be caught early.
 
-## Relaxed mode (`--relaxed`)
+### Relaxed mode (`--relaxed`)
 
 When `<file2>` may contain names that do not appear in `<file1>` — for
 example when working with partial or heterogeneous datasets — use
@@ -99,7 +101,7 @@ identifiers. Use `--strip-comment` to match on the name portion only
 seqfu subtract --strip-comment assembly.fa names_only.fa
 ```
 
-## Handling paired-end suffixes (`--strip-pair`)
+## Handling paired-end suffixes  
 
 Paired-end reads are commonly named with `/1` and `/2` suffixes. Use
 `--strip-pair` to strip these suffixes before matching, so that `read_42/1`
@@ -109,19 +111,7 @@ in `<file1>` is matched by `read_42` in `<file2>`:
 seqfu subtract --strip-pair reads_R1.fq filtered.fq
 ```
 
-## Roundtrip property
-
-Given a file A and a subset B, the following two operations are inverses
-of each other:
-
-```bash
-seqfu subtract A B > C        # C = A minus B
-seqfu subtract A C > D        # D should equal B
-```
-
-`D` will contain exactly the same sequences as `B` (same names, same
-order), making `subtract` composable in filtering pipelines.
-
+ 
 ## Verbose output
 
 Use `-v` / `--verbose` to print a short summary to stderr:
