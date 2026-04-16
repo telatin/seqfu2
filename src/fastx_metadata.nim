@@ -87,7 +87,7 @@ proc printFOFN(samples: seq[sample], opts: metadataSettings) =
     let runtype = if len(s.file2) > 0: "paired-end"
                   elif opts.ont: "ont"
                   else: "single-end"
-    echo s.name, SEPARATOR, runtype, SEPARATOR, s.path, "/", s.file1, SEPARATOR, s.path, "/",  s.file2
+    echo s.name, SEPARATOR, runtype, SEPARATOR, joinPath(s.path, s.file1), SEPARATOR, joinPath(s.path, s.file2)
 
 proc countReads(filename: string): int =
     # counts the number of records in a given file
@@ -111,13 +111,10 @@ proc printMag(samples: seq[sample], opts: metadataSettings) =
     dirsDict = initTable[string, int]()
   echo fmt"sample{SEPARATOR}group{SEPARATOR}short_reads_1{SEPARATOR}short_reads_2{SEPARATOR}long_reads"
   for s in samples:
-    let files = if len(s.file2) > 0 : s.file1 & SEPARATOR & s.file2
-                else: s.file1
     let abs1 = joinPath(s.path, s.file1)
-    let abs2 = if len(s.file2) > 0 : joinPath(s.path, s.file2)
+    let abs2 = if len(s.file2) > 0: joinPath(s.path, s.file2)
                else: ""
-    
-    let 
+    let
       fastq1 = if opts.basename: s.file1
                  else: abs1
       fastq2 = if opts.basename: s.file2
@@ -134,14 +131,10 @@ proc printAmpliseq(samples: seq[sample], opts: metadataSettings) =
                   else: "\t"
     runs = @["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "J1", "K1", "L1", "M1", "N1", "O1", "P1", "Q1", "R1", "S1", "T1", "U1", "V1", "W1", "X1", "Y1", "Z1" ]
 
-  var 
+  var
     dirsDict = initTable[string, int]()
-    runDict = initTable[string, string]()
-    runId = 0
   echo fmt"sampleID{SEPARATOR}forwardReads{SEPARATOR}reverseReads{SEPARATOR}run"
   for s in samples:
-    let files = if len(s.file2) > 0 : s.file1 & SEPARATOR & s.file2
-                else: s.file1
     let abs1 = joinPath(s.path, s.file1)
     let abs2 = if len(s.file2) > 0 : joinPath(s.path, s.file2)
                else: ""
@@ -154,20 +147,14 @@ proc printAmpliseq(samples: seq[sample], opts: metadataSettings) =
     echo s.name, SEPARATOR, abs1, SEPARATOR, abs2, SEPARATOR, runcode
 
 proc printRnaseq(samples: seq[sample], opts: metadataSettings) =
-  var 
-    runDict = initTable[string, string]()
-    runId = 0
   let
-    SEPARATOR = ","
-    runs = @["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "I1", "J1", "K1", "L1", "M1", "N1", "O1", "P1", "Q1", "R1", "S1", "T1", "U1", "V1", "W1", "X1", "Y1", "Z1" ]
+    SEPARATOR = if opts.forceSeparator: opts.separator
+                else: ","
   echo fmt"sample{SEPARATOR}fastq_1{SEPARATOR}fastq_2{SEPARATOR}strandness"
   for s in samples:
-    let files = if len(s.file2) > 0 : s.file1 & SEPARATOR & s.file2
-                else: s.file1
     let abs1 = joinPath(s.path, s.file1)
-    let abs2 = if len(s.file2) > 0 : joinPath(s.path, s.file2)
+    let abs2 = if len(s.file2) > 0: joinPath(s.path, s.file2)
                else: ""
-
     echo s.name, SEPARATOR, abs1, SEPARATOR, abs2, SEPARATOR, "auto"
 
 proc printLotus(samples: seq[sample], opts: metadataSettings) =
@@ -246,16 +233,19 @@ proc printQiime2(samples: seq[sample], opts: metadataSettings) =
 
 
 proc printManifest(samples: seq[sample], opts: metadataSettings) =
+  let
+    SEPARATOR = if opts.forceSeparator: opts.separator
+                else: "\t"
   if opts.pe:
-    echo "sample-id", "\t", "forward-absolute-filepath", "\t", "reverse-absolute-filepath"
+    echo "sample-id", SEPARATOR, "forward-absolute-filepath", SEPARATOR, "reverse-absolute-filepath"
   else:
-    echo "sample-id", "\t", "absolute-filepath"
+    echo "sample-id", SEPARATOR, "absolute-filepath"
 
   for s in samples:
     if opts.pe:
-      echo s.name, "\t", joinPath(s.path, s.file1), "\t", joinPath(s.path, s.file2)
+      echo s.name, SEPARATOR, joinPath(s.path, s.file1), SEPARATOR, joinPath(s.path, s.file2)
     else:
-      echo s.name, "\t", joinPath(s.path, s.file1)
+      echo s.name, SEPARATOR, joinPath(s.path, s.file1)
 
 proc printDadaist(samples: seq[sample], opts: metadataSettings) =
   let 
@@ -277,31 +267,29 @@ proc printDadaist(samples: seq[sample], opts: metadataSettings) =
     echo s.name, path, counts, rand
 
 proc printMetaphage(samples: seq[sample], splitStr = "_", pick = 0, defaultStr = "Cond", opts: metadataSettings) =
-  let headerCounts = if opts.addCounts: ",Counts"
-                     else: ""
+  let
+    SEPARATOR = if opts.forceSeparator: opts.separator
+                else: ","
+    headerCounts = if opts.addCounts: SEPARATOR & "Counts"
+                   else: ""
 
-
-  echo "Sample", ",", "Treatment", ",", "Files", headerCounts
+  echo fmt"Sample{SEPARATOR}Treatment{SEPARATOR}Files{headerCounts}"
   for s in samples:
     var condition = defaultStr
     if splitStr in s.name:
       try:
         let splittedID = (s.name).split(splitStr)
-        let part = if len(splittedID) > pick: splittedID[pick]
-                  else: splittedID[0]
-        condition = part
+        condition = if len(splittedID) > pick: splittedID[pick]
+                    else: splittedID[0]
       except:
         condition = defaultStr
-    else:
-      condition = defaultStr
 
-    let condStr = "," & condition
-    let counts = if opts.addCounts: "," & $s.count
+    let counts = if opts.addCounts: SEPARATOR & $s.count
                  else: ""
-    let path = if opts.pe: "," & joinPath(s.path, s.file1) & ";" & joinPath(s.path, s.file2)
-               else: "," & joinPath(s.path, s.file1)
-    
-    echo s.name, condStr, path, counts
+    let path = if opts.pe: SEPARATOR & joinPath(s.path, s.file1) & ";" & joinPath(s.path, s.file2)
+               else: SEPARATOR & joinPath(s.path, s.file1)
+
+    echo s.name, SEPARATOR, condition, path, counts
 
 proc fastx_metadata(argv: var seq[string]): int =
     let validFormats = {
@@ -370,7 +358,9 @@ Options:
         forceSeparator: false,
         separator: "",
         pe: false,
-        ont: false
+        ont: false,
+        addRandom: false,
+        splits: 0
       )
       outFmt: string
       forTag, revTag, splitString: string
@@ -399,6 +389,7 @@ Options:
     var
       responses = newSeq[sample]()
       samples = newSeq[sample]()
+      seenSamples = initTable[string, string]()  # name -> source directory
       peCount = 0
       seCount = 0
       skipCount = 0
@@ -418,7 +409,7 @@ Options:
     # Parameters validation: input dir
     if len(args["<dir>"]) == 0:
       stderr.writeLine("SeqFu metadata\nERROR: Specify (at least) one input directory. Use --help for more info.")
-      quit(0)
+      quit(1)
 
     # Check conflicting parameters
     if bool(args["--force-tsv"]) and bool(args["--force-csv"]):
@@ -431,18 +422,11 @@ Options:
 
   
 
-    appSettings.abs = if bool(args["--abs"]): true
-                  else: false
-    appSettings.basename = if bool(args["--basename"]): true
-                       else: false
-
-    appSettings.addCounts = if bool(args["--counts"]): true
-                       else: false
-    
-    appSettings.addPath = if bool(args["--add-path"]): true
-                     else: false
-    appSettings.ont     = if bool(args["--ont"]): true
-                     else: false
+    appSettings.abs       = bool(args["--abs"])
+    appSettings.basename  = bool(args["--basename"])
+    appSettings.addCounts = bool(args["--counts"])
+    appSettings.addPath   = bool(args["--add-path"])
+    appSettings.ont       = bool(args["--ont"])
 
     if bool(args["--force-tsv"]):
       stderr.writeLine("SeqFu metadata\nWARNING: Forcing TSV separator, this can introduce errors in the output")
@@ -522,8 +506,12 @@ Options:
           appSettings.pe = false
    
 
+        if sample.name in seenSamples:
+          stderr.writeLine("ERROR: Duplicate sample ID '", sample.name, "' found in '", dir, "' (already seen in '", seenSamples[sample.name], "')")
+          quit(1)
+        seenSamples[sample.name] = dir
+
         if appSettings.addCounts:
-          #let file1 = joinPath(dir, sample.file1)
           responses.add(countReads(sample))
         else:
           samples.add(sample)

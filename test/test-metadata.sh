@@ -40,4 +40,16 @@ if [[ $OBS == $EXP ]]; then
 else
     echo -e "$FAIL: $MSG"
     ERRORS=$((ERRORS+1))
-fi 
+fi
+
+# Duplicate sample IDs across directories should be detected and fail
+EXIT_CODE=0
+$BINDIR/seqfu metadata "$READS_DIR" "$READS_DIR" > /dev/null 2>&1 || EXIT_CODE=$?
+MSG="Duplicate sample IDs (same dir twice) should exit with error"
+if [[ $EXIT_CODE -ne 0 ]]; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
