@@ -153,7 +153,7 @@ Options:
           stderr.writeLine("ERROR: Unequal sequence/quality lengths for paired reads:" , name1, " and ", name2)
           quit(1)
         else:
-          echo '@', name1, comm1, "\n", seq1, "\n+\n", qual1, "\n@", name2, comm2, "\n", seq1, "\n+\n", qual2
+          echo '@', name1, comm1, "\n", seq1, "\n+\n", qual1, "\n@", name2, comm2, "\n", seq2, "\n+\n", qual2
       else:
         stderr.writeLine("ERROR: Unrecognized format: ", line)
         stderr.writeLine("Tot: ", lens.tot, " len[7]:", lens[7])
@@ -182,7 +182,7 @@ Options:
           r2comment = (R2.comment).multiReplace({"\t": " "})        
         c += 1
         if (c mod 2) == 0:
-          echo R1.name, fieldSeparator, R1.comment, fieldSeparator, R1.sequence, fieldSeparator, R1.quality, fieldSeparator, R2.name, fieldSeparator, R2.comment, fieldSeparator, R2.sequence, fieldSeparator, R2.quality
+          echo R1.name, fieldSeparator, R1.comment, fieldSeparator, R1.sequence, fieldSeparator, R1.quality, fieldSeparator, R2.name, fieldSeparator, r2comment, fieldSeparator, R2.sequence, fieldSeparator, R2.quality
 
         # Assign current read to "previous" read, incl comment
         R1 = R2
