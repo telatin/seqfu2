@@ -108,3 +108,41 @@ else
 fi
 rm -rf "$TEMPORARY_DIR"
 
+## PE round-trip: verify R1 and R2 sequence content is preserved exactly
+TEMPORARY_DIR2=$(mktemp -d)
+"$BINDIR"/seqfu deinterleave -o "$TEMPORARY_DIR2"/orig "$FILES"/interleaved.fq.gz
+ORIG_R1_MD5=$(awk 'NR%4==2' "$TEMPORARY_DIR2"/orig_R1.fq | md5sum | cut -d' ' -f1)
+ORIG_R2_MD5=$(awk 'NR%4==2' "$TEMPORARY_DIR2"/orig_R2.fq | md5sum | cut -d' ' -f1)
+
+"$BINDIR"/seqfu tabulate -i "$FILES"/interleaved.fq.gz | "$BINDIR"/seqfu tabulate -d | "$BINDIR"/seqfu deinterleave -o "$TEMPORARY_DIR2"/rt -
+RT_R1_MD5=$(awk 'NR%4==2' "$TEMPORARY_DIR2"/rt_R1.fq | md5sum | cut -d' ' -f1)
+RT_R2_MD5=$(awk 'NR%4==2' "$TEMPORARY_DIR2"/rt_R2.fq | md5sum | cut -d' ' -f1)
+
+if [[ "$ORIG_R1_MD5" == "$RT_R1_MD5" ]]; then
+    echo -e "$OK: PE round-trip: R1 sequences preserved"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: PE round-trip: R1 sequences changed after tabulate/detabulate"
+    ERRORS=$((ERRORS+1))
+fi
+
+if [[ "$ORIG_R2_MD5" == "$RT_R2_MD5" ]]; then
+    echo -e "$OK: PE round-trip: R2 sequences preserved"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: PE round-trip: R2 sequences changed after tabulate/detabulate"
+    ERRORS=$((ERRORS+1))
+fi
+
+rm -rf "$TEMPORARY_DIR2"
+
+## Verify R1 (col 3) and R2 (col 7) sequences differ in tabulated PE output
+SAME_COLS=$("$BINDIR"/seqfu tabulate -i "$FILES"/interleaved.fq.gz | awk -F'\t' '$3 == $7 {c++} END{print c+0}')
+if [[ "$SAME_COLS" == "0" ]]; then
+    echo -e "$OK: PE tabulated: R1 and R2 sequence columns are distinct"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: PE tabulated: $SAME_COLS pairs have identical R1/R2 sequences (possible seq1/seq2 bug)"
+    ERRORS=$((ERRORS+1))
+fi
+
