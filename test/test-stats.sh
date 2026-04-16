@@ -273,19 +273,23 @@ else
 fi
 
 # JSON output should keep numeric fields as numbers (not quoted strings).
-TMPJSON=$(mktemp)
-"$BINDIR"/seqfu stats --json "$iAmpli" > "$TMPJSON"
-HAS_NUMERIC_COUNT=$(jq -r '.[0].Count | type' "$TMPJSON" 2>/dev/null || true)
-HAS_STRING_FILENAME=$(jq -r '.[0].Filename | type' "$TMPJSON" 2>/dev/null || true)
 MSG="JSON Count is numeric and Filename is string"
-if [[ "$HAS_NUMERIC_COUNT" == "number" && "$HAS_STRING_FILENAME" == "string" ]]; then
-   echo -e "$OK: $MSG"
-   PASS=$((PASS+1))
+if ! command -v jq &>/dev/null; then
+  echo "SKIP: $MSG (jq not installed)"
 else
+  TMPJSON=$(mktemp)
+  "$BINDIR"/seqfu stats --json "$iAmpli" > "$TMPJSON"
+  HAS_NUMERIC_COUNT=$(jq -r '.[0].Count | type' "$TMPJSON" 2>/dev/null || true)
+  HAS_STRING_FILENAME=$(jq -r '.[0].Filename | type' "$TMPJSON" 2>/dev/null || true)
+  if [[ "$HAS_NUMERIC_COUNT" == "number" && "$HAS_STRING_FILENAME" == "string" ]]; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+  else
     echo -e "$FAIL: $MSG (CountType=$HAS_NUMERIC_COUNT FilenameType=$HAS_STRING_FILENAME)"
     ERRORS=$((ERRORS+1))
+  fi
+  rm -f "$TMPJSON"
 fi
-rm -f "$TMPJSON"
 
 # Interactive-table option should be listed in help.
 MSG="--interactive-table option is shown in help"
