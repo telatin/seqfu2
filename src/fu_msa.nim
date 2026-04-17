@@ -502,16 +502,18 @@ proc main() =
     if readTerm == true:
       if key == Key.Escape:
         readTerm = false
+        query.setlen(0)
       elif key == Key.Enter:
         readTerm = false
         coord.message = "Not found"
-        # Do something
         let found = searchSeq(msa, query.toString())
 
-        if found.seqIndex > 0:
+        if found.seqIndex >= 0:
           coord.message = "Moving to: " & $(found.seqIndex)
           coord.firstseq = found.seqIndex
-        elif found.baseIndex > 0:
+          if found.baseIndex >= 0:
+            coord.firstbase = found.baseIndex
+        elif found.baseIndex >= 0:
           coord.message = "Motif found at " & $(found.baseIndex)
           coord.firstbase = found.baseIndex
 
@@ -688,6 +690,7 @@ proc main() =
 
     of Key.Slash:
       readTerm = true
+      query.setlen(0)
       coord.message = "Query: "
       drawSeqs(msa, coord)
       
