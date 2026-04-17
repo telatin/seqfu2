@@ -2,7 +2,6 @@
 layout: default
 title: seqfu tabcheck
 parent: Core Tools
-nav_order: 26
 ---
 
 # seqfu tabcheck

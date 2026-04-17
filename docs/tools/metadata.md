@@ -2,7 +2,6 @@
 layout: default
 title: seqfu metadata
 parent: Core Tools
-nav_order: 14
 ---
 
 # seqfu metadata

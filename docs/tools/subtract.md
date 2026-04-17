@@ -2,7 +2,6 @@
 layout: default
 title: seqfu subtract
 parent: Core Tools
-nav_order: 27
 ---
 
 

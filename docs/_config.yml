@@ -25,7 +25,7 @@ search:
   preview_words_after: 10
   tokenizer_separator: /[\s/]+/
   rel_url: true
-  button: true
+  button: false
 
 # Navigation
 nav_sort: title

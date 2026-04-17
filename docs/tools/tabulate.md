@@ -2,7 +2,6 @@
 layout: default
 title: seqfu tabulate
 parent: Core Tools
-nav_order: 20
 ---
 
 

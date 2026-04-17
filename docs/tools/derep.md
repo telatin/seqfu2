@@ -2,7 +2,6 @@
 layout: default
 title: seqfu derep
 parent: Core Tools
-nav_order: 6
 ---
 
 

@@ -2,7 +2,6 @@
 layout: default
 title: seqfu tofasta
 parent: Core Tools
-nav_order: 22
 ---
 
 # seqfu tofasta

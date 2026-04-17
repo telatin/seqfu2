@@ -2,7 +2,6 @@
 layout: default
 title: seqfu less
 parent: Core Tools
-nav_order: 11
 ---
 
 

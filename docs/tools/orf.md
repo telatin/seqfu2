@@ -2,7 +2,6 @@
 layout: default
 title: seqfu orf
 parent: Core Tools
-nav_order: 25
 ---
 
 # seqfu orf

@@ -2,9 +2,7 @@
 layout: default
 title: seqfu sort
 parent: Core Tools
-nav_order: 18
 ---
-
 
 # seqfu sort
 

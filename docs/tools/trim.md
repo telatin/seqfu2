@@ -2,7 +2,6 @@
 layout: default
 title: seqfu trim
 parent: Core Tools
-nav_order: 23
 ---
 
 # trim

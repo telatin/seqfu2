@@ -2,7 +2,6 @@
 layout: default
 title: seqfu interleave
 parent: Core Tools
-nav_order: 9
 ---
 
 
