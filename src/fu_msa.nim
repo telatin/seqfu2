@@ -40,8 +40,6 @@ type
     exit_x, exit_y: int
     protein: bool
 
-let
-  noCoord : seqCoord = (seqIndex: -1, baseIndex: -1)
 
 proc exitProc(c: coordinates, screenshot: bool)   =
   if screenshot == true:
@@ -133,7 +131,7 @@ proc readMSA(f: string): msa =
   result.consensus = "?".repeat(length)
 
   let
-    ths = int(float(len(seqs) / 2))
+    ths = int(float(len(seqs)) / 2.0)
   for pos in 0 ..< length:
     var
       c = 0
@@ -281,6 +279,7 @@ proc searchSeq(MSA: msa, query: string): seqCoord  =
     for i, sequence in MSA.seqs:
       let pos = find(sequence.toUpperAscii(), query[1 .. ^1])
       if pos != -1:
+        result.seqIndex = i
         result.baseIndex = pos
         return
     return
@@ -407,10 +406,10 @@ proc help() =
 
   tb.write(1, 11, fgGreen,  "  Other")
   tb.write(1, 12, fgWhite,  "   Tab                Change color scheme")
-  tb.write(1, 12, fgWhite,  "   Space              Change consensus/majority")
-  tb.write(1, 13, fgWhite,  "   F5,R               Refresh")
-  tb.write(1, 14, fgWhite,  "   F5,CtrlR           Toggle Autorefresh")
-  tb.write(1, 15, fgWhite,  "   Q, CtrlC           Quit")
+  tb.write(1, 13, fgWhite,  "   Space              Change consensus/majority")
+  tb.write(1, 14, fgWhite,  "   F5,R               Refresh")
+  tb.write(1, 15, fgWhite,  "   F5,CtrlR           Toggle Autorefresh")
+  tb.write(1, 16, fgWhite,  "   Q, CtrlC           Quit")
   tb.setForegroundColor(fgGreen)
   tb.drawRect(0, 0, tb.width-1, tb.height-1)   
   tb.display()
@@ -474,7 +473,8 @@ proc main() =
     readTerm = false
     query = newSeq[Key]()
     autorefresh = not bool(args["--norefresh"])
-    help = false
+    showHelp = false
+    blockSize = parseInt($args["--jumpsize"])
 
     coord  = coordinates(firstseq: optFirstSeq, 
       firstbase: optFirstBase, 
@@ -498,11 +498,7 @@ proc main() =
   while true:
     var
       key = getKey()
-      blockSize = parseInt($args["--jumpsize"])
-    
-    let
-      c : seqCoord = (seqIndex: coord.firstseq, baseIndex: coord.firstbase)
-    
+
     if readTerm == true:
       if key == Key.Escape:
         readTerm = false
@@ -510,14 +506,14 @@ proc main() =
         readTerm = false
         coord.message = "Not found"
         # Do something
-        let c = searchSeq(msa, query.toString())
-        
-        if c.seqIndex > 0:
-          coord.message = "Moving to: " & $(c.seqIndex)
-          coord.firstseq = c.seqIndex
-        elif c.baseIndex > 0:
-          coord.message = "Motif found at " & $(c.baseIndex)
-          coord.firstbase = c.baseIndex
+        let found = searchSeq(msa, query.toString())
+
+        if found.seqIndex > 0:
+          coord.message = "Moving to: " & $(found.seqIndex)
+          coord.firstseq = found.seqIndex
+        elif found.baseIndex > 0:
+          coord.message = "Motif found at " & $(found.baseIndex)
+          coord.firstbase = found.baseIndex
 
         query.setlen(0)
         drawSeqs(msa, coord)
@@ -643,7 +639,7 @@ proc main() =
     of Key.PageUp, Key.ShiftA:
       # Jump to top of screen
       coord.message = "[Jump to top]"
-      coord.firstseq = 1
+      coord.firstseq = 0
       drawSeqs(msa, coord)
     of Key.PageDown, Key.ShiftZ:
       # Jump to bottom
@@ -678,7 +674,7 @@ proc main() =
       drawSeqs(msa, coord)
     of Key.H, Key.F1:
       # Help
-      help = not help
+      showHelp = not showHelp
       help()
 
     of Key.Minus:
@@ -725,7 +721,7 @@ proc main() =
         coord.exit_y = -1
 
     else:
-      if autorefresh and not help:
+      if autorefresh and not showHelp:
         drawSeqs(msa, coord)
       else:
         continue
