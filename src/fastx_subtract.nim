@@ -1,5 +1,5 @@
 import readfq
-import tables, strutils
+import sets, strutils
 from os import fileExists
 import md5
 import docopt
@@ -70,26 +70,28 @@ Options:
     return 1
 
   # Pass 1: read file2, build set of keys to subtract.
-  # Value tracks whether each key was found in file1.
-  var subtractSet = initTable[string, bool]()
+  var subtractKeys = initHashSet[string]()
 
   for record in readfq(file2):
     let key = subtractKey(record.name, record.comment, record.sequence, opts)
-    subtractSet[key] = false
+    subtractKeys.incl(key)
 
   if opts.verbose:
-    stderr.writeLine("Sequences loaded from file2: ", len(subtractSet))
+    stderr.writeLine("Sequences loaded from file2: ", len(subtractKeys))
 
-  # Pass 2: stream file1; print sequences whose key is absent from subtractSet.
+  # Pass 2: stream file1; print sequences whose key is absent from subtractKeys.
+  # foundKeys is only populated when strict validation is needed (not --relaxed).
   var
-    total   = 0
-    printed = 0
+    total     = 0
+    printed   = 0
+    foundKeys = initHashSet[string]()
 
   for record in readfq(file1):
     total += 1
     let key = subtractKey(record.name, record.comment, record.sequence, opts)
-    if key in subtractSet:
-      subtractSet[key] = true
+    if key in subtractKeys:
+      if not opts.relaxed:
+        foundKeys.incl(key)
     else:
       let comment = if len(record.comment) > 0: " " & record.comment
                     else: ""
@@ -107,8 +109,8 @@ Options:
   # Strict validation: all keys in file2 must have been seen in file1.
   if not opts.relaxed:
     var missing = 0
-    for key, found in subtractSet:
-      if not found:
+    for key in subtractKeys:
+      if key notin foundKeys:
         stderr.writeLine("ERROR: sequence in <file2> not found in <file1>: ", key)
         missing += 1
     if missing > 0:
