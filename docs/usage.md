@@ -52,7 +52,7 @@ Add --help after each command to print its usage.
 
 ## Core and Utilities
 
-Preferred commands are exposed as `seqfu` subcommands (see **[Core Tools]({{site.baseurl}}/tools/)**), including:
+Preferred commands are exposed as `seqfu` subcommands (see **[Core Tools]({{site.baseurl}}/tools/README.html)**), including:
 
 * `seqfu orf` to extract ORFs from nucleotide reads/sequences
 * `seqfu tabcheck` to validate TSV/CSV field consistency
@@ -63,4 +63,4 @@ Compatibility binaries are still shipped for existing pipelines:
 * `fu-tabcheck` (wrapper for `seqfu tabcheck`)
 * plus additional standalone utilities such as `fu-cov`, `fu-homocomp`, and others
 
-See the **[full list of utilities]({{site.baseurl}}/utilities/)**.
+See the **[full list of utilities]({{site.baseurl}}/utilities/README.html)**.
