@@ -170,4 +170,64 @@ else
     echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
     ERRORS=$((ERRORS+1))
 fi
+
+## Test -w (word boundary) with numeric names
+EXP=1
+MSG="Word match: search '1' with -w (should match only seq 1, not 10, 11, etc.)"
+OBS=$("$BINDIR"/seqfu grep -n 1 -w "$iNum" | "$BINDIR"/seqfu count | cut -f 2 )
+if [[ $OBS -eq $EXP ]]; then
+    echo -e "$OK: $MSG: exp=$EXP obs=$OBS"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
+    ERRORS=$((ERRORS+1))
+fi
+
+## Test substring match (default) with numeric names
+EXP=272
+MSG="Substring match: search '1' without -w (should match 1, 10-19, 100-199, 210-219, etc.)"
+OBS=$("$BINDIR"/seqfu grep -n 1 "$iNum" | "$BINDIR"/seqfu count | cut -f 2 )
+if [[ $OBS -eq $EXP ]]; then
+    echo -e "$OK: $MSG: exp=$EXP obs=$OBS"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
+    ERRORS=$((ERRORS+1))
+fi
+
+## Test -w with word in comment
+EXP=1
+MSG="Word match in comment: search 'has' with -w -c (should match SEQ1 only)"
+OBS=$("$BINDIR"/seqfu grep -n has -w -c "$iComments" | "$BINDIR"/seqfu count | cut -f 2 )
+if [[ $OBS -eq $EXP ]]; then
+    echo -e "$OK: $MSG: exp=$EXP obs=$OBS"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
+    ERRORS=$((ERRORS+1))
+fi
+
+## Test -w does not match partial words in comments
+EXP=1
+MSG="Word match in comment: search 'tabbed' with -w -c (should match SEQ2 'tabbed_comment')"
+OBS=$("$BINDIR"/seqfu grep -n tabbed -w -c "$iComments" | "$BINDIR"/seqfu count | cut -f 2 )
+if [[ $OBS -eq $EXP ]]; then
+    echo -e "$OK: $MSG: exp=$EXP obs=$OBS"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
+    ERRORS=$((ERRORS+1))
+fi
+
+## Test substring match in comments (for comparison)
+EXP=1
+MSG="Substring match in comment: search 'tabbed' with -c (should match SEQ2 only)"
+OBS=$("$BINDIR"/seqfu grep -n tabbed -c "$iComments" | "$BINDIR"/seqfu count | cut -f 2 )
+if [[ $OBS -eq $EXP ]]; then
+    echo -e "$OK: $MSG: exp=$EXP obs=$OBS"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG: exp=$EXP obs=$OBS"
+    ERRORS=$((ERRORS+1))
+fi
  

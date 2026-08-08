@@ -5,6 +5,19 @@ import docopt
 import ./seqfu_utils
 import re
 
+proc isWordMatch(text, word: string): bool =
+  var pos = 0
+  while pos < text.len:
+    let idx = text.find(word, pos)
+    if idx < 0:
+      return false
+    let before = if idx == 0: true else: not text[idx-1].isAlphaNumeric()
+    let after = if idx + word.len >= text.len: true else: not text[idx + word.len].isAlphaNumeric()
+    if before and after:
+      return true
+    pos = idx + 1
+  return false
+
 proc fastx_grep2(argv: var seq[string]): int =
     let args = docopt("""
 Usage: grep [options] [<inputfile> ...]
@@ -74,31 +87,39 @@ General options:
         files.add(file)
     
     
+    if args["--append-pos"] and $args["--oligo"] == "nil":
+      stderr.writeLine("Error: --append-pos requires --oligo")
+      quit(1)
+    
     for filename in files:
       if filename != "-"  and not fileExists(filename):
-        stderr.writeLine("ERROR: ", filename, ": not found (check the parameters)")
-        quit(1)
+        stderr.writeLine("ERROR: ", filename, ": not found (skipping)")
+        continue
       else:
         echoVerbose(filename, verbose)
 
       var 
-        pattern = if matchFull: optRegexString
-                  elif matchWord: "\\b" & optRegexString & "\\b"
-                  else: ".*" & optRegexString & ".*"
-        
+        compiledRegex: Regex
+        hasRegex = false
+      
+      if optRegexString != "nil":
+        let pattern = if matchFull: optRegexString
+                      elif matchWord: "\\b" & optRegexString & "\\b"
+                      else: ".*" & optRegexString & ".*"
+        compiledRegex = re(pattern, flags={reIgnoreCase})
+        hasRegex = true
       
       if args["--verbose"]:
         if optQueryString != "nil":
           stderr.writeLine("Name contains: ", optQueryString)
         
-        if optRegexString != "nil":
+        if hasRegex:
           stderr.writeLine("Name matches: ", optRegexString)
 
       for fqRead in readfq(filename):
         var
           print_this_sequence = not invertMatch
           matches : seq[string]
-          outRecord: FQRecord = fqRead
 
         let
           readNameOnly = if matchIgnoreCase: (fqRead.name).toUpperAscii()
@@ -106,9 +127,6 @@ General options:
         
           readCommentOnly = if matchIgnoreCase: (fqRead.comment).toUpperAscii()
                           else: fqRead.comment
-      
-          #readNameSearchSpace = if matchComment: readNameOnly & "\t" & readCommentOnly
-          #                  else: readNameOnly
 
           readSequence = if matchIgnoreCase: (fqRead.sequence).toUpperAscii()
                          else: fqRead.sequence
@@ -124,7 +142,7 @@ General options:
                 print_this_sequence = invertMatch
             elif matchWord:
               # Check a word inside the comment, or the whole name (cant have spaces)
-              if optQueryString != readNameOnly and rfind(readCommentOnly, optQueryString) < 0:
+              if optQueryString != readNameOnly and not isWordMatch(readCommentOnly, optQueryString):
                 print_this_sequence = invertMatch
             else:
               # Check for a string inside read name or comment
@@ -144,27 +162,29 @@ General options:
           
             
         ## REGEX
-        if optRegexString != "nil":
+        if hasRegex:
           if matchComment:
-            if not match(readNameOnly, re(pattern, flags={reIgnoreCase}), matches) and not match(readCommentOnly, re(pattern, flags={reIgnoreCase}), matches):
+            if not match(readNameOnly, compiledRegex, matches) and not match(readCommentOnly, compiledRegex, matches):
               print_this_sequence = invertMatch
-          elif not match(readNameOnly, re(pattern, flags={reIgnoreCase}), matches):
+          elif not match(readNameOnly, compiledRegex, matches):
             print_this_sequence = invertMatch
 
+        var outRecord: FQRecord
+        
         if $args["--oligo"] != "nil":
-          # Search for oligo in the sequence
+          outRecord = fqRead
           let oligos = findPrimerMatches(readSequence, $args["--oligo"], matchThs, maxMismatches, minMatches)
           if len(oligos[0]) == 0 and len(oligos[1]) == 0:
             print_this_sequence = invertMatch
           else:
             if args["--append-pos"]:
-              
               outRecord.comment &= " for-matches=" & strutils.join(oligos[0], ",")
               outRecord.comment &= ":rev-matches=" & strutils.join(oligos[1], ",")
         
-        #if invertMatch:
-        #  print_this_sequence = not print_this_sequence
         if print_this_sequence:
-          print_seq(outRecord, nil)
+          if $args["--oligo"] != "nil":
+            print_seq(outRecord, nil)
+          else:
+            print_seq(fqRead, nil)
           
 
