@@ -68,8 +68,10 @@ Output:
       skip = parseInt($args["--skip"])
       printBasename = args["--basename"]
       separator = $args["--sep"]
-    except:
-      stderr.writeLine("Error: invalid value for --num or --skip (expected integer).")
+      if num < 0 or skip < 0:
+        raise newException(ValueError, "negative value")
+    except ValueError:
+      stderr.writeLine("Error: invalid value for --num or --skip (expected non-negative integer).")
       quit(1)
 
     if args["--prefix"]:
@@ -96,21 +98,20 @@ Output:
       echoVerbose(filename, verbose)
 
       var
-        y = 0
-        c = 0
+        subsampleIdx = 0
+        seqCount = 0
         lastSequences = initDeque[FQRecord](nextPowerOfTwo(num))
 
       for record in readfq(filename):
-        var outRecord: FQRecord = record
-        c += 1
+        seqCount += 1
 
-        # Subsampling: when skip > 0, only consider every skip-th sequence
         if skip > 0:
-          y = c mod skip
+          subsampleIdx = seqCount mod skip
 
-        if y == 0:
+        if subsampleIdx == 0:
+          var outRecord = record
           if len(prefix) > 0:
-            outRecord.name = prefix & separator & $c
+            outRecord.name = prefix & separator & $seqCount
           if printBasename:
             outRecord.name = getBasename(filename) & separator & record.name
           lastSequences.keepSeq(outRecord, num)

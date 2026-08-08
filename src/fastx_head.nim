@@ -65,8 +65,10 @@ Output:
       skip = parseInt($args["--skip"])
       printBasename = args["--basename"]
       separator = $args["--sep"]
-    except:
-      stderr.writeLine("Error: invalid value for --num or --skip (expected integer).")
+      if num < 0 or skip < 0:
+        raise newException(ValueError, "negative value")
+    except ValueError:
+      stderr.writeLine("Error: invalid value for --num or --skip (expected non-negative integer).")
       quit(1)
 
     if args["--prefix"]:
@@ -93,40 +95,37 @@ Output:
       echoVerbose(filename, verbose)
 
       var
-        y = 0
-        c = 0
-        printed = 0
-        outRecord: FQRecord
+        subsampleIdx = 0
+        seqCount = 0
+        printedCount = 0
         lastPrintedName: string
 
       for record in readfq(filename):
-        outRecord = record
-        c += 1
+        seqCount += 1
 
-        # Subsampling: when skip > 0, only print every skip-th sequence
         if skip > 0:
-          y = c mod skip
+          subsampleIdx = seqCount mod skip
 
-        if printed == num:
+        if printedCount == num:
           if verbose:
-            stderr.writeLine("Stopping after ", printed, " sequences.")
+            stderr.writeLine("Stopping after ", printedCount, " sequences.")
           break
 
-        if y == 0:
-          printed += 1
+        if subsampleIdx == 0:
+          var outRecord = record
+          printedCount += 1
           if len(prefix) > 0:
-            outRecord.name = prefix & separator & $printed
+            outRecord.name = prefix & separator & $printedCount
           if printBasename:
             outRecord.name = getBasename(filename) & separator & outRecord.name
           lastPrintedName = outRecord.name
           print_seq(outRecord, nil)
 
-      # --print-last: report the last printed sequence name (after the loop)
-      if printed == num and printLast:
+      if printedCount > 0 and printLast:
         stderr.writeLine("Last:", lastPrintedName)
 
-      if (not args["--quiet"]) and printed < num:
-        stderr.writeLine("WARNING: Printed fewer sequences (", printed, "/", num, ") than requested for ", filename, ". Try reducing --skip.")
+      if (not args["--quiet"]) and printedCount < num:
+        stderr.writeLine("WARNING: Printed fewer sequences (", printedCount, "/", num, ") than requested for ", filename, ". Try reducing --skip.")
         if fatalWarning:
           stderr.writeLine("Exiting with error.")
           quit(1)

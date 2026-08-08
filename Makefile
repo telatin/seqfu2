@@ -19,7 +19,7 @@ PYTARGETS=$(BIN)/fu-split $(BIN)/fu-pecheck $(BIN)/fu-readtope
 
 all: $(TARGETS) $(PYTARGETS)
 
-sources/: src/sfu.nim s
+sources/: src/sfu.nim
 	mkdir -p sources
 	nim c --cc:$(CC) $(NIMPARAM) --nimcache:sources/ --genScript ./src/sfu.nim
 	bash test/convert.sh sources/compile_sfu.sh
@@ -41,22 +41,20 @@ $(BIN)/SeqCountHelper: test/byte/count.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS) $(PTHREADLIBS)
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split
-	chmod +x $(SCRIPTS)/fu-split
 	cp -f $(SCRIPTS)/fu-split $(BIN)/fu-split
-	sed '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(SCRIPTS)/fu-split > $(BIN)/fu-split
+	sed -i '' '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-split
 	chmod 555 $(BIN)/fu-split
 
 $(BIN)/fu-pecheck: $(SCRIPTS)/fu-pecheck
-	chmod +x $(SCRIPTS)/fu-pecheck
 	cp -f $(SCRIPTS)/fu-pecheck $(BIN)/fu-pecheck
-	sed '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(SCRIPTS)/fu-pecheck > $(BIN)/fu-pecheck
+	sed -i '' '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-pecheck
 	chmod 555 $(BIN)/fu-pecheck
 
 $(BIN)/fu-readtope: $(SCRIPTS)/fu-readtope
-	chmod +x $(SCRIPTS)/fu-readtope
 	cp -f $(SCRIPTS)/fu-readtope $(BIN)/fu-readtope
-	sed '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(SCRIPTS)/fu-readtope > $(BIN)/fu-readtope
+	sed -i '' '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-readtope
 	chmod 555 $(BIN)/fu-readtope
+
 $(BIN)/seqfu: src/sfu.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
