@@ -42,17 +42,20 @@ $(BIN)/SeqCountHelper: test/byte/count.cpp
 
 $(BIN)/fu-split: $(SCRIPTS)/fu-split
 	cp -f $(SCRIPTS)/fu-split $(BIN)/fu-split
-	sed -i '' '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-split
+	sed -i.bak '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-split
+	rm -f $(BIN)/fu-split.bak
 	chmod 555 $(BIN)/fu-split
 
 $(BIN)/fu-pecheck: $(SCRIPTS)/fu-pecheck
 	cp -f $(SCRIPTS)/fu-pecheck $(BIN)/fu-pecheck
-	sed -i '' '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-pecheck
+	sed -i.bak '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-pecheck
+	rm -f $(BIN)/fu-pecheck.bak
 	chmod 555 $(BIN)/fu-pecheck
 
 $(BIN)/fu-readtope: $(SCRIPTS)/fu-readtope
 	cp -f $(SCRIPTS)/fu-readtope $(BIN)/fu-readtope
-	sed -i '' '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-readtope
+	sed -i.bak '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-readtope
+	rm -f $(BIN)/fu-readtope.bak
 	chmod 555 $(BIN)/fu-readtope
 
 $(BIN)/seqfu: src/sfu.nim
