@@ -14,6 +14,7 @@ Invoking `seqfu` will display a list of internal commands:
 ```text
 SeqFu - Sequence Fastx Utilities
 
+        • amplicheck          : QC paired-end amplicon FASTQ files
         • bases               : count bases in FASTA/FASTQ files
         • cat                 : concatenate FASTA/FASTQ files
         • check               : check FASTQ file for errors
