@@ -136,6 +136,15 @@ if [[ -e "$HOMO" ]]; then
   fi
 fi
 
+if [[ -e "$BINDIR/fu-virfilter" ]]; then
+  if bash "$DIR/test-virfilter.sh"; then
+    echo -e "$OK: fu-virfilter"
+  else
+    echo -e "$FAIL: fu-virfilter"
+    ERRORS=$((ERRORS+1))
+  fi
+fi
+
 # Interleave
 if [[ $("$BIN" ilv -1 "$iPair1" -2 "$iPair2" | wc -l) == $(cat "$iPair1" "$iPair2" | gzip -d | wc -l ) ]]; then
 	echo -e "$OK: Interleave"

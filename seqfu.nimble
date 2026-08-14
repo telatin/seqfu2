@@ -6,7 +6,7 @@ license       = "MIT"
 
 # Dependencies
 requires "nim >= 2.0", "regex >= 0.23", "checksums", "docopt#v0.7.1", "terminaltables", "readfq#head",
-        "iterutils", "argparse",  "colorize", "zip", "datamancer >= 0.3",
+        "iterutils", "argparse",  "colorize", "zip",
         "illwill#v0.2.0", "malebolgia >= 1.3.2", "tableview >= 0.3.6"
 
 srcDir = "src"
