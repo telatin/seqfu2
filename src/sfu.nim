@@ -22,7 +22,6 @@ include ./fastx_view_interactive
 include ./fastx_head
 include ./fastx_tail 
 include ./fastx_sort
-include ./legacy_fastx_grep # legacy
 include ./fastx_grep2
 include ./fastq_merge_lanes
 include ./fastx_rc
@@ -84,7 +83,6 @@ var progs = {
        "view": fastx_view,
        "less": fastx_less,
        "grep": fastx_grep2,
-       "grep-legacy": fastx_grep,
        "head": fastx_head,
        "tail": fastx_tail,
        "tabulate": fastx_tabulate,

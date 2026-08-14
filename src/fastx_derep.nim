@@ -1,5 +1,5 @@
 import klib
-import re
+import regex except re, match, replace, Regex
 import md5
 import json
 import tables, strutils
@@ -42,8 +42,8 @@ Options:
   
 
     let 
-      sizePattern = re";?size=(\d+);?"
-      sizeCapture = re".*;?size=(\d+);?.*"
+      sizePattern = regex.re2";?size=(\d+);?"
+      sizeCapture = regex.re2".*;?size=(\d+);?.*"
       addLength = args["--add-len"]
       useHash   = args["--md5"]
       useJson   = if $args["--json"] == "nil" : false 
@@ -91,7 +91,7 @@ Options:
       echoVerbose("Reading " & filename, args["--verbose"])
 
       # Prse FASTX
-      var match: array[1, string]
+      var sizeMatch = regex.RegexMatch2()
       var c = 0
 
 
@@ -113,7 +113,7 @@ Options:
         # New sequence?
         if seqFreqs[r.seq] == 0:
           if keepName:
-            seqNames[r.seq] = (r.name).replace(sizePattern, "")
+            seqNames[r.seq] = regex.replace(r.name, sizePattern, "")
           
           if useHash:
             seqNames[r.seq] = getMD5(r.seq)
@@ -142,10 +142,10 @@ Options:
         # Calculate size
         if not args["--ignore-size"]:
           # consider size=XX as count (otherwise: 1)
-          if match(r.name, sizeCapture, match):
-            seqFreqs.inc(r.seq, parseInt(match[0]))
-          elif match(r.comment, sizeCapture, match):
-            seqFreqs.inc(r.seq, parseInt(match[0]))
+          if regex.match(r.name, sizeCapture, sizeMatch):
+            seqFreqs.inc(r.seq, parseInt(r.name[sizeMatch.group(0)]))
+          elif regex.match(r.comment, sizeCapture, sizeMatch):
+            seqFreqs.inc(r.seq, parseInt(r.comment[sizeMatch.group(0)]))
           else:
             seqFreqs.inc(r.seq)
         else:

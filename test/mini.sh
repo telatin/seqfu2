@@ -89,6 +89,33 @@ else
 	ERRORS=$((ERRORS+1))
 fi
 
+TMP_DEREP_REGEX=$(mktemp)
+cat > "$TMP_DEREP_REGEX" <<'EOF'
+>first;size=3;
+ACGT
+>second size=2;
+ACGT
+>singleton
+TTTT
+EOF
+
+if [[ $("$BIN" derep -k "$TMP_DEREP_REGEX" | grep -c '^>first;size=5$') -eq "1" ]]; then
+	echo -e "$OK: Dereplicate, size annotations in name/comment"
+  PASS=$((PASS+1))
+else
+	echo -e "$FAIL: Dereplicate did not preserve size annotation counts"
+	ERRORS=$((ERRORS+1))
+fi
+
+if [[ $("$BIN" derep -k -i "$TMP_DEREP_REGEX" | grep -c '^>first;size=2$') -eq "1" ]]; then
+	echo -e "$OK: Dereplicate, ignore original size annotations"
+  PASS=$((PASS+1))
+else
+	echo -e "$FAIL: Dereplicate did not ignore original size annotations"
+	ERRORS=$((ERRORS+1))
+fi
+rm -f "$TMP_DEREP_REGEX"
+
 # Grep
 if [[ $("$BIN" grep -n seq.1 "$FILES"/comm.fa  | grep -c '>') -eq "1" ]]; then
 	echo -e "$OK: grep, name"

@@ -3,7 +3,7 @@ import tables, strutils
 from os import fileExists
 import docopt
 import ./seqfu_utils
-import re
+import regex except re, match, replace, Regex
 
 proc isWordMatch(text, word: string): bool =
   var pos = 0
@@ -99,14 +99,14 @@ General options:
         echoVerbose(filename, verbose)
 
       var 
-        compiledRegex: Regex
+        compiledRegex: regex.Regex2
         hasRegex = false
       
       if optRegexString != "nil":
         let pattern = if matchFull: optRegexString
                       elif matchWord: "\\b" & optRegexString & "\\b"
                       else: ".*" & optRegexString & ".*"
-        compiledRegex = re(pattern, flags={reIgnoreCase})
+        compiledRegex = regex.re2("(?i)" & pattern)
         hasRegex = true
       
       if args["--verbose"]:
@@ -119,7 +119,6 @@ General options:
       for fqRead in readfq(filename):
         var
           print_this_sequence = not invertMatch
-          matches : seq[string]
 
         let
           readNameOnly = if matchIgnoreCase: (fqRead.name).toUpperAscii()
@@ -164,9 +163,9 @@ General options:
         ## REGEX
         if hasRegex:
           if matchComment:
-            if not match(readNameOnly, compiledRegex, matches) and not match(readCommentOnly, compiledRegex, matches):
+            if not regex.match(readNameOnly, compiledRegex) and not regex.match(readCommentOnly, compiledRegex):
               print_this_sequence = invertMatch
-          elif not match(readNameOnly, compiledRegex, matches):
+          elif not regex.match(readNameOnly, compiledRegex):
             print_this_sequence = invertMatch
 
         var outRecord: FQRecord
@@ -187,4 +186,3 @@ General options:
           else:
             print_seq(fqRead, nil)
           
-
