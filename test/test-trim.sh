@@ -63,6 +63,23 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
+# Test 2b: Paired-end auto-detection with _R1_ / _R2_ tags
+TMP_TRIM_REGEX=$(mktemp -d)
+gzip -dc "$DIR/../data/illumina_1.fq.gz" > "$TMP_TRIM_REGEX/sample_R1_unit.fq"
+gzip -dc "$DIR/../data/illumina_2.fq.gz" > "$TMP_TRIM_REGEX/sample_R2_unit.fq"
+$BIN trim -1 "$TMP_TRIM_REGEX/sample_R1_unit.fq" -o "$TMP_TRIM_REGEX/out" 2>/dev/null
+R1_COUNT=$($BIN stats "$TMP_TRIM_REGEX/out_R1.fastq" 2>/dev/null | tail -1 | awk '{print $2}')
+R2_COUNT=$($BIN stats "$TMP_TRIM_REGEX/out_R2.fastq" 2>/dev/null | tail -1 | awk '{print $2}')
+MSG="Paired-end auto-detection: _R1_ and _R2_ regex tags match (R1=$R1_COUNT, R2=$R2_COUNT)"
+if [[ -f "$TMP_TRIM_REGEX/out_R1.fastq" && -f "$TMP_TRIM_REGEX/out_R2.fastq" && "$R1_COUNT" -eq "$R2_COUNT" ]]; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+rm -rf "$TMP_TRIM_REGEX"
+
 # Test 3: Paired-end with explicit R2
 $BIN trim -1 $DIR/../data/illumina_1.fq.gz -2 $DIR/../data/illumina_2.fq.gz -o /tmp/test_trim_3 2>/dev/null
 MSG="Paired-end explicit R2: R1 output created"
@@ -76,6 +93,20 @@ fi
 
 MSG="Paired-end explicit R2: R2 output created"
 if [[ -f /tmp/test_trim_3_R2.fastq ]]; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# Test 3b: Paired-end mismatched files fail while streaming
+gzip -dc "$DIR/../data/illumina_1.fq.gz" > /tmp/test_trim_short_R1.fq
+gzip -dc "$DIR/../data/illumina_2.fq.gz" | head -n 24 > /tmp/test_trim_short_R2.fq
+$BIN trim -1 /tmp/test_trim_short_R1.fq -2 /tmp/test_trim_short_R2.fq -o /tmp/test_trim_short 2>/tmp/test_trim_short.err
+RET=$?
+MSG="Paired-end mismatched files fail (R2 shorter)"
+if [[ $RET -ne 0 ]] && grep -q "R2 ended prematurely" /tmp/test_trim_short.err; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
 else
@@ -177,7 +208,7 @@ rm -f /tmp/test_trim_* /tmp/test_trim_stats.json
 
 # Test 9: Threading consistency (single vs multi-threaded)
 $BIN trim $DIR/../data/illumina_1.fq.gz -o /tmp/test_t1.fq -t 1 2>/dev/null
-$BIN trim $DIR/../data/illumina_1.fq.gz -o /tmp/test_t4.fq -t 4 2>/dev/null
+$BIN trim $DIR/../data/illumina_1.fq.gz -o /tmp/test_t4.fq -t 4 --batch-size 2 2>/dev/null
 MSG="Threading consistency: single vs multi-threaded output matches"
 if diff -q /tmp/test_t1.fq /tmp/test_t4.fq >/dev/null 2>&1; then
     echo -e "$OK: $MSG"
@@ -189,7 +220,7 @@ fi
 
 # Test 10: Paired-end threading consistency
 $BIN trim -1 $DIR/../data/illumina_1.fq.gz -o /tmp/test_pe_t1 -t 1 2>/dev/null
-$BIN trim -1 $DIR/../data/illumina_1.fq.gz -o /tmp/test_pe_t4 -t 4 2>/dev/null
+$BIN trim -1 $DIR/../data/illumina_1.fq.gz -o /tmp/test_pe_t4 -t 4 --batch-size 2 2>/dev/null
 MSG="Paired-end threading: R1 matches across thread counts"
 if diff -q /tmp/test_pe_t1_R1.fastq /tmp/test_pe_t4_R1.fastq >/dev/null 2>&1; then
     echo -e "$OK: $MSG"

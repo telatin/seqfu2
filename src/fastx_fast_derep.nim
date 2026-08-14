@@ -1,5 +1,4 @@
 import klib
-import re
 import tables, strutils
 import docopt
 import ./seqfu_utils
@@ -97,4 +96,3 @@ Options:
         echo ">", name,  "\n", format_dna(repSeq, lineWidth)
 
     echoVerbose($(n) & " representative sequences out of " & $(total) & " initial sequences.", args["--verbose"])
-

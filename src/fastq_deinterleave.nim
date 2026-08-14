@@ -1,5 +1,4 @@
 import os
-import re
 import docopt
 import readfq, iterutils
 import ./seqfu_utils

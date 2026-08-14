@@ -7,7 +7,6 @@ import sequtils
 import klib
 import readfq
 import json
-import os
 import tables
 import malebolgia
 import "./seqfu_utils"
@@ -486,88 +485,119 @@ proc processBatch(batch: ptr WorkerBatch, trimOpts: TrimOptions, filterOpts: Fil
         updateStats(batch.stats, filterRes, wasTrimmed)
 
 
-proc processWithThreads(inputR1: string, inputR2: string, outputR1: File, outputR2: File,
-                        trimOpts: TrimOptions, filterOpts: FilterOptions,
-                        threads: int, batchSize: int, isPaired: bool, verbose: bool): ProcessingStats =
-  ## Main processing function using Malebolgia for multithreading
-  var batches: seq[WorkerBatch]
-  var currentBatch = WorkerBatch(isPaired: isPaired)
+proc toFQRecord(record: FastxRecord): FQRecord =
+  result.name = record.name
+  result.comment = record.comment
+  result.sequence = record.seq
+  result.quality = record.qual
 
-  # Read and batch the input files
+
+proc mergeStats(totalStats: var ProcessingStats, batchStats: ProcessingStats) =
+  totalStats.totalReads += batchStats.totalReads
+  totalStats.totalPairs += batchStats.totalPairs
+  totalStats.passedReads += batchStats.passedReads
+  totalStats.passedPairs += batchStats.passedPairs
+  totalStats.failedQuality += batchStats.failedQuality
+  totalStats.failedAvgQual += batchStats.failedAvgQual
+  totalStats.failedNBase += batchStats.failedNBase
+  totalStats.failedLength += batchStats.failedLength
+  totalStats.failedTooLong += batchStats.failedTooLong
+  totalStats.failedComplexity += batchStats.failedComplexity
+  totalStats.totalBasesTrimmed += batchStats.totalBasesTrimmed
+  totalStats.readsTrimmed += batchStats.readsTrimmed
+
+
+proc writeBatchResults(batch: WorkerBatch, outputR1: File, outputR2: File,
+                       isPaired: bool, totalStats: var ProcessingStats) =
+  for read in batch.results1:
+    print_seq(read, outputR1)
+
   if isPaired:
-    # Read both files synchronously into batches
-    var reads1 = newSeq[FQRecord]()
-    var reads2 = newSeq[FQRecord]()
+    for read in batch.results2:
+      print_seq(read, outputR2)
 
-    for read in readfq(inputR1):
-      reads1.add(read)
-    for read in readfq(inputR2):
-      reads2.add(read)
+  totalStats.mergeStats(batch.stats)
 
-    # Check equal length
-    if reads1.len != reads2.len:
-      stderr.writeLine("ERROR: R1 and R2 have different numbers of reads")
-      stderr.writeLine("  R1: ", reads1.len, " reads")
-      stderr.writeLine("  R2: ", reads2.len, " reads")
-      quit(1)
 
-    # Create batches
-    for i in 0 ..< reads1.len:
-      currentBatch.reads1.add(reads1[i])
-      currentBatch.reads2.add(reads2[i])
+proc flushBatches(batches: var seq[WorkerBatch], outputR1: File, outputR2: File,
+                  trimOpts: TrimOptions, filterOpts: FilterOptions,
+                  threads: int, isPaired: bool,
+                  totalStats: var ProcessingStats) =
+  if batches.len == 0:
+    return
 
-      if currentBatch.reads1.len >= batchSize:
-        batches.add(currentBatch)
-        currentBatch = WorkerBatch(isPaired: isPaired)
-
-    if currentBatch.reads1.len > 0:
-      batches.add(currentBatch)
-  else:
-    # Single-end batching
-    for read in readfq(inputR1):
-      currentBatch.reads1.add(read)
-
-      if currentBatch.reads1.len >= batchSize:
-        batches.add(currentBatch)
-        currentBatch = WorkerBatch(isPaired: isPaired)
-
-    if currentBatch.reads1.len > 0:
-      batches.add(currentBatch)
-
-  # Process batches in parallel with Malebolgia
   if threads > 1 and batches.len > 1:
     var m = createMaster()
     m.awaitAll:
       for i in 0 ..< batches.len:
         m.spawn processBatch(addr batches[i], trimOpts, filterOpts)
   else:
-    # Single-threaded fallback
     for i in 0 ..< batches.len:
       processBatch(addr batches[i], trimOpts, filterOpts)
 
-  # Write results in order and aggregate stats
-  var totalStats = ProcessingStats()
   for batch in batches:
-    for read in batch.results1:
-      print_seq(read, outputR1)
+    writeBatchResults(batch, outputR1, outputR2, isPaired, totalStats)
 
-    if isPaired:
-      for read in batch.results2:
-        print_seq(read, outputR2)
+  batches.setLen(0)
 
-    # Aggregate stats
-    totalStats.totalReads += batch.stats.totalReads
-    totalStats.totalPairs += batch.stats.totalPairs
-    totalStats.passedReads += batch.stats.passedReads
-    totalStats.passedPairs += batch.stats.passedPairs
-    totalStats.failedQuality += batch.stats.failedQuality
-    totalStats.failedAvgQual += batch.stats.failedAvgQual
-    totalStats.failedNBase += batch.stats.failedNBase
-    totalStats.failedLength += batch.stats.failedLength
-    totalStats.failedTooLong += batch.stats.failedTooLong
-    totalStats.failedComplexity += batch.stats.failedComplexity
-    totalStats.totalBasesTrimmed += batch.stats.totalBasesTrimmed
-    totalStats.readsTrimmed += batch.stats.readsTrimmed
+
+proc processWithThreads(inputR1: string, inputR2: string, outputR1: File, outputR2: File,
+                        trimOpts: TrimOptions, filterOpts: FilterOptions,
+                        threads: int, batchSize: int, isPaired: bool, verbose: bool): ProcessingStats =
+  ## Main processing function using bounded Malebolgia batches.
+  var batches: seq[WorkerBatch]
+  var currentBatch = WorkerBatch(isPaired: isPaired)
+  var totalStats = ProcessingStats()
+  let batchWindow = max(1, threads)
+
+  if isPaired:
+    var fq1 = xopen[GzFile](inputR1)
+    defer: discard fq1.close()
+    var fq2 = xopen[GzFile](inputR2)
+    defer: discard fq2.close()
+
+    var r1: FastxRecord
+    var r2: FastxRecord
+    var pairCount = 0
+
+    while fq1.readFastx(r1):
+      pairCount += 1
+      if not fq2.readFastx(r2):
+        stderr.writeLine("ERROR: R2 ended prematurely after ", pairCount - 1, " pairs")
+        quit(1)
+
+      currentBatch.reads1.add(r1.toFQRecord())
+      currentBatch.reads2.add(r2.toFQRecord())
+
+      if currentBatch.reads1.len >= batchSize:
+        batches.add(currentBatch)
+        currentBatch = WorkerBatch(isPaired: isPaired)
+        if batches.len >= batchWindow:
+          flushBatches(batches, outputR1, outputR2, trimOpts, filterOpts,
+                       threads, isPaired, totalStats)
+
+    if currentBatch.reads1.len > 0:
+      batches.add(currentBatch)
+
+    if fq2.readFastx(r2):
+      stderr.writeLine("ERROR: R1 ended prematurely after ", pairCount, " pairs")
+      quit(1)
+  else:
+    for read in readfq(inputR1):
+      currentBatch.reads1.add(read)
+
+      if currentBatch.reads1.len >= batchSize:
+        batches.add(currentBatch)
+        currentBatch = WorkerBatch(isPaired: isPaired)
+        if batches.len >= batchWindow:
+          flushBatches(batches, outputR1, outputR2, trimOpts, filterOpts,
+                       threads, isPaired, totalStats)
+
+    if currentBatch.reads1.len > 0:
+      batches.add(currentBatch)
+
+  flushBatches(batches, outputR1, outputR2, trimOpts, filterOpts,
+               threads, isPaired, totalStats)
 
   return totalStats
 
@@ -583,31 +613,23 @@ proc processFiles(inputR1: string, inputR2: string, outputR1: File, outputR2: Fi
   var stats = ProcessingStats()
 
   if isPaired:
-    # Paired-end processing - need to read both files synchronously
-    # We'll collect reads into sequences for synchronized iteration
-    var reads1 = newSeq[FQRecord]()
-    var reads2 = newSeq[FQRecord]()
+    var fq1 = xopen[GzFile](inputR1)
+    defer: discard fq1.close()
+    var fq2 = xopen[GzFile](inputR2)
+    defer: discard fq2.close()
 
-    # Read all R1 reads
-    for read in readfq(inputR1):
-      reads1.add(read)
+    var r1: FastxRecord
+    var r2: FastxRecord
 
-    # Read all R2 reads
-    for read in readfq(inputR2):
-      reads2.add(read)
-
-    # Check equal length
-    if reads1.len != reads2.len:
-      stderr.writeLine("ERROR: R1 and R2 have different numbers of reads")
-      stderr.writeLine("  R1: ", reads1.len, " reads")
-      stderr.writeLine("  R2: ", reads2.len, " reads")
-      quit(1)
-
-    # Process paired reads
-    for i in 0 ..< reads1.len:
+    while fq1.readFastx(r1):
       stats.totalPairs += 1
+      if not fq2.readFastx(r2):
+        stderr.writeLine("ERROR: R2 ended prematurely after ", stats.totalPairs - 1, " pairs")
+        quit(1)
 
-      let (pr1, pr2, passed, res1, res2, trim1, trim2) = processPairedReads(reads1[i], reads2[i], trimOpts, filterOpts)
+      let read1 = r1.toFQRecord()
+      let read2 = r2.toFQRecord()
+      let (pr1, pr2, passed, res1, res2, trim1, trim2) = processPairedReads(read1, read2, trimOpts, filterOpts)
 
       if passed:
         print_seq(pr1, outputR1)
@@ -616,15 +638,19 @@ proc processFiles(inputR1: string, inputR2: string, outputR1: File, outputR2: Fi
 
         if trim1:
           stats.readsTrimmed += 1
-          stats.totalBasesTrimmed += reads1[i].sequence.len - pr1.sequence.len
+          stats.totalBasesTrimmed += read1.sequence.len - pr1.sequence.len
         if trim2:
           stats.readsTrimmed += 1
-          stats.totalBasesTrimmed += reads2[i].sequence.len - pr2.sequence.len
+          stats.totalBasesTrimmed += read2.sequence.len - pr2.sequence.len
       else:
         # Update failure stats (use worse of the two)
         updateStats(stats, res1, trim1)
         if res2 != frPass:
           updateStats(stats, res2, trim2)
+
+    if fq2.readFastx(r2):
+      stderr.writeLine("ERROR: R1 ended prematurely after ", stats.totalPairs, " pairs")
+      quit(1)
 
   else:
     # Single-end processing

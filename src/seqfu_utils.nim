@@ -3,7 +3,7 @@ import readfq
 import strformat, math
 import strutils
 import os
-import re
+import regex except re, match, replace, Regex
 when not defined(windows):
   import posix
 
@@ -195,20 +195,20 @@ proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=fal
 
   if pattern_R1 == "auto" and pattern_R2 == "auto":
     # automatic guess
-    if match(file_R1, re".+_R1\..+"):           
-      result = file_R1.replace(re"_R1\.", "_R2.")
-    elif match(file_R1, re".+_R1_.+"):           
-      result = file_R1.replace(re"_R1_", "_R2_")
-    elif match(file_R1, re".+_1\..+"):            
-      result = file_R1.replace(re"_1\.", "_2.")
+    if regex.match(file_R1, regex.re2".+_R1\..+"):           
+      result = regex.replace(file_R1, regex.re2"_R1\.", "_R2.")
+    elif regex.match(file_R1, regex.re2".+_R1_.+"):           
+      result = regex.replace(file_R1, regex.re2"_R1_", "_R2_")
+    elif regex.match(file_R1, regex.re2".+_1\..+"):            
+      result = regex.replace(file_R1, regex.re2"_1\.", "_2.")
     else:
       if verbose:
         stderr.writeLine("Warning: Unable to detect R2 filename using --for-tag (_R1. or _1.) in <", file_R1, ">:")
       return ""
   else:
     # user defined patterns
-    if match(file_R1, re(".+" & pattern_R1 & ".+") ):
-      result = file_R1.replace(re(pattern_R1), pattern_R2)
+    if regex.match(file_R1, regex.re2(".+" & pattern_R1 & ".+") ):
+      result = regex.replace(file_R1, regex.re2(pattern_R1), pattern_R2)
     else:
       if verbose:
         stderr.writeLine("Warning: Unable to detect R2 file using user defined patterns, from ", file_R1)

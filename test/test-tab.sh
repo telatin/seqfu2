@@ -136,6 +136,45 @@ fi
 
 rm -rf "$TEMPORARY_DIR2"
 
+## Interleave R2 filename inference through regex-backed patterns
+TEMPORARY_DIR3=$(mktemp -d)
+gzip -dc "$FILES"/illumina_1.fq.gz > "$TEMPORARY_DIR3"/sample_R1.fq
+gzip -dc "$FILES"/illumina_2.fq.gz > "$TEMPORARY_DIR3"/sample_R2.fq
+gzip -dc "$FILES"/illumina_1.fq.gz > "$TEMPORARY_DIR3"/sample_1.fq
+gzip -dc "$FILES"/illumina_2.fq.gz > "$TEMPORARY_DIR3"/sample_2.fq
+gzip -dc "$FILES"/illumina_1.fq.gz > "$TEMPORARY_DIR3"/sample.forward.fq
+gzip -dc "$FILES"/illumina_2.fq.gz > "$TEMPORARY_DIR3"/sample.reverse.fq
+
+EXP=14
+GOT=$("$BINDIR"/seqfu ilv -1 "$TEMPORARY_DIR3"/sample_R1.fq | "$BINDIR"/seqfu cnt | cut -f 2)
+if [[ "$GOT" == "$EXP" ]]; then
+    echo -e "$OK: Interleave autodetects _R1. / _R2. filename pattern"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: Interleave _R1. autodetection expected $EXP reads, got $GOT"
+    ERRORS=$((ERRORS+1))
+fi
+
+GOT=$("$BINDIR"/seqfu ilv -1 "$TEMPORARY_DIR3"/sample_1.fq | "$BINDIR"/seqfu cnt | cut -f 2)
+if [[ "$GOT" == "$EXP" ]]; then
+    echo -e "$OK: Interleave autodetects _1. / _2. filename pattern"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: Interleave _1. autodetection expected $EXP reads, got $GOT"
+    ERRORS=$((ERRORS+1))
+fi
+
+GOT=$("$BINDIR"/seqfu ilv -1 "$TEMPORARY_DIR3"/sample.forward.fq --for-tag '\.forward\.' --rev-tag '.reverse.' | "$BINDIR"/seqfu cnt | cut -f 2)
+if [[ "$GOT" == "$EXP" ]]; then
+    echo -e "$OK: Interleave supports custom regex filename pattern"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: Interleave custom regex pattern expected $EXP reads, got $GOT"
+    ERRORS=$((ERRORS+1))
+fi
+
+rm -rf "$TEMPORARY_DIR3"
+
 ## Verify R1 (col 3) and R2 (col 7) sequences differ in tabulated PE output
 SAME_COLS=$("$BINDIR"/seqfu tabulate -i "$FILES"/interleaved.fq.gz | awk -F'\t' '$3 == $7 {c++} END{print c+0}')
 if [[ "$SAME_COLS" == "0" ]]; then
@@ -145,4 +184,3 @@ else
     echo -e "$FAIL: PE tabulated: $SAME_COLS pairs have identical R1/R2 sequences (possible seq1/seq2 bug)"
     ERRORS=$((ERRORS+1))
 fi
-
