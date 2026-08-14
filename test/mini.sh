@@ -424,7 +424,7 @@ if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
   echo " Set RELEASE=1 to make this warning fatal (e.g. when preparing a new release)"
   echo " ****************************************************************************"
   echo
-  if [[ $RELEASE == 1 ]];
+  if [[ ${RELEASE:-0} == 1 ]];
   then
    echo -e "$FAIL: Release matches last version on GitHub"
    ERRORS=$((ERRORS+1))
