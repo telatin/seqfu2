@@ -3,4 +3,9 @@
 !lab
 !lib
 !doc
+!amplicheck
+!amplicheck/*.nim
+!data
+data/*
+!data/primers_db.tsv
 deps.txt

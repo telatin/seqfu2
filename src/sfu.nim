@@ -32,6 +32,7 @@ include ./fastx_cat
 include ./fastx_metadata
 include ./fastx_tabulate
 include ./fastx_check
+include ./fastq_amplicheck
 include ./fu_rotate
 include ./tofasta
 include ./fastx_subtract
@@ -96,6 +97,7 @@ var progs = {
         "rot": fastx_rotate,
         "restart": fastx_rotate,
       "check": fqcheck,
+      "amplicheck": fastq_amplicheck,
       "tofasta": tofasta,
       "subtract": fastx_subtract
 }.toTable
@@ -109,6 +111,7 @@ proc main(args: var seq[string]): int =
                "check"             : "check FASTQ file for errors",
                "bases"             : "count bases in FASTA/FASTQ files",
                "trim"              : "trim FASTQ sequences based on quality",
+               "amplicheck"        : "QC paired-end amplicon FASTQ files",
 #              "merge [mrg]"       : "join Paired End reads",
                "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",

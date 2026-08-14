@@ -1,0 +1,57 @@
+primer_name	aliases	sequence_5to3	direction	target_domain	typical_amplicon_region	source_files	citation
+8F/27F	Eub8F; Eubac8F; Eub27F; Eubac27F	AGAGTTTGATCCTGGCTCAG	forward	Bacteria, broad-range	V1-V9 near full-length with 1492R	deep-research.md	DeLong 1992 PNAS 89:5685-5689; Weisburg et al. 1991 J Bacteriol 173:697-703
+27F	Bac27F; 8F in some compilations	AGAGTTTGATCMTGGCTCAG	forward	Bacteria, broad-range	V1-V9 near full-length with 1492R	primers1.md; deep-research.md	Lane 1991; widely used Lane-derived M-degenerate formulation
+27F-short	27F modified from Lane (1991)	GAGTTTGATCMTGGCTCAG	forward	Bacteria, broad-range	V1-V9 with 1492R	deep-research.md	Oxford Academic primer table; modified from Lane 1991
+27f-Bif		AGGGTTCGATTCTGGCTCAG	forward	Bifidobacteriaceae	near full-length with 1492R	primers1.md	Frank et al. 2008 AEM
+27f-Bor		AGAGTTTGATCCTGGCTTAG	forward	Borrelia	near full-length with 1492R	primers1.md	Frank et al. 2008 AEM
+27f-Chl		AGAATTTGATCTTGGTTCAG	forward	Chlamydiales	near full-length with 1492R	primers1.md	Frank et al. 2008 AEM
+63F	63f	CAGGCCTAACACATGCAAGTC	forward	Bacteria-specific broad-range	V1-V8 (~1.3 kb) with 1387R	deep-research.md	Marchesi et al. 1998 AEM 64:795-799
+68F	68f	TNANACATGCAAGTCGRRCG	forward	Bacteria	V1-V3 with 518R	deep-research.md	Thijs et al. 2017 Front Microbiol 8:494
+338F-18mer	Eub338F truncated form	ACTCCTACGGGAGGCAGC	forward	Bacteria	V3 / V3-V4 depending on reverse partner	primers1.md	Sun et al. coverage evaluation study
+338F	Eub338F	ACTCCTACGGGAGGCAGCAG	forward	Bacteria	V3 / V3-V4 with downstream reverse primer	deep-research.md	Muyzer et al. 1993 AEM 59:695-700
+338R		GCTGCCTCCCGTAGGAGT	reverse	Bacteria	reverse complement of 338F; V1-V3 / V3 pairs	primers1.md	Sun et al. coverage evaluation study
+341F-classic	Eub341F	CCTACGGGAGGCAGCAG	forward	Bacteria	V3 with 518R/534R	deep-research.md	Muyzer et al. 1993 AEM 59:695-700
+341F	Bakt_341F; S-D-Bact-0341-b-S-17	CCTACGGGNGGCWGCAG	forward	Bacteria	V3-V4 (~460 bp) with 785R/805R	primers1.md; deep-research.md	Herlemann et al. 2011 ISME J 5:1571-1579; Klindworth et al. 2013 NAR
+519F-15mer	Arch519F; S-D-Arch-0519-a-S-15	CAGCMGCCGCGGTAA	forward	Bacteria + Archaea	V4 (~278 bp) with 785R	deep-research.md	Klindworth et al. 2013 NAR
+519F	U519F	CAGCMGCCGCGGTAAYAC	forward	Bacteria/Archaea broad	V1-V3 with 27F; V4-V5 with reverse primers	primers1.md	Sun et al. coverage evaluation study
+519F-lane	519f	CAGCMGCCGCGGTAANWC	forward	Broad prokaryotic	V4 / V4-V5 depending on reverse primer	deep-research.md	Oxford Academic table; attributed to Lane 1991
+515F	515F-C	GTGCCAGCMGCCGCGGTAA	forward	Bacteria + Archaea (lineage biases)	V4 (~300-350 bp) with 806R	primers1.md; deep-research.md	Caporaso et al. 2011 PNAS; original EMP primer
+515F-Y	515FB; Parada 515F	GTGYCAGCMGCCGCGGTAA	forward	Bacteria + Archaea (corrects Thaumarchaeota bias)	V4 with 806R/806RB; V4-V5 (~400 bp) with 926R	primers1.md; deep-research.md	Parada et al. 2016 Environ Microbiol; current EMP standard
+799F	799f	AACMGGATTAGATACCCKG	forward	Bacteria (designed to reduce chloroplast amplification)	V5-V7 with 1193R	deep-research.md	Bodenhausen et al. 2013 PLoS ONE 8:e56329
+926F	926F short non-degenerate	ACTCAAAGGAATTGACGG	forward	Broad/universal prokaryotic	V6-V8 with 1392R	deep-research.md	Lundberg et al. 2012 Nature 488:86-90
+926F-degenerate		AAACTYAAAKGAATTGACGG	forward	Broad prokaryotic	V6-V8 (~0.5 kb) with 1392R	deep-research.md	widely used 926F/1392R implementation
+926F-Rdegenerate		AAACTYAAAKGAATTGRCGG	forward	Broad prokaryotic	V6-V8 with 1392R	deep-research.md	attributed to Matsuki et al. 2002
+967F	967f	CAACGCGAAGAACCTTACC	forward	Bacteria	V6-V8 (~424 bp) with 1391R	deep-research.md	Thijs et al. 2017; microbiome methods study
+968F	968f	AACGCGAAGAACCTTAC	forward	Bacteria	V6-V8 (~433 bp) with 1401R; often DGGE GC-clamped	deep-research.md	Nubel et al. 1996 J Bacteriol 178:5636-5643
+B969F		ACGCGHNRAACCTTACC	forward	Bacteria (primarily)	V6-V8 (~438 bp) with BA1406R	deep-research.md	Comeau et al. 2017 mSystems (Microbiome Helper)
+1114F		GCAACGAGCGCAACCC	forward	Bacteria, broad	V7-V8 with 1392R	deep-research.md	Lundberg et al. 2012 Nature 488:86-90
+518R/534R	518r; 534r	ATTACCGCGGCTGCTGG	reverse	Bacteria	V3 with 341F	deep-research.md	Muyzer et al. 1993; alternate coordinate naming
+519R	536R	GWATTACCGCGGCKGCTG	reverse	Bacteria	V1-V3 (paired with 27F)	primers1.md	Sun et al. coverage evaluation study
+785R/805R	Bakt_805R; S-D-Bact-0785-a-A-21	GACTACHVGGGTATCTAATCC	reverse	Bacteria, broad-range	V3-V4 (~460 bp) with 341F; V4 with 519F	primers1.md; deep-research.md	Herlemann et al. 2011 ISME J; Klindworth et al. 2013 NAR
+806R	original 806R	GGACTACHVGGGTWTCTAAT	reverse	Bacteria + Archaea	V4 (~300-350 bp) with 515F	primers1.md; deep-research.md	Caporaso et al. 2011 PNAS; original EMP formulation
+806R-B	806RB; Apprill 806R	GGACTACNVGGGTWTCTAAT	reverse	Bacteria + Archaea (corrects SAR11 bias)	V4 with 515F-Y	primers1.md; deep-research.md	Apprill et al. 2015 Aquat Microb Ecol 75:129-137; current EMP
+907R	S-D-Bact-0907-a-A-20	CCGTCAATTCMTTTGAGTTT	reverse	Bacteria	V1-V5 with 8F/27F	primers1.md; deep-research.md	Klindworth et al. 2013 NAR; Sun et al. coverage study
+907R-degenerate	907r	CCGTCAATTCMTTTRAGTTT	reverse	Bacteria	V1-V5 or V4-V5 depending on forward primer	deep-research.md	Oxford Academic compilation; attributed to Lane 1991
+926R	Parada V4-V5 reverse	CCGYCAATTYMTTTRAGTTT	reverse	Bacteria + Archaea (also some eukaryotic 18S)	V4-V5 (~400 bp) with 515F-Y	primers1.md; deep-research.md	Parada et al. 2016; Quince et al. 2011
+1193R	1193r	ACGTCATCCCCACCTTCC	reverse	Bacteria	V5-V7 with 799F	deep-research.md	Bodenhausen et al. 2013 PLoS ONE 8:e56329
+1387R	1387r	GGGCGGWGTGTACAAGGC	reverse	Bacteria-specific broad-range	V1-V8 (~1.3 kb) with 63F	deep-research.md	Marchesi et al. 1998 AEM 64:795-799
+1390R	listed as 1406R in primers1	ACGGGCGGTGTGTRCAA	reverse	Bacteria	near-full-length / V-regions with upstream forward primers	primers1.md	Sun et al. coverage evaluation study
+1391R	Uni1391R	ACGGGCGGTGWGTRC	reverse	Broad conserved reverse site	V6-V8 with 967/968-region forward primers	deep-research.md	V6-V8 primer compilations; Thijs et al. 2017
+1391R-extended	1391R	GACGGGCGGTGWGTRCA	reverse	Broad conserved reverse site	V6-V8 (~424 bp) with 967F	deep-research.md	967F/1391R amplicon protocol
+1392R	Uni1392R; S-*-Univ-1392 family	ACGGGCGGTGTGTRC	reverse	Broad/universal prokaryotic	V6-V8 with 926F; V7-V8 with 1114F	deep-research.md	Lundberg et al. 2012; Klindworth et al. 2013 NAR
+1401R	1401r	CGGTGTGTACAAGACCC	reverse	Bacteria	V6-V8 (~433 bp) with 968F	deep-research.md	Nubel et al. 1996 J Bacteriol 178:5636-5643
+1406R/BA1406R	BA1406R	ACGGGCRGTGWGTRCAA	reverse	Bacteria + Archaea broad	V6-V8 (~438 bp) with B969F	deep-research.md	Comeau et al. 2017 mSystems (Microbiome Helper)
+1492R	Eub1492R; U1492R	GGTTACCTTGTTACGACTT	reverse	Broad; classically bacterial with 8F/27F	V1-V9 near full-length with 8F/27F	primers1.md; deep-research.md	Turner et al. 1999; DeLong 1992 PNAS
+1492R-short	recommended universal form	TACCTTGTTACGACTT	reverse	Broad	V1-V9 with 27F	primers1.md	Lane 1991; Frank et al. 2008 AEM (better universal coverage)
+1492R-extendedY	extended variant with Y	TACGGYTACCTTGTTACGACTT	reverse	Broad	V1-V9 with 27F	primers1.md	Lane 1991; widely reported in modern PCR protocols
+1492R-degenerate	1492r modified Lane-derived	GGYTACCTTGTTACGACTT	reverse	Broad	V1-V9 with 8F/27F	deep-research.md	Oxford Academic primer table
+rP2		ACGGCTACCTTGTTACGACTT	reverse	Bacteria, broad-range	V1-V9 near full-length with fD1	deep-research.md	Weisburg et al. 1991 J Bacteriol 173:697-703
+Arch21F		TTCCGGTTGATCCYGCCGGA	forward	Archaea-specific	V1-V5 with Arch958R	deep-research.md	DeLong 1992 PNAS 89:5685-5689
+Arch349F	S-D-Arch-0349 family	GYGCASCAGKCGMGAAW	forward	Archaea-specific	V3-V4 with Arch806R	deep-research.md	Takai & Horikoshi 2000 AEM 66:5066-5072
+Arch806R		GGACTACVSGGGTATCTAAT	reverse	Archaea-specific	V3-V4 with Arch349F	deep-research.md	Takai & Horikoshi 2000 AEM 66:5066-5072
+Arch915R	915r	GTGCTCCCCCGCCAATTCCT	reverse	Archaea-specific	V4-V5 with Arch519F	deep-research.md	Oxford Academic table; Klindworth et al. 2013
+Arch958R		YCCGGCGTTGAMTCCAATT	reverse	Archaea-specific	V1-V5 with Arch21F	deep-research.md	DeLong 1992 PNAS 89:5685-5689
+Bac349F		AGGCAGCAGTDRGGAAT	forward	Bacteria-specific	V3-V4 with Bac806R	deep-research.md	Takai & Horikoshi 2000 AEM 66:5066-5072
+Bac806R		GGACTACYVGGGTATCTAAT	reverse	Bacteria-specific	V3-V4 with Bac349F	deep-research.md	Takai & Horikoshi 2000 AEM 66:5066-5072
+Uni340F		CCTACGGGRBGCASCAG	forward	Prokaryotic universal (Bacteria + Archaea)	V3-V4 with Uni806R	deep-research.md	Takai & Horikoshi 2000 AEM 66:5066-5072
+Uni806R		GGACTACNNGGGTATCTAAT	reverse	Prokaryotic universal (Bacteria + Archaea)	V3-V4 with Uni340F	deep-research.md	Takai & Horikoshi 2000 AEM 66:5066-5072
