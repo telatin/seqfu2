@@ -266,4 +266,4 @@ If you see the Euro sign, your terminal supports Unicode.
 ## See Also
 
 - [seqfu view](view.md) - Non-interactive sequence viewer
-- [fu-msa](../utilities/fu-msa.md) - Interactive multiple sequence alignment viewer
+- [seqfu msa](msa.md) - Interactive multiple sequence alignment viewer

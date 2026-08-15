@@ -55,11 +55,13 @@ Add --help after each command to print its usage.
 Preferred commands are exposed as `seqfu` subcommands (see **[Core Tools]({{site.baseurl}}/tools/README.html)**), including:
 
 * `seqfu orf` to extract ORFs from nucleotide reads/sequences
+* `seqfu msa` to inspect multiple sequence alignments interactively
 * `seqfu tabcheck` to validate TSV/CSV field consistency
 
 Compatibility binaries are still shipped for existing pipelines:
 
 * `fu-orf` (wrapper for `seqfu orf`)
+* `fu-msa` (wrapper for `seqfu msa`)
 * `fu-tabcheck` (wrapper for `seqfu tabcheck`)
 * plus additional standalone utilities such as `fu-cov`, `fu-homocomp`, and others
 

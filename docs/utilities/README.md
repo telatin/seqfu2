@@ -13,6 +13,7 @@ independent binaries (usually with the `fu-` prefix).
 Some utilities are also available as first-class `seqfu` subcommands:
 
 * `seqfu orf` (legacy wrapper: `fu-orf`)
+* `seqfu msa` (legacy wrapper: `fu-msa`)
 * `seqfu tabcheck` (legacy wrapper: `fu-tabcheck`)
 
 :warning: The core tools have a strict API validation to ensure forward-compatibility of the commands,

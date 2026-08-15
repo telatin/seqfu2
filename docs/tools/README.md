@@ -28,6 +28,7 @@ SeqFu - Sequence Fastx Utilities
         • less                : interactive viewer for sequences
         • list [lst]          : print sequences from a list of names
         • metadata [met]      : print a table of FASTQ reads (mapping files)
+        • msa                 : interactive multiple sequence alignment viewer
         • orf                 : extract ORFs from nucleotide sequences
         • qual                : inspect quality scores
         • rc                  : reverse complement strings or files
