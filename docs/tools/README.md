@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Core Tools
-nav_order: 10
+nav_order: 5
 has_children: true
 ---
 
