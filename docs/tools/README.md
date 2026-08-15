@@ -18,7 +18,7 @@ SeqFu - Sequence Fastx Utilities
         • bases               : count bases in FASTA/FASTQ files
         • cat                 : concatenate FASTA/FASTQ files
         • check               : check FASTQ file for errors
-        • count [cnt]         : count FASTA/FASTQ reads, pair-end aware
+        • count [c]           : count FASTA/FASTQ reads, pair-end aware
         • deinterleave [dei]  : deinterleave FASTQ
         • derep [der]         : feature-rich dereplication of FASTA/FASTQ files
         • grep                : select sequences with patterns

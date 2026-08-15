@@ -51,6 +51,16 @@ proc fastxStatsDispatch(argv: var seq[string]): int {.gcsafe.} =
   {.cast(gcsafe).}:
     fastx_stats_v2(argv)
 
+proc splashHelpKey(key: string, width: int): string =
+  let
+    shortcutStart = key.rfind(" [")
+    padding = if key.len < width: repeat(" ", width - key.len) else: ""
+
+  if shortcutStart >= 0 and key.endsWith("]"):
+    key[0 .. shortcutStart] & key[shortcutStart + 1 .. ^1].fgDarkGray & padding
+  else:
+    key & padding
+
 var progs = {
 
        "trim": fastx_trim,
@@ -64,6 +74,7 @@ var progs = {
          "derep": fastx_derep, 
          "dereplicate": fastx_derep, 
          "uniques": fastx_derep, 
+         "c": fastxCountDispatch,       # Experimental
        "cnt": fastxCountDispatch,       # Experimental
          "count": fastxCountDispatch,   # Experimental
        "st" : fastxStatsDispatch,            
@@ -111,7 +122,7 @@ proc main(args: var seq[string]): int =
                "trim"              : "trim FASTQ sequences based on quality",
                "amplicheck"        : "QC paired-end amplicon FASTQ files",
 #              "merge [mrg]"       : "join Paired End reads",
-               "count [cnt]"       : "count FASTA/FASTQ reads, pair-end aware",
+               "count [c]"         : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
                "rotate [rot]"      : "rotate a sequence with a new start position",
@@ -172,15 +183,15 @@ proc main(args: var seq[string]): int =
      |____/ \___|\__, |_|   \__,_|
                     |_|           """.fgGreen
     for k in hkeys1:
-      echo "  ", format("· $1: $2", k & repeat(" ", 20 - len(k)), helps[k])
+      echo "  · ", splashHelpKey(k, 20), ": ", helps[k]
     echo ""
     for k in hkeys2:
-      echo "  ", format("· $1: $2", k & repeat(" ", 20 - len(k)), helps_last[k])
+      echo "  · ", splashHelpKey(k, 20), ": ", helps_last[k]
     
     
     echo "\nType 'seqfu version' or 'seqfu cite' to print the version and paper, respectively.\nAdd --help after each command to print its usage."
     if len(args) > 0 and args[0] != "--help":
-      echo "Unknown subprogram: ", args[0]
+      echo "\nERROR:".fgRed, "  Unknown subprogram: '", args[0].fgBlue, "'"
       1
     else:
       0

@@ -27,7 +27,7 @@ If invoked without parameters, *SeqFu* will print the list of subprograms:
 ```text
 SeqFu - FASTX Tools
 
-  · count [cnt]         : count FASTA/FASTQ reads, pair-end aware
+  · count [c]           : count FASTA/FASTQ reads, pair-end aware
   · deinterleave [dei]  : deinterleave FASTQ
   · derep [der]         : feature-rich dereplication of FASTA/FASTQ files
   · interleave [ilv]    : interleave FASTQ pair ends
