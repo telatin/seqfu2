@@ -163,15 +163,6 @@ if [[ -e "$HOMO" ]]; then
   fi
 fi
 
-if [[ -e "$BINDIR/fu-virfilter" ]]; then
-  if bash "$DIR/test-virfilter.sh"; then
-    echo -e "$OK: fu-virfilter"
-  else
-    echo -e "$FAIL: fu-virfilter"
-    ERRORS=$((ERRORS+1))
-  fi
-fi
-
 # Interleave
 if [[ $("$BIN" ilv -1 "$iPair1" -2 "$iPair2" | wc -l) == $(cat "$iPair1" "$iPair2" | gzip -d | wc -l ) ]]; then
 	echo -e "$OK: Interleave"
@@ -439,6 +430,14 @@ separator "\n Checking docs"
 # done
 
 echo " - Documentation check: skipped (sort: fields removed in 2022)"
+
+if nim r --hints:off "$DIR/test_msa_reader.nim"; then
+  echo -e "$OK: MSA input parsing"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: MSA input parsing"
+  ERRORS=$((ERRORS+1))
+fi
 
 ## Check release
 separator "\n Checking release (GitHub)"

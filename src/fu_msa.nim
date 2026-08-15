@@ -1,8 +1,8 @@
 import os, strformat, strutils
 import illwill
-import readfq
 import docopt
 import tables
+import ./lib/msa_reader
  
 type
   # Color scheme for the MSA
@@ -110,20 +110,16 @@ proc readMSA(f: string): msa =
   var
     seqs = newSeq[string]()
     names = newSeq[string]()
-    length = -1
     prot = false
   # Load sequences
-  for record in readfq(f):
+  for record in readAlignment(f):
     seqs.add(record.sequence)
     names.add(record.name)
-    if length == -1:
-      length = len(record.sequence)
-    elif length != len(record.sequence):
-      stderr.writeLine("ERROR: Sequence length mismatch: ", record.name, "is", len(record.sequence), "but previous sequences have length", length)
-    
+
     if prot == false and ('L' in record.sequence or 'J' in record.sequence or 'E' in record.sequence or 'M' in record.sequence):
       prot = true
-  
+
+  let length = seqs[0].len
   result.protein = prot
   result.seqs = seqs
   result.names = names
@@ -418,6 +414,9 @@ proc main() =
   let args = docopt("""
   Usage:
     full [options] <MSAFILE>
+
+  Input formats:
+    FASTA, FASTQ, Clustal, and Stockholm (optionally gzip compressed)
   
   Keys:
     Scroll Horizontally     Left and Right arrow
@@ -458,8 +457,14 @@ proc main() =
     stderr.writeLine("File not found: ", args["<MSAFILE>"])
     quit(1)
   
-  let
+  var msa: msa
+  try:
     msa = readMSA($args["<MSAFILE>"])
+  except CatchableError as error:
+    stderr.writeLine("ERROR: ", error.msg)
+    quit(1)
+
+  let
     optSettings = parseSettingsString($args["--setting-string"])
     optFirstBase = if len(optSettings) > 0: optSettings[1]
                    else: parseInt($args["--seqpos"])
@@ -735,4 +740,3 @@ proc main() =
     sleep(20)
 
 main()
-

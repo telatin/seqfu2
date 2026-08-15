@@ -1,11 +1,12 @@
 # tofasta.nim - Convert various sequence formats to FASTA
 # Integrated into SeqFu suite
 
-import tables, strutils, sets, hashes
+import strutils, sets, hashes
 from os import fileExists, getTempDir, `/`, removeFile
 import docopt
 import ./seqfu_utils
 import ./lib/klib
+import ./lib/msa_reader
 
 type
   Format = enum
@@ -18,10 +19,6 @@ type
     uppercase: bool
     outputFile: string
     verbose: bool
-
-  Entry = object
-    id: string
-    seq: string
 
 # Character mapping table for transformations
 var mapTbl: array[256, char]
@@ -271,105 +268,30 @@ proc parseEMBL(f: var Bufio[GzFile], firstLine: string, output: File): int =
   return count
 
 proc parseClustal(f: var Bufio[GzFile], firstLine: string, output: File): int =
-  var entries: seq[Entry] = @[]
-  var idMap: Table[string, int] = initTable[string, int]()
-
+  var lines = @[firstLine]
   var line: string
   while f.readLine(line):
-    let ln = line.strip()
-    if ln.len == 0: continue
+    lines.add(line)
 
-    let fields = ln.splitWhitespace()
-    if fields.len < 2: continue
-
-    let id = fields[0]
-    let sequence = fields[1]
-
-    # Validate sequence (only letters and gaps)
-    var valid = true
-    for c in sequence:
-      if c.toUpperAscii notin {'A'..'Z', '-'}:
-        valid = false
-        break
-    if not valid: continue
-
-    # Check for trailing numbers (Clustal format allows position numbers)
-    if fields.len == 3:
-      var isNumber = true
-      for c in fields[2]:
-        if c notin {'0'..'9'}:
-          isNumber = false
-          break
-      if not isNumber: continue
-    elif fields.len > 3: continue
-
-    # Add or append to entry
-    if id in idMap:
-      let idx = idMap[id]
-      entries[idx].seq.add(sequence)
-    else:
-      idMap[id] = entries.len
-      entries.add(Entry(id: id, seq: sequence))
-
-  # Output all entries
-  for e in entries:
+  let entries = msa_reader.parseClustal(lines)
+  for entry in entries:
     output.write('>')
-    output.writeLine(e.id)
-    output.writeLine(purifySeq(e.seq))
+    output.writeLine(entry.name)
+    output.writeLine(purifySeq(entry.sequence))
 
   return entries.len
 
 proc parseStockholm(f: var Bufio[GzFile], firstLine: string, output: File): int =
-  var entries: seq[Entry] = @[]
-  var idMap: Table[string, int] = initTable[string, int]()
-
+  var lines = @[firstLine]
   var line: string
   while f.readLine(line):
-    let ln = line.strip()
-    if ln.len == 0: continue
-    if ln[0] == '#': continue
-    if ln.len >= 2 and ln[0] == '/' and ln[1] == '/': break
+    lines.add(line)
 
-    let fields = ln.splitWhitespace()
-    if fields.len < 2: continue
-
-    let id = fields[0]
-    var sequence = fields[1]
-
-    # Validate sequence
-    var valid = true
-    for c in sequence:
-      if c.toUpperAscii notin {'A'..'Z', '.', '-'}:
-        valid = false
-        break
-    if not valid: continue
-
-    # Check for trailing numbers (Stockholm format allows position numbers)
-    if fields.len == 3:
-      var isNumber = true
-      for c in fields[2]:
-        if c notin {'0'..'9'}:
-          isNumber = false
-          break
-      if not isNumber: continue
-    elif fields.len > 3: continue
-
-    # Convert '.' to '-' (Stockholm convention)
-    sequence = sequence.replace('.', '-')
-
-    # Add or append to entry
-    if id in idMap:
-      let idx = idMap[id]
-      entries[idx].seq.add(sequence)
-    else:
-      idMap[id] = entries.len
-      entries.add(Entry(id: id, seq: sequence))
-
-  # Output all entries
-  for e in entries:
+  let entries = msa_reader.parseStockholm(lines)
+  for entry in entries:
     output.write('>')
-    output.writeLine(e.id)
-    output.writeLine(purifySeq(e.seq))
+    output.writeLine(entry.name)
+    output.writeLine(purifySeq(entry.sequence))
 
   return entries.len
 
