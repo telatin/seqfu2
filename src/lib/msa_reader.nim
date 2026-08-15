@@ -139,14 +139,15 @@ proc readAlignment*(filename: string): seq[AlignmentRecord] =
   case detectAlignmentFormat(firstLine)
   of afFasta:
     for record in readfq(filename):
-      result.add(AlignmentRecord(name: record.name, sequence: record.sequence))
+      result.add(AlignmentRecord(name: record.name, sequence: record.sequence.strip()))
   of afFastq:
     for record in readfq(filename):
-      if record.quality.len != record.sequence.len:
+      let sequence = record.sequence.strip()
+      if record.quality.len != sequence.len:
         raise newException(ValueError,
           "FASTQ record '" & record.name & "' has sequence length " &
-          $record.sequence.len & " but quality length " & $record.quality.len)
-      result.add(AlignmentRecord(name: record.name, sequence: record.sequence))
+          $sequence.len & " but quality length " & $record.quality.len)
+      result.add(AlignmentRecord(name: record.name, sequence: sequence))
   of afClustal:
     var lines: seq[string]
     discard input.open(filename)

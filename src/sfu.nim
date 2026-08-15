@@ -7,6 +7,7 @@ import docopt
 import colorize
 import ./fu_tabcheck
 import ./fu_orf
+import ./msa
  
 
 # Suite Version
@@ -98,10 +99,11 @@ var progs = {
        "tail": fastx_tail,
        "tabulate": fastx_tabulate,
             "tab": fastx_tabulate,
-       "tabcheck": seqfuTabcheck,
-       "metadata": fastx_metadata,
+      "tabcheck": seqfuTabcheck,
+      "metadata": fastx_metadata,
         "met": fastx_metadata,
       "orf": seqfuOrf,
+      "msa": seqfuMsa,
       "rotate": fastx_rotate,
         "rot": fastx_rotate,
         "restart": fastx_rotate,
@@ -130,6 +132,7 @@ proc main(args: var seq[string]): int =
                "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
                "list [lst]"        : "print sequences from a list of names",
                "orf"               : "extract ORFs from nucleotide sequences",
+               "msa"               : "interactive multiple sequence alignment viewer",
                "tofasta"           : "convert multiple formats to FASTA",
                "subtract"          : "print sequences in <file1> absent from <file2>"
             }.toTable
