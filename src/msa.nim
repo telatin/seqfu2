@@ -155,11 +155,16 @@ proc readMSA(f: string): msa =
       
   return
 
-proc writeSeq(tb: var TerminalBuffer, s: string, bg: seq[bool], line, start: int, coords: coordinates) =
+proc writeSeq(tb: var TerminalBuffer, s: string, bg: seq[bool], line, start, width: int, coords: coordinates) =
   var
     fgColor: ForegroundColor
     bgColor: BackgroundColor
-  for i, c in s:
+  for i in 0 ..< width:
+    if i >= s.len:
+      tb.write(start + 1 + i, line, bgBlack, fgWhite, " ")
+      continue
+
+    let c = s[i]
     bgColor = BackgroundColor.bgBlack
     if coords.colortype == none:
       bgColor = bgBlack
@@ -363,14 +368,16 @@ proc drawSeqs(MSA: msa, coords: coordinates) =
     let
       name = (MSA.names[seqIndex])[0 ..< min(len(MSA.names[seqIndex]), MAX_LEN)]
       nameSpacer = " ".repeat(MAX_LEN - len(name))
+      seqPaneWidth = tb.width - MAX_LEN - 2
     tb.setForegroundColor(fgWhite, bright=true)
     tb.setBackgroundColor(bgBlack)
     tb.write(1, seqIndex - coords.firstseq + offset,   fgWhite, fmt"{name}{nameSpacer} ")
 
-    tb.writeSeq(MSA.seqs[seqIndex][coords.firstbase ..< min(coords.firstbase + tb.width - MAX_LEN - 2, len(MSA.seqs[seqIndex]))], 
-            MSA.matches[coords.firstbase ..< min(coords.firstbase + tb.width - MAX_LEN - 2, len(MSA.seqs[seqIndex]))],
+    tb.writeSeq(MSA.seqs[seqIndex][coords.firstbase ..< min(coords.firstbase + seqPaneWidth, len(MSA.seqs[seqIndex]))],
+            MSA.matches[coords.firstbase ..< min(coords.firstbase + seqPaneWidth, len(MSA.seqs[seqIndex]))],
             seqIndex - coords.firstseq + offset,
             MAX_LEN,
+            seqPaneWidth,
             coords  )     
   
   # Fill black lines when there are less sequences than the screen can display
