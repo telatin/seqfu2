@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
 import os
 import std/strutils
  
@@ -98,7 +98,7 @@ proc main(): int =
     outFile = fileHandler(gz: gzBool, file: writeOut, gzFile: nil)
 
 
-  for record in readfq($args["<fasta>"]):
+  for record in readFQ($args["<fasta>"]):
     outFile.printGzipped($record & "\n")
 
     

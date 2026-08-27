@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import docopt
 import os
 import kmer
@@ -44,7 +44,7 @@ proc makeDb(inputfile: string, options: makeDbOptions): int =
     MaxQuery   = 10
   var
     kTable = initTable[uint64, seq[string] ]()
-  for read in  readfq(inputfile):
+  for read in  readFQ(inputfile):
     let sequence = compressHomopolymers(read.sequence)
     #for i in 0 ..< (len(sequence) - options.kmerSize):
     for kmer in sequence.slide(options.kmerSize):
@@ -204,7 +204,7 @@ proc main(argv: var seq[string]): int =
 
     try:
       # Process input file
-      for seqObject in readfq(file):
+      for seqObject in readFQ(file):
 
         if len(seqObject.sequence) < minReadLen:
           continue

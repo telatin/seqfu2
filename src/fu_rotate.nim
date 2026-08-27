@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
  
 import os
 import tables
@@ -31,7 +31,7 @@ proc restartMotif(s: FQRecord, m: string, rc: bool):FQRecord =
     
   if rc:
     let
-      r = revcompl(s)
+      r = seqfuRevCompl(s)
       rev_matches = findOligoMatches(r.sequence, m, 0.5, 0, min)
     if len(oligo_matches) > 0 and len(rev_matches) > 0:
       # Matches both in forward and in reverse: DISCARD
@@ -55,7 +55,7 @@ proc restartMotif(s: FQRecord, m: string, rc: bool):FQRecord =
 
 
 #proc fastx_metadata(argv: var seq[string]): int =
-proc fastx_rotate(args: var seq[string]): int {.gcsafe.} =
+proc fastxRotateImpl(args: var seq[string]): int =
   let args = docopt("""
   Usage:
     fu-rotate [options] -i POS [<fastq-file>...]
@@ -112,7 +112,7 @@ proc fastx_rotate(args: var seq[string]): int {.gcsafe.} =
         stderr.writeLine("ERROR: Input file not found: ", inputFile)
         quit(1)
     try:
-      for fqRecord in readfq(inputFile):
+      for fqRecord in readFQ(inputFile):
         if motifsearch:
           let
             restartedRecord = restartMotif(fqRecord, motif, searchRc)
@@ -124,6 +124,10 @@ proc fastx_rotate(args: var seq[string]): int {.gcsafe.} =
       stderr.writeLine("ERROR: parsing ", inputFile, ": ", e.msg)
       quit(1)
         
+proc fastx_rotate(args: var seq[string]): int {.gcsafe.} =
+  {.cast(gcsafe).}:
+    result = fastxRotateImpl(args)
+
 
 
 

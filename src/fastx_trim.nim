@@ -4,8 +4,8 @@
 import docopt
 import strutils
 import sequtils
-import klib
-import readfq
+import ./seqfu_legacy_fastx
+import readfx
 import json
 import tables
 import malebolgia
@@ -583,7 +583,7 @@ proc processWithThreads(inputR1: string, inputR2: string, outputR1: File, output
       stderr.writeLine("ERROR: R1 ended prematurely after ", pairCount, " pairs")
       quit(1)
   else:
-    for read in readfq(inputR1):
+    for read in readFQ(inputR1):
       currentBatch.reads1.add(read)
 
       if currentBatch.reads1.len >= batchSize:
@@ -654,7 +654,7 @@ proc processFiles(inputR1: string, inputR2: string, outputR1: File, outputR2: Fi
 
   else:
     # Single-end processing
-    for read in readfq(inputR1):
+    for read in readFQ(inputR1):
       stats.totalReads += 1
 
       let (trimmedRead, passed, filterRes, wasTrimmed) = processSingleRead(read, trimOpts, filterOpts)

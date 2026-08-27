@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import tables
 from os import fileExists
 import docopt
@@ -48,16 +48,16 @@ Options:
         stringCount += 1
         if len(files) == 1:
           echo if args["--only-rev"]: reverse(filename)
-            else: revcompl(filename)
+            else: seqfuRevCompl(filename)
           continue
         else:
           echo ">", seqDefaultName, "_" , $stringCount, "\n", if args["--only-rev"]: reverse(filename)
-              else: revcompl(filename)
+              else: seqfuRevCompl(filename)
           continue
       else:
         echoVerbose(filename, verbose)
 
-      for record in readfq(filename):
+      for record in readFQ(filename):
         var
           r = record
         let comment = if len(r.comment) > 0 and not args["--strip-comments"]: " " & r.comment
@@ -65,7 +65,7 @@ Options:
         if args["--only-rev"]:
           r.sequence = reverse(r.sequence)
         else:
-          r.sequence = revcompl(r.sequence)
+          r.sequence = seqfuRevCompl(r.sequence)
 
         if len(r.quality) > 0:
           r.quality = reverse(r.quality)
@@ -117,16 +117,16 @@ Options:
         stringCount += 1
         if len(files) == 1:
           echo if args["--only-rev"]: reverse(filename)
-            else: revcompl(filename)
+            else: seqfuRevCompl(filename)
           continue
         else:
           echo ">", seqDefaultName, "_" , $stringCount, "\n", if args["--only-rev"]: reverse(filename)
-              else: revcompl(filename)
+              else: seqfuRevCompl(filename)
           continue
       else:
         echoVerbose(filename, verbose)
       
-      for r in readfq(filename):
+      for r in readFQ(filename):
         var
           outRecord = r
         let comment = if len(r.comment) > 0 and not args["--strip-comments"]: " " & r.comment
@@ -134,7 +134,7 @@ Options:
         if args["--only-rev"]:
           outRecord.sequence = reverse(r.sequenceuence)
         else:
-          outRecord.sequence = revcompl(r.sequenceuence)
+          outRecord.sequence = seqfuRevCompl(r.sequenceuence)
 
         if len(r.qualityity) > 0:
           outRecord.quality = reverse(r.qualityity)

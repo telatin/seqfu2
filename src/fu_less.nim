@@ -1,6 +1,6 @@
 import os, strformat, strutils
 import illwill
-import readfq
+import readfx
 import docopt
 import tables
 
@@ -126,7 +126,7 @@ proc readMSA(f: string): msa =
     length = -1
     prot = false
   # Load sequences
-  for record in readfq(f):
+  for record in readFQ(f):
     seqs.add(record.sequence)
     names.add(record.name)
     if length == -1:

@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
 import json
 import os, strutils, sequtils
 
@@ -122,7 +122,7 @@ proc filtRegs(regs: Table[string, int], regions: JsonNode, threshold = 0.66): se
 proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string], regions: JsonNode): alignedRead =
   let
     alignment_for = simpleSmithWaterman(R1.sequence, reference, alnOpt)
-    alignment_rev = simpleSmithWaterman(revcompl(R1.sequence), reference, alnOpt)
+    alignment_rev = simpleSmithWaterman(seqfuRevCompl(R1.sequence), reference, alnOpt)
     alignment = if alignment_for.score >= alignment_rev.score: alignment_for
                 else: alignment_rev
  
@@ -214,7 +214,7 @@ proc main(argv: var seq[string]): int =
     loadedRef: string
   if $args["--reference"] != "nil":
     try:
-      for referenceRecord in readfq($args["--reference"]):
+      for referenceRecord in readFQ($args["--reference"]):
         loadedRef = referenceRecord.sequence
         if bool(args["--verbose"]):
           stderr.writeLine("Loading reference: ", referenceRecord.name)
@@ -263,7 +263,7 @@ proc main(argv: var seq[string]): int =
     seqCounter = 0
     regFreqs = initCountTable[string]()
     index: seq[string]
-  for R1 in readfq(inputFile):
+  for R1 in readFQ(inputFile):
     seqCounter += 1
     if seqCounter > optMaxReads:
       if bool(args["--verbose"]):

@@ -1,7 +1,7 @@
 import strformat
 import tables, strutils
 from os import fileExists, commandLineParams
-import readfq
+import readfx
 import illwill
 import docopt
 import ./seqfu_utils
@@ -23,7 +23,7 @@ proc load(s: var SeqStack) =
   if not fileExists(s.filename):
     return
   
-  for record in readfq.readfq(s.filename):
+  for record in readfx.readFQ(s.filename):
     s.size += 1
     if s.size <= s.head_size:
       s.head.add(record)

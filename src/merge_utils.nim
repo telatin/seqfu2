@@ -1,7 +1,7 @@
 import std/math
 import std/algorithm
-import klib
-import readfq
+import ./seqfu_legacy_fastx
+import readfx
 import ./seqfu_utils
 
 type

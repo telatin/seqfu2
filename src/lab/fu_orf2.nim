@@ -6,7 +6,7 @@
   =========================
 ]#
 import threadpool
-import readfq
+import readfx
 import iterutils
 import docopt, strutils, tables, math
 import os
@@ -138,7 +138,7 @@ proc translateAll(input: FQRecord, opts: mergeCfg): seq[FQRecord] =
     seqs = @[input]
   db("Translating: " , input.name, " min=", opts.minorf)
   if opts.scanreverse == true:
-    seqs.add(input.revcompl()) 
+    seqs.add(seqfuRevCompl(input)) 
 
   # First translate all the frames
   for sequence in seqs:
@@ -201,7 +201,7 @@ proc translateAll(input: FQRecord, opts: mergeCfg): seq[FQRecord] =
 ]#      
   
 proc mergePair(R1, R2: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): FQRecord {.discardable.} = 
-  var REV = revcompl(R2) 
+  var REV = seqfuRevCompl(R2) 
   var max = if R1.sequence.high > REV.sequence.high: REV.sequence.high
           else:  R1.sequence.high
   
@@ -474,10 +474,10 @@ proc fastx_orf(argv: var seq[string]): int =
     ##
     ## Paired End Mode
     ##
-    initClosure(f1,readfq(fileR1))
+    initClosure(f1,readFQ(fileR1))
     #creates a new closure iterator, 'f1'
 
-    initClosure(f2,readfq(fileR2))
+    initClosure(f2,readFQ(fileR2))
     #creates a new closure iterator, 'f2'
     
     for raw_read_1, raw_read_2 in zip(f1,f2):
@@ -506,7 +506,7 @@ proc fastx_orf(argv: var seq[string]): int =
     ##
     ## Single End Mode
     ##
-    for fq_record in readfq(fileR1):
+    for fq_record in readFQ(fileR1):
       counter += 1
       read1= fq_record
 

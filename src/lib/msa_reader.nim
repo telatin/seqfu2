@@ -1,8 +1,8 @@
 import os, strutils, tables
 
-import readfq
+import readfx
 
-import ./klib
+import ../seqfu_legacy_fastx
 
 type
   AlignmentRecord* = object
@@ -125,23 +125,23 @@ proc readAlignment*(filename: string): seq[AlignmentRecord] =
     line: string
     firstLine = ""
 
-  discard input.open(filename)
+  discard open(input, filename)
 
   while input.readLine(line):
     if line.strip().len > 0:
       firstLine = line.strip()
       break
-  discard input.close()
+  discard close(input)
 
   if firstLine.len == 0:
     raise newException(ValueError, "Alignment file is empty")
 
   case detectAlignmentFormat(firstLine)
   of afFasta:
-    for record in readfq(filename):
+    for record in readFQ(filename):
       result.add(AlignmentRecord(name: record.name, sequence: record.sequence.strip()))
   of afFastq:
-    for record in readfq(filename):
+    for record in readFQ(filename):
       let sequence = record.sequence.strip()
       if record.quality.len != sequence.len:
         raise newException(ValueError,
@@ -150,17 +150,17 @@ proc readAlignment*(filename: string): seq[AlignmentRecord] =
       result.add(AlignmentRecord(name: record.name, sequence: sequence))
   of afClustal:
     var lines: seq[string]
-    discard input.open(filename)
+    discard open(input, filename)
     while input.readLine(line):
       lines.add(line)
-    discard input.close()
+    discard close(input)
     result = parseClustal(lines)
   of afStockholm:
     var lines: seq[string]
-    discard input.open(filename)
+    discard open(input, filename)
     while input.readLine(line):
       lines.add(line)
-    discard input.close()
+    discard close(input)
     result = parseStockholm(lines)
   of afUnknown:
     raise newException(ValueError,

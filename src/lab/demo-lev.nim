@@ -1,6 +1,6 @@
 
 import nimlevenshtein
-import readfq
+import readfx
 import strutils
 
 let
@@ -10,12 +10,12 @@ let
 var
   ar = newSeq[string]()
    
-for read in readfq("test.fa"):
+for read in readFQ("test.fa"):
   let
     usize = read.name.split("=")
   if parseInt(usize[1]) < 10:
     continue
-  for target in readfq("test.fa"):
+  for target in readFQ("test.fa"):
     let
       jsize = target.name.split("=")
     let

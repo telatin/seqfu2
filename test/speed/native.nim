@@ -1,4 +1,5 @@
-import klib
+import readfx
+import readfx/nimklib as fxio
 import os
 
 let
@@ -11,13 +12,13 @@ echo "Reading: ", file
 
 proc main() =
   var
-    R1: FastxRecord
-    fq = xopen[GzFile](file)
-  defer: fq.close()
+    R1: FQRecord
+    fq = fxio.xopen[fxio.GzFile](file)
+  defer: discard fq.close()
 
-  while fq.readFastx(R1):
+  while fxio.readFastx(fq, R1):
     count += 1
-    sum   += len(R1.seq)
+    sum   += len(R1.sequence)
 
   echo "Total: ", count, "; SumSize: ", sum
 

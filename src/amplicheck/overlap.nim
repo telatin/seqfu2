@@ -1,4 +1,5 @@
 import math
+import readfx
 
 import ../seqfu_utils
 import ./types
@@ -28,7 +29,7 @@ proc estimateOverlap*(r1seq, r2seq: string, minOverlap: int,
   if r1seq.len == 0 or r2seq.len == 0:
     return
 
-  let rc2 = revcompl(r2seq)
+  let rc2 = seqfuRevCompl(r2seq)
   let maxOverlap = min(r1seq.len, rc2.len)
   if maxOverlap < minOverlap:
     return

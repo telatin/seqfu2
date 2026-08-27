@@ -1,4 +1,4 @@
-import klib
+import ./seqfu_legacy_fastx
 import tables, strutils
 from os import fileExists, lastPathPart
 import docopt

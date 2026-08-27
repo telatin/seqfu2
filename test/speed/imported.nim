@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import os
 
 let
@@ -9,7 +9,7 @@ var
 
 echo "Reading: ", file
 
-for rec in readfq(file):
+for rec in readFQ(file):
   count += 1
   sum   += len(rec.sequence)
 

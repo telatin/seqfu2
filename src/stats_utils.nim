@@ -1,6 +1,6 @@
 import sequtils
 import tables
-import readfq
+import readfx
 import algorithm
 import seqfu_utils
 ## Seqfu Stats
@@ -59,7 +59,7 @@ proc getFastxStats*(filename: string, o: statsOptions): FastxStats {.discardable
     ctgAccumLen   = 0
 
   try:
-    for r in readfq(filename):
+    for r in readFQ(filename):
       var ctgLen = len(r.sequence)
 
       ## Only calculate %GC if requested

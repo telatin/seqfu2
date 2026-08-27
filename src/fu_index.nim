@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import docopt
 import os
  
@@ -184,7 +184,7 @@ proc main(argv: var seq[string]): int =
       continue
 
     try:
-      for seqObject in readfq(file):
+      for seqObject in readFQ(file):
         seqCounter += 1
         readspool.add(seqObject)
 

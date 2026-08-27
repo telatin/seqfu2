@@ -4,7 +4,7 @@ export SEQFU_QUIET=1
 TEMPFILENAME=$(mktemp)
 INPUT="$FILES"/16S_coli.fa
 ### SINGLE END
-"$BINDIR"/fu-shred "$INPUT" -l 100 -s 150 > "$TEMPFILENAME"
+"$BINDIR"/seqfu shred "$INPUT" -l 100 -s 150 > "$TEMPFILENAME"
 COUNT=$(cat "$TEMPFILENAME" | "$BINDIR"/seqfu count - | cut -f 2)
 LEN=$(cat "$TEMPFILENAME" | "$BINDIR"/seqfu stats - | cut -f 3 | tail -n 1)
 EXIT=$?
@@ -33,7 +33,7 @@ fi
 TEMPORARY_DIR=$(mktemp -d)
 FWD="$TEMPORARY_DIR"/illuminate_R1.fq
 REV="$TEMPORARY_DIR"/illuminate_R2.fq
-"$BINDIR"/fu-shred "$INPUT" -f 100 -l 50 -s 150 -o "$TEMPORARY_DIR"/illuminate
+"$BINDIR"/seqfu shred "$INPUT" -f 100 -l 50 -s 150 -o "$TEMPORARY_DIR"/illuminate
 
 MSG="Output found $FWD,$REV "
 if [[ -e "$FWD" ]] && [[ -e "$REV" ]]; then

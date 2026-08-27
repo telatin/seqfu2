@@ -1,4 +1,4 @@
-import readfq
+import readfx
 
 import tables, strutils
 from os import fileExists
@@ -33,7 +33,7 @@ proc countReads(niceFilename, sample, filename, strand: string): Stats =
   
   try:
     var c = 0
-    for r in readfq(filename):
+    for r in readFQ(filename):
       c += 1
     result = Stats(filename: niceFilename, sample: sample, strand: strand, reads: c)
   except Exception as e:

@@ -1,5 +1,5 @@
 import malebolgia
-import klib
+import ./seqfu_legacy_fastx
 import docopt, strutils, tables, math
 import os
 import osproc

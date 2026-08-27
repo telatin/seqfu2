@@ -1,9 +1,10 @@
-import klib
-import readfq
+import readfx
 import strformat, math
 import strutils
 import os
 import regex except re, match, replace, Regex
+import ./seqfu_legacy_fastx
+import ./seqfu_records
 when not defined(windows):
   import posix
 
@@ -147,13 +148,7 @@ proc getStrandFromFilename*(f: string, forPattern = "auto"; revPattern = "auto")
   
 
 proc printFastxRecord*(s: FastxRecord): string =
-  let seqName = if len(s.comment) > 0: s.name & " " & s.comment
-                else: s.name
-
-  if len(s.qual) > 0:
-    "@" & seqName & "\n" & s.seq & "\n+\n" & s.qual
-  else:
-    ">" & seqName & "\n" & s.seq 
+  formatSeqfuRecord(s)
 
 
 proc count_gc*(s: string): int =
@@ -270,58 +265,19 @@ proc reverse*(str: string): string =
 proc translateIUPAC*(c: char): char {.inline.} =
   iupacRcTable[c.ord]
 
-proc matchIUPAC*(a, b: char): bool =
-  # a=primer; b=read
-  let
-    metachars = @['Y','R','S','W','K','M','B','D','H','V']
+proc seqfuRevCompl*(s: string): string =
+  ## SeqFu historically normalizes reverse-complemented sequence output to upper case.
+  readfx.revCompl(s).toUpperAscii()
 
-  if b == 'N':
-    return false
-  elif a == b or a == 'N':
-    return true
-  elif a in metachars:
-    if a == 'Y' and (b == 'C' or b == 'T'):
-      return true
-    if a == 'R' and (b == 'A' or b == 'G'):
-      return true
-    if a == 'S' and (b == 'G' or b == 'C'):
-      return true
-    if a == 'W' and (b == 'A' or b == 'T'):
-      return true
-    if a == 'K' and (b == 'T' or b == 'G'):
-      return true
-    if a == 'M' and (b == 'A' or b == 'C'):
-      return true
-    if a == 'B' and (b != 'A'):
-      return true
-    if a == 'D' and (b != 'C'):
-      return true
-    if a == 'H' and (b != 'G'):
-      return true
-    if a == 'V' and (b != 'T'):
-      return true
-  return false
-
-
-# Reverse complement
-proc revcompl*(s: string): string =
-  let n = s.len
-  result = newString(n)
-  for i in 0 ..< n:
-    result[i] = translateIUPAC(s[n - i - 1])
-
-proc revcompl*(s: FQRecord): FQRecord =
-  result.name     = s.name
-  result.comment  = s.comment
-  result.quality  = reverse(s.quality)
-  result.sequence = revcompl(s.sequence)
-
+proc seqfuRevCompl*(s: FQRecord): FQRecord =
+  result = readfx.revCompl(s)
+  result.sequence = result.sequence.toUpperAscii()
 
 proc revcompl*(s: FastxRecord): FastxRecord =
   result.name    = s.name
   result.comment = s.comment
   result.qual    = reverse(s.qual)
-  result.seq     = revcompl(s.seq)
+  result.seq     = seqfuRevCompl(s.seq)
 
 
 proc charToQual*(c: char, offset = 33): int =
@@ -353,7 +309,7 @@ proc format_dna*(seq: string, format_width: int): string =
 
 proc qualToChar*(q: int): char =
   ## returns character for a given Illumina quality score
-  (q+33).char
+  seqfuQualToChar(q)
 
 proc qualToUnicode*(s: string, breaks: seq[int], color=true): string =
   let Ramp = " ▤▥▦▧▨▩"
@@ -370,26 +326,16 @@ proc qualToUnicode*(s: string, breaks: seq[int], color=true): string =
 
 
 proc print_seq*(record: FastxRecord, outputFile: File) =
-  var
-    name = record.name
-    seqstring : string
-
-  if not stripComments and len(record.comment) > 0:
-    name.add(" " & record.comment)
-
-  if len(record.qual) > 0 and (len(record.seq) != len(record.qual)):
-    stderr.writeLine("Sequence <", record.name, ">: quality and sequence length mismatch.")
+  var seqstring: string
+  try:
+    seqString = formatSeqfuRecord(record,
+                                  forceFasta = forceFasta,
+                                  forceFastq = forceFastq,
+                                  stripComments = stripComments,
+                                  defaultQual = defaultQual)
+  except ValueError:
+    stderr.writeLine(getCurrentExceptionMsg())
     return
-
-  if len(record.qual) > 0 and forceFasta == false:
-    # print FQ
-
-    seqString = "@" & name & "\n" & record.seq & "\n+\n" & record.qual
-  elif forceFastq == true:
-    seqString = "@" & name & "\n" & record.seq & "\n+\n" & repeat(qualToChar(defaultQual), len(record.seq))
-  else:
-    # print FA
-    seqString = ">" & name & "\n" & record.seq
 
   if outputFile == nil:
     echo seqString
@@ -399,27 +345,17 @@ proc print_seq*(record: FastxRecord, outputFile: File) =
 
 proc print_seq*(record: FQRecord, outputFile: File, rename="") =
   # Output file == nil then print
-  var
-    name = record.name
-    seqstring : string
-
-  if len(rename) > 0:
-    name = rename
-  if not stripComments:
-    name.add(" " & record.comment)
-
-  if len(record.quality) > 0 and (len(record.sequence) != len(record.quality)):
-    stderr.writeLine("Sequence <", record.name, ">: quality and sequence length mismatch.")
+  var seqstring: string
+  try:
+    seqString = formatSeqfuRecord(record,
+                                  forceFasta = forceFasta,
+                                  forceFastq = forceFastq,
+                                  stripComments = stripComments,
+                                  defaultQual = defaultQual,
+                                  rename = rename)
+  except ValueError:
+    stderr.writeLine(getCurrentExceptionMsg())
     return
-
-  if len(record.quality) > 0 and forceFasta == false:
-    # print FQ
-    seqString = "@" & name & "\n" & record.sequence & "\n+\n" & record.quality
-  elif forceFastq == true:
-    seqString = "@" & name & "\n" & record.sequence & "\n+\n" & repeat(qualToChar(defaultQual), len(record.sequence))
-  else:
-    # print FA
-    seqString = ">" & name & "\n" & record.sequence
 
   if outputFile == nil:
     echo seqString
@@ -434,7 +370,7 @@ proc print_seq*(record: FQRecord, outputFile: File, rename="") =
   #   quality*: string# optional
 proc mergeSeqs*(f, r: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): FQRecord {.discardable.} =
   result.name = f.name
-  var rc = revcompl(r) 
+  var rc = seqfuRevCompl(r) 
   var max = if     f.sequence.high > rc.sequence.high: rc.sequence.high
             else:  f.sequence.high
   
@@ -540,42 +476,6 @@ template initClosure*(id:untyped,iter:untyped) =
     for x in iter:
       yield x
 
-
-proc findOligoMatches*(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[int] =
-  let
-    dna = ('-'.repeat(len(primer) - 1) & sequence & '-'.repeat(len(primer) - 1)).toUpper()
-    primer = primer.toUpper()
-
-  for pos in 0..len(dna)-len(primer):
-    let query = dna[pos..<pos+len(primer)]
-    var
-      matches = 0
-      mismatches = 0
-      primerRealLen = 0
-
-    for c in 0..<len(query):
-      if matchIUPAC(primer[c], query[c]):
-        matches += 1
-        primerRealLen += 1
-      elif query[c] != '-':
-        mismatches += 1
-        primerRealLen += 1
-
-      if mismatches > max_mismatches:
-        break
- 
-    let
-      score = float(matches) / float(primerRealLen)
-    if score >= threshold and mismatches <= max_mismatches and matches >= min_matches:
-      result.add(pos-len(primer)+1)
-
-proc findPrimerMatches*(sequence, primer: string, threshold: float, max_mismatches = 0, min_matches = 6): seq[seq[int]] =
-  let
-    forMatches = findOligoMatches(sequence, primer, threshold, max_mismatches, min_matches)
-    primerReverse = revcompl(primer)
-    revMatches = findOligoMatches(sequence, primerReverse, threshold, max_mismatches, min_matches)
-
-  result = @[forMatches, revMatches]
 
 # boiler plate code for handling exceptions in command line utils
 import sugar
@@ -694,7 +594,7 @@ proc getIndexFromFile(f: string, max = 250): string =
     c = 0
     countTable = initCountTable[string]()
   try:
-    for record in readfq(f):
+    for record in readFQ(f):
       c += 1
       if c > max:
         break

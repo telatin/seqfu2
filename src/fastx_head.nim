@@ -4,7 +4,7 @@
 ## subsampling via --skip. Supports renaming, format conversion, and
 ## streaming from stdin.
 
-import readfq
+import readfx
 import strutils
 from os import fileExists, dirExists
 import docopt
@@ -100,7 +100,7 @@ Output:
         printedCount = 0
         lastPrintedName: string
 
-      for record in readfq(filename):
+      for record in readFQ(filename):
         seqCount += 1
 
         if skip > 0:

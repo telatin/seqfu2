@@ -1,4 +1,4 @@
-import klib
+import ./seqfu_legacy_fastx
 import malebolgia
 import tableview
 
@@ -72,32 +72,32 @@ proc newSeqfuCount(key = ""): SeqfuCount =
   )
 
 proc countReads(niceFilename, sample, filename, strand: string): Stats {.gcsafe.} =
-  
-  try:
-    var c = 0
-    var f = xopen[GzFile](filename)
-    defer:
-      f.close()
-    var r: FastxRecord
-    while f.readFastx(r):
-      c += 1
-    result = Stats(
-      filename: niceFilename,
-      sample: sample,
-      strand: strand,
-      reads: c,
-      errorMsg: "",
-      completionOrder: -1
-    )
-  except Exception as e:
-    result = Stats(
-      filename: niceFilename,
-      sample: sample,
-      reads: -1,
-      strand: strand,
-      errorMsg: e.msg,
-      completionOrder: -1
-    )
+  {.cast(gcsafe).}:
+    try:
+      var c = 0
+      var f = xopen[GzFile](filename)
+      defer:
+        f.close()
+      var r: FastxRecord
+      while f.readFastx(r):
+        c += 1
+      result = Stats(
+        filename: niceFilename,
+        sample: sample,
+        strand: strand,
+        reads: c,
+        errorMsg: "",
+        completionOrder: -1
+      )
+    except Exception as e:
+      result = Stats(
+        filename: niceFilename,
+        sample: sample,
+        reads: -1,
+        strand: strand,
+        errorMsg: e.msg,
+        completionOrder: -1
+      )
 
 proc processCountJob(job: ptr CountJob) {.gcsafe.} =
   job[].result = countReads(job[].niceFilename, job[].sample, job[].filename, job[].strand)

@@ -1,7 +1,7 @@
 import os
 import regex except re, match, replace, Regex
 import docopt
-import klib
+import ./seqfu_legacy_fastx
 import ./seqfu_utils
  
  

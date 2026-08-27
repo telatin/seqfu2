@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import sets, strutils
 from os import fileExists
 import md5
@@ -72,7 +72,7 @@ Options:
   # Pass 1: read file2, build set of keys to subtract.
   var subtractKeys = initHashSet[string]()
 
-  for record in readfq(file2):
+  for record in readFQ(file2):
     let key = subtractKey(record.name, record.comment, record.sequence, opts)
     subtractKeys.incl(key)
 
@@ -86,7 +86,7 @@ Options:
     printed   = 0
     foundKeys = initHashSet[string]()
 
-  for record in readfq(file1):
+  for record in readFQ(file1):
     total += 1
     let key = subtractKey(record.name, record.comment, record.sequence, opts)
     if key in subtractKeys:

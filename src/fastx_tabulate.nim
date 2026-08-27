@@ -1,9 +1,10 @@
 
 import os
-import zip/gzipfiles  # Import zip package
-import readfq
+import readfx
 import strutils 
+import streams
 import docopt
+import ./seqfu_legacy_fastx
 import ./seqfu_utils
  
  
@@ -11,7 +12,7 @@ proc isInterleaved(f: string): int =
   var
     c = 0
     s = newSeq[string]()
-  for f in readfq(f):
+  for f in readFQ(f):
     c += 1
     s.add(f.name)
     if (c == 2):
@@ -93,18 +94,15 @@ Options:
 
   if detabulate:
     # convert TSV to FASTQ (autodetect pairs)
-    if inputFile == "-":
-      inputFile = "/dev/stdin"
     if verbose:
       stderr.writeLine("[Detabulate] Importing tabular file: ", inputFile)
-    let file = newGzFileStream(inputFile)
+    let file = openSeqfuGzStream(inputFile)
     defer: file.close()
     var 
       line: string  # Declare line variable
       c = 0
-    while not file.atEnd():
+    while file.readLine(line):
       c += 1
-      line = file.readLine()
       let
         fields = line.split(fieldSeparator)
         tot = len(fields)
@@ -167,7 +165,7 @@ Options:
    
     if not interleaved:
       ## Single End = not interleaved
-      for record in readfq(inputFile):
+      for record in readFQ(inputFile):
         let
           comment = (record.comment).multiReplace({"\t": " "})
         echo record.name, fieldSeparator, comment, fieldSeparator, record.sequence, fieldSeparator, record.quality
@@ -176,7 +174,7 @@ Options:
       var
         c = 0
         R1: FQRecord
-      for R2 in readfq(inputFile):
+      for R2 in readFQ(inputFile):
         
         let
           r2comment = (R2.comment).multiReplace({"\t": " "})        
