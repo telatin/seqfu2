@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
 import strformat
 import os, strutils, sequtils
  
@@ -117,7 +117,7 @@ proc main(args: var seq[string]): int =
   else:
     var
       tagCount = 0
-    for faRecord in readfq(queryFile):
+    for faRecord in readFQ(queryFile):
       tagCount += 1
       let
         rec = FQRecord(name: faRecord.name, sequence: (faRecord.sequence).toUpper() )
@@ -178,7 +178,7 @@ proc main(args: var seq[string]): int =
       parsedSequences = 0
     if args["--verbose"]:
       stderr.writeLine("Reading file: ", inputFile)
-    for fqRecord in readfq(inputFile):
+    for fqRecord in readFQ(inputFile):
       parsedSequences += 1
       #if args["--verbose"]:
       #  stderr.writeLine("## Processing ", fqRecord.name)
@@ -193,8 +193,8 @@ proc main(args: var seq[string]): int =
         readFor = if cutLength > 0 and len(fqRecord.sequence) >= cutLength: fqRecord.sequence[0 ..< cutLength]
                   else: fqRecord.sequence
         
-        readRev = if not args["--disable-rev-comp"] and cutLength > 0 and len(fqRecord.sequence) >= cutLength: revcompl(fqRecord).sequence[0 ..< cutLength]
-                  elif not args["--disable-rev-comp"]: revcompl(fqRecord).sequence
+        readRev = if not args["--disable-rev-comp"] and cutLength > 0 and len(fqRecord.sequence) >= cutLength: seqfuRevCompl(fqRecord).sequence[0 ..< cutLength]
+                  elif not args["--disable-rev-comp"]: seqfuRevCompl(fqRecord).sequence
                   else: ""
 
         
@@ -230,7 +230,7 @@ proc main(args: var seq[string]): int =
 
         var printRecord = fqRecord
         if args["--reverse-reads"] and strand < 0:
-          printRecord = revcompl(fqRecord)
+          printRecord = seqfuRevCompl(fqRecord)
         if len(printRecord.quality) > 0:
           echo "@", printRecord.name, " ", printRecord.comment, " tags=", tagsString
           echo printRecord.sequence
@@ -256,13 +256,13 @@ proc main(args: var seq[string]): int =
   stderr.writeLine("Total\t", fmt"{ratio:.2f}% (", totalPrintedSequences, "/", totalParsedSequences, ") sequences printed, of which ", totalPrintedSequencesRev, " in reverse strand.")
     
 #[
-  for s in readfq(target):
+  for s in readFQ(target):
     if $args["--id"] == "nil" or ($args["--id"] != "nil" and s.name == $args["--id"]):
       targets.add(s)
   
   let tab = "\t"
-  for s in readfq(query):
-    let r = revcompl(s)
+  for s in readFQ(query):
+    let r = seqfuRevCompl(s)
     echo("# QUERY: ", s.name)
     for target in targets:
       echo("## TARGET: ", target.name)

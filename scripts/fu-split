@@ -322,7 +322,13 @@ def splitFileInN(input, n, opt):
         cmd = removeNone(cmd)
         
         output = open(opt.getOutput(i+1), "w")
-        processes.add(subprocess.Popen(cmd, stdout=output, stderr=subprocess.PIPE))
+        if opt.compress:
+            e1 = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            processes.add(subprocess.Popen(["gzip", "-c"], stdin=e1.stdout,
+                                           stdout=output, stderr=subprocess.PIPE))
+            e1.stdout.close()
+        else:
+            processes.add(subprocess.Popen(cmd, stdout=output, stderr=subprocess.PIPE))
         if opt.verbose:
             print("Chunk: ", i + 1, " to: ", output.name, file=sys.stderr)
         if len(processes) >= opt.threads:

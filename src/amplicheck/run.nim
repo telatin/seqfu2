@@ -1,7 +1,7 @@
 import strformat
 import strutils
 
-import klib
+import ../seqfu_legacy_fastx
 
 import ./overlap
 import ./primers

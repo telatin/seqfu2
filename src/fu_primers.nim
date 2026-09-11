@@ -1,5 +1,5 @@
 import docopt
-import readfq as rf
+import readfx as rf
 import iterutils
 import os, strutils
 import malebolgia
@@ -209,8 +209,8 @@ proc main(args: var seq[string]): int =
   let
     p1for = $args["--primer-for"]
     p2for = $args["--primer-rev"]
-    p1rev = p1for.revcompl()
-    p2rev = p2for.revcompl()
+    p1rev = seqfuRevCompl(p1for)
+    p2rev = seqfuRevCompl(p2for)
     verbose = bool(args["--verbose"])
 
   var

@@ -1,4 +1,4 @@
-import klib
+import ./seqfu_legacy_fastx
 import sequtils
 import tables
 import os

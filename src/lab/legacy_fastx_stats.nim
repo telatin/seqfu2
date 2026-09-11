@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import tables, strutils, sequtils
 import terminaltables
 from os import fileExists

@@ -1,6 +1,6 @@
 import os
 import docopt
-import readfq, iterutils
+import readfx, iterutils
 import ./seqfu_utils
 
 
@@ -69,7 +69,7 @@ example:
     record1: FQRecord
     n1, n2: string
 
-  for record2 in readfq(input_file):
+  for record2 in readFQ(input_file):
     n2 = record2.name
     c += 1
     if (c mod 2 == 0):

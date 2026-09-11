@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
 import os, parsecsv, sets, strutils
 
 const NimblePkgVersion {.strdefine.} = "undef"
@@ -121,7 +121,7 @@ proc main(): int =
   var
     total = 0
     c = 0
-  for record in readfq($args["<fasta>"]):
+  for record in readFQ($args["<fasta>"]):
     total = total + 1
     if record.name in keepSet:
       c = c + 1

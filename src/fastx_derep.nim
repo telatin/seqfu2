@@ -1,4 +1,4 @@
-import klib
+import ./seqfu_legacy_fastx
 import regex except re, match, replace, Regex
 import md5
 import json

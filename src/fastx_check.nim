@@ -1,12 +1,13 @@
 import docopt
-import readfq
+import readfx
 import times
 import os
 import tables
 import strutils
 import strformat
+import streams
 import ./seqfu_utils
-import zip/gzipfiles  # Import zip package
+import ./seqfu_legacy_fastx
  
 
  
@@ -50,8 +51,7 @@ proc deepCheckStandardFqFile(filename: string): FQcheck =
     result.isValid = false
     return
 
-  let fileReader = if filename.endsWith(".gz"): newGzFileStream(filename) 
-                   else: newFileStream(filename)  # Open gzip file
+  let fileReader = openSeqfuGzStream(filename)
   
 
   var line: string 
@@ -61,9 +61,7 @@ proc deepCheckStandardFqFile(filename: string): FQcheck =
   #var emptyLines = 0
 
   var seqName,seqLine, sepLine, qualLine: string
-  while not fileReader.atEnd():
-    line = fileReader.readLine()
-    
+  while fileReader.readLine(line):
     if (len(line) == 0):
       #emptyLines += 1
       continue
@@ -141,28 +139,31 @@ proc checkFqFile(filename: string): FQcheck =
     bp = 0
     name = ""
     read_sequence = ""
-  for read in readfq(filename):
-    c += 1
-    if result.isValid == false:
-      result.seqCount = -1
-      result.bpCount = -1
-      # Premature exit
-      return
-    if c == 1:
-      result.firstSeqName = read.name
-      result.firstSeq = read.sequence
-    name = read.name
-    read_sequence = read.sequence
-    if len(read.sequence) != len(read.quality):
-      result.errors = "Sequence and quality strings are not the same length at: " & name & ";"
-      result.isValid = false
-
-    for c in read.sequence.toUpper():
-      if c notin DNA:
-        result.errors &= "Invalid character in sequence: <" & c & "> in " & name & ";"
+  try:
+    for read in readFQ(filename):
+      c += 1
+      if result.isValid == false:
+        result.seqCount = -1
+        result.bpCount = -1
+        # Premature exit
+        return
+      if c == 1:
+        result.firstSeqName = read.name
+        result.firstSeq = read.sequence
+      name = read.name
+      read_sequence = read.sequence
+      if len(read.sequence) != len(read.quality):
+        result.errors = "Sequence and quality strings are not the same length at: " & name & ";"
         result.isValid = false
 
-    bp += len(read.sequence)
+      for c in read.sequence.toUpper():
+        if c notin DNA:
+          result.errors &= "Invalid character in sequence: <" & c & "> in " & name & ";"
+          result.isValid = false
+
+      bp += len(read.sequence)
+  except CatchableError:
+    discard
   
   result.seqCount = c
   result.bpCount = bp
@@ -334,7 +335,7 @@ proc `$`(fq: FQcheck): string =
   return toString(fq, false)
 #proc fastx_metadata(argv: var seq[string]): int =
 
-proc fqcheck(args: var seq[string]): int {.gcsafe.} =
+proc fqcheckImpl(args: var seq[string]): int =
   let args = docopt("""
   Usage: seqfu check [options] <FQFILE> [<REV>]
        seqfu check [options] --dir <FQDIR>
@@ -441,3 +442,7 @@ proc fqcheck(args: var seq[string]): int {.gcsafe.} =
       return 0
     else:
       return errors
+
+proc fqcheck(args: var seq[string]): int {.gcsafe.} =
+  {.cast(gcsafe).}:
+    result = fqcheckImpl(args)

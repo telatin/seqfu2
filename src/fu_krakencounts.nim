@@ -3,9 +3,9 @@ import docopt
 import os
 import tables
 import strutils
-import zip/gzipfiles
 import threadpool
 import nimdata
+import ./seqfu_legacy_fastx
 const NimblePkgVersion {.strdefine.} = "undef"
 const version = if NimblePkgVersion == "undef": "<prerelease>"
                 else: NimblePkgVersion
@@ -30,7 +30,7 @@ proc main(): int =
     parser: CsvParser
     hits = initCountTable[int]()
   try:
-    let file = newGzFileStream($args["<FILE>"])
+    let file = openSeqfuGzStream($args["<FILE>"])
     parser.open(file, $args["<FILE>"], separator = '\t')
     while readRow(parser):
       hits.inc( parseInt(parser.row[2]) )

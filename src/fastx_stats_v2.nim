@@ -199,7 +199,8 @@ proc compareStatsByKey(a, b: FastxStats, key: StatsSortKey): int =
     cmp(a.auN, b.auN)
 
 proc processStatsJob(job: ptr StatsJob, workerOpt: ptr statsOptions) {.gcsafe.} =
-  job[].stats = getFastxStats(job[].filename, workerOpt[])
+  {.cast(gcsafe).}:
+    job[].stats = getFastxStats(job[].filename, workerOpt[])
 
 proc toJsonNode(s: FastxStats): JsonNode =
   ## Keep numeric fields as JSON numbers (not quoted strings).

@@ -1,5 +1,5 @@
 import os
-import klib
+import ./seqfu_legacy_fastx
 import ./seqfu_utils
 import strutils
 

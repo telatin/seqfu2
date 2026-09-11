@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import docopt
 import os
 #import posix
@@ -61,7 +61,7 @@ proc main(argv: var seq[string]): int =
 
 
     try:
-      for seqObject in readfq(input_file):
+      for seqObject in readFQ(input_file):
         tot_counter += 1
         counter     += 1
 

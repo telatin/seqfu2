@@ -5,7 +5,7 @@ import strutils, sets, hashes
 from os import fileExists, getTempDir, `/`, removeFile
 import docopt
 import ./seqfu_utils
-import ./lib/klib
+import ./seqfu_legacy_fastx
 import ./lib/msa_reader
 
 type

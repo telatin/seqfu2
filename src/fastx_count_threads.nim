@@ -1,4 +1,4 @@
-import readfq
+import readfx
 
 import tables, strutils
 from os import fileExists
@@ -33,7 +33,7 @@ proc countReads(niceFilename, sample, filename, strand: string): Stats =
   
   try:
     var c = 0
-    for r in readfq(filename):
+    for r in readFQ(filename):
       c += 1
     result = Stats(filename: niceFilename, sample: sample, strand: strand, reads: c)
   except Exception as e:
@@ -59,6 +59,9 @@ Options:
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
+
+  WARNING: This is a legacy command that will be soon removed;
+           `fastx_count_threads.nim` will be removed.
   """, version=version(), argv=argv)
 
     verbose = args["--verbose"]

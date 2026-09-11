@@ -3,8 +3,8 @@ import docopt
 import os
 import tables
 import algorithm
-import zip/gzipfiles
 import std/strutils
+import ./seqfu_legacy_fastx
 
 const NimblePkgVersion {.strdefine.} = "undef"
 const version = if NimblePkgVersion == "undef": "<prerelease>"
@@ -78,7 +78,7 @@ proc checkFile(f: string, sep: char, header: char): checkResult =
     total_lines = 0
     expectedCols = 0
   try:
-    let file = newGzFileStream(f)
+    let file = openSeqfuGzStream(f)
     parser.open(file, f, separator = sep)
     while readRow(parser):
       if isCommentRow(parser.row, header):
@@ -127,7 +127,7 @@ proc sampleSeparator(f: string, sep: char, header: char, maxRows = 128): separat
     expectedCols = 0
 
   try:
-    let file = newGzFileStream(f)
+    let file = openSeqfuGzStream(f)
     parser.open(file, f, separator = sep)
     while readRow(parser):
       if isCommentRow(parser.row, header):
@@ -176,7 +176,7 @@ proc checkColumns(f: string, sep: char, header: char) =
 
   try:
     let
-      file = newGzFileStream(f)
+      file = openSeqfuGzStream(f)
     parser.open(file, f, separator = sep)
 
     var

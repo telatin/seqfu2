@@ -1,7 +1,7 @@
 
 import tables, strutils, sequtils
 import os
-import readfq
+import readfx
 import docopt
 import ./seqfu_utils
 import std/random
@@ -92,7 +92,7 @@ proc printFOFN(samples: seq[sample], opts: metadataSettings) =
 proc countReads(filename: string): int =
     # counts the number of records in a given file
   result = 0
-  for rec in readfq(filename):
+  for rec in readFQ(filename):
     result += 1
 
 proc countReads(s: sample): sample =

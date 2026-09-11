@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import tables, strutils, strformat, algorithm
 from os import fileExists, getEnv, sleep
 import docopt
@@ -129,9 +129,9 @@ proc parseMemorySize(s: string): int =
     return parseInt(size)
 
 proc makeReadfqIterator(filename: string): iterator(): FQRecord {.closure.} =
-  ## Create a closure iterator over readfq records
+  ## Create a closure iterator over ReadFX records
   result = iterator(): FQRecord {.closure.} =
-    for record in readfq(filename):
+    for record in readFQ(filename):
       yield record
 
 proc initCache(filename: string, maxSize: int): RecordCache =

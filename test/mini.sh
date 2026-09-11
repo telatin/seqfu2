@@ -431,7 +431,9 @@ separator "\n Checking docs"
 
 echo " - Documentation check: skipped (sort: fields removed in 2022)"
 
-if nim r --hints:off "$DIR/test_msa_reader.nim"; then
+MSA_NIMCACHE="${NIMCACHE:-${TMPDIR:-/tmp}/seqfu_test_msa_reader_nimcache}"
+mkdir -p "$MSA_NIMCACHE"
+if nim r --hints:off --nimcache:"$MSA_NIMCACHE" "$DIR/test_msa_reader.nim"; then
   echo -e "$OK: MSA input parsing"
   PASS=$((PASS+1))
 else

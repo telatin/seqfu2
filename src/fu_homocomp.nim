@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
 import os, strutils
  
 import threadpool
@@ -77,7 +77,7 @@ proc main(args: var seq[string]): int =
     if args["--verbose"]:
       stderr.writeLine("Reading file: ", inputFile)
 
-    for fqRecord in readfq(inputFile):
+    for fqRecord in readFQ(inputFile):
       seqCounter += 1
       readspool.add(fqRecord)
  

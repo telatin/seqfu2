@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import tables, strutils
 from os import fileExists
 import docopt
@@ -116,7 +116,7 @@ General options:
         if hasRegex:
           stderr.writeLine("Name matches: ", optRegexString)
 
-      for fqRead in readfq(filename):
+      for fqRead in readFQ(filename):
         var
           print_this_sequence = not invertMatch
 

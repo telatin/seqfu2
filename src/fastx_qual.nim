@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import tables, strutils
 from os import fileExists
 import docopt
@@ -123,7 +123,7 @@ Other options:
           sttSeq = newSeq[RunningStat](maxLen + 1)
           stats: RunningStat
 
-        for record in readfq(file):
+        for record in readFQ(file):
           readnum += 1
           var
             modulo = readnum mod skip  

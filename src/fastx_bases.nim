@@ -1,5 +1,5 @@
 
-import readfq
+import readfx
 import strformat
 import terminaltables
 import tables, strutils
@@ -342,7 +342,7 @@ Options:
       if verbose:
         stderr.writeLine("Parsing: ", filename)
       # ITERATE: records
-      for record in readfq(filename):
+      for record in readFQ(filename):
         #total_seqs += 1
         total_bases += len(record.sequence)
         

@@ -1,4 +1,4 @@
-import klib
+import ./seqfu_legacy_fastx
 import strformat
 import tables, strutils
 from os import fileExists

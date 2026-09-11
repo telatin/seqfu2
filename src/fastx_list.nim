@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import tables, strutils
 from os import fileExists, createDir, `/`, splitFile
 import docopt
@@ -177,7 +177,7 @@ Options:
     var outFiles   : seq[File] = newSeq[File](listFiles.len)
     var filesOpened             = false
 
-    for record in readfq(fastxFile):
+    for record in readFQ(fastxFile):
       # Open output files on first record if suffix wasn't known upfront.
       if not filesOpened:
         if suffix == "":
@@ -230,7 +230,7 @@ Options:
       stderr.writeLine("ERROR: File not found: ", file)
       continue
 
-    for record in readfq(file):
+    for record in readFQ(file):
       let seqName = if opts.withComments and record.comment.len > 0:
                       record.name & " " & record.comment
                     else: record.name

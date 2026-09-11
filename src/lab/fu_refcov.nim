@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
 import sequtils
 import os, strutils
 import algorithm
@@ -45,11 +45,11 @@ proc scanKmers(file: string, kmersize: int): Table[string, Position] =
     tot = 0
     discarded = 0
     positions: Table[string, seq[Position]]
-  for refRecord in readfq(file):
+  for refRecord in readFQ(file):
     for pos in 1 .. (len(refRecord.sequence) - kmersize):
       let 
         kmerStr = refRecord.sequence[pos .. pos + kmersize - 1]
-        kmer = min(kmerStr, kmerStr.revcompl())
+        kmer = min(kmerStr, seqfuRevCompl(kmerStr))
       
       var
         position : Position = (chrname: refRecord.name, pos: pos)
@@ -106,11 +106,11 @@ proc main(args: var seq[string]): int =
   # Map reads
   for inputFile in inputFiles:
     stderr.writeLine("Processing " & inputFile)
-    for fqRecord in readfq(inputFile):
+    for fqRecord in readFQ(inputFile):
       for pos in 1 .. (len(fqRecord.sequence) - parseInt($args["--kmer-size"])):
         let 
           kmerStr = fqRecord.sequence[pos .. pos + parseInt($args["--kmer-size"]) - 1]
-          kmer = min(kmerStr, kmerStr.revcompl())
+          kmer = min(kmerStr, seqfuRevCompl(kmerStr))
         if kmer in kmerTable:
           if kmerTable[kmer] in covPos:
             covPos[kmerTable[kmer]] += 1
@@ -133,13 +133,13 @@ proc main(args: var seq[string]): int =
     echo chrPos, "\t", covPos[chrPos], "\t", delta, "\t", star
 
 #[
-  for s in readfq(target):
+  for s in readFQ(target):
     if $args["--id"] == "nil" or ($args["--id"] != "nil" and s.name == $args["--id"]):
       targets.add(s)
   
   let tab = "\t"
-  for s in readfq(query):
-    let r = revcompl(s)
+  for s in readFQ(query):
+    let r = seqfuRevCompl(s)
     echo("# QUERY: ", s.name)
     for target in targets:
       echo("## TARGET: ", target.name)

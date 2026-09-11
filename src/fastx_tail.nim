@@ -5,7 +5,7 @@
 ## last N sequences. Supports renaming, format conversion, and
 ## streaming from stdin.
 
-import readfq
+import readfx
 import strutils
 import deques
 import math
@@ -102,7 +102,7 @@ Output:
         seqCount = 0
         lastSequences = initDeque[FQRecord](nextPowerOfTwo(num))
 
-      for record in readfq(filename):
+      for record in readFQ(filename):
         seqCount += 1
 
         if skip > 0:

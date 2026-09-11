@@ -1,6 +1,6 @@
 import iterutils
 import sequtils
-import readfq
+import readfx
 import docopt
 import seqfu_utils
 
@@ -27,8 +27,8 @@ proc main(argv: var seq[string]): int =
   echo "Reading file1: ", file1
   echo "Reading file2: ", file2
 
-  initClosure(f1,readfq(file1))
-  initClosure(f2,readfq(file2))
+  initClosure(f1,readFQ(file1))
+  initClosure(f2,readFQ(file2))
 
   var
     c = 0

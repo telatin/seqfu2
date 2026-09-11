@@ -1,4 +1,4 @@
-import readfq
+import readfx
 import tables, strutils
 from os import fileExists
 import docopt
@@ -137,7 +137,7 @@ Options:
     quit(1)
 
 
-  for read in readfq($args["<inputfile>"]):
+  for read in readFQ($args["<inputfile>"]):
     let isFasta = (read.quality.len == 0) # Check if it's a FASTA file
 
     if args["--nocolor"]:

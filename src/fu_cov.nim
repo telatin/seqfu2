@@ -1,5 +1,4 @@
-#import klib
-import readfq
+import readfx
 import docopt
 import strutils
 import stats
@@ -149,7 +148,7 @@ proc main(args: var seq[string]): int =
       #var match: array[1, string]
 
 
-      for r in readfq(filename):
+      for r in readFQ(filename):
         c+=1
         total_bases += len(r.sequence)
         lenStats.push(len(r.sequence))

@@ -1,5 +1,5 @@
 import docopt
-import readfq
+import readfx
 import strformat
 import os, strutils
 import threadpool
@@ -320,13 +320,13 @@ proc main(args: var seq[string]): int =
   
 
   echo("Query\tTarget\tScore\tPctID\tLength\tStrand\tQuery_span\tTarget_span")
-  for s in readfq(target):
+  for s in readFQ(target):
     if $args["--id"] == "nil" or ($args["--id"] != "nil" and s.name == $args["--id"]):
       targets.add(s)
   
   let tab = "\t"
-  for s in readfq(query):
-    let r = revcompl(s)
+  for s in readFQ(query):
+    let r = seqfuRevCompl(s)
     if verbose:
       stderr.write("# Query: ", s.name)
     for target in targets:
