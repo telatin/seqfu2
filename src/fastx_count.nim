@@ -38,6 +38,8 @@ Options:
   -v, --verbose          Verbose output
   -h, --help             Show this help
 
+  WARNING: This is a legacy command that will be soon removed;
+           `fastx_count.nim` will be removed.
   """, version=version(), argv=argv)
 
     verbose = args["--verbose"]

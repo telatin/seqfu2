@@ -1,4 +1,4 @@
-import ./seqfu_legacy_fastx
+import readfx
 import malebolgia
 import tableview
 
@@ -75,11 +75,7 @@ proc countReads(niceFilename, sample, filename, strand: string): Stats {.gcsafe.
   {.cast(gcsafe).}:
     try:
       var c = 0
-      var f = xopen[GzFile](filename)
-      defer:
-        f.close()
-      var r: FastxRecord
-      while f.readFastx(r):
+      for r in readFQPtr(filename):
         c += 1
       result = Stats(
         filename: niceFilename,
