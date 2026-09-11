@@ -25,7 +25,7 @@ type
     id: string
     strand: string
     isRev: bool
- 
+
 type
   nucleoCount* = tuple
     at: int
@@ -48,32 +48,32 @@ proc fmtFloat*(value      : float,
         return "Inf"
     elif value == NegInf:
         return "-Inf"
-    
+
     let
         forceSign  = format.find('s') >= 0
         thousands  = format.find('t') >= 0
         removeZero = format.find('z') >= 0
-    
+
     var valueStr = ""
-    
+
     if decimals >= 0:
         valueStr.formatValue(round(value, decimals), "." & $decimals & "f")
     else:
         valueStr = $value
-    
+
     if valueStr[0] == '-':
         valueStr = valueStr[1 .. ^1]
-    
+
     let
         period  = valueStr.find('.')
         negZero = 1.0 / value == NegInf
         sign    = if value < 0.0 or negZero: "-" elif forceSign: "+" else: ""
-    
+
     var
         integer    = ""
         integerTmp = valueStr[0 .. period - 1]
         decimal    = decimalSep & valueStr[period + 1 .. ^1]
-    
+
     if thousands:
         while true:
             if integerTmp.len > 3:
@@ -81,20 +81,20 @@ proc fmtFloat*(value      : float,
                 integerTmp = integerTmp[0 .. ^4]
             else:
                 integer = integerTmp & integer
-                
+
                 break
     else:
         integer = integerTmp
-    
+
     while removeZero:
         if decimal[^1] == '0':
             decimal = decimal[0 .. ^2]
         else:
             break
-    
+
     if decimal == decimalSep:
         decimal = ""
-    
+
     return sign & integer & decimal
 
 proc splitPosWithPattern(s, p: string): int =
@@ -102,27 +102,27 @@ proc splitPosWithPattern(s, p: string): int =
     if p == s[i ..< i+len(p)]:
       return i
   return -1
-    
+
 proc getStrandFromFilename*(f: string, forPattern = "auto"; revPattern = "auto"): fileNameStrand =
-   
+
   result.filename = f
-  
+
   var
     forCount = 0
     revCount = 0
     forPatterns=newSeq[string]()
     revPatterns=newSeq[string]()
-    
+
   if forPattern == "auto":
     forPatterns = @["_R1_", "_R1.", "_1."]
   else:
     forPatterns.add(forPattern)
-  
+
   if revPattern == "auto":
     revPatterns = @["_R2_", "_R2.", "_2."]
   else:
     revPatterns.add(revPattern)
-  
+
   for pattern in forPatterns:
     let pos = splitPosWithPattern(f, pattern)
     if pos > 0:
@@ -140,12 +140,12 @@ proc getStrandFromFilename*(f: string, forPattern = "auto"; revPattern = "auto")
       result.splittedFile = f[0 ..< pos]
       result.id = extractFilename(result.splittedFile)
       break
-  
+
   if (revCount > 0 and forCount > 0) or (forCount == 0 and revCount == 0):
     result.strand = "unknown"
   elif revCount > 0:
     result.isRev = true
-  
+
 
 proc printFastxRecord*(s: FastxRecord): string =
   formatSeqfuRecord(s)
@@ -153,14 +153,14 @@ proc printFastxRecord*(s: FastxRecord): string =
 
 proc count_gc*(s: string): int =
   let
-    upper_seq = toUpperAscii(s)  
+    upper_seq = toUpperAscii(s)
   for c in upper_seq:
     if c == 'G' or c == 'C':
       result += 1
 
 proc count_all*(s: string): nucleoCount =
   let
-    upper_seq = toUpperAscii(s)  
+    upper_seq = toUpperAscii(s)
   for c in upper_seq:
     if c == 'A' or c == 'T' or c == 'U':
       result.at += 1
@@ -170,9 +170,9 @@ proc count_all*(s: string): nucleoCount =
       result.n += 1
 
     result.tot = result.at + result.gc
-    
+
 proc get_gc*(s: string): float =
-  var 
+  var
     gc_count = 0
     at_count = 0
     upper_seq = toUpperAscii(s)
@@ -181,7 +181,7 @@ proc get_gc*(s: string): float =
       gc_count += 1
     elif c == 'A' or c == 'T' or c == 'U':
       at_count += 1
-  
+
   return float(gc_count) / float(gc_count + at_count)
 
 proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=false): string =
@@ -190,11 +190,11 @@ proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=fal
 
   if pattern_R1 == "auto" and pattern_R2 == "auto":
     # automatic guess
-    if regex.match(file_R1, regex.re2".+_R1\..+"):           
+    if regex.match(file_R1, regex.re2".+_R1\..+"):
       result = regex.replace(file_R1, regex.re2"_R1\.", "_R2.")
-    elif regex.match(file_R1, regex.re2".+_R1_.+"):           
+    elif regex.match(file_R1, regex.re2".+_R1_.+"):
       result = regex.replace(file_R1, regex.re2"_R1_", "_R2_")
-    elif regex.match(file_R1, regex.re2".+_1\..+"):            
+    elif regex.match(file_R1, regex.re2".+_1\..+"):
       result = regex.replace(file_R1, regex.re2"_1\.", "_2.")
     else:
       if verbose:
@@ -208,7 +208,7 @@ proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=fal
       if verbose:
         stderr.writeLine("Warning: Unable to detect R2 file using user defined patterns, from ", file_R1)
       return ""
-  
+
   if not fileExists(result):
     if verbose:
         stderr.writeLine("Warning: Automatically detected R2 was not found: ", result)
@@ -370,10 +370,10 @@ proc print_seq*(record: FQRecord, outputFile: File, rename="") =
   #   quality*: string# optional
 proc mergeSeqs*(f, r: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): FQRecord {.discardable.} =
   result.name = f.name
-  var rc = seqfuRevCompl(r) 
+  var rc = seqfuRevCompl(r)
   var max = if     f.sequence.high > rc.sequence.high: rc.sequence.high
             else:  f.sequence.high
-  
+
   var max_score = 0.0
   var pos = 0
   var str : string
@@ -385,12 +385,12 @@ proc mergeSeqs*(f, r: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): F
       #q1 = f.quality[f.sequence.high - i .. f.sequence.high]
       #q2 = rc.quality[r.sequence.high - i .. r.sequence.high]
       score = 0.0
-      
+
 
     for i in 0 .. s1.high:
       if s1[i] == s2[i]:
         score += 1
-   
+
     score = score / float(len(s1))
 
     if score > max_score:
@@ -429,9 +429,9 @@ proc compressHomopolymers*(s: FQRecord): FQRecord =
 
   for i, c in s.sequence[1 .. ^1]:
     if c != result.sequence[^1]:
-      result.sequence = result.sequence & c 
+      result.sequence = result.sequence & c
       if len(s.quality) > 0:
-        result.quality  = result.quality  & $s.quality[i + 1]    
+        result.quality  = result.quality  & $s.quality[i + 1]
 
 ### AMPLICHECK
 
@@ -491,7 +491,7 @@ proc main_helper*(main_func: var seq[string] -> int) =
       quit(0)
     except Exception:
       stderr.writeLine( getCurrentExceptionMsg() )
-      quit(2)  
+      quit(2)
   else:
     signal(SIG_PIPE, cast[typeof(SIG_IGN)](proc(signal: cint) =
       if debug:
@@ -510,7 +510,7 @@ proc main_helper*(main_func: var seq[string] -> int) =
         if debug:
           stderr.writeLine("SeqFu-debug: aborted quit: ", e.msg)
         quit(1)
-      
+
     setControlCHook(handler)
 
     try:
@@ -543,9 +543,9 @@ proc main_helper_v1*(main_func: var seq[string] -> int) =
       quit(0)
     except Exception:
       stderr.writeLine( getCurrentExceptionMsg() )
-      quit(2)   
+      quit(2)
   else:
-    
+
     signal(SIG_PIPE,cast[typeof(SIG_IGN)](proc(signal:cint) =
       if debug:
         stderr.write("SeqFu-debug: handled sigpipe\n")
@@ -575,7 +575,7 @@ proc main_helper_v1*(main_func: var seq[string] -> int) =
       quit(1)
     except Exception:
       stderr.writeLine( getCurrentExceptionMsg() )
-      quit(2)   
+      quit(2)
 
 
 ####

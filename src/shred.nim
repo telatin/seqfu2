@@ -1,6 +1,6 @@
 import docopt
 import readfx
- 
+
 import os
 import tables
 import strutils
@@ -9,16 +9,16 @@ import ./seqfu_utils
 const NimblePkgVersion {.strdefine.} = "undef"
 const programVersion = if NimblePkgVersion == "undef": "0.0.1-alpha"
                        else: NimblePkgVersion
-proc isDNA(s: string): bool = 
+proc isDNA(s: string): bool =
   let ch = @['A', 'C', 'G', 'T', 'N']
   for c in s.toUpper():
     if c notin ch:
       return false
   return true
- 
+
 proc version(cmdName: string): string =
   return cmdName & " " & programVersion
- 
+
 
 proc shredMain(args: var seq[string], cmdName = "shred"): int =
   let args = docopt("""
@@ -28,8 +28,8 @@ proc shredMain(args: var seq[string], cmdName = "shred"): int =
 
   Options:
     -l, --length INT           Segment length [default: 100]
-    -s, --step INT             Distance from one segment start to the following [default: 10] 
-    -q, --quality INT          Quality (constant) for the segment, if -1 is 
+    -s, --step INT             Distance from one segment start to the following [default: 10]
+    -q, --quality INT          Quality (constant) for the segment, if -1 is
                                provided will be printed in FASTA [default: 40]
     -r, --add-rc               Print every other read in reverse complement
     -b, --basename             Prepend the file basename to the read name
@@ -45,12 +45,12 @@ proc shredMain(args: var seq[string], cmdName = "shred"): int =
     """.replace("$CMD$", cmdName), version=version(cmdName), argv=args)
 
   #check parameters
-  
+
 
 
   let
     outprefix = $args["--out-prefix"]
-    readLength = parseInt($args["--length"])         
+    readLength = parseInt($args["--length"])
     fragLength = parseInt($args["--frag-len"])
     step = parseInt($args["--step"])
     basename = args["--basename"]
@@ -95,10 +95,10 @@ proc shredMain(args: var seq[string], cmdName = "shred"): int =
              else: stdout
     revFile = if pe: open(outprefix & "_R2.fq", fmWrite)
              else: stdout
-        
+
   defer: fwdFile.close()
   defer: revFile.close()
-  
+
   for inputFile in inputFiles:
     if not fileExists(inputFile) and inputFile != "-":
         stderr.writeLine("ERROR: Input file not found: ", inputFile)
@@ -115,41 +115,41 @@ proc shredMain(args: var seq[string], cmdName = "shred"): int =
               counter += 1
               let slice = if counter mod 2 == 0 or not doRevComp: fqRecord.sequence[pos ..< pos+cutLen]
                           else: seqfuRevCompl(fqRecord.sequence[pos ..< pos+cutLen])
-              
+
 
               let readname = prefix  & fqRecord.name & joinString & $counter
 
 
               if pe:
-                let r1 = if qualChar != ' ': FQRecord(name: readname, 
-                                        comment: "", 
-                                        sequence: slice[0 ..< readLength], 
+                let r1 = if qualChar != ' ': FQRecord(name: readname,
+                                        comment: "",
+                                        sequence: slice[0 ..< readLength],
                                         quality: repeat(qualChar, readLength ) )
-                            else: FQRecord(name: readname, 
-                                      comment: "", 
+                            else: FQRecord(name: readname,
+                                      comment: "",
                                       sequence: slice )
-                let r2 = if qualChar != ' ': FQRecord(name: readname, 
-                                        comment: "", 
-                                        sequence: seqfuRevCompl(slice)[0 ..< readLength], 
+                let r2 = if qualChar != ' ': FQRecord(name: readname,
+                                        comment: "",
+                                        sequence: seqfuRevCompl(slice)[0 ..< readLength],
                                         quality: repeat(qualChar, readLength ) )
-                            else: FQRecord(name: readname, 
-                                      comment: "", 
+                            else: FQRecord(name: readname,
+                                      comment: "",
                                       sequence: slice )
                 fwdFile.writeLine($r1)
                 revFile.writeLine($r2)
               else:
-                let read = if qualChar != ' ': FQRecord(name: readname, 
-                                        comment: "", 
-                                        sequence: slice, 
+                let read = if qualChar != ' ': FQRecord(name: readname,
+                                        comment: "",
+                                        sequence: slice,
                                         quality: repeat(qualChar, readLength ) )
-                            else: FQRecord(name: readname, 
-                                      comment: "", 
+                            else: FQRecord(name: readname,
+                                      comment: "",
                                       sequence: slice )
                 echo $read
     except Exception as e:
       stderr.writeLine("ERROR: parsing ", inputFile, ": ", e.msg)
       quit(1)
-        
+
 
 
 

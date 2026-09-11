@@ -18,7 +18,7 @@ if [[ $COUNT == $EXP ]]; then
 else
     echo -e "$FAIL: $MSG (expected $EXP, got $COUNT from $INPUT)"
     ERRORS=$((ERRORS+1))
-fi 
+fi
 
 MSG="SE: Total length 1000bp "
 EXP=1000
@@ -28,7 +28,7 @@ if [[ $LEN == $EXP ]]; then
 else
     echo -e "$FAIL: $MSG (expected $EXP, got $LEN from $INPUT)"
     ERRORS=$((ERRORS+1))
-fi 
+fi
 
 TEMPORARY_DIR=$(mktemp -d)
 FWD="$TEMPORARY_DIR"/illuminate_R1.fq
@@ -42,7 +42,7 @@ if [[ -e "$FWD" ]] && [[ -e "$REV" ]]; then
 else
     echo -e "$FAIL: $MSG"
     ERRORS=$((ERRORS+1))
-fi 
+fi
 
 COUNT=$(cat "$FWD" | "$BINDIR"/seqfu count - | cut -f 2)
 LEN=$(cat "$FWD" | "$BINDIR"/seqfu stats - | cut -f 3 | tail -n 1)
@@ -54,7 +54,7 @@ if [[ $COUNT == $EXP ]]; then
 else
     echo -e "$FAIL: $MSG (expected $EXP, got $COUNT from $INPUT)"
     ERRORS=$((ERRORS+1))
-fi 
+fi
 
 MSG="PE: Total length 1000bp "
 EXP=500
@@ -64,4 +64,4 @@ if [[ $LEN == $EXP ]]; then
 else
     echo -e "$FAIL: $MSG (expected $EXP, got $LEN from $INPUT)"
     ERRORS=$((ERRORS+1))
-fi 
+fi

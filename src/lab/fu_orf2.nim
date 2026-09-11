@@ -13,7 +13,7 @@ import os
 import ./seqfu_utils
 
 const NimblePkgVersion {.strdefine.} = "undef"
- 
+
 const version = if NimblePkgVersion == "undef": "<preprelease>"
                 else: NimblePkgVersion
 
@@ -21,10 +21,10 @@ const version = if NimblePkgVersion == "undef": "<preprelease>"
 template echoVerbose(things: varargs[string, `$`]) =
   if verbose == true:
     stderr.writeLine(things)
- 
+
 template db(things: varargs[string, `$`]) =
   if debug == true:
-  
+
     stderr.writeLine(things)
 
 template initClosure(id,iter:untyped) =
@@ -35,22 +35,22 @@ template initClosure(id,iter:untyped) =
 var
   verbose = false
   debug = false
-  
+
 type
-    mergeCfg = tuple[join: bool, 
-      minId: float, 
-      minOverlap, 
-      maxOverlap, 
-      minorf: int, 
+    mergeCfg = tuple[join: bool,
+      minId: float,
+      minOverlap,
+      maxOverlap,
+      minorf: int,
       scanreverse: bool,
       code: int,
       minreadlength: int]
 
-proc length(self:FQRecord): int = 
+proc length(self:FQRecord): int =
   ## returns length of sequence
   self.sequence.len()
 
-iterator codons(self: FQRecord) : string = 
+iterator codons(self: FQRecord) : string =
   var i = 0
   var s = self.sequence.toUpperAscii
   while i < self.length - 2:
@@ -85,10 +85,10 @@ proc num2kmer*(num, klen:int):string =
     n = n - p*baseNum
   kmer
 
-proc translateFastx*(self:FQRecord, code = 1): FQRecord = 
-  ## translates a nucleotide sequence with the given genetic code number: 
+proc translateFastx*(self:FQRecord, code = 1): FQRecord =
+  ## translates a nucleotide sequence with the given genetic code number:
   ##    https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi for codes
-  var codeMap = 
+  var codeMap =
     ["FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
      "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
@@ -129,8 +129,8 @@ proc translateFastx*(self:FQRecord, code = 1): FQRecord =
   db("Translated ", transeq.join)
   result.sequence = transeq.join
 
- 
- 
+
+
 
 proc translateAll(input: FQRecord, opts: mergeCfg): seq[FQRecord] =
   var
@@ -138,12 +138,12 @@ proc translateAll(input: FQRecord, opts: mergeCfg): seq[FQRecord] =
     seqs = @[input]
   db("Translating: " , input.name, " min=", opts.minorf)
   if opts.scanreverse == true:
-    seqs.add(seqfuRevCompl(input)) 
+    seqs.add(seqfuRevCompl(input))
 
   # First translate all the frames
   for sequence in seqs:
     if len(sequence.sequence) < opts.minreadlength:
-      
+
       break
     for frame in @[0, 1, 2]:
       let
@@ -155,56 +155,56 @@ proc translateAll(input: FQRecord, opts: mergeCfg): seq[FQRecord] =
       obj.sequence = dna
       obj.sequence = obj.translateFastx(opts.code).sequence
       rawprots.add( obj )
-  
+
   # Then split on STOP codons
   for translatedRecord in rawprots:
     var
       orf = ""
       start = 0
-     
+
 
     for i, aa in translatedRecord.sequence:
       #db("i=", i, " aa=", aa, " orf=", orf, " len=", len(translatedRecord.seq))
       if aa == '*' or i == len(translatedRecord.sequence) - 1:
-        
+
         orf = if aa == '*': translatedRecord.sequence[start ..< i]
               else: translatedRecord.sequence[start .. i]
         db(" orf=",orf)
         if len(orf) >= opts.minorf:
-           
+
           var
             obj : FQRecord
           db( " ORF: ", $i)
           obj.name = translatedRecord.name & " start=" & $start
           obj.sequence = orf
           result.add( obj )
-           
+
         start = i + 1
         orf = ""
-      
 
-#[      
+
+#[
   for translatedseq in rawprots:
-     
+
     let translations : seq = translatedseq.sequence.split('-')
-     
+
     for t in translations:
       if len(t) > minOrfSize:
         let orfs = t.split('*')
-         
+
         for orf in orfs:
           if len(orf) > minOrfSize:
             var s: FQRecord
             s.name = translatedseq.name
             s.sequence = orf
             result.add(s)
-]#      
-  
-proc mergePair(R1, R2: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): FQRecord {.discardable.} = 
-  var REV = seqfuRevCompl(R2) 
+]#
+
+proc mergePair(R1, R2: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): FQRecord {.discardable.} =
+  var REV = seqfuRevCompl(R2)
   var max = if R1.sequence.high > REV.sequence.high: REV.sequence.high
           else:  R1.sequence.high
-  
+
   var max_score = 0.0
   var pos = 0
   var str : string
@@ -216,12 +216,12 @@ proc mergePair(R1, R2: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): 
       #q1 = R1.qual[R1.sequence.high - i .. R1.sequence.high]
       #q2 = R2.qual[R2.sequence.high - i .. R2.sequence.high]
       score = 0.0
-      
+
 
     for i in 0 .. s1.high:
       if s1[i] == s2[i]:
         score += 1
-   
+
     score = score / float(len(s1))
 
     if score > max_score:
@@ -249,7 +249,7 @@ proc processPair(R1, R2: FQRecord, opts: mergeCfg): string =
 
   if opts.join:
     s1 = mergePair(R1, R2, opts.minOverlap, opts.minId)
-    
+
     if length(s1) == length(R1):
       joined = false
     else:
@@ -260,10 +260,10 @@ proc processPair(R1, R2: FQRecord, opts: mergeCfg): string =
   else:
     orfs.add( translateAll(R1, opts))
     orfs.add( translateAll(R2, opts))
-  
+
   for peptide in orfs:
     counter += 1
-    
+
     result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.sequence & "\n"
 
 
@@ -271,34 +271,34 @@ proc processSingle(R1: FQRecord, opts: mergeCfg): string =
   var
     orfs: seq[FQRecord]
     counter = 0
-    
+
   orfs.add( translateAll(R1, opts))
-  
+
   for peptide in orfs:
     counter += 1
     result &= '>' & R1.name & "_" & $counter & " frame=" & peptide.name & " tot=" & $(len(orfs)) & "\n" & peptide.sequence & "\n"
 
-    
+
 proc parseArray(pool: seq[FQRecord], opts: mergeCfg): string =
   for i in 0 .. pool.high:
     if i mod 2 == 1:
       try:
-        result &= processPair(pool[i - 1], pool[i], opts)  
+        result &= processPair(pool[i - 1], pool[i], opts)
       except:
-        result &= processPair(pool[i - 1], pool[i], opts) 
+        result &= processPair(pool[i - 1], pool[i], opts)
         quit()
 
 proc parseArraySingle(pool: seq[FQRecord], opts: mergeCfg): string =
   for i in 0 .. pool.high:
     try:
-      result &= processSingle(pool[i], opts)  
+      result &= processSingle(pool[i], opts)
     except:
-      result &= processSingle(pool[i], opts) 
+      result &= processSingle(pool[i], opts)
       quit()
-  
+
 
 proc printCodes() =
-  echo """NCBI Genetics Codes: 
+  echo """NCBI Genetics Codes:
 
   1.  The Standard Code
   2.  The Vertebrate Mitochondrial Code
@@ -325,21 +325,21 @@ proc printCodes() =
   30. Peritrich Nuclear Code
   31. Blastocrithidia Nuclear Code
   33. Cephalodiscidae Mitochondrial UAA-Tyr Code
-    
+
 See also: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"""
 
 proc fastx_orf(argv: var seq[string]): int =
   let args =  docopt("""
   fu-orf
- 
+
   Extract ORFs from Paired-End reads.
 
-  Usage: 
-  fu-orf [options] <InputFile>  
+  Usage:
+  fu-orf [options] <InputFile>
   fu-orf [options] -1 File_R1.fq
   fu-orf [options] -1 File_R1.fq -2 File_R2.fq
   fu-orf --help | --codes
-  
+
   Input files:
     -1, --R1 FILE           First paired end file
     -2, --R2 FILE           Second paired end file
@@ -350,19 +350,19 @@ proc fastx_orf(argv: var seq[string]): int =
     -r, --scan-reverse      Also scan reverse complemented sequences
     -c, --code INT          NCBI Genetic code to use [default: 1]
     -l, --min-read-len INT  Minimum read length to process [default: 25]
-  
+
   Paired-end optoins:
     -j, --join              Attempt Paired-End joining
     --min-overlap INT       Minimum PE overlap [default: 12]
     --max-overlap INT       Maximum PE overlap [default: 200]
     --min-identity FLOAT    Minimum sequence identity in overlap [default: 0.80]
-  
+
   Other options:
     --codes                 Print NCBI genetic codes and exit
     --pool-size INT         Size of the sequences array to be processed
                             by each working thread [default: 250]
     --verbose               Print verbose log
-    --debug                 Print debug log  
+    --debug                 Print debug log
     --help                  Show help
   """, version=version, argv=argv)
 
@@ -375,7 +375,7 @@ proc fastx_orf(argv: var seq[string]): int =
     prefix : string
     singleEnd = true
     code: int
-     
+
   debug = args["--debug"]
   try:
     fileR1 = $args["--R1"]
@@ -386,11 +386,11 @@ proc fastx_orf(argv: var seq[string]): int =
     verbose = args["--verbose"]
     poolSize = parseInt($args["--pool-size"])
     prefix = $args["--prefix"]
-    mergeOptions = (join: args["--join"] or false,  
-      minId: parseFloat($args["--min-identity"]), 
-      minOverlap: parseInt($args["--min-overlap"]), 
-      maxOverlap: parseInt($args["--max-overlap"]), 
-      minorf: minOrfSize, 
+    mergeOptions = (join: args["--join"] or false,
+      minId: parseFloat($args["--min-identity"]),
+      minOverlap: parseInt($args["--min-overlap"]),
+      maxOverlap: parseInt($args["--max-overlap"]),
+      minorf: minOrfSize,
       scanreverse: args["--scan-reverse"] or false,
       code: code,
       minreadlength: minreadlen)
@@ -398,7 +398,7 @@ proc fastx_orf(argv: var seq[string]): int =
     stderr.writeLine("Use fu-orf --help")
     stderr.writeLine("Arguments error: ", getCurrentExceptionMsg())
     quit(0)
- 
+
   if args["--codes"]:
     echo "SeqFu ORF"
     echo "--------------------------------------------------------"
@@ -407,7 +407,7 @@ proc fastx_orf(argv: var seq[string]): int =
 
   let
     validCodes = @[1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33]
-  
+
   if not validCodes.contains(code):
     printCodes()
     stderr.writeLine("Invalid genetic code: ", code)
@@ -446,7 +446,7 @@ proc fastx_orf(argv: var seq[string]): int =
         echo("ERROR: File not found [-1]: ", fileR1)
       if not fileExists(fileR2):
         echo("ERROR: File not found [-2]: ", fileR2)
-      quit(0) 
+      quit(0)
   else:
     echoVerbose("ERROR: Missing required parameters", fileR1, fileR2)
     quit(0)
@@ -460,13 +460,13 @@ proc fastx_orf(argv: var seq[string]): int =
   elif fileR2 == "nil":
     echoVerbose("Single end mode")
     singleEnd = true
-  
+
   var
     read1, read2: FQRecord
   echoVerbose("Reading R1:" & fileR1)
 
 
-  
+
   var readspool : seq[FQRecord]
   var responses = newSeq[FlowVar[string]]()
 
@@ -479,20 +479,20 @@ proc fastx_orf(argv: var seq[string]): int =
 
     initClosure(f2,readFQ(fileR2))
     #creates a new closure iterator, 'f2'
-    
+
     for raw_read_1, raw_read_2 in zip(f1,f2):
       read1 = raw_read_1
       read2 = raw_read_2
-     
-      
+
+
       counter += 1
       if prefix != "nil":
         read1.name = prefix & $counter
         read2.name = prefix & $counter
-  
-      
+
+
       readspool.add(read1)
-      readspool.add(read2)  
+      readspool.add(read2)
 
       if counter mod poolSize == 0:
         responses.add(spawn parseArray(readspool, mergeOptions))
@@ -500,7 +500,7 @@ proc fastx_orf(argv: var seq[string]): int =
 
     # Empty queue
     responses.add(spawn parseArray(readspool, mergeOptions))
-    
+
 
   else:
     ##
@@ -510,18 +510,18 @@ proc fastx_orf(argv: var seq[string]): int =
       counter += 1
       read1= fq_record
 
-      
+
       if prefix != "nil":
         read1.name = prefix & $counter
-         
+
       readspool.add(read1)
       if counter mod poolSize == 0:
         responses.add(spawn parseArraySingle(readspool, mergeOptions))
         readspool.setLen(0)
 
- 
+
     responses.add(spawn parseArraySingle(readspool, mergeOptions))
-    
+
   for resp in responses:
     let s = ^resp
     stdout.write(s)
