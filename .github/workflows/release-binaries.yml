@@ -72,5 +72,6 @@ jobs:
       - name: Attach binaries
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" release-assets/* --clobber
+        run: gh release upload "$TAG" release-assets/* --repo "$GH_REPO" --clobber
