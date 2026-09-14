@@ -13,19 +13,33 @@ Function under development: APIs and default parameters are likely going to chan
 This is why you don't see it listed in the main screen of SeqFu (yet).
 ```
 
-A tool to naively merge paired end reads preserving the quality of the forward read.
+A tool to merge paired end reads using overlap detection, quality-aware consensus
+calling, and optional worker threads.
 
 ```
-Usage: merge [options] -1 File_R1
+Usage:
+  merge [options] -1 FILE_R1 [-2 FILE_R2]
+  merge [options] FILE_R1
 
   Options:
-  -1, --R1 FILE                First paired-end file
-  -2, --R2 FILE                Second paired-end file, can be automatically inferred  
-  -i, --minid FLOAT            Minimum identity [default: 0.80]
-  -m, --minlen INT             Minimum overlap [default: 20]
-  --accepted-identity FLOAT    Accept fusion when identity is above FLOAT [default: 0.96]
-  -v, --verbose                Print verbose messages
-  -h, --help                   Show this help
+  -1, --R1 FILE              First paired-end file
+  -2, --R2 FILE              Second paired-end file, can be automatically inferred
+  -i, --min-id FLOAT         Minimum overlap identity [default: 0.90]
+  -m, --min-overlap INT      Minimum overlap length [default: 20]
+  --accept-id FLOAT          Accept overlap immediately above identity [default: 0.97]
+  --min-len INT              Minimum merged read length, 0 disables [default: 50]
+  --max-len INT              Maximum merged read length, 0 disables [default: 0]
+  --min-length INT           Deprecated alias for --min-len
+  --max-length INT           Deprecated alias for --max-len
+  --search STR               Overlap search mode [default: seeded]
+                             (seeded/exhaustive)
+  --keep-unmerged            Output R1 when merging fails [default: false]
+  --qual-method STR          Quality handling strategy [default: recalculate]
+                             (first/lowest/recalculate)
+  -t, --threads INT          Worker threads
+  --batch-size INT           Read pairs per worker batch [default: 1024]
+  -v, --verbose              Print verbose messages
+  -h, --help                 Show this help
 ```
 
 ## Merging reads
@@ -35,10 +49,10 @@ In particular if we use tools that correcly interpret the _Phred quality scores_
 tools like USEARCH and VSEARCH are correcly recalibrating the quality of the overlapping
 bases.
 
-Some tools, however, are expeting quality scores that are more likely produced by a
-sequencing tool. This experimental module of SeqFu joins the reads in a different way:
-takes the forward read _as is_, and extends it with the (reverse complemented) missing
-part taken from the R2. 
+This experimental module of SeqFu now uses a seeded offset search with an
+exhaustive fallback. In the overlapping segment, `--qual-method recalculate`
+recomputes posterior Phred scores, `first` keeps the R1 quality, and `lowest`
+keeps the lower quality score.
 
 ## Potential uses
 

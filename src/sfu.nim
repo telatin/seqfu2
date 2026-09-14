@@ -125,7 +125,7 @@ proc main(args: var seq[string]): int =
                "bases"             : "count bases in FASTA/FASTQ files",
                "trim"              : "trim FASTQ sequences based on quality",
                "amplicheck"        : "QC paired-end amplicon FASTQ files",
-#              "merge [mrg]"       : "join Paired End reads",
+               "merge [mrg]"       : "merge paired-end FASTQ reads",
                "count [c]"         : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
