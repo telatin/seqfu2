@@ -11,7 +11,7 @@ parent: Core Tools
 It's used to produce two separate FASTQ files from an interleaved file. 
 
 ```text
-ilv: interleave FASTQ files
+dei: deinterleave FASTQ files
 
   Usage: dei [options] -o basename <interleaved-fastq>
 
