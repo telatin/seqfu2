@@ -59,7 +59,7 @@ $(BIN)/fu-readtope: $(SCRIPTS)/fu-readtope
 	chmod 555 $(BIN)/fu-readtope
 
 $(BIN)/seqfu: src/sfu.nim
-	nim c $(NIMPARAM) --out:$@ $<
+	nim c --threads:on $(NIMPARAM) --out:$@ $<
 
 $(BIN)/fu-primers: src/fu_primers.nim
 	nim c --threads:on $(NIMPARAM) --out:$@ $<
