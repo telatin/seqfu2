@@ -8,3 +8,12 @@
 
 - Clarified that `seqfu cat --max-bp` is applied separately to each input file.
 - Clarified how `seqfu cat` handles mixed FASTA/FASTQ input and when to use `--fasta` or `--fastq`.
+
+--
+
+### Fixed
+
+- Fixed `fu-index` CASAVA comment parsing for read, filter, control, and index fields.
+- Made `--min-ratio` inclusive, so values exactly at the threshold now pass.
+- Made missing input files and invalid `--max-reads` / `--min-ratio` values return non-zero.
+- Updated `fu-index` to count reads in streaming mode instead of buffering sampled records.
