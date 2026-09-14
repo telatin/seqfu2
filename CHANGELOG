@@ -1,0 +1,10 @@
+### Fixed
+
+- Fixed `seqfu cat --basename --part` so invalid part indexes now fail cleanly instead of reading invalid memory.
+- Fixed `seqfu cat --max-ns` to match its help text: records are discarded only when they contain more than the requested number of Ns.
+- Improved `seqfu cat` trimming so the default path no longer copies sequence and quality strings unnecessarily.
+
+### Documentation
+
+- Clarified that `seqfu cat --max-bp` is applied separately to each input file.
+- Clarified how `seqfu cat` handles mixed FASTA/FASTQ input and when to use `--fasta` or `--fastq`.
