@@ -7,6 +7,8 @@ parent: Core Tools
 
 # seqfu less
 
+![Screenshot of "seqfu less"]({{site.baseurl}}/img/seqfu-less.png "SeqFu less example")
+
 *less* is an interactive pager for FASTA/FASTQ files, inspired by Unix `less`.
 It provides a full-screen terminal interface for browsing sequences with
 colored bases, quality visualization, and oligo search highlighting.
