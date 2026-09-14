@@ -116,20 +116,27 @@ proc filtRegs(regs: Table[string, int], regions: JsonNode, threshold = 0.66): se
     let coverage = float(counts) / float(regLen)
     if coverage >= threshold:
       result.add(region)
-    
+
     result.sort()
 
-proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string], regions: JsonNode): alignedRead =
+proc bestAlignment(readSeq, reference: string, alnOpt: swWeights): swAlignment =
   let
-    alignment_for = simpleSmithWaterman(R1.sequence, reference, alnOpt)
-    alignment_rev = simpleSmithWaterman(seqfuRevCompl(R1.sequence), reference, alnOpt)
-    alignment = if alignment_for.score >= alignment_rev.score: alignment_for
-                else: alignment_rev
- 
+    alignmentFor = simpleSmithWaterman(readSeq, reference, alnOpt)
+    alignmentRev = simpleSmithWaterman(seqfuRevCompl(readSeq), reference, alnOpt)
+
+  if alignmentFor.score >= alignmentRev.score:
+    result = alignmentFor
+  else:
+    result = alignmentRev
+
+proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string], regions: JsonNode, minCoverage: float): alignedRead =
+  let
+    alignment = bestAlignment(R1.sequence, reference, alnOpt)
+
   let
     regs = alnToRegs(alignment.targetStart, alignment.targetEnd, regionsDict)
   var
-    filtRegs = filtRegs(regs, regions, 0.500)
+    filtRegs = filtRegs(regs, regions, minCoverage)
 
   filtRegs.sort()
 
@@ -140,10 +147,10 @@ proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: s
     alignEnd:   alignment.targetEnd)
 
 
-proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string], regions: JsonNode): seq[alignedRead] =
+proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string], regions: JsonNode, minCoverage: float): seq[alignedRead] =
   for i in 0 ..< pool.high:
     try:
-      let regions =  processRead( pool[i], reference, opts, alnOpts, regionsDict, regions)
+      let regions =  processRead( pool[i], reference, opts, alnOpts, regionsDict, regions, minCoverage)
       result.add(regions)
     except Exception as e:
       stderr.writeLine("Exception raised while processing reads: ", e.msg)
@@ -233,7 +240,7 @@ proc main(argv: var seq[string]): int =
   else:
     if not fileExists($args["<FASTQ-File>"]):
       stderr.writeLine("Input file not found: ", $args["<FASTQ-File>"])
-      quit(0)
+      return 1
     else:
       inputFile = $args["<FASTQ-File>"]
       if bool(args["--verbose"]):
@@ -264,13 +271,13 @@ proc main(argv: var seq[string]): int =
     regFreqs = initCountTable[string]()
     index: seq[string]
   for R1 in readFQ(inputFile):
-    seqCounter += 1
-    if seqCounter > optMaxReads:
+    if seqCounter >= optMaxReads:
       if bool(args["--verbose"]):
         stderr.writeLine("# Reached max reads: ", optMaxReads)
       break
-    
-    let aln = simpleSmithWaterman(R1.sequence, ribosomalSeq, alnParameters)
+
+    seqCounter += 1
+    let aln = bestAlignment(R1.sequence, ribosomalSeq, alnParameters)
     let reg = alnToRegs(aln.targetStart, aln.targetEnd, regionsDict)
     let filt = filtRegs(reg, regions, optMinCoverage)
     let region = if len(filt) > 0: join(filt, ",")
@@ -287,9 +294,12 @@ proc main(argv: var seq[string]): int =
   for k in regFreqs.keys:
     index.add k
   regFreqs.sort()
-  
+
+  if seqCounter == 0:
+    return 0
+
   for region, hits in regFreqs:
-    let  ratio = hits / seqCounter
+    let ratio = float(hits) / float(seqCounter)
     if ratio > optMinClassRatio:
       echo  region, "\t", formatFloat(100 * ratio,format=ffDecimal,precision=2)
       break
