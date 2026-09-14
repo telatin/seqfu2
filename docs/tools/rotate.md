@@ -14,9 +14,9 @@ a new position or an oligonucleotide.
 Introduced with SeqFu 1.8.6.
 
 ```text
-sage:
-    fu-rotate [options] -i POS [<fastq-file>...]
-    fu-rotate [options] -m STR [<fastq-file>...]
+Usage:
+    seqfu rotate [options] -i POS [<fastq-file>...]
+    seqfu rotate [options] -m STR [<fastq-file>...]
 
   Rotate the sequences of one or more sequence files using 
   coordinates or motifs.

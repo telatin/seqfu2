@@ -27,6 +27,8 @@ Options:
   -b, --basename         prepend basename to sequence name
   -v, --verbose          Verbose output
   --quiet                Don't print warnings
+  --print-last           Print the last N sequences
+  --fatal                Consider invalid sequences as errors
   --help                 Show this help
 
 Output:

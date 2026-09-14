@@ -16,7 +16,7 @@ can be instructed to skip a number of sequences between each printed one.
 Usage: tail [options] [<inputfile> ...]
 
 Options:
-  -n, --num NUM          Print the first NUM sequences [default: 10]
+  -n, --num NUM          Print the last NUM sequences [default: 10]
   -k, --skip SKIP        Print one sequence every SKIP [default: 0]
   -p, --prefix STRING    Rename sequences with prefix + incremental number
   -s, --strip-comments   Remove comments

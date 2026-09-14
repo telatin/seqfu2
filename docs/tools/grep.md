@@ -79,12 +79,12 @@ CAGATAAAA
 
 if we scan for `TTTT` we will match the sequence, as it's in the reverse complement strand:
 ```
-seqfu -o TTTT file.fasta
+seqfu grep -o TTTT file.fasta
 ```
 
 We can also use IUPAC bases (N for any base, B for C, G or A...):
 ```
-seqfu -o TTTTNT file.fasta
+seqfu grep -o TTTTNT file.fasta
 ```
 
 ## Screenshot
