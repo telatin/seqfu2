@@ -97,8 +97,8 @@ fi
 
 : > "$TMP_SORT_DIR"/empty.fq.gz
 cp "$R1" "$TMP_SORT_DIR"/full.fq.gz
-SORT_COUNTS=$("$BINDIR"/seqfu count --sort counts "$TMP_SORT_DIR"/empty.fq.gz "$TMP_SORT_DIR"/full.fq.gz | cut -f 1 | paste -sd, -)
-SORT_COUNTS_REV=$("$BINDIR"/seqfu count --sort counts --reverse-sort "$TMP_SORT_DIR"/empty.fq.gz "$TMP_SORT_DIR"/full.fq.gz | cut -f 1 | paste -sd, -)
+SORT_COUNTS=$("$BINDIR"/seqfu count --sort counts "$TMP_SORT_DIR"/empty.fq.gz "$TMP_SORT_DIR"/full.fq.gz 2>/dev/null | cut -f 1 | paste -sd, -)
+SORT_COUNTS_REV=$("$BINDIR"/seqfu count --sort counts --reverse-sort "$TMP_SORT_DIR"/empty.fq.gz "$TMP_SORT_DIR"/full.fq.gz 2>/dev/null | cut -f 1 | paste -sd, -)
 if [[ "$SORT_COUNTS" == "$TMP_SORT_DIR/full.fq.gz,$TMP_SORT_DIR/empty.fq.gz" ]] && [[ "$SORT_COUNTS_REV" == "$TMP_SORT_DIR/empty.fq.gz,$TMP_SORT_DIR/full.fq.gz" ]]; then
     check_ok "Sort mode counts and --reverse-sort work as expected"
 else
