@@ -52,7 +52,7 @@ Filtering:
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
   --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
                          Negative values to print the last INT bases
-  --max-bp INT           Stop printing after INT bases [default: 0]
+  --max-bp INT           Stop printing each input file after INT bases [default: 0]
 
 Output:
   --fasta                Force FASTA output
@@ -74,9 +74,10 @@ by adding `-`.
 
 ## Output
 
-It is possible to mix FASTA and FASTQ files, and by default the program will produce a mixed output.
-Using `--fasta` or `--fastq` will force a specific output formats. For FASTA sequences a default quality values will be used.
+It is possible to pass both FASTA and FASTQ inputs, but `seqfu cat` keeps a single output format instead of producing a mixed stream.
+By default the first printed record selects the output format. Use `--fasta` to normalize mixed inputs to FASTA, or `--fastq` when FASTA records should be emitted with the default quality value.
 Using `--list` the simple list of records matching the criteria will be printed.
+When multiple input files are provided, `--max-bp` is applied separately to each input file.
 
 ## Anvi'o shortcut
 

@@ -19,6 +19,10 @@ proc get_ee(s: string): float =
       P = pow(10, ((-1 * Q) / 10))
     result += P
 
+proc countNs(s: string): int =
+  for c in s:
+    if c == 'N' or c == 'n':
+      result += 1
 
 proc addZeros(n: string, digits: int): string =
   result = $n
@@ -70,7 +74,7 @@ Filtering:
   --trim-tail INT        Trim INT base from the end of the sequence [default: 0]
   --truncate INT         Keep only the first INT bases, 0 to ignore  [default: 0]
                          Negative values to print the last INT bases
-  --max-bp INT           Stop printing after INT bases [default: 0]
+  --max-bp INT           Stop printing each input file after INT bases [default: 0]
 
 Output:
   --fasta                Force FASTA output
@@ -119,7 +123,7 @@ Output:
       splitPart : int
       separator:  string 
       minSeqLen,maxSeqLen: int
-      trimFront, trimEnd: int
+      trimFront, trimTail: int
       truncate: int
       basenameSeparatorString: string
       maxNs: int
@@ -147,7 +151,7 @@ Output:
       minSeqLen = parseInt($args["--min-len"])
       maxSeqLen = parseInt($args["--max-len"])
       trimFront = parseInt($args["--trim-front"])
-      trimEnd   = parseInt($args["--trim-tail"]) + 1
+      trimTail  = parseInt($args["--trim-tail"])
       truncate  = parseInt($args["--truncate"])
       splitChar = $args["--split"]
       splitPart = parseInt($args["--part"]) - 1
@@ -157,6 +161,14 @@ Output:
                else: ""
     except Exception as e:
       stderr.writeLine("Error: unexpected parameter value. ", e.msg)
+      quit(1)
+
+    if splitPart < 0:
+      stderr.writeLine("Error: --part must be >= 1.")
+      quit(1)
+
+    if trimFront < 0 or trimTail < 0:
+      stderr.writeLine("Error: --trim-front and --trim-tail must be >= 0.")
       quit(1)
 
 
@@ -267,15 +279,23 @@ Output:
             r.comment &= $args["--comment-sep"] & "initial_ee=" & get_ee(r.qual).formatFloat(ffDecimal, EE_DECIMAL_DIGITS)
 
           ## TRIM FRONT / TAIL
-          if trimFront > 0 or trimEnd > 0:
-            try:
-              r.seq = r.seq[trimFront .. ^trimEnd]
-              if len(r.qual) > 0:
-                r.qual = r.qual[trimFront .. ^trimEnd]
-            except Exception:
+          if trimFront > 0 or trimTail > 0:
+            let
+              originalLen = len(r.seq)
+              lastPos = originalLen - trimTail - 1
+
+            if trimFront < 0 or trimTail < 0 or originalLen == 0 or trimFront > lastPos:
               if verbose:
                 stderr.writeLine("WARNING: Trimming sequence failed: ", r.name, " len=", len(r.seq))
               continue
+            if len(r.qual) > 0 and len(r.qual) != originalLen:
+              if verbose:
+                stderr.writeLine("WARNING: Trimming sequence failed: ", r.name, " sequence/quality length mismatch")
+              continue
+
+            r.seq = r.seq[trimFront .. lastPos]
+            if len(r.qual) > 0:
+              r.qual = r.qual[trimFront .. lastPos]
           
           ## TRUNCATE
           ## Keep only the first INT bases, 0 to ignore 
@@ -304,7 +324,7 @@ Output:
             continue 
           
           ## Check for Ns
-          if maxNs >= 0 and r.seq.count("N") >= maxNs:
+          if maxNs >= 0 and r.seq.countNs() > maxNs:
             continue
 
           ## Check for EEs
@@ -349,7 +369,12 @@ Output:
           # Prepend basename if required
           if printBasename:
             if len(splitChar) > 0:
-              baseNamePrefix = lastPathPart(filename).split(splitChar)[splitPart]  
+              let basenameParts = lastPathPart(filename).split(splitChar)
+              if splitPart >= basenameParts.len:
+                stderr.writeLine("Error: --part ", splitPart + 1, " is out of range for basename '",
+                                 lastPathPart(filename), "' split by '", splitChar, "'.")
+                quit(1)
+              baseNamePrefix = basenameParts[splitPart]
             else:
               baseNamePrefix = lastPathPart(filename)  
 
