@@ -45,7 +45,7 @@ The output is a table with the following columns (`-H` to print the header):
 7. Ratio of **N** bases over total bases (`-c` to print raw counts)
 8. Ratio of **Other** characters (either IUPAC DNA or invalid chars) over total bases (`-c` to print raw counts)
 9. %GC ratio
-10. Ratio of **Uppercase** bases over total bases (if enabled by `-u`)
+10. Ratio of **Uppercase** bases over total bases
 
 ### Example
 
