@@ -47,9 +47,14 @@ var
   poolsize = 200
 
 type
+  regionSpan = object
+    name: string
+    start, stop: int
+
   alignedRead = object
     readname: string
     regions: seq[string]
+    intervalCall: string
     score: int
     alignStart, alignEnd: int
 
@@ -59,7 +64,7 @@ proc `$`(a: alignedRead): string =
                   else: "Fail"
     boundaries = if a.alignEnd > 0: $(a.alignStart) & ".." & $(a.alignEnd)
                   else: "NA"
-  a.readname & "\tscore:" & $(a.score) & "\talignment:" & boundaries & "\tregions:" & (a.regions).join(",") & "\t" & status
+  a.readname & "\tscore:" & $(a.score) & "\talignment:" & boundaries & "\tregions:" & (a.regions).join(",") & "\t" & status & "\tinterval_call:" & a.intervalCall
 
  
 let
@@ -77,6 +82,20 @@ proc regionsToDict(regions: JsonNode): Table[int, string] =
     if "start" in regions[n] and "end" in regions[n]:
       for i in countup(regions[n]["start"].getInt(), regions[n]["end"].getInt() ):
         result[i] = n
+
+proc regionsToSpans(regions: JsonNode): seq[regionSpan] =
+  for n in regions.keys:
+    if "start" in regions[n] and "end" in regions[n]:
+      result.add(regionSpan(
+        name: n,
+        start: regions[n]["start"].getInt(),
+        stop: regions[n]["end"].getInt()
+      ))
+
+  result.sort do (x, y: regionSpan) -> int:
+    result = cmp(x.start, y.start)
+    if result == 0:
+      result = cmp(x.name, y.name)
 
  
 
@@ -119,6 +138,53 @@ proc filtRegs(regs: Table[string, int], regions: JsonNode, threshold = 0.66): se
 
     result.sort()
 
+proc intervalText(alnStart, alnEnd: int): string =
+  if alnEnd > alnStart:
+    result = $alnStart & ".." & $alnEnd
+  else:
+    result = "NA"
+
+proc joinRegionRange(names: seq[string]): string =
+  if len(names) == 0:
+    result = "Unclassified"
+  elif len(names) == 1:
+    result = names[0]
+  else:
+    result = names[0] & "-" & names[^1]
+
+proc classifyInterval(alnStart, alnEnd: int, spans: seq[regionSpan], threshold: float): string =
+  if alnEnd <= alnStart:
+    return "Unclassified"
+
+  var
+    covered: seq[string]
+    partial: seq[string]
+
+  for span in spans:
+    let
+      overlapStart = max(alnStart, span.start)
+      overlapStop = min(alnEnd - 1, span.stop)
+    if overlapStop >= overlapStart:
+      let
+        overlap = overlapStop - overlapStart + 1
+        regionLen = span.stop - span.start + 1
+        coverage = float(overlap) / float(regionLen)
+      if coverage >= threshold:
+        covered.add(span.name)
+      else:
+        partial.add(span.name)
+
+  if len(covered) > 0:
+    result = joinRegionRange(covered)
+    if len(partial) > 0:
+      result &= "+partial-" & joinRegionRange(partial)
+  elif len(partial) == 1:
+    result = "partial-" & partial[0]
+  elif len(partial) > 1:
+    result = "ambiguous:" & partial.join("/")
+  else:
+    result = "Unclassified"
+
 proc bestAlignment(readSeq, reference: string, alnOpt: swWeights): swAlignment =
   let
     alignmentFor = simpleSmithWaterman(readSeq, reference, alnOpt)
@@ -129,7 +195,7 @@ proc bestAlignment(readSeq, reference: string, alnOpt: swWeights): swAlignment =
   else:
     result = alignmentRev
 
-proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string], regions: JsonNode, minCoverage: float): alignedRead =
+proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: swWeights, regionsDict: Table[int, string], regions: JsonNode, spans: seq[regionSpan], minCoverage: float): alignedRead =
   let
     alignment = bestAlignment(R1.sequence, reference, alnOpt)
 
@@ -142,15 +208,16 @@ proc processRead(R1: FQRecord, reference: string, opts: primerOptions, alnOpt: s
 
   result = alignedRead(readname: R1.name, 
     regions: filtRegs,
+    intervalCall: classifyInterval(alignment.targetStart, alignment.targetEnd, spans, minCoverage),
     score: alignment.score,
     alignStart: alignment.targetStart,
     alignEnd:   alignment.targetEnd)
 
 
-proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string], regions: JsonNode, minCoverage: float): seq[alignedRead] =
+proc processSequenceArray(pool: seq[FQRecord], reference: string, opts: primerOptions, alnOpts: swWeights, regionsDict: Table[int, string], regions: JsonNode, spans: seq[regionSpan], minCoverage: float): seq[alignedRead] =
   for i in 0 ..< pool.high:
     try:
-      let regions =  processRead( pool[i], reference, opts, alnOpts, regionsDict, regions, minCoverage)
+      let regions =  processRead( pool[i], reference, opts, alnOpts, regionsDict, regions, spans, minCoverage)
       result.add(regions)
     except Exception as e:
       stderr.writeLine("Exception raised while processing reads: ", e.msg)
@@ -262,6 +329,7 @@ proc main(argv: var seq[string]): int =
       minscore: optMinScore
     )
     regionsDict = regionsToDict(regions)
+    regionSpans = regionsToSpans(regions)
  
   if bool(args["--verbose"]):
     stderr.writeLine("# Starting. minfract=", optMinClassRatio, "; maxreads=", optMaxReads)
@@ -269,6 +337,7 @@ proc main(argv: var seq[string]): int =
   var
     seqCounter = 0
     regFreqs = initCountTable[string]()
+    intervalFreqs = initTable[string, CountTable[string]]()
     index: seq[string]
   for R1 in readFQ(inputFile):
     if seqCounter >= optMaxReads:
@@ -280,15 +349,20 @@ proc main(argv: var seq[string]): int =
     let aln = bestAlignment(R1.sequence, ribosomalSeq, alnParameters)
     let reg = alnToRegs(aln.targetStart, aln.targetEnd, regionsDict)
     let filt = filtRegs(reg, regions, optMinCoverage)
+    let intervalCall = classifyInterval(aln.targetStart, aln.targetEnd, regionSpans, optMinCoverage)
     let region = if len(filt) > 0: join(filt, ",")
                  else: "Unclassified"
     if bool(args["--verbose"]):
       #M05517:39:000000000-CNNWR:1:1105:7840:22808   score:2955  alignment:340..805  regions:V3,V4  Pass
       let status = if len(filt) > 0: "Pass"
                    else: "Fail"
-      stderr.writeLine(R1.name, "\t", "score:", aln.score, "\t", "alignment:", aln.targetStart, "..", aln.targetEnd, "\t", "regions:", region, "\t", status)
+      stderr.writeLine(R1.name, "\t", "score:", aln.score, "\t", "alignment:", intervalText(aln.targetStart, aln.targetEnd), "\t", "regions:", region, "\t", status, "\t", "interval_call:", intervalCall)
     
     regFreqs.inc(region)
+    var intervalCounts = if region in intervalFreqs: intervalFreqs[region]
+                         else: initCountTable[string]()
+    intervalCounts.inc(intervalCall)
+    intervalFreqs[region] = intervalCounts
   
 
   for k in regFreqs.keys:
@@ -301,7 +375,20 @@ proc main(argv: var seq[string]): int =
   for region, hits in regFreqs:
     let ratio = float(hits) / float(seqCounter)
     if ratio > optMinClassRatio:
-      echo  region, "\t", formatFloat(100 * ratio,format=ffDecimal,precision=2)
+      var
+        topInterval = "NA"
+        topIntervalHits = 0
+      if region in intervalFreqs:
+        for interval, intervalHits in intervalFreqs[region]:
+          if intervalHits > topIntervalHits or
+              (intervalHits == topIntervalHits and (topInterval == "NA" or interval < topInterval)):
+            topInterval = interval
+            topIntervalHits = intervalHits
+      let intervalRatio = if hits > 0: float(topIntervalHits) / float(hits)
+                          else: 0.0
+      echo  region, "\t", formatFloat(100 * ratio,format=ffDecimal,precision=2), "\t",
+            hits, "\t", seqCounter, "\t", topInterval, "\t",
+            formatFloat(100 * intervalRatio,format=ffDecimal,precision=2)
       break
 
 when isMainModule:
