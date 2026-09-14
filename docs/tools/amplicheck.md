@@ -10,6 +10,8 @@ parent: Core Tools
 report with DADA2-style quality-control recommendations. It does not run DADA2
 or R.
 
+![Screenshot of "seqfu amplicheck"]({{site.baseurl}}/img/seqfu-amplicheck.png "SeqFu amplicheck report")
+
 ```text
 Usage:
   amplicheck [options] <FASTQ>...
@@ -92,6 +94,12 @@ paged sample table with quality-report links and summary fields such as primer
 detection, read counts, mean quality, average overlap, merge rate, and suggested
 truncation settings. `--plot` can also be used as the only output format with
 `--no-json`.
+
+Example outputs:
+
+- [report.json]({{site.baseurl}}/amplicheck/report.json)
+- [report.txt]({{site.baseurl}}/amplicheck/report.txt)
+- [plots/index.html]({{site.baseurl}}/amplicheck/plots/index.html)
 
 The JSON report includes:
 

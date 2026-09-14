@@ -1,0 +1,30 @@
+Sample: A01_S0_L001
+  R1: /Users/telatina/git/dadaist2/data/16S/A01_S0_L001_R1_001.fastq.gz
+  R2: /Users/telatina/git/dadaist2/data/16S/A01_S0_L001_R2_001.fastq.gz
+  Reads: scanned=6137 sampled=6137
+  Primers: R1=341F CCTACGGGNGGCWGCAG; R2=785R/805R GACTACHVGGGTATCTAATCC; orientation_consistent=true
+  Length: R1 mean=301.0 sd=0.0 mode=301; R2 mean=301.0 sd=0.0 mode=301
+  Quality: R1 mean=33.4 distinct=32 skipped_long=0; R2 mean=31.9 distinct=33 skipped_long=0
+  Overlap: merged=4455/6137 unmergeable=27.4% mean_overlap=140.1 mean_identity=97.7%
+  Recommendation: strategy=fixed_truncLen truncLen=(297,238) truncQ=2 maxEE=(2.0,3.0)
+
+Sample: A02_S0_L001
+  R1: /Users/telatina/git/dadaist2/data/16S/A02_S0_L001_R1_001.fastq.gz
+  R2: /Users/telatina/git/dadaist2/data/16S/A02_S0_L001_R2_001.fastq.gz
+  Reads: scanned=5414 sampled=5414
+  Primers: R1=341F CCTACGGGNGGCWGCAG; R2=785R/805R GACTACHVGGGTATCTAATCC; orientation_consistent=true
+  Length: R1 mean=301.0 sd=0.0 mode=301; R2 mean=301.0 sd=0.0 mode=301
+  Quality: R1 mean=33.4 distinct=32 skipped_long=0; R2 mean=32.3 distinct=33 skipped_long=0
+  Overlap: merged=4115/5414 unmergeable=24.0% mean_overlap=138.7 mean_identity=97.9%
+  Recommendation: strategy=fixed_truncLen truncLen=(300,251) truncQ=2 maxEE=(2.0,3.0)
+
+Sample: F99_S0_L001
+  R1: /Users/telatina/git/dadaist2/data/16S/F99_S0_L001_R1_001.fastq.gz
+  R2: /Users/telatina/git/dadaist2/data/16S/F99_S0_L001_R2_001.fastq.gz
+  Reads: scanned=4553 sampled=4553
+  Primers: R1=341F CCTACGGGNGGCWGCAG; R2=785R/805R GACTACHVGGGTATCTAATCC; orientation_consistent=true
+  Length: R1 mean=301.0 sd=0.0 mode=301; R2 mean=301.0 sd=0.0 mode=301
+  Quality: R1 mean=33.6 distinct=32 skipped_long=0; R2 mean=32.0 distinct=33 skipped_long=0
+  Overlap: merged=3513/4553 unmergeable=22.8% mean_overlap=138.5 mean_identity=97.7%
+  Recommendation: strategy=fixed_truncLen truncLen=(300,238) truncQ=2 maxEE=(2.0,3.0)
+

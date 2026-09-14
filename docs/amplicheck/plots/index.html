@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SeqFu amplicheck plots</title>
+  <style>
+    :root {
+      --acid-green: #B6BE00;
+      --dark-green: #097E74;
+      --charcoal: #2F3D46;
+      --bg: #f4f6f5;
+      --card: #ffffff;
+      --grid: rgba(47,61,70,.16);
+      --muted: rgba(47,61,70,.70);
+    }
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; background: var(--bg); color: var(--charcoal); }
+    header { padding: 1rem 1.25rem; background: var(--charcoal); color: white; border-bottom: 5px solid var(--dark-green); }
+    main { max-width: 1280px; margin: 0 auto; padding: 1rem; }
+    .toolbar { display: flex; gap: .75rem; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 0 0 .8rem; }
+    .toolbar label { display: inline-flex; gap: .4rem; align-items: center; font-size: .92rem; color: var(--muted); }
+    input, select { border: 1px solid rgba(47,61,70,.24); border-radius: 6px; padding: .45rem .55rem; color: var(--charcoal); background: white; font: inherit; }
+    input { min-width: min(360px, 80vw); }
+    .table-wrap { background: var(--card); border-radius: 8px; box-shadow: 0 1px 8px rgba(47,61,70,.10); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1120px; }
+    th, td { border-bottom: 1px solid var(--grid); padding: .55rem .65rem; text-align: left; vertical-align: top; font-size: .9rem; }
+    th { background: rgba(9,126,116,.09); position: sticky; top: 0; z-index: 1; }
+    th button { appearance: none; border: 0; background: transparent; color: var(--charcoal); font: inherit; font-weight: 700; padding: 0; cursor: pointer; text-align: left; }
+    th button .mark { color: var(--dark-green); margin-left: .25rem; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    td.status { font-weight: 700; text-transform: uppercase; }
+    a { color: var(--dark-green); font-weight: 700; }
+    .muted { color: var(--muted); }
+    .pager { display: flex; gap: .55rem; align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-top: .8rem; }
+    .pager button { border: 1px solid rgba(47,61,70,.24); border-radius: 6px; background: white; color: var(--charcoal); padding: .45rem .7rem; font: inherit; cursor: pointer; }
+    .pager button:disabled { opacity: .45; cursor: default; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SeqFu amplicheck plots</h1>
+    <div class="muted" style="color:rgba(255,255,255,.82)">Sample summary and quality report links</div>
+  </header>
+  <main>
+    <div class="toolbar">
+      <label>Filter <input id="filter" type="search" autocomplete="off" placeholder="sample, primer, strategy" /></label>
+      <label>Rows <select id="pageSize"><option>10</option><option selected>25</option><option>50</option><option>100</option><option value="0">All</option></select></label>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span id="count" class="muted"></span>
+      <button type="button" id="prev">Previous</button>
+      <span id="page" class="muted"></span>
+      <button type="button" id="next">Next</button>
+    </div>
+  </main>
+<script>
+const INDEX_ROWS = [{"sample_id":"A01_S0_L001","filename":"A01_S0_L001.html","n_reads_total":6137,"n_reads_scanned":6137,"n_reads_sampled":6137,"primers_status":"yes","primer_labels":"R1=341F; R2=785R/805R","primer_orientation_ok":true,"r1_length_mean":301.0,"r2_length_mean":301.0,"r1_quality_mean":33.38367356219045,"r2_quality_mean":31.942685210398015,"overlap_mean":140.12210998877666,"merge_rate_pct":72.59247189180381,"unmergeable_pct":27.407528108196185,"trunc_len":"297,238","strategy":"fixed_truncLen"},{"sample_id":"A02_S0_L001","filename":"A02_S0_L001.html","n_reads_total":5414,"n_reads_scanned":5414,"n_reads_sampled":5414,"primers_status":"yes","primer_labels":"R1=341F; R2=785R/805R","primer_orientation_ok":true,"r1_length_mean":301.0,"r2_length_mean":301.0,"r1_quality_mean":33.35897948839418,"r2_quality_mean":32.280795943088364,"overlap_mean":138.67582017010935,"merge_rate_pct":76.00664942741042,"unmergeable_pct":23.993350572589584,"trunc_len":"300,251","strategy":"fixed_truncLen"},{"sample_id":"F99_S0_L001","filename":"F99_S0_L001.html","n_reads_total":4553,"n_reads_scanned":4553,"n_reads_sampled":4553,"primers_status":"yes","primer_labels":"R1=341F; R2=785R/805R","primer_orientation_ok":true,"r1_length_mean":301.0,"r2_length_mean":301.0,"r1_quality_mean":33.61524619961429,"r2_quality_mean":31.960524001917616,"overlap_mean":138.4602903501281,"merge_rate_pct":77.15791785635845,"unmergeable_pct":22.842082143641555,"trunc_len":"300,238","strategy":"fixed_truncLen"}];
+const COLUMNS = [
+  { key: 'sample_id', label: 'Sample', type: 'text' },
+  { key: 'filename', label: 'Quality', type: 'link' },
+  { key: 'primers_status', label: 'Primers', type: 'status' },
+  { key: 'primer_labels', label: 'Primer labels', type: 'text' },
+  { key: 'n_reads_total', label: 'Tot reads', type: 'number', nullText: 'unknown' },
+  { key: 'n_reads_scanned', label: 'Scanned', type: 'number' },
+  { key: 'n_reads_sampled', label: 'Sampled', type: 'number' },
+  { key: 'r1_length_mean', label: 'R1 len', type: 'number', digits: 1 },
+  { key: 'r2_length_mean', label: 'R2 len', type: 'number', digits: 1 },
+  { key: 'r1_quality_mean', label: 'R1 Q', type: 'number', digits: 1 },
+  { key: 'r2_quality_mean', label: 'R2 Q', type: 'number', digits: 1 },
+  { key: 'overlap_mean', label: 'Avg overlap', type: 'number', digits: 1 },
+  { key: 'merge_rate_pct', label: 'Merge %', type: 'number', digits: 1 },
+  { key: 'unmergeable_pct', label: 'Unmergeable %', type: 'number', digits: 1 },
+  { key: 'trunc_len', label: 'truncLen', type: 'text' },
+  { key: 'strategy', label: 'Strategy', type: 'text' }
+];
+const state = { sortKey: 'sample_id', sortDir: 1, page: 1, pageSize: 25, filter: '' };
+const $ = id => document.getElementById(id);
+
+window.addEventListener('load', () => {
+  buildHeader();
+  $('filter').addEventListener('input', e => { state.filter = e.target.value.toLowerCase(); state.page = 1; render(); });
+  $('pageSize').addEventListener('change', e => { state.pageSize = Number(e.target.value); state.page = 1; render(); });
+  $('prev').addEventListener('click', () => { if (state.page > 1) { state.page--; render(); } });
+  $('next').addEventListener('click', () => { state.page++; render(); });
+  render();
+});
+
+function buildHeader() {
+  const head = $('head');
+  for (const col of COLUMNS) {
+    const th = document.createElement('th');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.sort = col.key;
+    button.append(document.createTextNode(col.label));
+    const mark = document.createElement('span');
+    mark.className = 'mark';
+    button.append(mark);
+    button.addEventListener('click', () => sortBy(col.key));
+    th.append(button);
+    head.append(th);
+  }
+}
+
+function sortBy(key) {
+  if (state.sortKey === key) state.sortDir *= -1;
+  else { state.sortKey = key; state.sortDir = 1; }
+  state.page = 1;
+  render();
+}
+
+function filteredRows() {
+  const needle = state.filter;
+  let rows = INDEX_ROWS;
+  if (needle) {
+    rows = rows.filter(row => [
+      row.sample_id, row.primers_status, row.primer_labels, row.strategy, row.trunc_len
+    ].join(' ').toLowerCase().includes(needle));
+  }
+  return rows.slice().sort((a, b) => compareValues(a[state.sortKey], b[state.sortKey]) * state.sortDir);
+}
+
+function compareValues(a, b) {
+  if (a === null || a === undefined || a === '') return (b === null || b === undefined || b === '') ? 0 : 1;
+  if (b === null || b === undefined || b === '') return -1;
+  if (typeof a === 'number' && typeof b === 'number') return a === b ? 0 : (a < b ? -1 : 1);
+  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+}
+
+function render() {
+  const rows = filteredRows();
+  const pageSize = state.pageSize === 0 ? rows.length || 1 : state.pageSize;
+  const pages = Math.max(1, Math.ceil(rows.length / pageSize));
+  if (state.page > pages) state.page = pages;
+  const start = (state.page - 1) * pageSize;
+  const pageRows = rows.slice(start, start + pageSize);
+  renderSortMarks();
+  renderBody(pageRows);
+  $('count').textContent = `${rows.length.toLocaleString()} samples`;
+  $('page').textContent = `Page ${state.page} of ${pages}`;
+  $('prev').disabled = state.page <= 1;
+  $('next').disabled = state.page >= pages;
+}
+
+function renderSortMarks() {
+  document.querySelectorAll('th button').forEach(button => {
+    const mark = button.querySelector('.mark');
+    mark.textContent = button.dataset.sort === state.sortKey ? (state.sortDir > 0 ? '^' : 'v') : '';
+  });
+}
+
+function renderBody(rows) {
+  const body = $('body');
+  body.textContent = '';
+  if (!rows.length) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = COLUMNS.length;
+    td.className = 'muted';
+    td.textContent = 'No samples match the current filter.';
+    tr.append(td);
+    body.append(tr);
+    return;
+  }
+  for (const row of rows) {
+    const tr = document.createElement('tr');
+    for (const col of COLUMNS) tr.append(cell(row, col));
+    body.append(tr);
+  }
+}
+
+function cell(row, col) {
+  const td = document.createElement('td');
+  if (col.type === 'number') td.className = 'num';
+  if (col.type === 'status') td.className = 'status';
+  if (col.type === 'link') {
+    const a = document.createElement('a');
+    a.href = row.filename;
+    a.textContent = 'heatmap';
+    td.append(a);
+    return td;
+  }
+  td.textContent = formatValue(row[col.key], col);
+  return td;
+}
+
+function formatValue(value, col) {
+  if (value === null || value === undefined || value === '') return col.nullText || 'n/a';
+  if (col.type === 'number') {
+    const opts = { maximumFractionDigits: col.digits || 0 };
+    if (col.digits) opts.minimumFractionDigits = col.digits;
+    return Number(value).toLocaleString(undefined, opts);
+  }
+  return String(value);
+}
+</script>
+</body>
+</html>
