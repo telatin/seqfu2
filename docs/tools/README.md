@@ -12,37 +12,45 @@ Each of the following tools can be invoked as a subcommand of *SeqFu*.
 Invoking `seqfu` will display a list of internal commands:
 
 ```text
-SeqFu - Sequence Fastx Utilities
+      ____             _____      
+     / ___|  ___  __ _|  ___|   _ 
+     \___ \ / _ \/ _` | |_ | | | |
+      ___) |  __/ (_| |  _|| |_| |
+     |____/ \___|\__, |_|   \__,_|
+                    |_|           
+  · amplicheck          : QC paired-end amplicon FASTQ files
+  · bases               : count bases in FASTA/FASTQ files
+  · check               : check FASTQ file for errors
+  · count [c]           : count FASTA/FASTQ reads, pair-end aware
+  · deinterleave [dei]  : deinterleave FASTQ
+  · derep [der]         : feature-rich dereplication of FASTA/FASTQ files
+  · interleave [ilv]    : interleave FASTQ pair ends
+  · lanes [ill]         : merge Illumina lanes
+  · list [lst]          : print sequences from a list of names
+  · merge [mrg]         : merge paired-end FASTQ reads
+  · metadata [met]      : print a table of FASTQ reads (mapping files)
+  · msa                 : interactive multiple sequence alignment viewer
+  · orf                 : extract ORFs from nucleotide sequences
+  · rotate [rot]        : rotate a sequence with a new start position
+  · shred               : systematically shred sequences into reads
+  · sort [srt]          : sort sequences by size (uniques)
+  · stats [st]          : statistics on sequence lengths
+  · subtract            : print sequences in <file1> absent from <file2>
+  · tofasta             : convert multiple formats to FASTA
+  · trim                : trim FASTQ sequences based on quality
 
-        • amplicheck          : QC paired-end amplicon FASTQ files
-        • bases               : count bases in FASTA/FASTQ files
-        • cat                 : concatenate FASTA/FASTQ files
-        • check               : check FASTQ file for errors
-        • count [c]           : count FASTA/FASTQ reads, pair-end aware
-        • deinterleave [dei]  : deinterleave FASTQ
-        • derep [der]         : feature-rich dereplication of FASTA/FASTQ files
-        • grep                : select sequences with patterns
-        • head                : print first sequences
-        • interleave [ilv]    : interleave FASTQ pair ends
-        • lanes [mrl]         : merge Illumina lanes
-        • less                : interactive viewer for sequences
-        • list [lst]          : print sequences from a list of names
-        • metadata [met]      : print a table of FASTQ reads (mapping files)
-        • msa                 : interactive multiple sequence alignment viewer
-        • orf                 : extract ORFs from nucleotide sequences
-        • qual                : inspect quality scores
-        • rc                  : reverse complement strings or files
-        • rotate [rot]        : rotate a sequence with a new start position
-        • sort [srt]          : sort sequences by size (uniques)
-        • stats [st]          : statistics on sequence lengths
-        • tabcheck            : validate TSV/CSV field consistency
-        • tabulate [tab]      : tabulate reads to TSV (and viceversa)
-        • tail                : view last sequences
-        • tofasta             : convert multiple formats to FASTA
-        • trim                : trim FASTQ sequences based on quality
-        • view                : view sequences with colored quality and oligo matches
+  · cat                 : concatenate FASTA/FASTQ files
+  · grep                : select sequences with patterns
+  · head                : print first sequences
+  · less                : interactive viewer for sequences (like less)
+  · rc                  : reverse complement strings or files
+  · tab                 : tabulate reads to TSV (and viceversa)
+  · tabcheck            : validate TSV/CSV field consistency
+  · tail                : view last sequences
+  · view                : view sequences with colored quality and oligo matches
 
-Add --help after each command to print usage.
+Type 'seqfu version' or 'seqfu cite' to print the version and paper, respectively.
+Add --help after each command to print its usage.
 ```
 
 
