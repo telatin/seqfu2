@@ -29,9 +29,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup nim
-        uses: jiro4989/setup-nim-action@v1
+        uses: jiro4989/setup-nim-action@v2
         with:
-          nim-version: 2.0.x
+          nim-version: 2.2.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies

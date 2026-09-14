@@ -1,19 +1,25 @@
+### Added
+
+- `seqfu merge`: `--threads`, `--batch-size`, `--qual-method`, `--search`, `--min-len` and `--max-len` for tuning merge behaviour.
+- `seqfu merge`: verbose reporting of reads discarded by merged-read length filters.
+- `merge [mrg]` now listed in the main `seqfu --help` command list.
+
+### Changed
+
+- `seqfu merge` reworked for paired-end FASTQ merging: quality-aware consensus, posterior Phred recalculation, and multithreaded batch processing via `malebolgia`.
+- `seqfu cat`: default trimming path no longer copies sequence and quality strings unnecessarily.
+- `fu-index`: reads are counted in streaming mode rather than buffering sampled records.
+- `fu-index --min-ratio` is now inclusive, so values exactly at the threshold pass.
+- `fu-index` returns a non-zero exit code for missing input files and invalid `--max-reads` / `--min-ratio` values.
+
 ### Fixed
 
-- Fixed `seqfu cat --basename --part` so invalid part indexes now fail cleanly instead of reading invalid memory.
-- Fixed `seqfu cat --max-ns` to match its help text: records are discarded only when they contain more than the requested number of Ns.
-- Improved `seqfu cat` trimming so the default path no longer copies sequence and quality strings unnecessarily.
+- `seqfu cat --basename --part`: invalid part indexes now fail cleanly instead of reading invalid memory.
+- `seqfu cat --max-ns` now matches its help text  records are discarded only when they contain *more* than the requested number of Ns.
+- `seqfu merge`: overlap scoring no longer rejects valid overlaps with early mismatches.
+- `fu-index`: CASAVA comment parsing for read, filter, control and index fields.
 
 ### Documentation
 
-- Clarified that `seqfu cat --max-bp` is applied separately to each input file.
-- Clarified how `seqfu cat` handles mixed FASTA/FASTQ input and when to use `--fasta` or `--fastq`.
-
---
-
-### Fixed
-
-- Fixed `fu-index` CASAVA comment parsing for read, filter, control, and index fields.
-- Made `--min-ratio` inclusive, so values exactly at the threshold now pass.
-- Made missing input files and invalid `--max-reads` / `--min-ratio` values return non-zero.
-- Updated `fu-index` to count reads in streaming mode instead of buffering sampled records.
+- `seqfu cat --max-bp` is applied separately to each input file.
+- How `seqfu cat` handles mixed FASTA/FASTQ input, and when to use `--fasta` or `--fastq`.

@@ -3,7 +3,7 @@
 
 # SeqFu
 
-[![Seqfu-Nim-Build](https://github.com/telatin/seqfu2/actions/workflows/nim-2.yaml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nim-2.yaml)
+[![Seqfu-Make-Build](https://github.com/telatin/seqfu2/actions/workflows/make.yaml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/make.yaml)
 ![Last Commit](https://img.shields.io/github/last-commit/telatin/seqfu2)
 [![Downloads](https://img.shields.io/conda/dn/bioconda/seqfu)](https://bioconda.github.io/recipes/seqfu/README.html)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
@@ -82,4 +82,3 @@ Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.
 ## Splash screen
 
 ![`seqfu`](docs/img/screenshot-seqfu.png "SeqFu")
-

@@ -10,7 +10,7 @@ nav_order: 1
 
 # SeqFu
 
-[![Seqfu-Nim-Build](https://github.com/telatin/seqfu2/actions/workflows/nim-2.yaml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nim-2.yaml)
+[![Seqfu-Make-Build](https://github.com/telatin/seqfu2/actions/workflows/make.yaml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/make.yaml)
 [![pages-build-deployment](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment)
 [![GitHub Stars](https://img.shields.io/github/stars/telatin/seqfu2?label=⭐️)](https://github.com/telatin/seqfu2)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)

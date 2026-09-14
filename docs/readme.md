@@ -11,7 +11,7 @@ nav_exclude: true
 
 # SeqFu
 
-[![Seqfu-Nim-Build](https://github.com/telatin/seqfu2/actions/workflows/nim-2.yaml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/nim-2.yaml)
+[![Seqfu-Make-Build](https://github.com/telatin/seqfu2/actions/workflows/make.yaml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/make.yaml)
 [![pages-build-deployment](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment)
 [![GitHub Stars](https://img.shields.io/github/stars/telatin/seqfu2?label=%E2%AD%90%EF%B8%8F)](https://github.com/telatin/seqfu2)
 [![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
@@ -42,4 +42,3 @@ conda install -c conda-forge -c bioconda "seqfu>1.0"
 Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust
 and Reproducible Manipulation of Sequence Files*.
 Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
-
