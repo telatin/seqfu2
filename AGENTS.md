@@ -2,7 +2,7 @@
 
 This file is the canonical agent guide for this repository. It consolidates the
 older `AGENTS.md` and `CLAUDE.md` guidance into one source of truth for coding
-agents working on SeqFu.
+agents working on SeqFu (`CLAUDE.md` is now a symlink to this file).
 
 ## Project Overview
 
@@ -27,7 +27,6 @@ make clean                   # Remove compiled build targets from bin/
 nimble build                 # Build Nim namedBin targets through Nimble
 bash test/mini.sh            # Run the bash integration suite
 bash test/mini.sh grep       # Run a focused module test where supported
-cd test && bats bats_0.bats  # Run BATS tests
 ```
 
 When a restricted environment blocks Nim cache writes, use a writable cache, for
