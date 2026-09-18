@@ -227,7 +227,7 @@ proc renderVerboseSummary*(report: AmplicheckReport): string =
       primerParts.add(name)
     if primerParts.len > 0:
       parts.add("primers=" & primerParts.join("/"))
-  fmt"amplicheck: {report.sampleId}: done: {parts.join(\" \")}" & "\n"
+  "amplicheck: " & report.sampleId & ": done: " & parts.join(" ") & "\n"
 
 proc safeName(s: string): string =
   for c in s:
