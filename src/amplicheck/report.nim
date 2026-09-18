@@ -209,43 +209,25 @@ proc maxEEText(values: seq[float]): string =
   parts.join(",")
 
 proc renderVerboseSummary*(report: AmplicheckReport): string =
-  result.add(fmt"amplicheck: sample {report.sampleId}: summary" & "\n")
-  let totalText =
-    if report.nReadsTotalKnown: $report.nReadsScanned
-    else: "unknown"
-  result.add(fmt"  reads: scanned={report.nReadsScanned} sampled={report.nReadsSampled} total={totalText}" & "\n")
-
-  if report.lengthEnabled:
-    if report.layout == rlSingleEnd:
-      result.add(fmt"  length: mean={report.lengthR1.mean:.1f} mode={report.lengthR1.mode} range={report.lengthR1.min}-{report.lengthR1.max}" & "\n")
-    else:
-      result.add(fmt"  length: R1 mean={report.lengthR1.mean:.1f} mode={report.lengthR1.mode} range={report.lengthR1.min}-{report.lengthR1.max}; R2 mean={report.lengthR2.mean:.1f} mode={report.lengthR2.mode} range={report.lengthR2.min}-{report.lengthR2.max}" & "\n")
-
-  if report.qualityEnabled:
-    if report.layout == rlSingleEnd:
-      result.add(fmt"  quality: mean={report.qualityR1.meanQuality:.1f} cycles={report.qualityR1.perPositionMean.len} skipped_long={report.qualityR1.skippedTooLong}" & "\n")
-    else:
-      result.add(fmt"  quality: R1 mean={report.qualityR1.meanQuality:.1f} cycles={report.qualityR1.perPositionMean.len} skipped_long={report.qualityR1.skippedTooLong}; R2 mean={report.qualityR2.meanQuality:.1f} cycles={report.qualityR2.perPositionMean.len} skipped_long={report.qualityR2.skippedTooLong}" & "\n")
-
-  if report.primersEnabled:
-    if report.layout == rlSingleEnd:
-      result.add(fmt"  primer: read={primerText(report.primers.r1)}; direction={report.primers.r1.direction}" & "\n")
-    else:
-      result.add(fmt"  primers: R1={primerText(report.primers.r1)}; R2={primerText(report.primers.r2)}; orientation_consistent={report.primers.orientationConsistent}" & "\n")
-
+  var parts: seq[string]
+  parts.add(fmt"scanned={report.nReadsScanned}")
   if report.mergeEnabled:
-    result.add(fmt"  overlap: merged={report.merge.merged}/{report.merge.attempted} unmergeable={report.merge.pctUnmergeable:.1f}% mean_overlap={report.merge.overlapMean:.1f} mean_identity={report.merge.identityMean:.1f}%" & "\n")
-
-  if report.sweepEnabled:
-    result.add(fmt"  sweep: combos={report.sweep.combos.len} best_truncLen=({report.sweep.best.truncLenFwd},{report.sweep.best.truncLenRev}) best_maxEE={report.sweep.best.maxEE} retained={report.sweep.best.retentionPct:.1f}% merged={report.sweep.best.mergeRatePct:.1f}%" & "\n")
-
-  if report.recommendationEnabled:
-    if report.layout == rlSingleEnd:
-      result.add(fmt"  recommendation: strategy={report.recommendation.strategy} truncLen={report.recommendation.truncLenFwd} truncQ={report.recommendation.truncQ} maxEE={maxEEText(report.recommendation.maxEE)}" & "\n")
-    else:
-      result.add(fmt"  recommendation: strategy={report.recommendation.strategy} truncLen=({report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}) truncQ={report.recommendation.truncQ} maxEE=({maxEEText(report.recommendation.maxEE)})" & "\n")
-  elif report.lengthEnabled and report.qualityEnabled:
-    result.add(fmt"  recommendation: not emitted; sampled={report.nReadsSampled} required={report.minRecommendReads}" & "\n")
+    let mergePct = 100.0 - report.merge.pctUnmergeable
+    parts.add(fmt"merged={mergePct:.1f}%")
+    parts.add(fmt"overlap={report.merge.overlapMean:.1f}")
+  if report.primersEnabled:
+    var primerParts: seq[string]
+    if report.primers.r1.supportFraction > 0.7:
+      let name = if report.primers.r1.label.len > 0: report.primers.r1.label
+                 else: report.primers.r1.primer
+      primerParts.add(name)
+    if report.layout == rlPairedEnd and report.primers.r2.supportFraction > 0.7:
+      let name = if report.primers.r2.label.len > 0: report.primers.r2.label
+                 else: report.primers.r2.primer
+      primerParts.add(name)
+    if primerParts.len > 0:
+      parts.add("primers=" & primerParts.join("/"))
+  fmt"amplicheck: {report.sampleId}: done: {parts.join(\" \")}" & "\n"
 
 proc safeName(s: string): string =
   for c in s:

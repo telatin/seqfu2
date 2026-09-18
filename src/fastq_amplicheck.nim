@@ -344,6 +344,9 @@ Other options:
         start = 0
       while start < jobs.len:
         let stopAt = min(start + parallelChunk, jobs.len)
+        if opts.verbose:
+          for i in start ..< stopAt:
+            stderr.writeLine("amplicheck: starting ", jobs[i].input.sampleId)
         master.awaitAll:
           for i in start ..< stopAt:
             master.spawn processAmplicheckJob(addr jobs[i], opts, true)
@@ -359,6 +362,8 @@ Other options:
         start = stopAt
     else:
       for i in 0 ..< jobs.len:
+        if opts.verbose:
+          stderr.writeLine("amplicheck: starting ", jobs[i].input.sampleId)
         processAmplicheckJob(addr jobs[i], opts, false)
         if jobs[i].errorMsg.len > 0:
           stderr.writeLine("ERROR: sample ", jobs[i].input.sampleId,
