@@ -3,7 +3,8 @@ AMP_ERR="$TMP_AMPLICHECK_DIR/err.log"
 
 AMP_SINGLE_OUT="$TMP_AMPLICHECK_DIR/single"
 "$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz \
-  --max-reads 0 --subsample 0.5 --outdir "$AMP_SINGLE_OUT" --text --plot -v \
+  --max-reads 0 --subsample 0.5 --min-recommend-reads 1 \
+  --outdir "$AMP_SINGLE_OUT" --text --plot -v \
   > /dev/null 2>"$AMP_ERR"
 RET=$?
 R2_NULLS=$(grep -c '"r2": null' "$AMP_SINGLE_OUT/report.json" 2>/dev/null || true)
@@ -161,7 +162,8 @@ fi
 
 AMP_ART_OUT="$TMP_AMPLICHECK_DIR/art"
 "$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/art_R2.fq.gz \
-  --max-reads 0 --subsample 0.5 --outdir "$AMP_ART_OUT" --text > /dev/null 2>"$AMP_ERR"
+  --max-reads 0 --subsample 0.5 --min-recommend-reads 1 \
+  --outdir "$AMP_ART_OUT" --text > /dev/null 2>"$AMP_ERR"
 RET=$?
 MSG="amplicheck direct pair writes JSON/text and honors --max-reads 0 with --subsample"
 if [[ $RET -eq 0 ]] && \
@@ -198,7 +200,8 @@ fi
 
 AMP_VERBOSE_OUT="$TMP_AMPLICHECK_DIR/verbose"
 "$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/art_R2.fq.gz \
-  --max-reads 4 --subsample 0.5 --only length,quality,merge --no-json --text -v \
+  --max-reads 4 --subsample 0.5 --min-recommend-reads 1 \
+  --only length,quality,merge --no-json --text -v \
   --outdir "$AMP_VERBOSE_OUT" > /dev/null 2>"$AMP_ERR"
 RET=$?
 MSG="amplicheck verbose mode reports progress and sample summary"
@@ -283,6 +286,60 @@ if [[ $RET -eq 0 ]] && \
    grep -q '"fwd_label": "341F"' "$AMP_16S_OUT/report.json" && \
    grep -q '"rev_label": "785R/805R"' "$AMP_16S_OUT/report.json" && \
    grep -q '"orientation_consistent": true' "$AMP_16S_OUT/report.json"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_CUSTOM_OUT="$TMP_AMPLICHECK_DIR/custom-primers"
+"$BIN" amplicheck "$FILES"/primers/16S_R1.fq.gz "$FILES"/primers/16S_R2.fq.gz \
+  --max-reads 100 --only primers \
+  --fwd-primers CCTACGGGNGGCWGCAG \
+  --rev-primers GACTACHVGGGTATCTAATCC \
+  --outdir "$AMP_CUSTOM_OUT" > /dev/null 2>"$AMP_ERR"
+RET=$?
+MSG="amplicheck checks only user-supplied primers when provided"
+if [[ $RET -eq 0 ]] && \
+   grep -q '"fwd_label": "custom_fwd_1"' "$AMP_CUSTOM_OUT/report.json" && \
+   grep -q '"rev_label": "custom_rev_1"' "$AMP_CUSTOM_OUT/report.json" && \
+   ! grep -q '"fwd_label": "341F"' "$AMP_CUSTOM_OUT/report.json" && \
+   ! grep -q '"rev_label": "785R/805R"' "$AMP_CUSTOM_OUT/report.json"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_LOW_SUPPORT_OUT="$TMP_AMPLICHECK_DIR/low-primer-support"
+"$BIN" amplicheck "$FILES"/primers/small.fq --only primers \
+  --fwd-primers CCTACGGGAGGCTGCAGAAGCAAGTGGCAC \
+  --outdir "$AMP_LOW_SUPPORT_OUT" > /dev/null 2>"$AMP_ERR"
+RET=$?
+MSG="amplicheck rejects primer calls without substantial read support"
+if [[ $RET -eq 0 ]] && \
+   grep -q '"detected": false' "$AMP_LOW_SUPPORT_OUT/report.json" && \
+   grep -q '"support_count": 1' "$AMP_LOW_SUPPORT_OUT/report.json" && \
+   grep -q '"consensus": "CCTAC' "$AMP_LOW_SUPPORT_OUT/report.json"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_MIN_REC_OUT="$TMP_AMPLICHECK_DIR/min-recommendation"
+"$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz \
+  --outdir "$AMP_MIN_REC_OUT" --text > /dev/null 2>"$AMP_ERR"
+RET=$?
+MSG="amplicheck requires 5000 sampled reads for recommendations by default"
+if [[ $RET -eq 0 ]] && \
+   grep -q '"recommendation_min_reads": 5000' "$AMP_MIN_REC_OUT/report.json" && \
+   grep -q '"recommendation_reads_sufficient": false' "$AMP_MIN_REC_OUT/report.json" && \
+   grep -q '"recommendation": null' "$AMP_MIN_REC_OUT/report.json" && \
+   grep -q 'Recommendation: not emitted; requires at least 5000 sampled reads' "$AMP_MIN_REC_OUT/report.txt"; then
   echo -e "$OK: $MSG"
   PASS=$((PASS+1))
 else

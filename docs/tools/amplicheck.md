@@ -24,6 +24,8 @@ Options:
   --subsample FLOAT         Deterministic fraction of scanned reads or pairs to analyze [default: 1.0]
   --only STAGES             Run only comma-separated stages: primers,length,quality,merge,sweep
   --skip STAGES             Skip comma-separated stages; "overlap" is accepted as "merge"
+  --fwd-primers LIST        Comma-separated forward primer sequences
+  --rev-primers LIST        Comma-separated reverse primer sequences
   --sweep                   Run truncLen/maxEE sweep
   --truncLen-grid LIST      Comma-separated truncLen values for --sweep; 0 = no truncation
   --maxEE-grid LIST         Comma-separated maxEE values for --sweep
@@ -33,6 +35,7 @@ Options:
   --text                    Write human-readable report.txt
   --plot                    Write self-contained HTML quality plots
   --threads INT             Number of samples to process in parallel [default: 1]
+  --min-recommend-reads INT  Minimum sampled reads required for recommendations [default: 5000]
   -v, --verbose             Print parsing progress and per-sample summaries
 ```
 
@@ -89,6 +92,18 @@ emitted in input order regardless of worker completion order. The effective
 thread count is capped by the number of samples and SeqFu's Malebolgia worker
 pool size.
 
+By default, primer detection checks the bundled 16S primer table. Supplying
+`--fwd-primers`, `--rev-primers`, or both replaces that table for the run, so
+only the supplied IUPAC primer sequences are considered. Multiple sequences can
+be comma-separated. A primer call requires at least 80% identity within an
+individual read and support from at least three reads and 10% of sampled reads.
+The report still includes the observed prefix consensus when no primer reaches
+those thresholds, but it is not marked as a detected primer.
+
+Recommendations require 5,000 sampled reads by default. `--subsample` therefore
+affects recommendation eligibility as well as analysis cost. Use
+`--min-recommend-reads` to change the threshold for small validation datasets.
+
 ## Output
 
 By default, output is written to:
@@ -126,11 +141,12 @@ The JSON report includes:
 
 1. input layout, file or pair, and sample identifier
 2. `n_reads_scanned`, `n_reads_sampled`, and `n_reads_total` when known
-3. primer detection and bundled primer-table labels
-4. read-length summaries
-5. per-position quality means and binned-quality classification
-6. native overlap estimates
-7. recommendation fields: `truncLen`, `maxEE`, `truncQ`, and strategy
+3. recommendation read threshold and whether enough reads were sampled
+4. primer detection and bundled or custom primer labels
+5. read-length summaries
+6. per-position quality means and binned-quality classification
+7. native overlap estimates
+8. recommendation fields: `truncLen`, `maxEE`, `truncQ`, and strategy
 
 For single-end input, the default stages are primer, length, and quality
 analysis. Pair-only merge and sweep stages are unavailable and produce an error

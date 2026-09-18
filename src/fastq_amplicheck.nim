@@ -98,6 +98,25 @@ proc parseFloatGrid(raw: string, values: var seq[float], err: var string): bool 
       return false
   true
 
+proc parsePrimerList(raw, optionName: string, values: var seq[string],
+                     err: var string): bool =
+  values = @[]
+  if raw == "nil":
+    return true
+  for item in raw.split(','):
+    let primer = item.strip().toUpperAscii()
+    if primer.len == 0:
+      err = optionName & " contains an empty primer"
+      return false
+    for base in primer:
+      if base notin {'A', 'C', 'G', 'T', 'U', 'R', 'Y', 'S', 'W', 'K', 'M',
+                     'B', 'D', 'H', 'V', 'N'}:
+        err = optionName & " contains an invalid IUPAC base: " & $base
+        return false
+    if primer notin values:
+      values.add(primer)
+  true
+
 proc fastq_amplicheck*(argv: var seq[string]): int =
   var
     singleEndRequested = false
@@ -117,28 +136,49 @@ positional file is treated as single-end. Exactly two files are treated as one
 pair; larger inputs are paired by forward/reverse tag substitution unless
 --single-end is used.
 
-Options:
+Input and pairing:
   --single-end              Treat every positional FASTQ as a separate sample
   --fwd-tag STR             Forward read tag for batch pairing [default: _R1]
   --rev-tag STR             Reverse read tag for batch pairing [default: _R2]
+
+Sampling and analysis:
   --max-reads INT           Stop after INT scanned reads or pairs per sample; 0 = all [default: 500000]
   --subsample FLOAT         Deterministic fraction of scanned reads or pairs to analyze [default: 1.0]
+  --amplicon MODE           One of auto, 16s, its [default: auto]
+
+Analysis stages:
   --only STAGES             Run only comma-separated stages: primers,length,quality,merge,sweep
   --skip STAGES             Skip comma-separated stages; "overlap" is accepted as "merge"
   --skip-primers            Shortcut for --skip primers
   --skip-overlap            Shortcut for --skip merge
+
+Primer detection:
+  --fwd-primers LIST        Comma-separated forward primer sequences
+  --rev-primers LIST        Comma-separated reverse primer sequences
+
+Paired-end sweep:
   --sweep                   Run truncLen/maxEE sweep
   --truncLen-grid LIST      Comma-separated truncLen values for --sweep; 0 = no truncation
   --maxEE-grid LIST         Comma-separated maxEE values for --sweep
-  --amplicon MODE           One of auto, 16s, its [default: auto]
+
+Output:
   --outdir DIR              Output directory [default: amplicheck_out]
   --json                    Write JSON report (default)
   --no-json                 Do not write JSON report
   --text                    Write human-readable report.txt
   --plot                    Write self-contained HTML quality plots
+
+Execution:
   --threads INT             Number of samples to process in parallel [default: 1]
+
+Paired-end overlap:
   --min-overlap INT         Minimum overlap length for native estimator [default: 12]
   --min-id FLOAT            Minimum overlap identity for native estimator [default: 0.85]
+
+Recommendations:
+  --min-recommend-reads INT  Minimum sampled reads required for recommendations [default: 5000]
+
+Other options:
   -v, --verbose             Print progress messages
   -h, --help                Show this help
 """, version=version(), argv=docoptArgv)
@@ -172,6 +212,7 @@ Options:
   var err = ""
   try:
     opts.maxReads = parseInt($args["--max-reads"])
+    opts.minRecommendReads = parseInt($args["--min-recommend-reads"])
     opts.subsample = parseFloat($args["--subsample"])
     opts.minOverlap = parseInt($args["--min-overlap"])
     opts.minIdentity = parseFloat($args["--min-id"])
@@ -181,6 +222,9 @@ Options:
 
   if opts.maxReads < 0:
     stderr.writeLine("ERROR: --max-reads must be >= 0.")
+    return 1
+  if opts.minRecommendReads < 1:
+    stderr.writeLine("ERROR: --min-recommend-reads must be >= 1.")
     return 1
   if opts.subsample <= 0.0 or opts.subsample > 1.0:
     stderr.writeLine("ERROR: --subsample must satisfy 0 < value <= 1.")
@@ -204,6 +248,15 @@ Options:
 
   if not parseAmpliconMode($args["--amplicon"], opts.amplicon):
     stderr.writeLine("ERROR: --amplicon must be one of auto, 16s, its.")
+    return 1
+
+  if not parsePrimerList($args["--fwd-primers"], "--fwd-primers",
+                         opts.customFwdPrimers, err):
+    stderr.writeLine("ERROR: ", err)
+    return 1
+  if not parsePrimerList($args["--rev-primers"], "--rev-primers",
+                         opts.customRevPrimers, err):
+    stderr.writeLine("ERROR: ", err)
     return 1
 
   let onlyRaw = $args["--only"]
