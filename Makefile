@@ -1,6 +1,6 @@
 
 # Create "make test"
-.PHONY: test clean build
+.PHONY: all test clean build remove-obsolete
 
 BIN=./bin
 SCRIPTS=./scripts
@@ -14,10 +14,14 @@ LDLIBS=-lz
 PTHREADLIBS=-pthread
 VERSION := $(shell grep version seqfu.nimble  | grep  -o "[0-9]\\+\.[0-9]\\+\.[0-9]\\+")
 NIMPARAM :=  --mm:orc -d:NimblePkgVersion=$(VERSION) -d:release --opt:speed --passC:"-Wno-error=incompatible-pointer-types"
-TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-homocomp $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck $(BIN)/byteshift $(BIN)/SeqCountHelper $(BIN)/fu-secheck
+TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck $(BIN)/byteshift $(BIN)/SeqCountHelper $(BIN)/fu-secheck
+OBSOLETE_TARGETS=$(BIN)/fu-homocomp
 PYTARGETS=$(BIN)/fu-split $(BIN)/fu-pecheck $(BIN)/fu-readtope
 
-all: $(TARGETS) $(PYTARGETS)
+all: remove-obsolete $(TARGETS) $(PYTARGETS)
+
+remove-obsolete:
+	rm -f $(OBSOLETE_TARGETS)
 
 sources/: src/sfu.nim
 	mkdir -p sources
@@ -76,9 +80,6 @@ $(BIN)/fu-orf: src/fu_orf.nim
 $(BIN)/fu-sw: src/fu_sw.nim
 	nim c --threads:on $(NIMPARAM) --out:$@ $<
 
-$(BIN)/fu-homocomp: src/fu_homocomp.nim
-	nim c --threads:on $(NIMPARAM) --out:$@ $<
-
 $(BIN)/fu-multirelabel: src/fu_multirelabel.nim
 	nim c $(NIMPARAM) --out:$@ $<
 
@@ -111,7 +112,7 @@ multiqc: $(BIN)/seqfu
 	rm -rf temp-mqc
 	open "multiqc/multiqc_report.html"
 
-build:
+build: remove-obsolete
 	nimble build
 
 test: all
@@ -123,3 +124,4 @@ clean:
 	do \
 		if [ -e "$$i" ]; then rm -f $$i; echo "Removing $$i"; else echo "$$i Not found"; fi \
 	done
+	@rm -f $(OBSOLETE_TARGETS)
