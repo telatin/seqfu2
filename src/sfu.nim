@@ -34,6 +34,7 @@ include ./fastx_metadata
 include ./fastx_tabulate
 include ./fastx_check
 include ./fastq_amplicheck
+include ./fastx_homocomp
 include ./fu_rotate
 include ./tofasta
 include ./fastx_subtract
@@ -110,7 +111,8 @@ var progs = {
         "rot": fastx_rotate,
         "restart": fastx_rotate,
       "check": fqcheck,
-      "amplicheck": fastq_amplicheck,
+       "amplicheck": fastq_amplicheck,
+      "homocomp": fastx_homocomp,
       "tofasta": tofasta,
       "subtract": fastx_subtract
 }.toTable
@@ -124,7 +126,8 @@ proc main(args: var seq[string]): int =
                "check"             : "check FASTQ file for errors",
                "bases"             : "count bases in FASTA/FASTQ files",
                "trim"              : "trim FASTQ sequences based on quality",
-               "amplicheck"        : "QC paired-end amplicon FASTQ files",
+               "amplicheck"        : "QC single- or paired-end amplicon FASTQ files",
+               "homocomp"          : "collapse homopolymer runs in FASTA/FASTQ records",
                "merge [mrg]"       : "merge paired-end FASTQ reads",
                "count [c]"         : "count FASTA/FASTQ reads, pair-end aware",
                "lanes [mrl]"       : "merge Illumina lanes",

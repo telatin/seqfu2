@@ -40,13 +40,22 @@ proc sampleIdFromPair*(r1, r2, fwdTag, revTag: string): string =
   else:
     stripFastqExt(extractFilename(r1))
 
+proc discoverSingles*(files: seq[string], fwdTag: string): seq[AmplicheckInput] =
+  for file in files:
+    result.add(AmplicheckInput(
+      sampleId: sampleIdFromFile(file, fwdTag),
+      r1: file,
+      layout: rlSingleEnd
+    ))
+
 proc discoverPairs*(files: seq[string], fwdTag, revTag: string,
-                    warnings: var seq[string]): seq[PairInput] =
+                     warnings: var seq[string]): seq[AmplicheckInput] =
   if files.len == 2:
-    return @[PairInput(
+    return @[AmplicheckInput(
       sampleId: sampleIdFromPair(files[0], files[1], fwdTag, revTag),
       r1: files[0],
-      r2: files[1]
+      r2: files[1],
+      layout: rlPairedEnd
     )]
 
   var present = initTable[string, bool]()
@@ -61,10 +70,11 @@ proc discoverPairs*(files: seq[string], fwdTag, revTag: string,
 
     let expectedR2 = replaceAt(file, pos, fwdTag.len, revTag)
     if present.hasKey(expectedR2):
-      result.add(PairInput(
+      result.add(AmplicheckInput(
         sampleId: sampleIdFromPair(file, expectedR2, fwdTag, revTag),
         r1: file,
-        r2: expectedR2
+        r2: expectedR2,
+        layout: rlPairedEnd
       ))
       used[file] = true
       used[expectedR2] = true

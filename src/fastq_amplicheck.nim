@@ -1,4 +1,5 @@
 import docopt
+import malebolgia
 import os
 import strutils
 
@@ -6,6 +7,23 @@ import ./amplicheck/pairs
 import ./amplicheck/report
 import ./amplicheck/run
 import ./amplicheck/types
+
+type
+  AmplicheckJob = object
+    input: AmplicheckInput
+    report: AmplicheckReport
+    verboseLog: string
+    errorMsg: string
+
+proc processAmplicheckJob(job: ptr AmplicheckJob,
+                          opts: AmplicheckOptions,
+                          bufferVerbose: bool) {.gcsafe.} =
+  {.cast(gcsafe).}:
+    try:
+      job[].report = analyzeInput(job[].input, opts, job[].verboseLog,
+                                  bufferVerbose)
+    except CatchableError as e:
+      job[].errorMsg = e.msg
 
 proc parseStageName(raw: string, stage: var AmplicheckStage): bool =
   case raw.strip().toLowerAscii()
@@ -81,19 +99,30 @@ proc parseFloatGrid(raw: string, values: var seq[float], err: var string): bool 
   true
 
 proc fastq_amplicheck*(argv: var seq[string]): int =
+  var
+    singleEndRequested = false
+    docoptArgv: seq[string]
+  for arg in argv:
+    if arg == "--single-end":
+      singleEndRequested = true
+    else:
+      docoptArgv.add(arg)
+
   let args = docopt("""
 Usage:
   amplicheck [options] <FASTQ>...
 
-Inspect paired-end amplicon FASTQ files and write DADA2-ready QC recommendations.
-Exactly two positional files are treated as one pair. More than two files are
-paired by forward/reverse tag substitution.
+Inspect amplicon FASTQ files and write DADA2-ready QC recommendations. One
+positional file is treated as single-end. Exactly two files are treated as one
+pair; larger inputs are paired by forward/reverse tag substitution unless
+--single-end is used.
 
 Options:
+  --single-end              Treat every positional FASTQ as a separate sample
   --fwd-tag STR             Forward read tag for batch pairing [default: _R1]
   --rev-tag STR             Reverse read tag for batch pairing [default: _R2]
-  --max-reads INT           Stop after INT scanned read pairs per sample; 0 = all [default: 500000]
-  --subsample FLOAT         Deterministic fraction of scanned pairs to analyze [default: 1.0]
+  --max-reads INT           Stop after INT scanned reads or pairs per sample; 0 = all [default: 500000]
+  --subsample FLOAT         Deterministic fraction of scanned reads or pairs to analyze [default: 1.0]
   --only STAGES             Run only comma-separated stages: primers,length,quality,merge,sweep
   --skip STAGES             Skip comma-separated stages; "overlap" is accepted as "merge"
   --skip-primers            Shortcut for --skip primers
@@ -107,12 +136,12 @@ Options:
   --no-json                 Do not write JSON report
   --text                    Write human-readable report.txt
   --plot                    Write self-contained HTML quality plots
-  --threads INT             Number of sample pairs to process in parallel [default: 1]
+  --threads INT             Number of samples to process in parallel [default: 1]
   --min-overlap INT         Minimum overlap length for native estimator [default: 12]
   --min-id FLOAT            Minimum overlap identity for native estimator [default: 0.85]
   -v, --verbose             Print progress messages
   -h, --help                Show this help
-""", version=version(), argv=argv)
+""", version=version(), argv=docoptArgv)
 
   var opts = AmplicheckOptions(
     fwdTag: $args["--fwd-tag"],
@@ -124,6 +153,13 @@ Options:
     plot: bool(args["--plot"]),
     verbose: bool(args["--verbose"])
   )
+  let files = @(args["<FASTQ>"])
+  if files.len == 0:
+    stderr.writeLine("ERROR: amplicheck requires at least one FASTQ file.")
+    return 1
+  let singleEnd = singleEndRequested or files.len == 1
+  if singleEnd:
+    opts.stages.excl(stMerge)
 
   if bool(args["--json"]) and bool(args["--no-json"]):
     stderr.writeLine("ERROR: --json and --no-json are mutually exclusive.")
@@ -156,12 +192,14 @@ Options:
     stderr.writeLine("ERROR: --min-id must satisfy 0 < value <= 1.")
     return 1
 
-  let threads = parseInt($args["--threads"])
+  var threads: int
+  try:
+    threads = parseInt($args["--threads"])
+  except ValueError:
+    stderr.writeLine("ERROR: --threads must be an integer >= 1.")
+    return 1
   if threads < 1:
     stderr.writeLine("ERROR: --threads must be >= 1.")
-    return 1
-  if threads > 1:
-    stderr.writeLine("ERROR: --threads > 1 is not implemented for amplicheck yet.")
     return 1
 
   if not parseAmpliconMode($args["--amplicon"], opts.amplicon):
@@ -170,6 +208,7 @@ Options:
 
   let onlyRaw = $args["--only"]
   let skipRaw = $args["--skip"]
+  var pairOnlyStageRequested = false
   if onlyRaw != "nil" and skipRaw != "nil":
     stderr.writeLine("ERROR: --only and --skip are mutually exclusive.")
     return 1
@@ -178,6 +217,7 @@ Options:
     if not parseStageList(onlyRaw, opts.stages, err):
       stderr.writeLine("ERROR: ", err)
       return 1
+    pairOnlyStageRequested = stMerge in opts.stages or stSweep in opts.stages
   elif skipRaw != "nil":
     var skipped: set[AmplicheckStage]
     if not parseStageList(skipRaw, skipped, err):
@@ -191,6 +231,14 @@ Options:
     opts.stages.excl(stMerge)
   if bool(args["--sweep"]):
     opts.stages.incl(stSweep)
+    pairOnlyStageRequested = true
+
+  if singleEnd and pairOnlyStageRequested:
+    stderr.writeLine("ERROR: merge and sweep stages require paired-end input.")
+    return 1
+
+  if singleEnd and opts.verbose:
+    stderr.writeLine("amplicheck: single-end mode: pair-only merge and sweep stages are disabled")
 
   if opts.plot and not (stQuality in opts.stages):
     stderr.writeLine("ERROR: --plot requires the quality stage.")
@@ -206,40 +254,72 @@ Options:
     stderr.writeLine("ERROR: --sweep requires both --truncLen-grid and --maxEE-grid.")
     return 1
 
-  let files = @(args["<FASTQ>"])
-  if files.len < 2:
-    stderr.writeLine("ERROR: amplicheck requires at least two FASTQ files.")
-    return 1
-  if files.len > 2 and (opts.fwdTag.len == 0 or opts.revTag.len == 0):
+  if not singleEnd and files.len > 2 and (opts.fwdTag.len == 0 or opts.revTag.len == 0):
     stderr.writeLine("ERROR: --fwd-tag and --rev-tag cannot be empty in batch mode.")
     return 1
 
   var warnings: seq[string]
-  let pairs = discoverPairs(files, opts.fwdTag, opts.revTag, warnings)
+  let inputs =
+    if singleEnd: discoverSingles(files, opts.fwdTag)
+    else: discoverPairs(files, opts.fwdTag, opts.revTag, warnings)
   for warning in warnings:
     stderr.writeLine(warning)
-  if pairs.len == 0:
-    stderr.writeLine("ERROR: no paired FASTQ files found.")
+  if inputs.len == 0:
+    stderr.writeLine("ERROR: no FASTQ inputs found.")
     return 1
 
-  for pair in pairs:
-    if not fileExists(pair.r1):
-      stderr.writeLine("ERROR: R1 file not found: ", pair.r1)
+  for input in inputs:
+    if not fileExists(input.r1):
+      stderr.writeLine("ERROR: input file not found: ", input.r1)
       return 1
-    if not fileExists(pair.r2):
-      stderr.writeLine("ERROR: R2 file not found: ", pair.r2)
+    if input.layout == rlPairedEnd and not fileExists(input.r2):
+      stderr.writeLine("ERROR: R2 file not found: ", input.r2)
       return 1
 
-  var reports: seq[AmplicheckReport]
+  var jobs = newSeq[AmplicheckJob](inputs.len)
+  for i, input in inputs:
+    jobs[i].input = input
+
   try:
-    for pair in pairs:
-      let report = analyzePair(pair, opts)
-      reports.add(report)
+    if threads > 1 and jobs.len > 1:
+      let parallelChunk = min(jobs.len, min(threads, ThreadPoolSize))
       if opts.verbose:
-        stderr.write(report.renderVerboseSummary())
+        stderr.writeLine("amplicheck: processing ", jobs.len,
+                         " samples with ", parallelChunk, " threads")
+      var
+        master = createMaster()
+        start = 0
+      while start < jobs.len:
+        let stopAt = min(start + parallelChunk, jobs.len)
+        master.awaitAll:
+          for i in start ..< stopAt:
+            master.spawn processAmplicheckJob(addr jobs[i], opts, true)
+        for i in start ..< stopAt:
+          if opts.verbose and jobs[i].verboseLog.len > 0:
+            stderr.write(jobs[i].verboseLog)
+          if jobs[i].errorMsg.len > 0:
+            stderr.writeLine("ERROR: sample ", jobs[i].input.sampleId,
+                             ": ", jobs[i].errorMsg)
+            return 1
+          if opts.verbose:
+            stderr.write(jobs[i].report.renderVerboseSummary())
+        start = stopAt
+    else:
+      for i in 0 ..< jobs.len:
+        processAmplicheckJob(addr jobs[i], opts, false)
+        if jobs[i].errorMsg.len > 0:
+          stderr.writeLine("ERROR: sample ", jobs[i].input.sampleId,
+                           ": ", jobs[i].errorMsg)
+          return 1
+        if opts.verbose:
+          stderr.write(jobs[i].report.renderVerboseSummary())
   except CatchableError as e:
     stderr.writeLine("ERROR: ", e.msg)
     return 1
+
+  var reports = newSeqOfCap[AmplicheckReport](jobs.len)
+  for job in jobs:
+    reports.add(job.report)
 
   writeReports(reports, opts.outdir, opts.writeJson, opts.writeText, opts.plot)
   return 0

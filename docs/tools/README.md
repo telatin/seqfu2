@@ -18,12 +18,13 @@ Invoking `seqfu` will display a list of internal commands:
       ___) |  __/ (_| |  _|| |_| |
      |____/ \___|\__, |_|   \__,_|
                     |_|           
-  · amplicheck          : QC paired-end amplicon FASTQ files
+  · amplicheck          : QC single- or paired-end amplicon FASTQ files
   · bases               : count bases in FASTA/FASTQ files
   · check               : check FASTQ file for errors
   · count [c]           : count FASTA/FASTQ reads, pair-end aware
   · deinterleave [dei]  : deinterleave FASTQ
   · derep [der]         : feature-rich dereplication of FASTA/FASTQ files
+  · homocomp            : collapse homopolymer runs in FASTA/FASTQ records
   · interleave [ilv]    : interleave FASTQ pair ends
   · lanes [ill]         : merge Illumina lanes
   · list [lst]          : print sequences from a list of names

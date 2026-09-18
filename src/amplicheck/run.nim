@@ -41,10 +41,13 @@ proc stageList(stages: set[AmplicheckStage]): string =
     return "none"
   names.join(",")
 
-proc analyzePair*(pair: PairInput, opts: AmplicheckOptions): AmplicheckReport =
-  result.sampleId = pair.sampleId
-  result.r1 = pair.r1
-  result.r2 = pair.r2
+proc analyzeInput*(input: AmplicheckInput, opts: AmplicheckOptions,
+                   verboseLog: var string,
+                   bufferVerbose: bool): AmplicheckReport =
+  result.sampleId = input.sampleId
+  result.r1 = input.r1
+  result.r2 = input.r2
+  result.layout = input.layout
   result.primersEnabled = stPrimers in opts.stages
   result.lengthEnabled = stLength in opts.stages
   result.qualityEnabled = stQuality in opts.stages
@@ -61,8 +64,7 @@ proc analyzePair*(pair: PairInput, opts: AmplicheckOptions): AmplicheckReport =
     sweepAcc = initSweepAccumulator(opts.truncLenGrid, opts.maxEEGrid,
                                     opts.minOverlap, opts.minIdentity)
     sampler = PeriodicSampler(fraction: opts.subsample)
-    r1 = xopen[GzFile](pair.r1)
-    r2 = xopen[GzFile](pair.r2)
+    r1 = xopen[GzFile](input.r1)
     read1, read2, extra: FastxRecord
     hitMaxReads = false
     progressEvery = progressInterval(opts.maxReads)
@@ -70,51 +72,77 @@ proc analyzePair*(pair: PairInput, opts: AmplicheckOptions): AmplicheckReport =
   if result.primersEnabled:
     primerAcc = initPrimerAccumulator()
 
+  template writeVerboseLine(message: string) =
+    if bufferVerbose:
+      verboseLog.add(message & "\n")
+    else:
+      stderr.writeLine(message)
+
   if opts.verbose:
     let maxReadsText =
       if opts.maxReads == 0: "all"
       else: $opts.maxReads
-    stderr.writeLine(fmt"amplicheck: sample {pair.sampleId}: start r1={pair.r1} r2={pair.r2} max_reads={maxReadsText} subsample={opts.subsample} stages={stageList(opts.stages)}")
+    let inputText =
+      if input.layout == rlPairedEnd: fmt"r1={input.r1} r2={input.r2}"
+      else: fmt"read={input.r1}"
+    writeVerboseLine(fmt"amplicheck: sample {input.sampleId}: start {inputText} max_reads={maxReadsText} subsample={opts.subsample} stages={stageList(opts.stages)}")
 
   defer:
     r1.close()
-    r2.close()
 
-  while r1.readFastx(read1):
-    if not r2.readFastx(read2):
-      raise newException(ValueError, fmt"R2 ended before R1 in sample {pair.sampleId}")
-
+  template processReads(paired: bool) =
     result.nReadsScanned += 1
     if sampler.keep():
       result.nReadsSampled += 1
 
       if result.lengthEnabled:
         lenR1.addLength(read1.seq.len)
-        lenR2.addLength(read2.seq.len)
+        if paired:
+          lenR2.addLength(read2.seq.len)
 
       if result.qualityEnabled:
         qualR1.addQuality(read1.qual)
-        qualR2.addQuality(read2.qual)
+        if paired:
+          qualR2.addQuality(read2.qual)
 
       if result.primersEnabled:
-        primerAcc.addPrimerPair(read1.seq, read2.seq)
+        if paired:
+          primerAcc.addPrimerPair(read1.seq, read2.seq)
+        else:
+          primerAcc.addPrimerRead(read1.seq)
 
-      if result.mergeEnabled:
+      if paired and result.mergeEnabled:
         mergeAcc.add(estimateOverlap(read1.seq, read2.seq,
                                      opts.minOverlap, opts.minIdentity))
 
-      if result.sweepEnabled:
+      if paired and result.sweepEnabled:
         sweepAcc.add(read1.seq, read1.qual, read2.seq, read2.qual)
 
     if opts.verbose and result.nReadsScanned mod progressEvery == 0:
-      stderr.writeLine(fmt"amplicheck: sample {pair.sampleId}: progress scanned={result.nReadsScanned} sampled={result.nReadsSampled}")
+      writeVerboseLine(fmt"amplicheck: sample {input.sampleId}: progress scanned={result.nReadsScanned} sampled={result.nReadsSampled}")
 
-    if opts.maxReads > 0 and result.nReadsScanned >= opts.maxReads:
-      hitMaxReads = true
-      break
+  if input.layout == rlPairedEnd:
+    var r2 = xopen[GzFile](input.r2)
+    defer:
+      r2.close()
+    while r1.readFastx(read1):
+      if not r2.readFastx(read2):
+        raise newException(ValueError, fmt"R2 ended before R1 in sample {input.sampleId}")
+      processReads(true)
 
-  if not hitMaxReads and r2.readFastx(extra):
-    raise newException(ValueError, fmt"R2 has more reads than R1 in sample {pair.sampleId}")
+      if opts.maxReads > 0 and result.nReadsScanned >= opts.maxReads:
+        hitMaxReads = true
+        break
+
+    if not hitMaxReads and r2.readFastx(extra):
+      raise newException(ValueError, fmt"R2 has more reads than R1 in sample {input.sampleId}")
+  else:
+    while r1.readFastx(read1):
+      processReads(false)
+
+      if opts.maxReads > 0 and result.nReadsScanned >= opts.maxReads:
+        hitMaxReads = true
+        break
 
   result.nReadsTotalKnown = not hitMaxReads
 
@@ -122,26 +150,32 @@ proc analyzePair*(pair: PairInput, opts: AmplicheckOptions): AmplicheckReport =
     let stopReason =
       if hitMaxReads: "stopped at max_reads"
       else: "full file scanned"
-    stderr.writeLine(fmt"amplicheck: sample {pair.sampleId}: parsed scanned={result.nReadsScanned} sampled={result.nReadsSampled} ({stopReason})")
+    writeVerboseLine(fmt"amplicheck: sample {input.sampleId}: parsed scanned={result.nReadsScanned} sampled={result.nReadsSampled} ({stopReason})")
 
   if result.lengthEnabled:
     result.lengthR1 = lenR1.summarize()
-    result.lengthR2 = lenR2.summarize()
+    if input.layout == rlPairedEnd:
+      result.lengthR2 = lenR2.summarize()
 
   if result.qualityEnabled:
     result.qualityR1 = qualR1.summarize()
-    result.qualityR2 = qualR2.summarize()
+    if input.layout == rlPairedEnd:
+      result.qualityR2 = qualR2.summarize()
 
   if result.primersEnabled:
-    result.primers = primerAcc.summarize()
+    result.primers =
+      if input.layout == rlPairedEnd: primerAcc.summarize()
+      else: primerAcc.summarizeSingle()
 
   var mergePrelim: MergeSummary
   if result.mergeEnabled:
     mergePrelim = mergeAcc.summarize("")
-  let ampliconCall = inferAmpliconCall(opts.amplicon,
-                                       result.lengthR1,
-                                       result.lengthR2,
-                                       mergePrelim)
+  let ampliconCall =
+    if input.layout == rlPairedEnd:
+      inferAmpliconCall(opts.amplicon, result.lengthR1,
+                        result.lengthR2, mergePrelim)
+    else:
+      opts.amplicon.ampliconName
 
   if result.mergeEnabled:
     result.merge = mergeAcc.summarize(ampliconCall)
@@ -151,12 +185,17 @@ proc analyzePair*(pair: PairInput, opts: AmplicheckOptions): AmplicheckReport =
 
   result.recommendationEnabled = result.lengthEnabled and result.qualityEnabled
   if result.recommendationEnabled:
-    let mergeForRec =
-      if result.mergeEnabled: result.merge
-      else: MergeSummary(ampliconCall: ampliconCall)
-    result.recommendation = makeRecommendation(opts.amplicon,
-                                               result.lengthR1,
-                                               result.lengthR2,
-                                               result.qualityR1,
-                                               result.qualityR2,
-                                               mergeForRec)
+    if input.layout == rlSingleEnd:
+      result.recommendation = makeSingleRecommendation(opts.amplicon,
+                                                        result.lengthR1,
+                                                        result.qualityR1)
+    else:
+      let mergeForRec =
+        if result.mergeEnabled: result.merge
+        else: MergeSummary(ampliconCall: ampliconCall)
+      result.recommendation = makeRecommendation(opts.amplicon,
+                                                  result.lengthR1,
+                                                  result.lengthR2,
+                                                  result.qualityR1,
+                                                  result.qualityR2,
+                                                  mergeForRec)

@@ -414,24 +414,30 @@ proc mergeSeqs*(f, r: FQRecord, minlen=10, minid=0.85, identityAccepted=0.90): F
 
 
 proc compressHomopolymers*(s: string): string =
-  result  = $s[0]
+  if s.len == 0:
+    return
+  result.add(s[0])
   for c in s[1 .. ^1]:
     if c != result[^1]:
-      result = result & c
+      result.add(c)
 
 proc compressHomopolymers*(s: FQRecord): FQRecord =
   result.name = s.name
-  if len(s.comment) > 0:
-    result.comment = s.comment
-  result.sequence = $s.sequence[0]
-  if len(s.quality) > 0:
-    result.quality = $s.quality[0]
+  result.comment = s.comment
+  result.status = s.status
+  result.lastChar = s.lastChar
+  if s.sequence.len == 0:
+    return
+
+  result.sequence.add(s.sequence[0])
+  if s.quality.len > 0:
+    result.quality.add(s.quality[0])
 
   for i, c in s.sequence[1 .. ^1]:
     if c != result.sequence[^1]:
-      result.sequence = result.sequence & c
-      if len(s.quality) > 0:
-        result.quality  = result.quality  & $s.quality[i + 1]
+      result.sequence.add(c)
+      if s.quality.len > i + 1:
+        result.quality.add(s.quality[i + 1])
 
 ### AMPLICHECK
 

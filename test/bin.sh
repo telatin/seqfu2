@@ -27,6 +27,7 @@ mkdir -p "$DEST"
 
 echo "Last version online: $VER"
 echo "Local version: $LOCALVER"
+rm -f "$SCRIPT_DIR/../bin/fu-homocomp"
 nimble build
 LOCAL_RELEASE=$(./bin/seqfu version)
 zip -r "$DEST"/SeqFu-v"${LOCAL_RELEASE}"-"${PLAT}".zip bin/*

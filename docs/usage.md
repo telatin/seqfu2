@@ -57,12 +57,13 @@ Preferred commands are exposed as `seqfu` subcommands (see **[Core Tools]({{site
 * `seqfu orf` to extract ORFs from nucleotide reads/sequences
 * `seqfu msa` to inspect multiple sequence alignments interactively
 * `seqfu tabcheck` to validate TSV/CSV field consistency
+* `seqfu homocomp` to collapse homopolymer runs in FASTA/FASTQ records
 
 Compatibility binaries are still shipped for existing pipelines:
 
 * `fu-orf` (wrapper for `seqfu orf`)
 * `fu-msa` (wrapper for `seqfu msa`)
 * `fu-tabcheck` (wrapper for `seqfu tabcheck`)
-* plus additional standalone utilities such as `fu-cov`, `fu-homocomp`, and others
+* plus additional standalone utilities such as `fu-cov` and others
 
 See the **[full list of utilities]({{site.baseurl}}/utilities/README.html)**.

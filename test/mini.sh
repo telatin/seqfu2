@@ -52,7 +52,7 @@ separator "Minimal test suite"
 echo -e "$OK: Binary running"
 
 BINCOUNT=0
-for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave tabcheck orf count amplicheck merge;
+for MOD in head tail view qual derep sort count stats grep rc interleave deinterleave tabcheck orf count amplicheck homocomp merge;
 do
   BINCOUNT=$((BINCOUNT+1))
   echo -e " $STAR $BINCOUNT. $MOD"
@@ -147,20 +147,6 @@ if [[ $("$BIN" list -c "$FILES"/prot.list "$FILES"/prot.faa  | grep -c '>') -eq 
 else
 	echo -e "$FAIL: list, with comments not 4"
 	ERRORS=$((ERRORS+1))
-fi
-
-# Homopolymer
-HOMO="$(dirname "$BIN")"/fu-homocomp
-if [[ -e "$HOMO" ]]; then
-  ORIGINAL=$(grep . "$FILES"/homopolymer.fq | wc -c  | grep -o "[[:digit:]]\+")
-  COMPRESSED=$($HOMO "$FILES"/homopolymer.fq | wc -c | grep -o "[[:digit:]]\+")
-  if [[ $ORIGINAL -gt $COMPRESSED ]]; then
-    echo -e "$OK: homopolymer pass $ORIGINAL > $COMPRESSED"
-    PASS=$((PASS+1))
-  else
-    echo -e "$FAIL: homopolymer failed $ORIGINAL original length, $COMPRESSED compressed length"
-    ERRORS=$((ERRORS+1))
-  fi
 fi
 
 # Interleave

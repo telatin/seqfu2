@@ -161,6 +161,11 @@ proc addPrimerPair*(acc: var PrimerAccumulator, r1seq, r2seq: string) =
   acc.r1Hits.addHit(acc.r1Scores, bestPrimer(r1seq, acc.db))
   acc.r2Hits.addHit(acc.r2Scores, bestPrimer(r2seq, acc.db))
 
+proc addPrimerRead*(acc: var PrimerAccumulator, sequence: string) =
+  acc.observed += 1
+  acc.r1Prefix.addPrefix(sequence)
+  acc.r1Hits.addHit(acc.r1Scores, bestPrimer(sequence, acc.db))
+
 proc topHit(hits: CountTable[string]): tuple[name: string, count: int] =
   for name, count in hits.pairs:
     if count > result.count:
@@ -219,3 +224,13 @@ proc summarize*(acc: PrimerAccumulator): PrimerSummary =
   else:
     result.revPrimer = result.r2.primer
     result.revLabel = result.r2.label
+
+proc summarizeSingle*(acc: PrimerAccumulator): PrimerSummary =
+  result.r1 = summarizeSide(acc, acc.r1Hits, acc.r1Scores, acc.r1Prefix)
+  result.detected = result.r1.detected
+  if result.r1.direction == "forward":
+    result.fwdPrimer = result.r1.primer
+    result.fwdLabel = result.r1.label
+  elif result.r1.direction == "reverse":
+    result.revPrimer = result.r1.primer
+    result.revLabel = result.r1.label

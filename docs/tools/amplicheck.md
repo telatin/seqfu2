@@ -6,9 +6,9 @@ parent: Core Tools
 
 # seqfu amplicheck
 
-`seqfu amplicheck` inspects paired-end amplicon FASTQ files and writes a JSON
-report with DADA2-style quality-control recommendations. It does not run DADA2
-or R.
+`seqfu amplicheck` inspects single-end or paired-end amplicon FASTQ files and
+writes a JSON report with DADA2-style quality-control recommendations. It does
+not run DADA2 or R.
 
 ![Screenshot of "seqfu amplicheck"]({{site.baseurl}}/img/seqfu-amplicheck.png "SeqFu amplicheck report")
 
@@ -17,10 +17,11 @@ Usage:
   amplicheck [options] <FASTQ>...
 
 Options:
+  --single-end              Treat every positional FASTQ as a separate sample
   --fwd-tag STR             Forward read tag for batch pairing [default: _R1]
   --rev-tag STR             Reverse read tag for batch pairing [default: _R2]
-  --max-reads INT           Stop after INT scanned read pairs per sample; 0 = all [default: 500000]
-  --subsample FLOAT         Deterministic fraction of scanned pairs to analyze [default: 1.0]
+  --max-reads INT           Stop after INT scanned reads or pairs per sample; 0 = all [default: 500000]
+  --subsample FLOAT         Deterministic fraction of scanned reads or pairs to analyze [default: 1.0]
   --only STAGES             Run only comma-separated stages: primers,length,quality,merge,sweep
   --skip STAGES             Skip comma-separated stages; "overlap" is accepted as "merge"
   --sweep                   Run truncLen/maxEE sweep
@@ -31,10 +32,23 @@ Options:
   --no-json                 Do not write JSON report
   --text                    Write human-readable report.txt
   --plot                    Write self-contained HTML quality plots
+  --threads INT             Number of samples to process in parallel [default: 1]
   -v, --verbose             Print parsing progress and per-sample summaries
 ```
 
 ## Examples
+
+Inspect one single-end sample:
+
+```bash
+seqfu amplicheck sample_R1.fastq.gz --text --plot
+```
+
+Inspect multiple single-end samples:
+
+```bash
+seqfu amplicheck --single-end data/*_R1.fastq.gz
+```
 
 Inspect one pair:
 
@@ -60,13 +74,20 @@ Scan the whole pair and analyze one every hundred:
 seqfu amplicheck sample_R1.fastq.gz sample_R2.fastq.gz --max-reads 0 --subsample 0.01
 ```
 
-`--max-reads` counts scanned read pairs. `--subsample` is deterministic periodic
-thinning over those scanned pairs: `0.1` keeps 1 every 10, `0.2` keeps 2 every
+`--max-reads` counts scanned reads for single-end input and scanned read pairs
+for paired-end input. `--subsample` is deterministic periodic thinning over
+those scanned records: `0.1` keeps 1 every 10, `0.2` keeps 2 every
 10, and `0.01` keeps 1 every 100.
 
 Use `-v` to print one start line per sample, periodic scanned/sampled progress,
 a parse completion line, and a compact per-sample summary on stderr. Report files
 remain clean.
+
+Use `--threads` to analyze independent samples concurrently. A single-end file
+is one job and a paired-end R1/R2 pair is one job. Results and verbose logs are
+emitted in input order regardless of worker completion order. The effective
+thread count is capped by the number of samples and SeqFu's Malebolgia worker
+pool size.
 
 ## Output
 
@@ -103,7 +124,7 @@ Example outputs:
 
 The JSON report includes:
 
-1. input pair and sample identifier
+1. input layout, file or pair, and sample identifier
 2. `n_reads_scanned`, `n_reads_sampled`, and `n_reads_total` when known
 3. primer detection and bundled primer-table labels
 4. read-length summaries
@@ -111,6 +132,14 @@ The JSON report includes:
 6. native overlap estimates
 7. recommendation fields: `truncLen`, `maxEE`, `truncQ`, and strategy
 
+For single-end input, the default stages are primer, length, and quality
+analysis. Pair-only merge and sweep stages are unavailable and produce an error
+when explicitly requested. Reverse-read fields and primer orientation are
+serialized as `null`. The recommendation contains scalar `truncLen` and `maxEE`
+values, plus `truncLen_fwd` as a compatibility alias.
+
 The HTML quality pages contain the sampled per-cycle Q-score count matrix and
-render mean/median/quantile curves plus a Q-score heatmap in the browser. Reads
-longer than 10,000 bases are skipped for quality plotting/profile accumulation.
+render mean/median/quantile curves plus a Q-score heatmap in the browser.
+Single-end pages render one read panel and omit reverse-read and overlap columns
+from the index. Reads longer than 10,000 bases are skipped for quality
+plotting/profile accumulation.

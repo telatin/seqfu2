@@ -1,6 +1,164 @@
 TMP_AMPLICHECK_DIR=$(mktemp -d)
 AMP_ERR="$TMP_AMPLICHECK_DIR/err.log"
 
+AMP_SINGLE_OUT="$TMP_AMPLICHECK_DIR/single"
+"$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz \
+  --max-reads 0 --subsample 0.5 --outdir "$AMP_SINGLE_OUT" --text --plot -v \
+  > /dev/null 2>"$AMP_ERR"
+RET=$?
+R2_NULLS=$(grep -c '"r2": null' "$AMP_SINGLE_OUT/report.json" 2>/dev/null || true)
+TRUNC_LEN=$(grep '"truncLen":' "$AMP_SINGLE_OUT/report.json" | grep -o '[0-9]\+' || true)
+TRUNC_LEN_FWD=$(grep '"truncLen_fwd":' "$AMP_SINGLE_OUT/report.json" | grep -o '[0-9]\+' || true)
+MSG="amplicheck automatically analyzes one single-end FASTQ"
+if [[ $RET -eq 0 ]] && [[ $R2_NULLS -eq 4 ]] && \
+   [[ "$TRUNC_LEN" == "$TRUNC_LEN_FWD" ]] && \
+   grep -q '"sample_id": "art"' "$AMP_SINGLE_OUT/report.json" && \
+   grep -q '"read_layout": "single_end"' "$AMP_SINGLE_OUT/report.json" && \
+   grep -q '"n_reads_scanned": 8' "$AMP_SINGLE_OUT/report.json" && \
+   grep -q '"n_reads_sampled": 4' "$AMP_SINGLE_OUT/report.json" && \
+   grep -q '"truncLen_rev": null' "$AMP_SINGLE_OUT/report.json" && \
+   grep -q '"truncLen":' "$AMP_SINGLE_OUT/report.json" && \
+   grep -q '"maxEE": 2.0' "$AMP_SINGLE_OUT/report.json" && \
+   grep -q '^  Input:' "$AMP_SINGLE_OUT/report.txt" && \
+   ! grep -q '^  R2:' "$AMP_SINGLE_OUT/report.txt" && \
+   grep -q '<h2>Read</h2>' "$AMP_SINGLE_OUT/plots/art.html" && \
+   ! grep -q '<canvas id="chartR"' "$AMP_SINGLE_OUT/plots/art.html" && \
+   grep -q "SINGLE_END ? 'Length' : 'R1 len'" "$AMP_SINGLE_OUT/plots/index.html" && \
+   grep -q 'single-end mode: pair-only merge and sweep stages are disabled' "$AMP_ERR"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_SINGLE_BATCH_OUT="$TMP_AMPLICHECK_DIR/single-batch"
+"$BIN" amplicheck --single-end \
+  "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/pico_R1.fq.gz \
+  --max-reads 2 --outdir "$AMP_SINGLE_BATCH_OUT" > /dev/null 2>"$AMP_ERR"
+RET=$?
+NSAMPLES=$(grep -c '"sample_id"' "$AMP_SINGLE_BATCH_OUT/report.json" 2>/dev/null || true)
+MSG="amplicheck --single-end treats each FASTQ as a sample and strips the forward tag"
+if [[ $RET -eq 0 ]] && [[ $NSAMPLES -eq 2 ]] && \
+   grep -q '"sample_id": "art"' "$AMP_SINGLE_BATCH_OUT/report.json" && \
+   grep -q '"sample_id": "pico"' "$AMP_SINGLE_BATCH_OUT/report.json" && \
+   ! grep -q '"read_layout": "paired_end"' "$AMP_SINGLE_BATCH_OUT/report.json"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET samples=$NSAMPLES err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_SINGLE_T1_OUT="$TMP_AMPLICHECK_DIR/single-t1"
+AMP_SINGLE_T2_OUT="$TMP_AMPLICHECK_DIR/single-t2"
+"$BIN" amplicheck --single-end \
+  "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/pico_R1.fq.gz \
+  --max-reads 10 --threads 1 --outdir "$AMP_SINGLE_T1_OUT" \
+  > /dev/null 2>"$AMP_ERR"
+RET1=$?
+"$BIN" amplicheck --single-end \
+  "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/pico_R1.fq.gz \
+  --max-reads 10 --threads 2 --outdir "$AMP_SINGLE_T2_OUT" -v \
+  > /dev/null 2>"$AMP_ERR"
+RET2=$?
+MSG="amplicheck single-end --threads 2 matches --threads 1 in input order"
+if [[ $RET1 -eq 0 ]] && [[ $RET2 -eq 0 ]] && \
+   cmp -s "$AMP_SINGLE_T1_OUT/report.json" "$AMP_SINGLE_T2_OUT/report.json" && \
+   grep -q 'processing 2 samples with 2 threads' "$AMP_ERR"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (threads1=$RET1 threads2=$RET2 err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_PAIRED_T1_OUT="$TMP_AMPLICHECK_DIR/paired-t1"
+AMP_PAIRED_T2_OUT="$TMP_AMPLICHECK_DIR/paired-t2"
+"$BIN" amplicheck \
+  "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/art_R2.fq.gz \
+  "$FILES"/primers/pico_R1.fq.gz "$FILES"/primers/pico_R2.fq.gz \
+  --max-reads 10 --threads 1 --outdir "$AMP_PAIRED_T1_OUT" \
+  > /dev/null 2>"$AMP_ERR"
+RET1=$?
+"$BIN" amplicheck \
+  "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/art_R2.fq.gz \
+  "$FILES"/primers/pico_R1.fq.gz "$FILES"/primers/pico_R2.fq.gz \
+  --max-reads 10 --threads 2 --outdir "$AMP_PAIRED_T2_OUT" \
+  > /dev/null 2>"$AMP_ERR"
+RET2=$?
+MSG="amplicheck paired --threads 2 matches --threads 1 in input order"
+if [[ $RET1 -eq 0 ]] && [[ $RET2 -eq 0 ]] && \
+   cmp -s "$AMP_PAIRED_T1_OUT/report.json" "$AMP_PAIRED_T2_OUT/report.json"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (threads1=$RET1 threads2=$RET2 err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_THREAD_ERROR_INPUT="$TMP_AMPLICHECK_DIR/thread-error-input"
+mkdir -p "$AMP_THREAD_ERROR_INPUT"
+cp "$FILES"/primers/art_R1.fq.gz "$AMP_THREAD_ERROR_INPUT/good_R1.fq.gz"
+cp "$FILES"/primers/art_R2.fq.gz "$AMP_THREAD_ERROR_INPUT/good_R2.fq.gz"
+cp "$FILES"/primers/art_R1.fq.gz "$AMP_THREAD_ERROR_INPUT/bad_R1.fq.gz"
+cp "$FILES"/primers/pico_R2.fq.gz "$AMP_THREAD_ERROR_INPUT/bad_R2.fq.gz"
+cp "$FILES"/primers/art_R1.fq.gz "$AMP_THREAD_ERROR_INPUT/later_R1.fq.gz"
+cp "$FILES"/primers/art_R2.fq.gz "$AMP_THREAD_ERROR_INPUT/later_R2.fq.gz"
+AMP_THREAD_ERROR_OUT="$TMP_AMPLICHECK_DIR/thread-error-out"
+"$BIN" amplicheck "$AMP_THREAD_ERROR_INPUT"/*.fq.gz --threads 2 \
+  --text --plot -v --outdir "$AMP_THREAD_ERROR_OUT" > /dev/null 2>"$AMP_ERR"
+RET=$?
+MSG="amplicheck propagates worker errors without writing partial reports"
+if [[ $RET -ne 0 ]] && [[ ! -e "$AMP_THREAD_ERROR_OUT" ]] && \
+   grep -q 'ERROR: sample bad: R2 has more reads than R1' "$AMP_ERR" && \
+   ! grep -q 'sample later: start' "$AMP_ERR"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+AMP_SINGLE_PRIMER_OUT="$TMP_AMPLICHECK_DIR/single-primer"
+"$BIN" amplicheck "$FILES"/primers/16S_R1.fq.gz \
+  --max-reads 100 --subsample 0.1 --only primers --outdir "$AMP_SINGLE_PRIMER_OUT" \
+  > /dev/null 2>"$AMP_ERR"
+RET=$?
+MSG="amplicheck reports one-sided primer detection for single-end reads"
+if [[ $RET -eq 0 ]] && \
+   grep -q '"fwd_label": "341F"' "$AMP_SINGLE_PRIMER_OUT/report.json" && \
+   grep -q '"orientation_consistent": null' "$AMP_SINGLE_PRIMER_OUT/report.json" && \
+   grep -q '"r2": null' "$AMP_SINGLE_PRIMER_OUT/report.json"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+"$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz --only merge \
+  --outdir "$TMP_AMPLICHECK_DIR/bad-single-stage" > /dev/null 2>"$AMP_ERR"
+RET=$?
+"$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz --only overlap --skip-overlap \
+  --outdir "$TMP_AMPLICHECK_DIR/bad-single-alias" > /dev/null 2>"$AMP_ERR.alias"
+RET_ALIAS=$?
+"$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz --sweep \
+  --truncLen-grid 0,100 --maxEE-grid 1,2 \
+  --outdir "$TMP_AMPLICHECK_DIR/bad-single-sweep" > /dev/null 2>"$AMP_ERR.sweep"
+RET_SWEEP=$?
+MSG="amplicheck rejects pair-only stages for single-end input"
+if [[ $RET -ne 0 ]] && [[ $RET_ALIAS -ne 0 ]] && [[ $RET_SWEEP -ne 0 ]] && \
+   grep -q 'merge and sweep stages require paired-end input' "$AMP_ERR" && \
+   grep -q 'merge and sweep stages require paired-end input' "$AMP_ERR.alias" && \
+   grep -q 'merge and sweep stages require paired-end input' "$AMP_ERR.sweep"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
 AMP_ART_OUT="$TMP_AMPLICHECK_DIR/art"
 "$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz "$FILES"/primers/art_R2.fq.gz \
   --max-reads 0 --subsample 0.5 --outdir "$AMP_ART_OUT" --text > /dev/null 2>"$AMP_ERR"
@@ -9,6 +167,9 @@ MSG="amplicheck direct pair writes JSON/text and honors --max-reads 0 with --sub
 if [[ $RET -eq 0 ]] && \
    [[ -s "$AMP_ART_OUT/report.json" ]] && \
    [[ -s "$AMP_ART_OUT/report.txt" ]] && \
+   grep -q '"read_layout": "paired_end"' "$AMP_ART_OUT/report.json" && \
+   grep -q '"maxEE": \[' "$AMP_ART_OUT/report.json" && \
+   grep -q '"truncLen_rev":' "$AMP_ART_OUT/report.json" && \
    grep -q '"n_reads_total": 8' "$AMP_ART_OUT/report.json" && \
    grep -q '"n_reads_scanned": 8' "$AMP_ART_OUT/report.json" && \
    grep -q '"n_reads_sampled": 4' "$AMP_ART_OUT/report.json"; then
@@ -68,8 +229,9 @@ if [[ $RET -eq 0 ]] && \
    [[ -s "$AMP_PLOT_OUT/plots/index.html" ]] && \
    [[ -s "$AMP_PLOT_OUT/plots/art.html" ]] && \
    [[ -s "$AMP_PLOT_OUT/plots/pico.html" ]] && \
-   grep -q 'const SAMPLE =' "$AMP_PLOT_OUT/plots/art.html" && \
-   grep -q 'drawQualityHeatmap' "$AMP_PLOT_OUT/plots/art.html" && \
+    grep -q 'const SAMPLE =' "$AMP_PLOT_OUT/plots/art.html" && \
+    grep -q 'drawQualityHeatmap' "$AMP_PLOT_OUT/plots/art.html" && \
+    grep -q '<canvas id="chartR"' "$AMP_PLOT_OUT/plots/art.html" && \
    grep -q 'const INDEX_ROWS =' "$AMP_PLOT_OUT/plots/index.html" && \
    grep -q '"sample_id":"art"' "$AMP_PLOT_OUT/plots/index.html" && \
    grep -q '"sample_id":"pico"' "$AMP_PLOT_OUT/plots/index.html" && \
@@ -133,6 +295,18 @@ fi
 RET=$?
 MSG="amplicheck rejects invalid --subsample"
 if [[ $RET -ne 0 ]] && grep -q -- '--subsample must satisfy' "$AMP_ERR"; then
+  echo -e "$OK: $MSG"
+  PASS=$((PASS+1))
+else
+  echo -e "$FAIL: $MSG (exit=$RET err=$(cat "$AMP_ERR"))"
+  ERRORS=$((ERRORS+1))
+fi
+
+"$BIN" amplicheck "$FILES"/primers/art_R1.fq.gz --threads banana \
+  --outdir "$TMP_AMPLICHECK_DIR/bad-threads" > /dev/null 2>"$AMP_ERR"
+RET=$?
+MSG="amplicheck rejects non-integer --threads"
+if [[ $RET -ne 0 ]] && grep -q -- '--threads must be an integer' "$AMP_ERR"; then
   echo -e "$OK: $MSG"
   PASS=$((PASS+1))
 else

@@ -17,8 +17,13 @@ type
     am16s,
     amIts
 
-  PairInput* = object
+  ReadLayout* = enum
+    rlSingleEnd,
+    rlPairedEnd
+
+  AmplicheckInput* = object
     sampleId*, r1*, r2*: string
+    layout*: ReadLayout
 
   AmplicheckOptions* = object
     fwdTag*, revTag*: string
@@ -96,6 +101,7 @@ type
 
   AmplicheckReport* = object
     sampleId*, r1*, r2*: string
+    layout*: ReadLayout
     nReadsScanned*, nReadsSampled*: int
     nReadsTotalKnown*: bool
     primersEnabled*, lengthEnabled*, qualityEnabled*: bool
@@ -144,3 +150,8 @@ proc ampliconName*(mode: AmpliconMode): string =
   of amAuto: "auto"
   of am16s: "16s"
   of amIts: "its"
+
+proc layoutName*(layout: ReadLayout): string =
+  case layout
+  of rlSingleEnd: "single_end"
+  of rlPairedEnd: "paired_end"

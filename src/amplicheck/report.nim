@@ -48,16 +48,18 @@ proc primerSideJson(side: PrimerSideSummary): JsonNode =
     "score": side.score
   }
 
-proc primerJson(summary: PrimerSummary): JsonNode =
+proc primerJson(summary: PrimerSummary, layout: ReadLayout): JsonNode =
   result = newJObject()
   result["detected"] = %summary.detected
   result["fwd_primer"] = %summary.fwdPrimer
   result["rev_primer"] = %summary.revPrimer
   result["fwd_label"] = %summary.fwdLabel
   result["rev_label"] = %summary.revLabel
-  result["orientation_consistent"] = %summary.orientationConsistent
+  result["orientation_consistent"] =
+    if layout == rlPairedEnd: %summary.orientationConsistent else: newJNull()
   result["r1"] = primerSideJson(summary.r1)
-  result["r2"] = primerSideJson(summary.r2)
+  result["r2"] =
+    if layout == rlPairedEnd: primerSideJson(summary.r2) else: newJNull()
 
 proc mergeJson(summary: MergeSummary): JsonNode =
   %* {
@@ -96,11 +98,16 @@ proc sweepJson(summary: SweepSummary): JsonNode =
   for combo in summary.combos:
     result["grid"].add(sweepComboJson(combo))
 
-proc recommendationJson(rec: Recommendation): JsonNode =
+proc recommendationJson(rec: Recommendation, layout: ReadLayout): JsonNode =
   result = newJObject()
   result["truncLen_fwd"] = %rec.truncLenFwd
-  result["truncLen_rev"] = %rec.truncLenRev
-  result["maxEE"] = floatArray(rec.maxEE)
+  if layout == rlSingleEnd:
+    result["truncLen"] = %rec.truncLenFwd
+    result["truncLen_rev"] = newJNull()
+    result["maxEE"] = %(if rec.maxEE.len > 0: rec.maxEE[0] else: 0.0)
+  else:
+    result["truncLen_rev"] = %rec.truncLenRev
+    result["maxEE"] = floatArray(rec.maxEE)
   result["truncQ"] = %rec.truncQ
   result["strategy"] = %rec.strategy
   result["note"] = %rec.note
@@ -108,8 +115,10 @@ proc recommendationJson(rec: Recommendation): JsonNode =
 proc toJson*(report: AmplicheckReport): JsonNode =
   result = newJObject()
   result["sample_id"] = %report.sampleId
+  result["read_layout"] = %report.layout.layoutName
   result["r1"] = %report.r1
-  result["r2"] = %report.r2
+  result["r2"] =
+    if report.layout == rlPairedEnd: %report.r2 else: newJNull()
   if report.nReadsTotalKnown:
     result["n_reads_total"] = %report.nReadsScanned
   else:
@@ -118,21 +127,21 @@ proc toJson*(report: AmplicheckReport): JsonNode =
   result["n_reads_sampled"] = %report.nReadsSampled
 
   result["primers"] =
-    if report.primersEnabled: primerJson(report.primers) else: newJNull()
+    if report.primersEnabled: primerJson(report.primers, report.layout) else: newJNull()
 
   if report.lengthEnabled:
-    result["length"] = %* {
-      "r1": lengthJson(report.lengthR1),
-      "r2": lengthJson(report.lengthR2)
-    }
+    result["length"] = newJObject()
+    result["length"]["r1"] = lengthJson(report.lengthR1)
+    result["length"]["r2"] =
+      if report.layout == rlPairedEnd: lengthJson(report.lengthR2) else: newJNull()
   else:
     result["length"] = newJNull()
 
   if report.qualityEnabled:
-    result["quality"] = %* {
-      "r1": qualityJson(report.qualityR1),
-      "r2": qualityJson(report.qualityR2)
-    }
+    result["quality"] = newJObject()
+    result["quality"]["r1"] = qualityJson(report.qualityR1)
+    result["quality"]["r2"] =
+      if report.layout == rlPairedEnd: qualityJson(report.qualityR2) else: newJNull()
   else:
     result["quality"] = newJNull()
 
@@ -141,20 +150,32 @@ proc toJson*(report: AmplicheckReport): JsonNode =
   result["sweep"] =
     if report.sweepEnabled: sweepJson(report.sweep) else: newJNull()
   result["recommendation"] =
-    if report.recommendationEnabled: recommendationJson(report.recommendation) else: newJNull()
+    if report.recommendationEnabled: recommendationJson(report.recommendation, report.layout) else: newJNull()
 
 proc renderText*(report: AmplicheckReport): string =
   result.add(fmt"Sample: {report.sampleId}" & "\n")
-  result.add(fmt"  R1: {report.r1}" & "\n")
-  result.add(fmt"  R2: {report.r2}" & "\n")
+  if report.layout == rlSingleEnd:
+    result.add(fmt"  Input: {report.r1}" & "\n")
+  else:
+    result.add(fmt"  R1: {report.r1}" & "\n")
+    result.add(fmt"  R2: {report.r2}" & "\n")
   result.add(fmt"  Reads: scanned={report.nReadsScanned} sampled={report.nReadsSampled}" & "\n")
 
   if report.primersEnabled:
-    result.add(fmt"  Primers: R1={report.primers.r1.label} {report.primers.r1.primer}; R2={report.primers.r2.label} {report.primers.r2.primer}; orientation_consistent={report.primers.orientationConsistent}" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  Primer: Read={report.primers.r1.label} {report.primers.r1.primer}; direction={report.primers.r1.direction}" & "\n")
+    else:
+      result.add(fmt"  Primers: R1={report.primers.r1.label} {report.primers.r1.primer}; R2={report.primers.r2.label} {report.primers.r2.primer}; orientation_consistent={report.primers.orientationConsistent}" & "\n")
   if report.lengthEnabled:
-    result.add(fmt"  Length: R1 mean={report.lengthR1.mean:.1f} sd={report.lengthR1.sd:.1f} mode={report.lengthR1.mode}; R2 mean={report.lengthR2.mean:.1f} sd={report.lengthR2.sd:.1f} mode={report.lengthR2.mode}" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  Length: mean={report.lengthR1.mean:.1f} sd={report.lengthR1.sd:.1f} mode={report.lengthR1.mode}" & "\n")
+    else:
+      result.add(fmt"  Length: R1 mean={report.lengthR1.mean:.1f} sd={report.lengthR1.sd:.1f} mode={report.lengthR1.mode}; R2 mean={report.lengthR2.mean:.1f} sd={report.lengthR2.sd:.1f} mode={report.lengthR2.mode}" & "\n")
   if report.qualityEnabled:
-    result.add(fmt"  Quality: R1 mean={report.qualityR1.meanQuality:.1f} distinct={report.qualityR1.distinctValues} skipped_long={report.qualityR1.skippedTooLong}; R2 mean={report.qualityR2.meanQuality:.1f} distinct={report.qualityR2.distinctValues} skipped_long={report.qualityR2.skippedTooLong}" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  Quality: mean={report.qualityR1.meanQuality:.1f} distinct={report.qualityR1.distinctValues} skipped_long={report.qualityR1.skippedTooLong}" & "\n")
+    else:
+      result.add(fmt"  Quality: R1 mean={report.qualityR1.meanQuality:.1f} distinct={report.qualityR1.distinctValues} skipped_long={report.qualityR1.skippedTooLong}; R2 mean={report.qualityR2.meanQuality:.1f} distinct={report.qualityR2.distinctValues} skipped_long={report.qualityR2.skippedTooLong}" & "\n")
   if report.mergeEnabled:
     result.add(fmt"  Overlap: merged={report.merge.merged}/{report.merge.attempted} unmergeable={report.merge.pctUnmergeable:.1f}% mean_overlap={report.merge.overlapMean:.1f} mean_identity={report.merge.identityMean:.1f}%" & "\n")
   if report.recommendationEnabled:
@@ -162,7 +183,10 @@ proc renderText*(report: AmplicheckReport): string =
     for value in report.recommendation.maxEE:
       maxEEParts.add($value)
     let maxEEText = maxEEParts.join(",")
-    result.add(fmt"  Recommendation: strategy={report.recommendation.strategy} truncLen=({report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}) truncQ={report.recommendation.truncQ} maxEE=({maxEEText})" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  Recommendation: strategy={report.recommendation.strategy} truncLen={report.recommendation.truncLenFwd} truncQ={report.recommendation.truncQ} maxEE={maxEEText}" & "\n")
+    else:
+      result.add(fmt"  Recommendation: strategy={report.recommendation.strategy} truncLen=({report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}) truncQ={report.recommendation.truncQ} maxEE=({maxEEText})" & "\n")
   result.add("\n")
 
 proc primerText(side: PrimerSideSummary): string =
@@ -187,13 +211,22 @@ proc renderVerboseSummary*(report: AmplicheckReport): string =
   result.add(fmt"  reads: scanned={report.nReadsScanned} sampled={report.nReadsSampled} total={totalText}" & "\n")
 
   if report.lengthEnabled:
-    result.add(fmt"  length: R1 mean={report.lengthR1.mean:.1f} mode={report.lengthR1.mode} range={report.lengthR1.min}-{report.lengthR1.max}; R2 mean={report.lengthR2.mean:.1f} mode={report.lengthR2.mode} range={report.lengthR2.min}-{report.lengthR2.max}" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  length: mean={report.lengthR1.mean:.1f} mode={report.lengthR1.mode} range={report.lengthR1.min}-{report.lengthR1.max}" & "\n")
+    else:
+      result.add(fmt"  length: R1 mean={report.lengthR1.mean:.1f} mode={report.lengthR1.mode} range={report.lengthR1.min}-{report.lengthR1.max}; R2 mean={report.lengthR2.mean:.1f} mode={report.lengthR2.mode} range={report.lengthR2.min}-{report.lengthR2.max}" & "\n")
 
   if report.qualityEnabled:
-    result.add(fmt"  quality: R1 mean={report.qualityR1.meanQuality:.1f} cycles={report.qualityR1.perPositionMean.len} skipped_long={report.qualityR1.skippedTooLong}; R2 mean={report.qualityR2.meanQuality:.1f} cycles={report.qualityR2.perPositionMean.len} skipped_long={report.qualityR2.skippedTooLong}" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  quality: mean={report.qualityR1.meanQuality:.1f} cycles={report.qualityR1.perPositionMean.len} skipped_long={report.qualityR1.skippedTooLong}" & "\n")
+    else:
+      result.add(fmt"  quality: R1 mean={report.qualityR1.meanQuality:.1f} cycles={report.qualityR1.perPositionMean.len} skipped_long={report.qualityR1.skippedTooLong}; R2 mean={report.qualityR2.meanQuality:.1f} cycles={report.qualityR2.perPositionMean.len} skipped_long={report.qualityR2.skippedTooLong}" & "\n")
 
   if report.primersEnabled:
-    result.add(fmt"  primers: R1={primerText(report.primers.r1)}; R2={primerText(report.primers.r2)}; orientation_consistent={report.primers.orientationConsistent}" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  primer: read={primerText(report.primers.r1)}; direction={report.primers.r1.direction}" & "\n")
+    else:
+      result.add(fmt"  primers: R1={primerText(report.primers.r1)}; R2={primerText(report.primers.r2)}; orientation_consistent={report.primers.orientationConsistent}" & "\n")
 
   if report.mergeEnabled:
     result.add(fmt"  overlap: merged={report.merge.merged}/{report.merge.attempted} unmergeable={report.merge.pctUnmergeable:.1f}% mean_overlap={report.merge.overlapMean:.1f} mean_identity={report.merge.identityMean:.1f}%" & "\n")
@@ -202,7 +235,10 @@ proc renderVerboseSummary*(report: AmplicheckReport): string =
     result.add(fmt"  sweep: combos={report.sweep.combos.len} best_truncLen=({report.sweep.best.truncLenFwd},{report.sweep.best.truncLenRev}) best_maxEE={report.sweep.best.maxEE} retained={report.sweep.best.retentionPct:.1f}% merged={report.sweep.best.mergeRatePct:.1f}%" & "\n")
 
   if report.recommendationEnabled:
-    result.add(fmt"  recommendation: strategy={report.recommendation.strategy} truncLen=({report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}) truncQ={report.recommendation.truncQ} maxEE=({maxEEText(report.recommendation.maxEE)})" & "\n")
+    if report.layout == rlSingleEnd:
+      result.add(fmt"  recommendation: strategy={report.recommendation.strategy} truncLen={report.recommendation.truncLenFwd} truncQ={report.recommendation.truncQ} maxEE={maxEEText(report.recommendation.maxEE)}" & "\n")
+    else:
+      result.add(fmt"  recommendation: strategy={report.recommendation.strategy} truncLen=({report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}) truncQ={report.recommendation.truncQ} maxEE=({maxEEText(report.recommendation.maxEE)})" & "\n")
 
 proc safeName(s: string): string =
   for c in s:
@@ -241,19 +277,22 @@ proc plotQualityJson(summary: ReadQualitySummary, filename: string): JsonNode =
   }
 
 proc plotDataJson(report: AmplicheckReport): JsonNode =
-  result = %* {
-    "sample_id": report.sampleId,
-    "r1_file": report.r1,
-    "r2_file": report.r2,
-    "n_reads_scanned": report.nReadsScanned,
-    "n_reads_sampled": report.nReadsSampled,
-    "r1": plotQualityJson(report.qualityR1, report.r1),
-    "r2": plotQualityJson(report.qualityR2, report.r2)
-  }
+  result = newJObject()
+  result["sample_id"] = %report.sampleId
+  result["read_layout"] = %report.layout.layoutName
+  result["r1_file"] = %report.r1
+  result["r2_file"] =
+    if report.layout == rlPairedEnd: %report.r2 else: newJNull()
+  result["n_reads_scanned"] = %report.nReadsScanned
+  result["n_reads_sampled"] = %report.nReadsSampled
+  result["r1"] = plotQualityJson(report.qualityR1, report.r1)
+  result["r2"] =
+    if report.layout == rlPairedEnd: plotQualityJson(report.qualityR2, report.r2)
+    else: newJNull()
   result["recommendation"] =
-    if report.recommendationEnabled: recommendationJson(report.recommendation) else: newJNull()
+    if report.recommendationEnabled: recommendationJson(report.recommendation, report.layout) else: newJNull()
   result["primers"] =
-    if report.primersEnabled: primerJson(report.primers) else: newJNull()
+    if report.primersEnabled: primerJson(report.primers, report.layout) else: newJNull()
 
 proc jsJson(node: JsonNode): string =
   ($node).replace("</", "<\\/")
@@ -284,6 +323,7 @@ const plotTemplate = """
     .tile p { margin: 0; font-size: 1.25rem; font-weight: 700; }
     .tile .small { margin-top: .25rem; font-weight: 400; }
     .plots { display: grid; grid-template-columns: repeat(auto-fit, minmax(560px, 1fr)); gap: 1rem; }
+    .plots.single { grid-template-columns: minmax(0, 900px); justify-content: center; }
     canvas { width: 100%; border: 1px solid rgba(47,61,70,.18); background: white; border-radius: 8px; }
     .qualityCanvas { height: 460px; }
     .heatmapCanvas { height: 330px; margin-top: .75rem; }
@@ -299,23 +339,21 @@ const plotTemplate = """
   <main>
     <section class="summary">
       <div class="tile"><h2>Reads</h2><p id="reads"></p><div class="small" id="sampled"></div></div>
-      <div class="tile"><h2>R1</h2><p id="r1reads"></p><div class="small" id="r1file"></div></div>
-      <div class="tile"><h2>R2</h2><p id="r2reads"></p><div class="small" id="r2file"></div></div>
+      <div class="tile"><h2>@@READ_LABEL@@</h2><p id="r1reads"></p><div class="small" id="r1file"></div></div>
+      @@R2_TILE@@
       <div class="tile"><h2>Recommendation</h2><p id="strategy"></p><div class="small" id="trunc"></div></div>
     </section>
-    <section class="plots">
+    <section class="plots @@PLOTS_CLASS@@">
       <div class="plotcard">
         <canvas id="chartF" class="qualityCanvas"></canvas>
         <canvas id="heatF" class="heatmapCanvas"></canvas>
       </div>
-      <div class="plotcard">
-        <canvas id="chartR" class="qualityCanvas"></canvas>
-        <canvas id="heatR" class="heatmapCanvas"></canvas>
-      </div>
+      @@R2_PLOT@@
     </section>
   </main>
 <script>
 const SAMPLE = @@DATA@@;
+const SINGLE_END = SAMPLE.read_layout === 'single_end';
 const MAX_RENDER_POINTS = 900;
 const THEME = {
   acid: '#B6BE00',
@@ -328,17 +366,23 @@ window.addEventListener('load', () => {
   document.title = `SeqFu amplicheck: ${SAMPLE.sample_id}`;
   $('title').textContent = `SeqFu amplicheck: ${SAMPLE.sample_id}`;
   $('reads').textContent = compact(SAMPLE.n_reads_scanned);
-  $('sampled').textContent = `${compact(SAMPLE.n_reads_sampled)} sampled read pairs`;
+  $('sampled').textContent = `${compact(SAMPLE.n_reads_sampled)} sampled ${SINGLE_END ? 'reads' : 'read pairs'}`;
   $('r1reads').textContent = `${compact(SAMPLE.r1.reads)} reads`;
   $('r1file').textContent = `${SAMPLE.r1_file}${SAMPLE.r1.skippedTooLong ? `; skipped long reads: ${compact(SAMPLE.r1.skippedTooLong)}` : ''}`;
-  $('r2reads').textContent = `${compact(SAMPLE.r2.reads)} reads`;
-  $('r2file').textContent = `${SAMPLE.r2_file}${SAMPLE.r2.skippedTooLong ? `; skipped long reads: ${compact(SAMPLE.r2.skippedTooLong)}` : ''}`;
+  if (!SINGLE_END) {
+    $('r2reads').textContent = `${compact(SAMPLE.r2.reads)} reads`;
+    $('r2file').textContent = `${SAMPLE.r2_file}${SAMPLE.r2.skippedTooLong ? `; skipped long reads: ${compact(SAMPLE.r2.skippedTooLong)}` : ''}`;
+  }
   $('strategy').textContent = SAMPLE.recommendation ? SAMPLE.recommendation.strategy : 'not available';
-  $('trunc').textContent = SAMPLE.recommendation ? `truncLen ${SAMPLE.recommendation.truncLen_fwd}, ${SAMPLE.recommendation.truncLen_rev}; truncQ ${SAMPLE.recommendation.truncQ}` : '';
-  drawQualityPlot('chartF', 'R1 quality', SAMPLE.r1);
-  drawQualityHeatmap('heatF', 'R1 heatmap', SAMPLE.r1);
-  drawQualityPlot('chartR', 'R2 quality', SAMPLE.r2);
-  drawQualityHeatmap('heatR', 'R2 heatmap', SAMPLE.r2);
+  $('trunc').textContent = SAMPLE.recommendation
+    ? `truncLen ${SINGLE_END ? SAMPLE.recommendation.truncLen : `${SAMPLE.recommendation.truncLen_fwd}, ${SAMPLE.recommendation.truncLen_rev}`}; truncQ ${SAMPLE.recommendation.truncQ}`
+    : '';
+  drawQualityPlot('chartF', SINGLE_END ? 'Read quality' : 'R1 quality', SAMPLE.r1);
+  drawQualityHeatmap('heatF', SINGLE_END ? 'Read heatmap' : 'R1 heatmap', SAMPLE.r1);
+  if (!SINGLE_END) {
+    drawQualityPlot('chartR', 'R2 quality', SAMPLE.r2);
+    drawQualityHeatmap('heatR', 'R2 heatmap', SAMPLE.r2);
+  }
 });
 
 function drawQualityPlot(canvasId, title, stats) {
@@ -539,7 +583,17 @@ function compact(n) {
 """
 
 proc renderPlotHtml(report: AmplicheckReport): string =
-  plotTemplate.replace("@@DATA@@", jsJson(plotDataJson(report)))
+  result = plotTemplate.replace("@@DATA@@", jsJson(plotDataJson(report)))
+  if report.layout == rlSingleEnd:
+    result = result.replace("@@READ_LABEL@@", "Read")
+    result = result.replace("@@R2_TILE@@", "")
+    result = result.replace("@@R2_PLOT@@", "")
+    result = result.replace("@@PLOTS_CLASS@@", "single")
+  else:
+    result = result.replace("@@READ_LABEL@@", "R1")
+    result = result.replace("@@R2_TILE@@", "<div class=\"tile\"><h2>R2</h2><p id=\"r2reads\"></p><div class=\"small\" id=\"r2file\"></div></div>")
+    result = result.replace("@@R2_PLOT@@", "<div class=\"plotcard\"><canvas id=\"chartR\" class=\"qualityCanvas\"></canvas><canvas id=\"heatR\" class=\"heatmapCanvas\"></canvas></div>")
+    result = result.replace("@@PLOTS_CLASS@@", "")
 
 proc maybeInt(enabled: bool, value: int): JsonNode =
   if enabled:
@@ -563,8 +617,8 @@ proc primerSummaryText(report: AmplicheckReport): string =
   let r1 = primerName(report.primers.r1)
   let r2 = primerName(report.primers.r2)
   if r1.len > 0:
-    labels.add("R1=" & r1)
-  if r2.len > 0:
+    labels.add((if report.layout == rlSingleEnd: "Read=" else: "R1=") & r1)
+  if report.layout == rlPairedEnd and r2.len > 0:
     labels.add("R2=" & r2)
   labels.join("; ")
 
@@ -583,11 +637,15 @@ proc mergeRatePct(summary: MergeSummary): float =
 proc recommendationTruncLen(report: AmplicheckReport): string =
   if not report.recommendationEnabled:
     return ""
-  fmt"{report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}"
+  if report.layout == rlSingleEnd:
+    $report.recommendation.truncLenFwd
+  else:
+    fmt"{report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}"
 
 proc indexRowJson(report: AmplicheckReport, filename: string): JsonNode =
   result = newJObject()
   result["sample_id"] = %report.sampleId
+  result["read_layout"] = %report.layout.layoutName
   result["filename"] = %filename
   result["n_reads_total"] = maybeInt(report.nReadsTotalKnown, report.nReadsScanned)
   result["n_reads_scanned"] = %report.nReadsScanned
@@ -595,11 +653,14 @@ proc indexRowJson(report: AmplicheckReport, filename: string): JsonNode =
   result["primers_status"] = %primerStatusText(report)
   result["primer_labels"] = %primerSummaryText(report)
   result["primer_orientation_ok"] =
-    if report.primersEnabled: %report.primers.orientationConsistent else: newJNull()
+    if report.primersEnabled and report.layout == rlPairedEnd:
+      %report.primers.orientationConsistent
+    else:
+      newJNull()
   result["r1_length_mean"] = maybeFloat(report.lengthEnabled, report.lengthR1.mean)
-  result["r2_length_mean"] = maybeFloat(report.lengthEnabled, report.lengthR2.mean)
+  result["r2_length_mean"] = maybeFloat(report.lengthEnabled and report.layout == rlPairedEnd, report.lengthR2.mean)
   result["r1_quality_mean"] = maybeFloat(report.qualityEnabled, report.qualityR1.meanQuality)
-  result["r2_quality_mean"] = maybeFloat(report.qualityEnabled, report.qualityR2.meanQuality)
+  result["r2_quality_mean"] = maybeFloat(report.qualityEnabled and report.layout == rlPairedEnd, report.qualityR2.meanQuality)
   result["overlap_mean"] = maybeFloat(report.mergeEnabled, report.merge.overlapMean)
   result["merge_rate_pct"] = maybeFloat(report.mergeEnabled, mergeRatePct(report.merge))
   result["unmergeable_pct"] = maybeFloat(report.mergeEnabled, report.merge.pctUnmergeable)
@@ -676,6 +737,7 @@ const indexTemplate = """
   </main>
 <script>
 const INDEX_ROWS = @@ROWS@@;
+const SINGLE_END = INDEX_ROWS.length > 0 && INDEX_ROWS.every(row => row.read_layout === 'single_end');
 const COLUMNS = [
   { key: 'sample_id', label: 'Sample', type: 'text' },
   { key: 'filename', label: 'Quality', type: 'link' },
@@ -684,13 +746,15 @@ const COLUMNS = [
   { key: 'n_reads_total', label: 'Tot reads', type: 'number', nullText: 'unknown' },
   { key: 'n_reads_scanned', label: 'Scanned', type: 'number' },
   { key: 'n_reads_sampled', label: 'Sampled', type: 'number' },
-  { key: 'r1_length_mean', label: 'R1 len', type: 'number', digits: 1 },
-  { key: 'r2_length_mean', label: 'R2 len', type: 'number', digits: 1 },
-  { key: 'r1_quality_mean', label: 'R1 Q', type: 'number', digits: 1 },
-  { key: 'r2_quality_mean', label: 'R2 Q', type: 'number', digits: 1 },
-  { key: 'overlap_mean', label: 'Avg overlap', type: 'number', digits: 1 },
-  { key: 'merge_rate_pct', label: 'Merge %', type: 'number', digits: 1 },
-  { key: 'unmergeable_pct', label: 'Unmergeable %', type: 'number', digits: 1 },
+  { key: 'r1_length_mean', label: SINGLE_END ? 'Length' : 'R1 len', type: 'number', digits: 1 },
+  ...(SINGLE_END ? [] : [{ key: 'r2_length_mean', label: 'R2 len', type: 'number', digits: 1 }]),
+  { key: 'r1_quality_mean', label: SINGLE_END ? 'Quality' : 'R1 Q', type: 'number', digits: 1 },
+  ...(SINGLE_END ? [] : [
+    { key: 'r2_quality_mean', label: 'R2 Q', type: 'number', digits: 1 },
+    { key: 'overlap_mean', label: 'Avg overlap', type: 'number', digits: 1 },
+    { key: 'merge_rate_pct', label: 'Merge %', type: 'number', digits: 1 },
+    { key: 'unmergeable_pct', label: 'Unmergeable %', type: 'number', digits: 1 }
+  ]),
   { key: 'trunc_len', label: 'truncLen', type: 'text' },
   { key: 'strategy', label: 'Strategy', type: 'text' }
 ];

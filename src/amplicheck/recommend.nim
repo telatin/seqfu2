@@ -9,6 +9,9 @@ proc isVariableLength(r1, r2: ReadLengthSummary): bool =
   (r1.sd > 5.0 or r2.sd > 5.0 or
    (r1.max - r1.min) > 20 or (r2.max - r2.min) > 20)
 
+proc isVariableLength(read: ReadLengthSummary): bool =
+  read.n > 0 and (read.sd > 5.0 or (read.max - read.min) > 20)
+
 proc inferAmpliconCall*(mode: AmpliconMode, r1, r2: ReadLengthSummary,
                         merge: MergeSummary): string =
   case mode
@@ -64,3 +67,23 @@ proc makeRecommendation*(mode: AmpliconMode, r1Len, r2Len: ReadLengthSummary,
       result.note = "Binned quality scores detected; truncQ is emphasized over a sharp quality-curve cliff."
     else:
       result.note = "Fixed read lengths and acceptable overlap support fixed truncLen."
+
+proc makeSingleRecommendation*(mode: AmpliconMode, readLen: ReadLengthSummary,
+                               readQual: ReadQualitySummary): Recommendation =
+  let
+    variable = isVariableLength(readLen) or mode == amIts
+    binned = readQual.binned
+
+  result.maxEE = @[2.0]
+  result.truncQ = if binned: 11 else: 2
+
+  if variable:
+    result.strategy = "variable_length_no_trunc"
+    result.note = "Variable read lengths detected; avoid fixed truncLen unless downstream processing is validated."
+  else:
+    result.strategy = "fixed_truncLen"
+    result.truncLenFwd = chooseTruncLen(readLen, readQual)
+    if binned:
+      result.note = "Binned quality scores detected; truncQ is emphasized over a sharp quality-curve cliff."
+    else:
+      result.note = "Fixed read lengths support a single-end fixed truncLen."
