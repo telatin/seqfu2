@@ -41,3 +41,4 @@ trim_pe trim_pe.sh
 fastp-trim.md
 *.fxi
 seq_benchmark/
+_archive/
