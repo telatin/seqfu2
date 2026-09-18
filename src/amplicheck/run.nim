@@ -48,6 +48,7 @@ proc analyzeInput*(input: AmplicheckInput, opts: AmplicheckOptions,
   result.r1 = input.r1
   result.r2 = input.r2
   result.layout = input.layout
+  result.minRecommendReads = opts.minRecommendReads
   result.primersEnabled = stPrimers in opts.stages
   result.lengthEnabled = stLength in opts.stages
   result.qualityEnabled = stQuality in opts.stages
@@ -70,7 +71,8 @@ proc analyzeInput*(input: AmplicheckInput, opts: AmplicheckOptions,
     progressEvery = progressInterval(opts.maxReads)
 
   if result.primersEnabled:
-    primerAcc = initPrimerAccumulator()
+    primerAcc = initPrimerAccumulator(opts.customFwdPrimers,
+                                      opts.customRevPrimers)
 
   template writeVerboseLine(message: string) =
     if bufferVerbose:
@@ -183,7 +185,12 @@ proc analyzeInput*(input: AmplicheckInput, opts: AmplicheckOptions,
   if result.sweepEnabled:
     result.sweep = sweepAcc.summarize()
 
-  result.recommendationEnabled = result.lengthEnabled and result.qualityEnabled
+  result.recommendationEnabled =
+    result.lengthEnabled and result.qualityEnabled and
+    result.nReadsSampled >= opts.minRecommendReads and
+    result.lengthR1.n > 0 and result.qualityR1.n > 0 and
+    (input.layout == rlSingleEnd or
+     (result.lengthR2.n > 0 and result.qualityR2.n > 0))
   if result.recommendationEnabled:
     if input.layout == rlSingleEnd:
       result.recommendation = makeSingleRecommendation(opts.amplicon,

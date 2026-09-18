@@ -125,6 +125,9 @@ proc toJson*(report: AmplicheckReport): JsonNode =
     result["n_reads_total"] = newJNull()
   result["n_reads_scanned"] = %report.nReadsScanned
   result["n_reads_sampled"] = %report.nReadsSampled
+  result["recommendation_min_reads"] = %report.minRecommendReads
+  result["recommendation_reads_sufficient"] =
+    %(report.nReadsSampled >= report.minRecommendReads)
 
   result["primers"] =
     if report.primersEnabled: primerJson(report.primers, report.layout) else: newJNull()
@@ -187,6 +190,8 @@ proc renderText*(report: AmplicheckReport): string =
       result.add(fmt"  Recommendation: strategy={report.recommendation.strategy} truncLen={report.recommendation.truncLenFwd} truncQ={report.recommendation.truncQ} maxEE={maxEEText}" & "\n")
     else:
       result.add(fmt"  Recommendation: strategy={report.recommendation.strategy} truncLen=({report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}) truncQ={report.recommendation.truncQ} maxEE=({maxEEText})" & "\n")
+  elif report.lengthEnabled and report.qualityEnabled:
+    result.add(fmt"  Recommendation: not emitted; requires at least {report.minRecommendReads} sampled reads" & "\n")
   result.add("\n")
 
 proc primerText(side: PrimerSideSummary): string =
@@ -239,6 +244,8 @@ proc renderVerboseSummary*(report: AmplicheckReport): string =
       result.add(fmt"  recommendation: strategy={report.recommendation.strategy} truncLen={report.recommendation.truncLenFwd} truncQ={report.recommendation.truncQ} maxEE={maxEEText(report.recommendation.maxEE)}" & "\n")
     else:
       result.add(fmt"  recommendation: strategy={report.recommendation.strategy} truncLen=({report.recommendation.truncLenFwd},{report.recommendation.truncLenRev}) truncQ={report.recommendation.truncQ} maxEE=({maxEEText(report.recommendation.maxEE)})" & "\n")
+  elif report.lengthEnabled and report.qualityEnabled:
+    result.add(fmt"  recommendation: not emitted; sampled={report.nReadsSampled} required={report.minRecommendReads}" & "\n")
 
 proc safeName(s: string): string =
   for c in s:

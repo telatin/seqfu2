@@ -27,8 +27,10 @@ type
 
   AmplicheckOptions* = object
     fwdTag*, revTag*: string
+    customFwdPrimers*, customRevPrimers*: seq[string]
     outdir*: string
     maxReads*: int
+    minRecommendReads*: int
     subsample*: float
     stages*: set[AmplicheckStage]
     amplicon*: AmpliconMode
@@ -103,6 +105,7 @@ type
     sampleId*, r1*, r2*: string
     layout*: ReadLayout
     nReadsScanned*, nReadsSampled*: int
+    minRecommendReads*: int
     nReadsTotalKnown*: bool
     primersEnabled*, lengthEnabled*, qualityEnabled*: bool
     mergeEnabled*, sweepEnabled*, recommendationEnabled*: bool

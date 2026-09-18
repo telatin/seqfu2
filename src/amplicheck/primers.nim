@@ -3,10 +3,14 @@ import readfx
 import strutils
 import tables
 
-import ../seqfu_utils
 import ./types
 
 const primerDbRaw = staticRead("../data/primers_db.tsv")
+
+const
+  PrimerMinReadIdentity = 0.80
+  PrimerMinSupportCount = 3
+  PrimerMinSupportFraction = 0.10
 
 type
   PrimerRecord* = object
@@ -52,8 +56,28 @@ proc parsePrimerDb*(): seq[PrimerRecord] =
       citation: fields[7]
     ))
 
-proc initPrimerAccumulator*(): PrimerAccumulator =
-  result.db = parsePrimerDb()
+proc customPrimerDb(fwdPrimers, revPrimers: seq[string]): seq[PrimerRecord] =
+  for i, sequence in fwdPrimers:
+    result.add(PrimerRecord(
+      name: "custom_fwd_" & $(i + 1),
+      sequence: sequence,
+      direction: "forward",
+      targetDomain: "user-supplied"
+    ))
+  for i, sequence in revPrimers:
+    result.add(PrimerRecord(
+      name: "custom_rev_" & $(i + 1),
+      sequence: sequence,
+      direction: "reverse",
+      targetDomain: "user-supplied"
+    ))
+
+proc initPrimerAccumulator*(fwdPrimers: seq[string] = @[],
+                            revPrimers: seq[string] = @[]): PrimerAccumulator =
+  if fwdPrimers.len > 0 or revPrimers.len > 0:
+    result.db = customPrimerDb(fwdPrimers, revPrimers)
+  else:
+    result.db = parsePrimerDb()
   result.r1Hits = initCountTable[string]()
   result.r2Hits = initCountTable[string]()
   result.r1Scores = initTable[string, float]()
@@ -113,7 +137,7 @@ proc consensus(acc: PrefixAccumulator): string =
       break
     result.add(iupacFromSeen(seen))
 
-proc primerScore(readSeq, primer: string, minFraction = 0.60): float =
+proc primerScore(readSeq, primer: string): float =
   if readSeq.len == 0 or primer.len == 0:
     return 0.0
 
@@ -121,7 +145,7 @@ proc primerScore(readSeq, primer: string, minFraction = 0.60): float =
     query = readSeq.toUpperAscii()
     target = primer.toUpperAscii()
     compared = min(query.len, target.len)
-    required = max(1, int(ceil(minFraction * float(target.len))))
+    required = max(1, int(ceil(PrimerMinReadIdentity * float(target.len))))
 
   if compared < required:
     return 0.0
@@ -136,7 +160,7 @@ proc primerScore(readSeq, primer: string, minFraction = 0.60): float =
 proc bestPrimer(readSeq: string, db: seq[PrimerRecord]): PrimerMatch =
   for primer in db:
     let score = primerScore(readSeq, primer.sequence)
-    if score >= 0.60:
+    if score >= PrimerMinReadIdentity:
       if not result.found or score > result.score:
         result.found = true
         result.name = primer.name
@@ -173,11 +197,19 @@ proc topHit(hits: CountTable[string]): tuple[name: string, count: int] =
       result.count = count
 
 proc summarizeSide(acc: PrimerAccumulator, hits: CountTable[string],
-                   scores: Table[string, float],
-                   prefix: PrefixAccumulator): PrimerSideSummary =
+                    scores: Table[string, float],
+                    prefix: PrefixAccumulator): PrimerSideSummary =
   let top = topHit(hits)
   result.consensus = consensus(prefix)
   if top.count > 0:
+    result.supportCount = top.count
+    if acc.observed > 0:
+      result.supportFraction = float(top.count) / float(acc.observed)
+    result.score = scores.getOrDefault(top.name, 0.0) / float(top.count)
+    if top.count < PrimerMinSupportCount or
+        result.supportFraction < PrimerMinSupportFraction:
+      return
+
     let primer = recordByName(acc.db, top.name)
     result.detected = true
     result.label = primer.name
@@ -186,39 +218,29 @@ proc summarizeSide(acc: PrimerAccumulator, hits: CountTable[string],
     result.targetDomain = primer.targetDomain
     result.region = primer.region
     result.citation = primer.citation
-    result.supportCount = top.count
-    if acc.observed > 0:
-      result.supportFraction = float(top.count) / float(acc.observed)
-    result.score = scores.getOrDefault(top.name, 0.0) / float(top.count)
-  elif result.consensus.len >= 8:
-    result.detected = true
-    result.primer = result.consensus
-    result.direction = "unknown"
-    result.supportCount = prefix.totalReads
-    if acc.observed > 0:
-      result.supportFraction = 1.0
 
 proc summarize*(acc: PrimerAccumulator): PrimerSummary =
   result.r1 = summarizeSide(acc, acc.r1Hits, acc.r1Scores, acc.r1Prefix)
   result.r2 = summarizeSide(acc, acc.r2Hits, acc.r2Scores, acc.r2Prefix)
   result.detected = result.r1.detected or result.r2.detected
   result.orientationConsistent =
+    result.r1.detected and result.r2.detected and
     result.r1.direction == "forward" and result.r2.direction == "reverse"
 
-  if result.r1.direction == "forward":
+  if result.r1.detected and result.r1.direction == "forward":
     result.fwdPrimer = result.r1.primer
     result.fwdLabel = result.r1.label
-  elif result.r2.direction == "forward":
+  elif result.r2.detected and result.r2.direction == "forward":
     result.fwdPrimer = result.r2.primer
     result.fwdLabel = result.r2.label
   else:
     result.fwdPrimer = result.r1.primer
     result.fwdLabel = result.r1.label
 
-  if result.r2.direction == "reverse":
+  if result.r2.detected and result.r2.direction == "reverse":
     result.revPrimer = result.r2.primer
     result.revLabel = result.r2.label
-  elif result.r1.direction == "reverse":
+  elif result.r1.detected and result.r1.direction == "reverse":
     result.revPrimer = result.r1.primer
     result.revLabel = result.r1.label
   else:
@@ -228,9 +250,9 @@ proc summarize*(acc: PrimerAccumulator): PrimerSummary =
 proc summarizeSingle*(acc: PrimerAccumulator): PrimerSummary =
   result.r1 = summarizeSide(acc, acc.r1Hits, acc.r1Scores, acc.r1Prefix)
   result.detected = result.r1.detected
-  if result.r1.direction == "forward":
+  if result.r1.detected and result.r1.direction == "forward":
     result.fwdPrimer = result.r1.primer
     result.fwdLabel = result.r1.label
-  elif result.r1.direction == "reverse":
+  elif result.r1.detected and result.r1.direction == "reverse":
     result.revPrimer = result.r1.primer
     result.revLabel = result.r1.label
