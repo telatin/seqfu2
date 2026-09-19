@@ -4,6 +4,7 @@ import os
 import tables
 import algorithm
 import std/strutils
+import std/times
 import ./seqfu_legacy_fastx
 
 const NimblePkgVersion {.strdefine.} = "undef"
@@ -31,6 +32,26 @@ type
     rows: int
     columns: int
     mismatch: bool
+
+  columnType = enum
+    ctInt = "int"
+    ctFloat = "float"
+    ctString = "string"
+    ctDate = "date"
+
+  columnStats = object
+    total: int
+    nonEmpty: int
+    allInt: bool
+    allFloat: bool
+    allDate: bool
+    numericCount: int
+    numericMin: float
+    numericMax: float
+    numericSum: float
+    dateMin: string
+    dateMax: string
+    values: CountTable[string]
  
 proc isCommentRow(row: openArray[string], comment: char): bool =
   if comment == '\0' or row.len == 0:
@@ -80,6 +101,7 @@ proc checkFile(f: string, sep: char, header: char): checkResult =
   try:
     let file = openSeqfuGzStream(f)
     parser.open(file, f, separator = sep)
+    defer: parser.close()
     while readRow(parser):
       if isCommentRow(parser.row, header):
         continue
@@ -129,6 +151,7 @@ proc sampleSeparator(f: string, sep: char, header: char, maxRows = 128): separat
   try:
     let file = openSeqfuGzStream(f)
     parser.open(file, f, separator = sep)
+    defer: parser.close()
     while readRow(parser):
       if isCommentRow(parser.row, header):
         continue
@@ -145,12 +168,12 @@ proc sampleSeparator(f: string, sep: char, header: char, maxRows = 128): separat
 
     if result.rows == 0:
       result.score = 0
-    elif result.mismatch:
-      result.score = result.rows
-    elif result.columns <= 1:
-      result.score = result.rows * 2
-    else:
+    elif result.columns > 1 and not result.mismatch:
       result.score = 10_000 + (result.rows * 10) + result.columns
+    elif result.columns > 1:
+      result.score = 5_000 + (result.rows * 10) + result.columns
+    else:
+      result.score = result.rows * 2
   except Exception:
     result.score = -1
 
@@ -170,7 +193,128 @@ proc pickAutoSeparator(f: string, separators: seq[char], commentChar: char, verb
     stderr.writeLine("Auto selected separator: <", result, ">")
 
 
-proc checkColumns(f: string, sep: char, header: char) =
+proc initColumnStats(): columnStats =
+  result.allInt = true
+  result.allFloat = true
+  result.allDate = true
+  result.values = initCountTable[string]()
+
+proc parseDate(value: string, normalized: var string): bool =
+  for pattern in ["yyyy-MM-dd", "yyyy/MM/dd"]:
+    try:
+      let parsed = times.parse(value, pattern)
+      normalized = parsed.format("yyyy-MM-dd")
+      return true
+    except ValueError:
+      discard
+
+proc addValue(stats: var columnStats, value: string) =
+  stats.total += 1
+  stats.values.inc(value)
+  if value.len == 0:
+    return
+
+  stats.nonEmpty += 1
+  try:
+    discard parseBiggestInt(value)
+  except ValueError:
+    stats.allInt = false
+
+  try:
+    let number = parseFloat(value)
+    if stats.numericCount == 0:
+      stats.numericMin = number
+      stats.numericMax = number
+    else:
+      stats.numericMin = min(stats.numericMin, number)
+      stats.numericMax = max(stats.numericMax, number)
+    stats.numericSum += number
+    stats.numericCount += 1
+  except ValueError:
+    stats.allFloat = false
+
+  var normalizedDate = ""
+  if parseDate(value, normalizedDate):
+    if stats.dateMin.len == 0 or normalizedDate < stats.dateMin:
+      stats.dateMin = normalizedDate
+    if stats.dateMax.len == 0 or normalizedDate > stats.dateMax:
+      stats.dateMax = normalizedDate
+  else:
+    stats.allDate = false
+
+proc inferredType(stats: columnStats): columnType =
+  if stats.nonEmpty > 0 and stats.allInt:
+    return ctInt
+  if stats.nonEmpty > 0 and stats.allFloat:
+    return ctFloat
+  if stats.nonEmpty > 0 and stats.allDate:
+    return ctDate
+  return ctString
+
+proc valueType(value: string): columnType =
+  var stats = initColumnStats()
+  stats.addValue(value)
+  return stats.inferredType()
+
+proc copyRow(row: openArray[string]): seq[string] =
+  result = newSeq[string](row.len)
+  for i, value in row:
+    result[i] = value
+
+proc looksLikeHeader(firstRow: seq[string], tailStats: seq[columnStats]): bool =
+  if firstRow.len != tailStats.len:
+    return false
+
+  var typedDifference = false
+  for i, value in firstRow:
+    if value.len == 0:
+      return false
+    let tailType = tailStats[i].inferredType()
+    if value.valueType() == ctString and tailType in {ctInt, ctFloat, ctDate}:
+      typedDifference = true
+  return typedDifference
+
+proc compactFloat(value: float): string =
+  result = value.formatFloat(ffDecimal, 6)
+  while result.len > 1 and result[^1] == '0':
+    result.setLen(result.len - 1)
+  if result[^1] == '.':
+    result.setLen(result.len - 1)
+
+proc displayValue(value: string): string =
+  if value.len == 0:
+    return "<empty>"
+  return value.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n").replace("\r", "\\r")
+
+proc describe(stats: columnStats, kind: columnType): string =
+  case kind
+  of ctInt, ctFloat:
+    let average = stats.numericSum / float(stats.numericCount)
+    result = "min=" & compactFloat(stats.numericMin) &
+      "; max=" & compactFloat(stats.numericMax) &
+      "; average=" & compactFloat(average)
+  of ctDate:
+    result = "min=" & stats.dateMin & "; max=" & stats.dateMax
+  of ctString:
+    var counts = newSeq[(string, int)]()
+    for value, count in stats.values:
+      counts.add((value, count))
+    counts.sort(proc(a, b: (string, int)): int =
+      if a[1] != b[1]: cmp(b[1], a[1])
+      else: cmp(a[0], b[0]))
+
+    var top = newSeq[string]()
+    for i in 0 ..< min(3, counts.len):
+      let percentage = if stats.total > 0:
+        100.0 * float(counts[i][1]) / float(stats.total)
+      else:
+        0.0
+      top.add(displayValue(counts[i][0]) & ": " & $counts[i][1] &
+        " (" & percentage.formatFloat(ffDecimal, 1) & "%)")
+    result = "total=" & $stats.total & "; distinct=" & $stats.values.len &
+      "; top3=" & top.join(", ")
+
+proc checkColumns(f: string, sep: char, comment: char, columns: int): bool =
   var
     parser: CsvParser
 
@@ -178,46 +322,52 @@ proc checkColumns(f: string, sep: char, header: char) =
     let
       file = openSeqfuGzStream(f)
     parser.open(file, f, separator = sep)
+    defer: parser.close()
 
-    var
-      colnames: seq[string]
-
+    var explicitHeader = newSeq[string]()
+    var firstData = newSeq[string]()
     while readRow(parser):
-      if isCommentRow(parser.row, header):
+      if isCommentRow(parser.row, comment):
+        if explicitHeader.len == 0 and parser.row.len == columns:
+          explicitHeader = copyRow(parser.row)
+          explicitHeader[0] = explicitHeader[0].strip(leading = true, trailing = false)
+          if explicitHeader[0].len > 0 and explicitHeader[0][0] == comment:
+            explicitHeader[0] = explicitHeader[0][1 .. ^1].strip()
         continue
-      colnames = parser.row
+      firstData = copyRow(parser.row)
       break
 
-    if colnames.len == 0:
+    if firstData.len == 0:
       return
 
-    var
-      colstats = newSeq[CountTable[string]](len(colnames))
-      rowcount = 0
-    for i in 0 ..< len(colstats):
-      colstats[i] = initCountTable[string]()
-    
-    # Parse CSV file
+    var tailStats = newSeq[columnStats](columns)
+    for i in 0 ..< columns:
+      tailStats[i] = initColumnStats()
+
     while readRow(parser):
-      if isCommentRow(parser.row, header):
+      if isCommentRow(parser.row, comment):
         continue
-      rowcount += 1
-      # Increment column count in the array
-      for i in 0 ..< min(len(parser.row), len(colstats)):
-        colstats[i].inc(parser.row[i])
-    
-    for i, counter in pairs(colstats):
-      var
-        top = ""
-        topratio = 0.0
-      colstats[i].sort()
-       
-      if rowcount > 0:
-        for s, count in colstats[i]:
-          top = s
-          topratio = float(100 * count / rowcount)
-          break
-      echo os.extractFilename(f), "\t", i, "\t", colnames[i], "\t", len(colstats[i]), "\t", top, "\t", topratio.formatFloat(ffDecimal, 1), "%"
+      for i in 0 ..< columns:
+        tailStats[i].addValue(parser.row[i])
+
+    var colnames = newSeq[string](columns)
+    var colstats = tailStats
+    if explicitHeader.len == columns:
+      colnames = explicitHeader
+      for i in 0 ..< columns:
+        colstats[i].addValue(firstData[i])
+    elif looksLikeHeader(firstData, tailStats):
+      colnames = firstData
+    else:
+      for i in 0 ..< columns:
+        colnames[i] = $(i + 1)
+        colstats[i].addValue(firstData[i])
+
+    for i, stats in colstats:
+      let kind = stats.inferredType()
+      let name = if colnames[i].len > 0: colnames[i] else: $(i + 1)
+      echo displayValue(name), "\t", $kind, "\t", stats.describe(kind)
+    return true
 
 
   except Exception as e:
@@ -239,7 +389,7 @@ proc tabcheck*(args: var seq[string], cmdName = "fu-tabcheck"): int =
     -s, --separator CHAR   Character separating the values, 'tab' for tab and 'auto'
                            to try tab or commas [default: auto]
     -c, --comment CHAR     Comment/Header char [default: #]
-    -i, --inspect          Gather more informations on column content [if valid column]     
+    -i, --inspect          Inspect one valid table and infer column types and statistics
     --header               Print a header to the report
     --verbose              Enable verbose mode
   """.replace("$CMD$", cmdName)
@@ -265,6 +415,11 @@ proc tabcheck*(args: var seq[string], cmdName = "fu-tabcheck"): int =
     separators = sepList
     printHeader = bool(docArgs["--header"])
     doInspect   = bool(docArgs["--inspect"])
+
+  let inputFiles = @(docArgs["<FILE>"])
+  if doInspect and inputFiles.len != 1:
+    stderr.writeLine("ERROR: --inspect requires exactly one input table")
+    return 2
   
   if docArgs["--verbose"]:
     stderr.writeLine("Separator: ", separators)
@@ -275,11 +430,11 @@ proc tabcheck*(args: var seq[string], cmdName = "fu-tabcheck"): int =
   var
     okFiles = 0
     badFiles = 0
-    validFiles = newSeq[(string, char)]()
+    validFiles = newSeq[(string, char, int)]()
 
   if printHeader and not doInspect:
     echo "File\tPassQC\tColumns\tRows\tSeparator"
-  for file in @(docArgs["<FILE>"]):
+  for file in inputFiles:
     var
       bestFile: checkResult
     if docArgs["--verbose"]:
@@ -297,14 +452,19 @@ proc tabcheck*(args: var seq[string], cmdName = "fu-tabcheck"): int =
         if docArgs["--verbose"]:
           stderr.writeLine "<", sepChar, "> ", check
         if check.valid == true:
-          if bestFile.columns < check.columns:
+          if not bestFile.valid or bestFile.columns < check.columns:
+            bestFile = check
+        elif not bestFile.valid:
+          if bestFile.reason.len == 0 or check.expectedColumns > bestFile.expectedColumns:
             bestFile = check
     
     if bestFile.valid == true:
       okFiles += 1
-      validFiles.add((file, bestFile.sepchar))
+      validFiles.add((file, bestFile.sepchar, bestFile.columns))
     else:
       badFiles += 1
+      if doInspect:
+        stderr.writeLine(file, "\t", bestFile.toString())
     if not doInspect:
       echo file, "\t", bestFile.toString(printHeader)
   if docArgs["--verbose"]:
@@ -316,9 +476,10 @@ proc tabcheck*(args: var seq[string], cmdName = "fu-tabcheck"): int =
   # Inspect?
   if doInspect:
     if printHeader:
-      echo "File\tColID\tColName\tTypes\tTopItem\tTopRatio"
+      echo "Column\tType\tDescription"
     for fileInfo in validFiles:
-      checkColumns(fileInfo[0], fileInfo[1], commentChar)
+      if not checkColumns(fileInfo[0], fileInfo[1], commentChar, fileInfo[2]):
+        return 1
 
   return 0
 

@@ -25,7 +25,7 @@ Options:
   -s, --separator CHAR   Character separating the values, 'tab' for tab and 'auto'
                          to try tab or commas [default: auto]
   -c, --comment CHAR     Comment/Header char [default: #]
-  -i, --inspect          Gather more informations on column content [if valid column]
+  -i, --inspect          Inspect one valid table and infer column types and statistics
   --header               Print a header to the report
   --verbose              Enable verbose mode
 ```
@@ -50,7 +50,16 @@ data/table2.tsv    Error[row=3;expected=3;observed=4;reason=inconsistent-column-
 
 * `--separator auto` performs separator sampling before full parsing.
 * Comments are ignored when `--comment` is set (default: `#`).
-* `--inspect` prints per-column cardinality and most frequent value statistics.
+* `--inspect` accepts exactly one table and validates it before printing a profile.
+* A leading comment/header row supplies column names. An unmarked first row is
+  inferred as a header when its labels differ from numeric or date values below;
+  otherwise columns are numbered from 1.
+* Types are inferred from all non-empty values as `int`, `float`, `date`, or
+  `string`. Dates recognize `YYYY-MM-DD` and `YYYY/MM/DD`.
+* Numeric descriptions report minimum, maximum, and average across non-empty
+  values. String descriptions report total and distinct counts plus the three
+  most frequent values and their percentages. Date descriptions report the
+  minimum and maximum date.
 
 ## Examples
 
@@ -64,6 +73,14 @@ Inspect column profiles:
 
 ```bash
 seqfu tabcheck --inspect --header data/table.tsv
+```
+
+The profile is tab-separated:
+
+```text
+Column  Type    Description
+sample  string  total=10; distinct=3; top3=A: 5 (50.0%), B: 3 (30.0%), C: 2 (20.0%)
+count   int     min=1; max=12; average=6.4
 ```
 
 Legacy equivalent:

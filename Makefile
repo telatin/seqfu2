@@ -32,7 +32,7 @@ src/deps.txt:
 	nimble install -y --depsOnly
 	touch $@
 
-src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim src/msa.nim src/shred.nim src/lib/msa_reader.nim src/deps.txt seqfu.nimble
+src/sfu.nim: ./src/fast*.nim ./src/*utils*.nim src/fu_tabcheck.nim src/fu_orf.nim src/msa.nim src/shred.nim src/lib/msa_reader.nim src/deps.txt seqfu.nimble
 	touch $@ 
 
 $(BIN)/byteshift: test/byte/shifter.c
