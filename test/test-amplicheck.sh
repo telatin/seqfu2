@@ -204,16 +204,15 @@ AMP_VERBOSE_OUT="$TMP_AMPLICHECK_DIR/verbose"
   --only length,quality,merge --no-json --text -v \
   --outdir "$AMP_VERBOSE_OUT" > /dev/null 2>"$AMP_ERR"
 RET=$?
-MSG="amplicheck verbose mode reports progress and sample summary"
+MSG="amplicheck verbose mode reports progress and concise sample summary"
 if [[ $RET -eq 0 ]] && \
    grep -q 'amplicheck: sample art: start' "$AMP_ERR" && \
    grep -q 'progress scanned=2 sampled=1' "$AMP_ERR" && \
    grep -q 'parsed scanned=4 sampled=2' "$AMP_ERR" && \
-   grep -q 'amplicheck: sample art: summary' "$AMP_ERR" && \
-   grep -q '  length:' "$AMP_ERR" && \
-   grep -q '  quality:' "$AMP_ERR" && \
-   grep -q '  overlap:' "$AMP_ERR" && \
-   grep -q '  recommendation:' "$AMP_ERR"; then
+   grep -q 'amplicheck: art: done:' "$AMP_ERR" && \
+   grep -q 'done: scanned=4' "$AMP_ERR" && \
+   grep -q 'merged=100.0%' "$AMP_ERR" && \
+   grep -q 'overlap=53.0' "$AMP_ERR"; then
   echo -e "$OK: $MSG"
   PASS=$((PASS+1))
 else
