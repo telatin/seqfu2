@@ -1,0 +1,55 @@
+name: Build binaries (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.asset_name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            asset_name: seqfu-linux-x86_64
+            linux: true
+          - runner: ubuntu-24.04-arm
+            asset_name: seqfu-linux-aarch64
+            linux: true
+          - runner: macos-15
+            asset_name: seqfu-macos-arm64
+            linux: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: 2.2.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Linux system dependencies
+        if: matrix.linux
+        run: sudo apt-get update && sudo apt-get install -y zlib1g-dev libpcre3-dev
+
+      - name: Build seqfu
+        run: |
+          echo "--threads:on" >> nim.cfg
+          mkdir -p bin dist
+          make bin/seqfu
+          ./bin/seqfu --version
+          cp bin/seqfu "dist/${{ matrix.asset_name }}"
+          chmod 755 "dist/${{ matrix.asset_name }}"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: dist/${{ matrix.asset_name }}
+          if-no-files-found: error
