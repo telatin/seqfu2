@@ -42,6 +42,7 @@ Invoking `seqfu` will display a list of internal commands:
 
   · cat                 : concatenate FASTA/FASTQ files
   · grep                : select sequences with patterns
+  · by-id               : select sequences by identifier
   · head                : print first sequences
   · less                : interactive viewer for sequences (like less)
   · rc                  : reverse complement strings or files

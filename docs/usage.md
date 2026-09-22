@@ -39,6 +39,7 @@ SeqFu - FASTX Tools
 
   · cat                 : concatenate FASTA/FASTQ files
   · grep                : select sequences with patterns
+  · by-id               : select sequences by identifier
   · head                : print first sequences
   · rc                  : reverse complement strings or files
   · tab                 : tabulate reads to TSV (and viceversa)

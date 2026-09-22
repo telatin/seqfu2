@@ -25,6 +25,7 @@ include ./fastx_head
 include ./fastx_tail 
 include ./fastx_sort
 include ./fastx_grep2
+include ./filter_byid
 include ./fastq_merge_lanes
 include ./fastx_rc
 include ./fastx_qual
@@ -97,6 +98,7 @@ var progs = {
        "view": fastx_view,
        "less": fastx_less,
        "grep": fastx_grep2,
+       "by-id": filter_byid,
        "head": fastx_head,
        "tail": fastx_tail,
        "tabulate": fastx_tabulate,
@@ -147,6 +149,7 @@ proc main(args: var seq[string]): int =
                   "head"           : "print first sequences",
                   "tail"           : "view last sequences",
                   "grep"           : "select sequences with patterns",
+                  "by-id"          : "select sequences by identifier",
                   "rc"             : "reverse complement strings or files",
                   "tab"            : "tabulate reads to TSV (and viceversa)",
                   "tabcheck"       : "validate TSV/CSV field consistency",
@@ -180,8 +183,9 @@ proc main(args: var seq[string]): int =
       else: return 1
       )
     sort(hkeys2, proc(a, b: string): int =
-      if a < b: return -1
-      else: return 1
+      let aKey = if a.startsWith("by-"): "grep/" & a else: a
+      let bKey = if b.startsWith("by-"): "grep/" & b else: b
+      cmp(aKey, bKey)
       )
     echo format("SeqFu $# - FASTX Tools\n", version())
     echo """
