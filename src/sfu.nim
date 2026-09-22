@@ -27,6 +27,7 @@ include ./fastx_sort
 include ./fastx_grep2
 include ./filter_byid
 include ./filter_bycomment
+include ./filter_byseq
 include ./fastq_merge_lanes
 include ./fastx_rc
 include ./fastx_qual
@@ -101,6 +102,7 @@ var progs = {
        "grep": fastx_grep2,
        "by-id": filter_byid,
        "by-comment": filter_bycomment,
+       "by-seq": filter_byseq,
        "head": fastx_head,
        "tail": fastx_tail,
        "tabulate": fastx_tabulate,
@@ -153,6 +155,7 @@ proc main(args: var seq[string]): int =
                   "grep"           : "select sequences with patterns",
                   "by-id"          : "select sequences by identifier",
                   "by-comment"     : "select sequences by comment or attributes",
+                  "by-seq"         : "select sequences by biological sequence",
                   "rc"             : "reverse complement strings or files",
                   "tab"            : "tabulate reads to TSV (and viceversa)",
                   "tabcheck"       : "validate TSV/CSV field consistency",

@@ -44,6 +44,7 @@ Invoking `seqfu` will display a list of internal commands:
   · grep                : select sequences with patterns
   · by-comment          : select sequences by comment or attributes
   · by-id               : select sequences by identifier
+  · by-seq              : select sequences by biological sequence
   · head                : print first sequences
   · less                : interactive viewer for sequences (like less)
   · rc                  : reverse complement strings or files
