@@ -1,0 +1,118 @@
+# Build stage: compile SeqFu from the local repository checkout.
+# For fully reproducible builds, pin the base image by digest, e.g.
+#   From: debian:bookworm-slim@sha256:<digest>
+Bootstrap: docker
+From: debian:bookworm-slim
+Stage: build
+
+%files
+    # Copy only what the build needs (avoids host bin/, .git/, etc.)
+    src /opt/seqfu2/src
+    scripts /opt/seqfu2/scripts
+    seqfu.nimble /opt/seqfu2/seqfu.nimble
+
+%post
+    set -eux
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        build-essential \
+        xz-utils \
+        zlib1g-dev \
+        libssl-dev
+    rm -rf /var/lib/apt/lists/*
+
+    # Nim >= 2.2.0 required by seqfu.nimble and readfx 0.8; pinned for reproducibility.
+    export CHOOSENIM_NO_ANALYTICS=1
+    curl -fsSL https://nim-lang.org/choosenim/init.sh | sh -s -- -y
+    export PATH="/root/.nimble/bin:$PATH"
+    choosenim 2.2.0
+
+    cd /opt/seqfu2
+    nimble build -y
+
+    # Install Nim binaries and the Python helper scripts.
+    find bin -maxdepth 1 -type f -perm -111 -exec install -m 0755 {} /usr/local/bin/ \;
+    install -m 0755 scripts/fu-split scripts/fu-pecheck scripts/fu-readtope /usr/local/bin/
+
+    # Fail the build if any expected tool is missing (mirrors namedBin in seqfu.nimble).
+    for tool in \
+        seqfu dadaist2-mergeseqs fu-16Sregion fu-cov fu-index fu-msa \
+        fu-multirelabel fu-nanotags fu-orf fu-primers fu-shred fu-sw \
+        fu-tabcheck fu-virfilter fu-split fu-pecheck fu-readtope; do
+        test -x "/usr/local/bin/$tool"
+    done
+
+
+# ---------------------------------------------------------------------------
+# Runtime stage: only the libraries and interpreters needed at run time.
+# ---------------------------------------------------------------------------
+Bootstrap: docker
+From: debian:bookworm-slim
+Stage: final
+
+%files from build
+    /usr/local/bin /usr/local/bin
+
+%post
+    set -eux
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        zlib1g \
+        python3-minimal \
+        python-is-python3 \
+        ca-certificates
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export PATH=/usr/local/bin:$PATH
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+
+%runscript
+    # `singularity run seqfu-latest.sif <args>` acts like the seqfu CLI.
+    exec seqfu "$@"
+
+%labels
+    Author Andrea Telatin
+    Description "SeqFu latest build from local repository sources"
+    Name seqfu
+    # Keep in sync with version in seqfu.nimble
+    Version 1.30.0
+
+%help
+    Build this image from the repository root; only src/, scripts/ and
+    seqfu.nimble are copied into the build stage, and the final image
+    contains just the compiled tools and their runtime dependencies.
+
+    Example (Singularity/Apptainer 3.8-compatible workflow):
+      sudo singularity build seqfu-latest.sif seqfu-latest.def
+
+    Running the image with `singularity run seqfu-latest.sif ...` is
+    equivalent to invoking the `seqfu` command directly.
+
+%test
+    set -eu
+    seqfu version
+
+    # Smoke-test the readfx parser on FASTQ and FASTA, asserting the counts.
+    printf '@r1\nACGTACGT\n+\nIIIIIIII\n' > /tmp/seqfu-test.fq
+    printf '>s1\nACGTACGT\n' > /tmp/seqfu-test.fa
+    seqfu count /tmp/seqfu-test.fq | grep -qw 1
+    seqfu count /tmp/seqfu-test.fa | grep -qw 1
+    seqfu stats /tmp/seqfu-test.fq > /dev/null
+
+    # Gzipped input (deterministic fixture: the FASTQ above, gzip -n, base64).
+    echo 'H4sIAAAAAAACA3MoMuRydHYPAWEubS5PKOACAMYTXxsYAAAA' | base64 -d > /tmp/seqfu-test.fq.gz
+    seqfu count /tmp/seqfu-test.fq.gz | grep -qw 1
+
+    # Python helper scripts must be installed and executable.
+    test -x /usr/local/bin/fu-split
+    test -x /usr/local/bin/fu-pecheck
+    test -x /usr/local/bin/fu-readtope
