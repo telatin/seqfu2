@@ -41,7 +41,7 @@ seqfu trim [options] -1 <R1.fq> [-2 <R2.fq>]
 | `-o, --output FILE/BASE` | Output file for single-end, or output basename for paired-end (required for PE). | `stdout` |
 | `--r1-suffix SUFFIX` | Suffix for the R1 output file in paired-end mode. | `_R1.fastq` |
 | `--r2-suffix SUFFIX` | Suffix for the R2 output file in paired-end mode. | `_R2.fastq` |
-| `-z, --compress` | Compress output with gzip. | off |
+| `-z, --compress` | Compress output with gzip. Paired output names gain `.gz` unless already present. | off |
 
 ### Fixed Position Trimming
 
