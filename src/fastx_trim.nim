@@ -136,7 +136,7 @@ proc calculateCutTail(quality: string, startPos, endPos: int,
     qualSum -= quality[pos + windowSize].ord
 
     if qualSum >= targetQualSum:
-      return pos + 1
+      return pos + windowSize
 
   return startPos
 
@@ -772,10 +772,12 @@ Fixed Position Trimming:
 
 Sliding Window Trimming:
   -5 --cut-front           Enable 5' sliding window trimming
+  --no-cut-front           Disable 5' sliding window trimming
   --cut-front-window N     Window size for cut-front [default: 4]
   --cut-front-qual N       Quality threshold for cut-front [default: 20]
 
   -3 --cut-tail            Enable 3' sliding window trimming [default: enabled]
+  --no-cut-tail            Disable 3' sliding window trimming
   --cut-tail-window N      Window size for cut-tail [default: 4]
   --cut-tail-qual N        Quality threshold for cut-tail [default: 20]
 
@@ -816,6 +818,7 @@ Description:
   Supports both single-end and paired-end reads.
 
   By default, enables 3' tail trimming and quality filtering.
+  Cut-front composes with the default tail trim; use --no-cut-tail for front-only trimming.
   For paired-end mode, both reads must pass all filters to be retained.
 
 Examples:
@@ -829,7 +832,7 @@ Examples:
   seqfu trim -1 R1.fq -2 R2.fq -o out --cut-right --avg-qual 25 -l 50
 
   # Minimal processing (disable defaults)
-  seqfu trim input.fq -o output.fq -Q --trim-front 5 --trim-tail 5
+  seqfu trim input.fq -o output.fq -Q --no-cut-tail --trim-front 5 --trim-tail 5
 """
 
   let parsedArgs = docopt(doc, argv=args, version="SeqFu " & version())
@@ -871,6 +874,15 @@ Examples:
   var trimOpts = TrimOptions()
   var filterOpts = FilterOptions()
   var threads, batchSize: int
+  let noCutFront = parsedArgs["--no-cut-front"]
+  let noCutTail = parsedArgs["--no-cut-tail"]
+
+  if parsedArgs["--cut-front"] and noCutFront:
+    stderr.writeLine("ERROR: --cut-front and --no-cut-front cannot be used together.")
+    return 1
+  if parsedArgs["--cut-tail"] and noCutTail:
+    stderr.writeLine("ERROR: --cut-tail and --no-cut-tail cannot be used together.")
+    return 1
 
   try:
     trimOpts.trimFrontBases = getInt($parsedArgs["--trim-front"], "--trim-front", 0)
@@ -878,7 +890,7 @@ Examples:
     trimOpts.qualOffset = getInt($parsedArgs["--offset"], "--offset", 33)
 
     # Sliding window options
-    trimOpts.cutFront = parsedArgs["--cut-front"]
+    trimOpts.cutFront = parsedArgs["--cut-front"] and not noCutFront
     trimOpts.cutFrontWindow = getInt($parsedArgs["--cut-front-window"], "--cut-front-window", 4)
     trimOpts.cutFrontQual = getInt($parsedArgs["--cut-front-qual"], "--cut-front-qual", 20)
 
@@ -886,8 +898,9 @@ Examples:
     trimOpts.cutRightWindow = getInt($parsedArgs["--cut-right-window"], "--cut-right-window", 4)
     trimOpts.cutRightQual = getInt($parsedArgs["--cut-right-qual"], "--cut-right-qual", 20)
 
-    # Default: cut-tail enabled
-    trimOpts.cutTail = parsedArgs["--cut-tail"] or (not parsedArgs["--cut-right"] and not parsedArgs["--cut-front"])
+    # Tail trimming is enabled by default and composes with cut-front.
+    # Cut-right replaces cut-tail, while --no-cut-tail explicitly disables it.
+    trimOpts.cutTail = not parsedArgs["--cut-right"] and not noCutTail
     trimOpts.cutTailWindow = getInt($parsedArgs["--cut-tail-window"], "--cut-tail-window", 4)
     trimOpts.cutTailQual = getInt($parsedArgs["--cut-tail-qual"], "--cut-tail-qual", 20)
 
@@ -933,6 +946,12 @@ Examples:
       else:
         stderr.writeLine("ERROR: Unknown preset: ", preset)
         return 1
+
+  # Explicit disable switches take precedence over presets.
+  if noCutFront:
+    trimOpts.cutFront = false
+  if noCutTail:
+    trimOpts.cutTail = false
 
   try:
     validateNumericOptions(trimOpts, filterOpts, threads, batchSize)

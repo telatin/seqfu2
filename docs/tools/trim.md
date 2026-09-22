@@ -57,9 +57,11 @@ This is used to remove low-quality ends of reads.
 | Option | Description | Default |
 |---|---|---|
 | `-5, --cut-front` | Enable 5' sliding window trimming. | off |
+| `--no-cut-front` | Explicitly disable 5' sliding window trimming. | |
 | `--cut-front-window N` | Window size for 5' trimming. | 4 |
 | `--cut-front-qual N` | Quality threshold for 5' trimming. | 20 |
 | `-3, --cut-tail` | Enable 3' sliding window trimming. | **on** |
+| `--no-cut-tail` | Disable the default 3' sliding window trimming. | |
 | `--cut-tail-window N` | Window size for 3' trimming. | 4 |
 | `--cut-tail-qual N` | Quality threshold for 3' trimming. | 20 |
 | `-r, --cut-right` | Enable right-side sliding window trimming (takes precedence over `cut-tail`). | off |
@@ -108,7 +110,7 @@ Enabled by default.
 
 The `trim` command is a versatile tool for cleaning FASTQ data. It can handle both single-end and paired-end reads and offers a wide range of options for trimming and filtering.
 
-By default, `seqfu trim` enables 3' tail trimming (`--cut-tail`) and quality filtering (based on `--qualified-qual` and `--unqualified-percent`). For paired-end data, both reads must pass all filtering steps to be included in the output.
+By default, `seqfu trim` enables 3' tail trimming (`--cut-tail`) and quality filtering (based on `--qualified-qual` and `--unqualified-percent`). Front trimming composes with the default tail trim; use `--no-cut-tail` for front-only trimming. For paired-end data, both reads must pass all filtering steps to be included in the output.
 
 ## Presets
 
@@ -142,7 +144,7 @@ seqfu trim -1 R1.fq -2 R2.fq -o out --cut-right --avg-qual 25 -l 50
 
 ### Minimal processing
 
-This disables quality filtering (`-Q`) and applies fixed trimming from both ends. Note that the default 3' sliding window trimming (`--cut-tail`) is still active.
+This disables quality filtering and the default sliding-window tail trim, then applies fixed trimming from both ends.
 ```bash
-seqfu trim input.fq -o output.fq -Q --trim-front 5 --trim-tail 5
+seqfu trim input.fq -o output.fq -Q --no-cut-tail --trim-front 5 --trim-tail 5
 ```

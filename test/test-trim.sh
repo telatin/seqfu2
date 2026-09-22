@@ -119,7 +119,7 @@ BEFORE=$($BIN count $DIR/../data/illumina_1.fq.gz 2>/dev/null | cut -f2)
 $BIN trim $DIR/../data/illumina_1.fq.gz -o /tmp/test_trim_4.fq --avg-qual 35 -l 100 2>/dev/null
 AFTER=$($BIN count /tmp/test_trim_4.fq 2>/dev/null | cut -f2)
 MSG="Quality filtering reduces reads (before=$BEFORE, after=$AFTER)"
-if [[ "$AFTER" -le "$BEFORE" ]]; then
+if [[ "$AFTER" -lt "$BEFORE" ]]; then
     echo -e "$OK: $MSG"
     PASS=$((PASS+1))
 else
@@ -295,6 +295,173 @@ else
     echo -e "$FAIL: $MSG ($NUMERIC_FAILURES cases accepted or created output)"
     ERRORS=$((ERRORS+1))
 fi
+
+# Test 8g: exact trimming and quality-filter contracts
+TMP_TRIM_CONTRACT=$(mktemp -d)
+
+cat > "$TMP_TRIM_CONTRACT/tail.fq" <<'EOF'
+@tail
+ACGTAC
++
+III!!!
+EOF
+cat > "$TMP_TRIM_CONTRACT/tail.expected.fq" <<'EOF'
+@tail
+ACGTA
++
+III!!
+EOF
+$BIN trim "$TMP_TRIM_CONTRACT/tail.fq" -o "$TMP_TRIM_CONTRACT/tail.out.fq" \
+  --cut-tail --cut-tail-window 4 --cut-tail-qual 20 -Q -l 1 2>/dev/null
+MSG="Cut-tail retains the complete qualifying window"
+if cmp -s "$TMP_TRIM_CONTRACT/tail.expected.fq" "$TMP_TRIM_CONTRACT/tail.out.fq"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+cat > "$TMP_TRIM_CONTRACT/both.fq" <<'EOF'
+@both
+AACCGGTT
++
+!!IIII!!
+EOF
+cat > "$TMP_TRIM_CONTRACT/both.expected.fq" <<'EOF'
+@both
+CCGG
++
+IIII
+EOF
+$BIN trim "$TMP_TRIM_CONTRACT/both.fq" -o "$TMP_TRIM_CONTRACT/front-default-tail.fq" \
+  --cut-front --cut-front-window 2 --cut-front-qual 21 \
+  --cut-tail-window 2 --cut-tail-qual 21 -Q -l 1 2>/dev/null
+$BIN trim "$TMP_TRIM_CONTRACT/both.fq" -o "$TMP_TRIM_CONTRACT/front-explicit-tail.fq" \
+  --cut-front --cut-tail --cut-front-window 2 --cut-front-qual 21 \
+  --cut-tail-window 2 --cut-tail-qual 21 -Q -l 1 2>/dev/null
+MSG="Cut-front composes with default and explicit cut-tail"
+if cmp -s "$TMP_TRIM_CONTRACT/both.expected.fq" "$TMP_TRIM_CONTRACT/front-default-tail.fq" && \
+   cmp -s "$TMP_TRIM_CONTRACT/both.expected.fq" "$TMP_TRIM_CONTRACT/front-explicit-tail.fq"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+cat > "$TMP_TRIM_CONTRACT/front-only.expected.fq" <<'EOF'
+@both
+CCGGTT
++
+IIII!!
+EOF
+$BIN trim "$TMP_TRIM_CONTRACT/both.fq" -o "$TMP_TRIM_CONTRACT/front-only.fq" \
+  --cut-front --no-cut-tail --cut-front-window 2 --cut-front-qual 21 -Q -l 1 2>/dev/null
+MSG="--no-cut-tail makes front-only trimming explicit"
+if cmp -s "$TMP_TRIM_CONTRACT/front-only.expected.fq" "$TMP_TRIM_CONTRACT/front-only.fq"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+cat > "$TMP_TRIM_CONTRACT/fixed.fq" <<'EOF'
+@fixed
+AACCGGTT
++
+ABCDEFGH
+EOF
+cat > "$TMP_TRIM_CONTRACT/fixed.expected.fq" <<'EOF'
+@fixed
+CCGG
++
+CDEF
+EOF
+$BIN trim "$TMP_TRIM_CONTRACT/fixed.fq" -o "$TMP_TRIM_CONTRACT/fixed.out.fq" \
+  --trim-front 2 --trim-tail 2 --no-cut-front --no-cut-tail -Q -l 1 2>/dev/null
+MSG="Fixed front and tail trimming preserves matching quality payload"
+if cmp -s "$TMP_TRIM_CONTRACT/fixed.expected.fq" "$TMP_TRIM_CONTRACT/fixed.out.fq"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+cat > "$TMP_TRIM_CONTRACT/right.fq" <<'EOF'
+@right
+ACGTAC
++
+IIII!!
+EOF
+cat > "$TMP_TRIM_CONTRACT/right.expected.fq" <<'EOF'
+@right
+ACGT
++
+IIII
+EOF
+$BIN trim "$TMP_TRIM_CONTRACT/right.fq" -o "$TMP_TRIM_CONTRACT/right.out.fq" \
+  --cut-right --cut-right-window 2 --cut-right-qual 21 -Q -l 1 2>/dev/null
+MSG="Cut-right truncates at the first low-quality base in a failing window"
+if cmp -s "$TMP_TRIM_CONTRACT/right.expected.fq" "$TMP_TRIM_CONTRACT/right.out.fq"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+cat > "$TMP_TRIM_CONTRACT/quality.fq" <<'EOF'
+@q20
+ACGTA
++
+55544
+@q19
+ACGTA
++
+55444
+EOF
+cat > "$TMP_TRIM_CONTRACT/quality.expected.fq" <<'EOF'
+@q20
+ACGTA
++
+55544
+EOF
+$BIN trim "$TMP_TRIM_CONTRACT/quality.fq" -o "$TMP_TRIM_CONTRACT/quality.out.fq" \
+  --no-cut-tail --qualified-qual 20 --unqualified-percent 40 -l 1 2>/dev/null
+MSG="Quality filter accepts the exact unqualified-base percentage boundary"
+if cmp -s "$TMP_TRIM_CONTRACT/quality.expected.fq" "$TMP_TRIM_CONTRACT/quality.out.fq"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+CONFLICT_FAILURES=0
+for conflict_args in "--cut-front --no-cut-front" "--cut-tail --no-cut-tail"; do
+    rm -f "$TMP_TRIM_CONTRACT/conflict.fq"
+    # Intentional word splitting expands each fixed option pair.
+    $BIN trim "$TMP_TRIM_CONTRACT/both.fq" -o "$TMP_TRIM_CONTRACT/conflict.fq" \
+      $conflict_args 2>"$TMP_TRIM_CONTRACT/conflict.err"
+    RET=$?
+    if [[ $RET -eq 0 || -e "$TMP_TRIM_CONTRACT/conflict.fq" ]] || \
+       ! grep -q "cannot be used together" "$TMP_TRIM_CONTRACT/conflict.err"; then
+        CONFLICT_FAILURES=$((CONFLICT_FAILURES+1))
+    fi
+done
+MSG="Contradictory cut enable/disable options are rejected"
+if [[ $CONFLICT_FAILURES -eq 0 ]]; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG ($CONFLICT_FAILURES cases accepted)"
+    ERRORS=$((ERRORS+1))
+fi
+
+rm -rf "$TMP_TRIM_CONTRACT"
 
 # Cleanup intermediate files
 rm -f /tmp/test_trim_* /tmp/test_trim_stats.json
