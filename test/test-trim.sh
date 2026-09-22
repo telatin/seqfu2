@@ -203,6 +203,99 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
+# Test 8b: gzip output is valid and decompresses to the plain output
+$BIN trim "$DIR/../data/illumina_1.fq.gz" -o /tmp/test_trim_compress.fq 2>/dev/null
+$BIN trim "$DIR/../data/illumina_1.fq.gz" -o /tmp/test_trim_compress.fq.gz -z 2>/dev/null
+MSG="Compressed single-end output is valid gzip and matches plain output"
+if gzip -t /tmp/test_trim_compress.fq.gz 2>/dev/null && \
+   cmp -s /tmp/test_trim_compress.fq <(gzip -dc /tmp/test_trim_compress.fq.gz); then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# Test 8c: paired compression produces discoverable .gz outputs
+$BIN trim -1 "$DIR/../data/illumina_1.fq.gz" -o /tmp/test_trim_compress_pe -z 2>/dev/null
+MSG="Compressed paired-end outputs use .gz names and contain valid gzip streams"
+if [[ -f /tmp/test_trim_compress_pe_R1.fastq.gz ]] && \
+   [[ -f /tmp/test_trim_compress_pe_R2.fastq.gz ]] && \
+   gzip -t /tmp/test_trim_compress_pe_R1.fastq.gz 2>/dev/null && \
+   gzip -t /tmp/test_trim_compress_pe_R2.fastq.gz 2>/dev/null; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# Test 8d: compressed stdout is a valid gzip stream
+$BIN trim "$DIR/../data/illumina_1.fq.gz" -z > /tmp/test_trim_stdout.fq.gz 2>/dev/null
+MSG="Compressed stdout is a valid gzip stream"
+if gzip -t /tmp/test_trim_stdout.fq.gz 2>/dev/null; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# Test 8e: --offset applies to quality filtering as well as trimming
+cat > /tmp/test_trim_offset.fq <<'EOF'
+@offset-test
+ACGT
++
+@@@@
+EOF
+$BIN trim /tmp/test_trim_offset.fq -o /tmp/test_trim_offset33.fq \
+  --offset 33 --cut-tail-qual 0 --qualified-qual 15 -l 1 2>/dev/null
+$BIN trim /tmp/test_trim_offset.fq -o /tmp/test_trim_offset64.fq \
+  --offset 64 --cut-tail-qual 0 --qualified-qual 15 -l 1 2>/dev/null
+COUNT33=$($BIN count /tmp/test_trim_offset33.fq 2>/dev/null | cut -f2)
+COUNT64=$($BIN count /tmp/test_trim_offset64.fq 2>/dev/null | cut -f2)
+MSG="Quality filtering honors --offset (Phred+33=$COUNT33, Phred+64=$COUNT64)"
+if [[ "$COUNT33" -eq 1 && "$COUNT64" -eq 0 ]]; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+# Test 8f: malformed and out-of-range numeric options fail before output creation
+INVALID_NUMERIC_CASES=(
+  "--trim-tail -1"
+  "--cut-tail-window 0"
+  "--unqualified-percent 101"
+  "--complexity-threshold nan"
+  "--threads 0"
+  "--batch-size 0"
+  "--offset 40"
+  "--min-length 20 --max-length 10"
+  "--avg-qual nope"
+)
+NUMERIC_FAILURES=0
+for invalid_args in "${INVALID_NUMERIC_CASES[@]}"; do
+    rm -f /tmp/test_trim_invalid.fq
+    # Intentional word splitting expands each option/value pair in this fixed test matrix.
+    $BIN trim "$DIR/../data/illumina_1.fq.gz" -o /tmp/test_trim_invalid.fq $invalid_args \
+      2>/tmp/test_trim_invalid.err
+    RET=$?
+    if [[ $RET -eq 0 || -e /tmp/test_trim_invalid.fq ]] || \
+       ! grep -q "ERROR:" /tmp/test_trim_invalid.err; then
+        NUMERIC_FAILURES=$((NUMERIC_FAILURES+1))
+    fi
+done
+MSG="Invalid numeric options are rejected before output creation"
+if [[ $NUMERIC_FAILURES -eq 0 ]]; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG ($NUMERIC_FAILURES cases accepted or created output)"
+    ERRORS=$((ERRORS+1))
+fi
+
 # Cleanup intermediate files
 rm -f /tmp/test_trim_* /tmp/test_trim_stats.json
 

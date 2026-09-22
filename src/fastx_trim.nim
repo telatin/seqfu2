@@ -220,7 +220,7 @@ proc trimAndCut(record: FQRecord, opts: TrimOptions): tuple[record: FQRecord, tr
 # Filtering Functions
 ###########################
 
-proc passFilter(record: FQRecord, opts: FilterOptions): FilterResult =
+proc passFilter(record: FQRecord, opts: FilterOptions, qualOffset: int): FilterResult =
   ## Single-pass filtering with short-circuit evaluation
   ## Returns filter result indicating pass or specific failure reason
 
@@ -235,7 +235,7 @@ proc passFilter(record: FQRecord, opts: FilterOptions): FilterResult =
 
   for i in 0 ..< rlen:
     let base = record.sequence[i]
-    let qual = record.quality[i].ord - 33
+    let qual = record.quality[i].ord - qualOffset
 
     if qual < opts.qualifiedQual:
       lowQualBases += 1
@@ -293,7 +293,7 @@ proc processSingleRead(read: FQRecord, trimOpts: TrimOptions,
                                                           trimmed: bool] =
   ## Process a single read through trimming and filtering
   let (trimmedRead, wasTrimmed) = trimAndCut(read, trimOpts)
-  let filterResult = passFilter(trimmedRead, filterOpts)
+  let filterResult = passFilter(trimmedRead, filterOpts, trimOpts.qualOffset)
 
   return (record: trimmedRead,
           passed: filterResult == frPass,
@@ -507,19 +507,21 @@ proc mergeStats(totalStats: var ProcessingStats, batchStats: ProcessingStats) =
   totalStats.readsTrimmed += batchStats.readsTrimmed
 
 
-proc writeBatchResults(batch: WorkerBatch, outputR1: File, outputR2: File,
+proc writeBatchResults(batch: WorkerBatch, outputR1: var FastxWriter,
+                       outputR2: var FastxWriter,
                        isPaired: bool, totalStats: var ProcessingStats) =
   for read in batch.results1:
-    print_seq(read, outputR1)
+    outputR1.writeRecord(read)
 
   if isPaired:
     for read in batch.results2:
-      print_seq(read, outputR2)
+      outputR2.writeRecord(read)
 
   totalStats.mergeStats(batch.stats)
 
 
-proc flushBatches(batches: var seq[WorkerBatch], outputR1: File, outputR2: File,
+proc flushBatches(batches: var seq[WorkerBatch], outputR1: var FastxWriter,
+                  outputR2: var FastxWriter,
                   trimOpts: TrimOptions, filterOpts: FilterOptions,
                   threads: int, isPaired: bool,
                   totalStats: var ProcessingStats) =
@@ -541,7 +543,8 @@ proc flushBatches(batches: var seq[WorkerBatch], outputR1: File, outputR2: File,
   batches.setLen(0)
 
 
-proc processWithThreads(inputR1: string, inputR2: string, outputR1: File, outputR2: File,
+proc processWithThreads(inputR1: string, inputR2: string,
+                        outputR1: var FastxWriter, outputR2: var FastxWriter,
                         trimOpts: TrimOptions, filterOpts: FilterOptions,
                         threads: int, batchSize: int, isPaired: bool, verbose: bool): ProcessingStats =
   ## Main processing function using bounded Malebolgia batches.
@@ -606,7 +609,8 @@ proc processWithThreads(inputR1: string, inputR2: string, outputR1: File, output
 # Main Processing
 ###########################
 
-proc processFiles(inputR1: string, inputR2: string, outputR1: File, outputR2: File,
+proc processFiles(inputR1: string, inputR2: string,
+                  outputR1: var FastxWriter, outputR2: var FastxWriter,
                   trimOpts: TrimOptions, filterOpts: FilterOptions,
                   isPaired: bool, verbose: bool): ProcessingStats =
   ## Main processing function for single-threaded execution
@@ -632,8 +636,8 @@ proc processFiles(inputR1: string, inputR2: string, outputR1: File, outputR2: Fi
       let (pr1, pr2, passed, res1, res2, trim1, trim2) = processPairedReads(read1, read2, trimOpts, filterOpts)
 
       if passed:
-        print_seq(pr1, outputR1)
-        print_seq(pr2, outputR2)
+        outputR1.writeRecord(pr1)
+        outputR2.writeRecord(pr2)
         stats.passedPairs += 1
 
         if trim1:
@@ -660,7 +664,7 @@ proc processFiles(inputR1: string, inputR2: string, outputR1: File, outputR2: Fi
       let (trimmedRead, passed, filterRes, wasTrimmed) = processSingleRead(read, trimOpts, filterOpts)
 
       if passed:
-        print_seq(trimmedRead, outputR1)
+        outputR1.writeRecord(trimmedRead)
         stats.passedReads += 1
 
         if wasTrimmed:
@@ -676,23 +680,70 @@ proc processFiles(inputR1: string, inputR2: string, outputR1: File, outputR2: Fi
 # Helper Functions
 ###########################
 
-proc getInt(val: string, default: int): int =
-  ## Parse integer from docopt value, return default if nil
+proc getInt(val, optionName: string, default: int): int =
+  ## Parse an integer option and reject malformed values.
   if val == "nil":
     return default
   try:
     return parseInt(val)
-  except:
-    return default
+  except ValueError:
+    raise newException(ValueError, optionName & " must be an integer.")
 
-proc getFloat(val: string, default: float): float =
-  ## Parse float from docopt value, return default if nil
+proc getFloat(val, optionName: string, default: float): float =
+  ## Parse a numeric option and reject malformed and NaN values.
   if val == "nil":
     return default
   try:
-    return parseFloat(val)
-  except:
-    return default
+    result = parseFloat(val)
+  except ValueError:
+    raise newException(ValueError, optionName & " must be a number.")
+  if result != result:
+    raise newException(ValueError, optionName & " must be a finite number.")
+
+
+proc validateNumericOptions(trimOpts: TrimOptions, filterOpts: FilterOptions,
+                            threads, batchSize: int) =
+  if trimOpts.trimFrontBases < 0:
+    raise newException(ValueError, "--trim-front must be >= 0.")
+  if trimOpts.trimTailBases < 0:
+    raise newException(ValueError, "--trim-tail must be >= 0.")
+  if trimOpts.qualOffset notin [33, 64]:
+    raise newException(ValueError, "--offset must be either 33 or 64.")
+
+  if trimOpts.cutFrontWindow < 1:
+    raise newException(ValueError, "--cut-front-window must be >= 1.")
+  if trimOpts.cutTailWindow < 1:
+    raise newException(ValueError, "--cut-tail-window must be >= 1.")
+  if trimOpts.cutRightWindow < 1:
+    raise newException(ValueError, "--cut-right-window must be >= 1.")
+  if trimOpts.cutFrontQual < 0:
+    raise newException(ValueError, "--cut-front-qual must be >= 0.")
+  if trimOpts.cutTailQual < 0:
+    raise newException(ValueError, "--cut-tail-qual must be >= 0.")
+  if trimOpts.cutRightQual < 0:
+    raise newException(ValueError, "--cut-right-qual must be >= 0.")
+
+  if filterOpts.qualifiedQual < 0:
+    raise newException(ValueError, "--qualified-qual must be >= 0.")
+  if filterOpts.unqualifiedPercent < 0.0 or filterOpts.unqualifiedPercent > 100.0:
+    raise newException(ValueError, "--unqualified-percent must be between 0 and 100.")
+  if filterOpts.avgQualThreshold < 0:
+    raise newException(ValueError, "--avg-qual must be >= 0.")
+  if filterOpts.nBaseLimit < 0:
+    raise newException(ValueError, "--n-base-limit must be >= 0.")
+  if filterOpts.minLength < 0:
+    raise newException(ValueError, "--min-length must be >= 0.")
+  if filterOpts.maxLength < 0:
+    raise newException(ValueError, "--max-length must be >= 0.")
+  if filterOpts.maxLength > 0 and filterOpts.minLength > filterOpts.maxLength:
+    raise newException(ValueError,
+      "--min-length must be <= --max-length when --max-length > 0.")
+  if filterOpts.complexityThreshold < 0.0 or filterOpts.complexityThreshold > 1.0:
+    raise newException(ValueError, "--complexity-threshold must be between 0 and 1.")
+  if threads < 1:
+    raise newException(ValueError, "--threads must be >= 1.")
+  if batchSize < 1:
+    raise newException(ValueError, "--batch-size must be >= 1.")
 
 ###########################
 # Main Entry Point
@@ -713,7 +764,7 @@ Output Options:
   -o --output FILE/BASE    Output file (SE) or basename (PE) [required for PE]
   --r1-suffix SUFFIX       R1 output suffix [default: _R1.fastq]
   --r2-suffix SUFFIX       R2 output suffix [default: _R2.fastq]
-  -z --compress            Compress output with gzip
+  -z --compress            Compress output with gzip (PE names gain .gz)
 
 Fixed Position Trimming:
   --trim-front N           Trim N bases from 5' end [default: 0]
@@ -810,75 +861,59 @@ Examples:
     # Read from stdin
     inputR1 = "-"
 
-  # Output files
-  var outputR1, outputR2: File
+  # Output paths
   let outputBase = $parsedArgs["--output"]
   let r1Suffix = $parsedArgs["--r1-suffix"]
   let r2Suffix = $parsedArgs["--r2-suffix"]
   let compress = parsedArgs["--compress"]
 
-  if isPaired:
-    if outputBase == "nil" or outputBase == "-":
-      stderr.writeLine("ERROR: Output basename required for paired-end mode (-o)")
-      return 1
-
-    let out1Name = outputBase & r1Suffix
-    let out2Name = outputBase & r2Suffix
-
-    try:
-      outputR1 = open(out1Name, fmWrite)
-      outputR2 = open(out2Name, fmWrite)
-    except:
-      stderr.writeLine("ERROR: Cannot open output files")
-      return 1
-  else:
-    if outputBase == "nil" or outputBase == "-":
-      outputR1 = stdout
-    else:
-      try:
-        outputR1 = open(outputBase, fmWrite)
-      except:
-        stderr.writeLine("ERROR: Cannot open output file: ", outputBase)
-        return 1
-
   # Parse trimming options
   var trimOpts = TrimOptions()
-  trimOpts.trimFrontBases = getInt($parsedArgs["--trim-front"], 0)
-  trimOpts.trimTailBases = getInt($parsedArgs["--trim-tail"], 0)
-  trimOpts.qualOffset = getInt($parsedArgs["--offset"], 33)
-
-  # Sliding window options
-  trimOpts.cutFront = parsedArgs["--cut-front"]
-  trimOpts.cutFrontWindow = getInt($parsedArgs["--cut-front-window"], 4)
-  trimOpts.cutFrontQual = getInt($parsedArgs["--cut-front-qual"], 20)
-
-  trimOpts.cutRight = parsedArgs["--cut-right"]
-  trimOpts.cutRightWindow = getInt($parsedArgs["--cut-right-window"], 4)
-  trimOpts.cutRightQual = getInt($parsedArgs["--cut-right-qual"], 20)
-
-  # Default: cut-tail enabled
-  trimOpts.cutTail = parsedArgs["--cut-tail"] or (not parsedArgs["--cut-right"] and not parsedArgs["--cut-front"])
-  trimOpts.cutTailWindow = getInt($parsedArgs["--cut-tail-window"], 4)
-  trimOpts.cutTailQual = getInt($parsedArgs["--cut-tail-qual"], 20)
-
-  # Parse filter options
   var filterOpts = FilterOptions()
-  filterOpts.qualityFilter = not parsedArgs["--disable-quality"]
-  filterOpts.qualifiedQual = getInt($parsedArgs["--qualified-qual"], 15)
-  filterOpts.unqualifiedPercent = getFloat($parsedArgs["--unqualified-percent"], 40.0)
+  var threads, batchSize: int
 
-  let avgQual = getInt($parsedArgs["--avg-qual"], 0)
-  filterOpts.avgQualFilter = avgQual > 0
-  filterOpts.avgQualThreshold = avgQual
+  try:
+    trimOpts.trimFrontBases = getInt($parsedArgs["--trim-front"], "--trim-front", 0)
+    trimOpts.trimTailBases = getInt($parsedArgs["--trim-tail"], "--trim-tail", 0)
+    trimOpts.qualOffset = getInt($parsedArgs["--offset"], "--offset", 33)
 
-  filterOpts.nBaseLimit = getInt($parsedArgs["--n-base-limit"], 5)
+    # Sliding window options
+    trimOpts.cutFront = parsedArgs["--cut-front"]
+    trimOpts.cutFrontWindow = getInt($parsedArgs["--cut-front-window"], "--cut-front-window", 4)
+    trimOpts.cutFrontQual = getInt($parsedArgs["--cut-front-qual"], "--cut-front-qual", 20)
 
-  filterOpts.lengthFilter = true
-  filterOpts.minLength = getInt($parsedArgs["--min-length"], 15)
-  filterOpts.maxLength = getInt($parsedArgs["--max-length"], 0)
+    trimOpts.cutRight = parsedArgs["--cut-right"]
+    trimOpts.cutRightWindow = getInt($parsedArgs["--cut-right-window"], "--cut-right-window", 4)
+    trimOpts.cutRightQual = getInt($parsedArgs["--cut-right-qual"], "--cut-right-qual", 20)
 
-  filterOpts.complexityFilter = parsedArgs["--complexity"]
-  filterOpts.complexityThreshold = getFloat($parsedArgs["--complexity-threshold"], 0.3)
+    # Default: cut-tail enabled
+    trimOpts.cutTail = parsedArgs["--cut-tail"] or (not parsedArgs["--cut-right"] and not parsedArgs["--cut-front"])
+    trimOpts.cutTailWindow = getInt($parsedArgs["--cut-tail-window"], "--cut-tail-window", 4)
+    trimOpts.cutTailQual = getInt($parsedArgs["--cut-tail-qual"], "--cut-tail-qual", 20)
+
+    # Parse filter options
+    filterOpts.qualityFilter = not parsedArgs["--disable-quality"]
+    filterOpts.qualifiedQual = getInt($parsedArgs["--qualified-qual"], "--qualified-qual", 15)
+    filterOpts.unqualifiedPercent = getFloat($parsedArgs["--unqualified-percent"], "--unqualified-percent", 40.0)
+
+    let avgQual = getInt($parsedArgs["--avg-qual"], "--avg-qual", 0)
+    filterOpts.avgQualFilter = avgQual > 0
+    filterOpts.avgQualThreshold = avgQual
+
+    filterOpts.nBaseLimit = getInt($parsedArgs["--n-base-limit"], "--n-base-limit", 5)
+
+    filterOpts.lengthFilter = true
+    filterOpts.minLength = getInt($parsedArgs["--min-length"], "--min-length", 15)
+    filterOpts.maxLength = getInt($parsedArgs["--max-length"], "--max-length", 0)
+
+    filterOpts.complexityFilter = parsedArgs["--complexity"]
+    filterOpts.complexityThreshold = getFloat($parsedArgs["--complexity-threshold"], "--complexity-threshold", 0.3)
+
+    threads = getInt($parsedArgs["--threads"], "--threads", 1)
+    batchSize = getInt($parsedArgs["--batch-size"], "--batch-size", 10000)
+  except ValueError as error:
+    stderr.writeLine("ERROR: ", error.msg)
+    return 1
 
   # Apply presets
   if parsedArgs["--preset"]:
@@ -899,9 +934,46 @@ Examples:
         stderr.writeLine("ERROR: Unknown preset: ", preset)
         return 1
 
+  try:
+    validateNumericOptions(trimOpts, filterOpts, threads, batchSize)
+  except ValueError as error:
+    stderr.writeLine("ERROR: ", error.msg)
+    return 1
+
   let verbose = parsedArgs["--verbose"]
-  let threads = getInt($parsedArgs["--threads"], 1)
-  let batchSize = getInt($parsedArgs["--batch-size"], 10000)
+
+  if isPaired and (outputBase == "nil" or outputBase == "-"):
+    stderr.writeLine("ERROR: Output basename required for paired-end mode (-o)")
+    return 1
+
+  var out1Name = if isPaired: outputBase & r1Suffix else: outputBase
+  var out2Name = if isPaired: outputBase & r2Suffix else: ""
+  if isPaired and compress:
+    if not out1Name.endsWith(".gz"):
+      out1Name.add(".gz")
+    if not out2Name.endsWith(".gz"):
+      out2Name.add(".gz")
+
+  var outputR1, outputR2: FastxWriter
+  try:
+    let destinationR1 = if not isPaired and (outputBase == "nil" or outputBase == "-"):
+                          stdoutDestination()
+                        else:
+                          fileDestination(out1Name)
+    outputR1 = fastxWriter(fxfFastq, compression = compress,
+                           destination = destinationR1)
+    if isPaired:
+      outputR2 = fastxWriter(fxfFastq, compression = compress,
+                             destination = fileDestination(out2Name))
+  except CatchableError as error:
+    outputR1.close()
+    stderr.writeLine("ERROR: Cannot open output: ", error.msg)
+    return 1
+
+  defer:
+    outputR1.close()
+    if isPaired:
+      outputR2.close()
 
   # Print header if verbose
   if verbose:
@@ -923,11 +995,14 @@ Examples:
                 processFiles(inputR1, inputR2, outputR1, outputR2,
                              trimOpts, filterOpts, isPaired, verbose)
 
-  # Close output files
-  if outputBase != "nil" and outputBase != "-":
+  # Close output streams to flush buffers and finalize gzip trailers.
+  try:
     outputR1.close()
     if isPaired:
       outputR2.close()
+  except CatchableError as error:
+    stderr.writeLine("ERROR: Could not finalize output: ", error.msg)
+    return 1
 
   # Print statistics
   printStats(stats, isPaired, verbose)
@@ -935,8 +1010,6 @@ Examples:
   # Export JSON if requested
   if parsedArgs["--stats-json"]:
     let jsonFile = $parsedArgs["--stats-json"]
-    let out1Name = if isPaired: outputBase & r1Suffix else: outputBase
-    let out2Name = if isPaired: outputBase & r2Suffix else: ""
     exportStatsJson(stats, isPaired, jsonFile, inputR1, inputR2, out1Name, out2Name)
 
   return 0
