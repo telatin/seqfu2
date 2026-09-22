@@ -8,9 +8,10 @@ parent: Core Tools
 
 `by-id` selects FASTA or FASTQ records by identifier (the text before the first
 whitespace in a record header). Comments and sequence content are not searched.
-For those fields, `by-comment` and `by-seq` are planned but are **not available
-yet**. The existing [`seqfu grep`]({{site.baseurl}}/tools/grep.html) command can
-search comments or sequences in the meantime.
+For comments, use [`seqfu by-comment`]({{site.baseurl}}/tools/by-comment.html).
+`by-seq` is planned but is **not available yet**. The existing
+[`seqfu grep`]({{site.baseurl}}/tools/grep.html) command can search sequences
+in the meantime.
 
 ```text
 Usage:

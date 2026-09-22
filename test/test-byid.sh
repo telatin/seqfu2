@@ -147,13 +147,14 @@ EOF
 if "$BYID_BIN" --help | awk '
   /  · grep[[:space:]]+:/ {
     getline
+    if ($0 ~ /  · by-comment[[:space:]]+:/) getline
     if ($0 ~ /  · by-id[[:space:]]+:/) found = 1
   }
   END { exit !found }
 '; then
-  byid_ok "CLI help places by-id below grep"
+  byid_ok "CLI help groups by-id below grep"
 else
-  byid_fail "CLI help places by-id below grep"
+  byid_fail "CLI help groups by-id below grep"
 fi
 
 byid_expect_names "regex substring" "contig_001,contig_002,contig_005,contig_010,contig_999999999999999999999999" \

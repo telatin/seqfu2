@@ -143,14 +143,6 @@ proc idProcessBatch(batch: ptr IdBatch, matcher: ptr IdMatcher,
       batch.error = error.msg
       return
 
-proc idWriteRecord(writer: var FastxWriter, record: FQRecordPtr) =
-  writer.format = if record.qualityLen > 0: fxfFastq else: fxfFasta
-  writer.writeRecord(record)
-
-proc idWriteRecord(writer: var FastxWriter, record: FQRecord) =
-  writer.format = if record.quality.len > 0: fxfFastq else: fxfFasta
-  writer.writeRecord(record)
-
 proc idFlush(state: var IdRunState) =
   if state.batches.len == 0:
     return
@@ -172,12 +164,12 @@ proc idFlush(state: var IdRunState) =
       inc state.processed
       if batch.selected[i]:
         inc state.selected
-        state.output1.idWriteRecord(batch.first[i])
+        state.output1.writeFilterRecord(batch.first[i])
         if batch.paired:
           if state.plan.splitPairs:
-            state.output2.idWriteRecord(batch.second[i])
+            state.output2.writeFilterRecord(batch.second[i])
           else:
-            state.output1.idWriteRecord(batch.second[i])
+            state.output1.writeFilterRecord(batch.second[i])
   state.batches.setLen(0)
 
 proc idConsume(state: var IdRunState, first: FQRecordPtr,
@@ -192,12 +184,12 @@ proc idConsume(state: var IdRunState, first: FQRecordPtr,
     if idSelected(name1, name2, paired, state.matcher,
                   state.pairBoth, state.invert):
       inc state.selected
-      state.output1.idWriteRecord(first)
+      state.output1.writeFilterRecord(first)
       if paired:
         if state.plan.splitPairs:
-          state.output2.idWriteRecord(second)
+          state.output2.writeFilterRecord(second)
         else:
-          state.output1.idWriteRecord(second)
+          state.output1.writeFilterRecord(second)
     return
 
   state.current.first.add(copyFilterRecord(first))

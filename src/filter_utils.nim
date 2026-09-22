@@ -7,15 +7,24 @@ type
     second*: string
     splitPairs*: bool
 
-proc filterPtrString(p: ptr char): string {.inline.} =
-  if p != nil:
-    result = $cast[cstring](p)
+proc filterPtrString*(p: ptr char, length: int): string {.inline.} =
+  if p != nil and length > 0:
+    result = newString(length)
+    copyMem(addr result[0], p, length)
 
 proc copyFilterRecord*(record: FQRecordPtr): FQRecord {.inline.} =
-  result.name = filterPtrString(record.name)
-  result.comment = filterPtrString(record.comment)
-  result.sequence = filterPtrString(record.sequence)
-  result.quality = filterPtrString(record.quality)
+  result.name = filterPtrString(record.name, record.nameLen)
+  result.comment = filterPtrString(record.comment, record.commentLen)
+  result.sequence = filterPtrString(record.sequence, record.sequenceLen)
+  result.quality = filterPtrString(record.quality, record.qualityLen)
+
+proc writeFilterRecord*(writer: var FastxWriter, record: FQRecordPtr) =
+  writer.format = if record.qualityLen > 0: fxfFastq else: fxfFasta
+  writer.writeRecord(record)
+
+proc writeFilterRecord*(writer: var FastxWriter, record: FQRecord) =
+  writer.format = if record.quality.len > 0: fxfFastq else: fxfFasta
+  writer.writeRecord(record)
 
 proc inferFilterMate*(path: string): string =
   let r1 = path.rfind("_R1")
