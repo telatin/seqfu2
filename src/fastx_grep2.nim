@@ -32,6 +32,7 @@ Name and comment search:
   -f, --full             The string or pattern covers the whole name
                          (mainly used without -c)
   -w, --word             The string or pattern is a whole word
+                         (only meaningful with -c, since names have no spaces)
   -i, --ignore-case      Ignore case when matching names (is already enabled with regexes)
 
 Sequence search:
