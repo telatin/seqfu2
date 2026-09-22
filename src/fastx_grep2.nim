@@ -91,7 +91,20 @@ General options:
     if args["--append-pos"] and $args["--oligo"] == "nil":
       stderr.writeLine("Error: --append-pos requires --oligo")
       quit(1)
-    
+
+    let oligoArg = $args["--oligo"]
+
+    var
+      compiledRegex: regex.Regex2
+      hasRegex = false
+
+    if optRegexString != "nil":
+      let pattern = if matchFull: optRegexString
+                    elif matchWord: "\\b" & optRegexString & "\\b"
+                    else: ".*" & optRegexString & ".*"
+      compiledRegex = regex.re2("(?i)" & pattern)
+      hasRegex = true
+
     for filename in files:
       if filename != "-"  and not fileExists(filename):
         stderr.writeLine("ERROR: ", filename, ": not found (skipping)")
@@ -99,17 +112,6 @@ General options:
       else:
         echoVerbose(filename, verbose)
 
-      var 
-        compiledRegex: regex.Regex2
-        hasRegex = false
-      
-      if optRegexString != "nil":
-        let pattern = if matchFull: optRegexString
-                      elif matchWord: "\\b" & optRegexString & "\\b"
-                      else: ".*" & optRegexString & ".*"
-        compiledRegex = regex.re2("(?i)" & pattern)
-        hasRegex = true
-      
       if args["--verbose"]:
         if optQueryString != "nil":
           stderr.writeLine("Name contains: ", optQueryString)
@@ -170,19 +172,19 @@ General options:
             print_this_sequence = invertMatch
 
         var outRecord: FQRecord
-        
-        if $args["--oligo"] != "nil":
+
+        if oligoArg != "nil" and print_this_sequence == (not invertMatch):
           outRecord = fqRead
-          let oligos = findPrimerMatches(readSequence, $args["--oligo"], matchThs, maxMismatches, minMatches)
+          let oligos = findPrimerMatches(readSequence, oligoArg, matchThs, maxMismatches, minMatches)
           if len(oligos[0]) == 0 and len(oligos[1]) == 0:
             print_this_sequence = invertMatch
           else:
             if args["--append-pos"]:
               outRecord.comment &= " for-matches=" & strutils.join(oligos[0], ",")
               outRecord.comment &= ":rev-matches=" & strutils.join(oligos[1], ",")
-        
+
         if print_this_sequence:
-          if $args["--oligo"] != "nil":
+          if oligoArg != "nil":
             print_seq(outRecord, nil)
           else:
             print_seq(fqRead, nil)
