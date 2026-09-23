@@ -19,8 +19,6 @@ type FileComposition = ref object
   num_n: int
   num_other: int
   num_lower: int
-  ratio_gc: float
-  ratio_upper: float
 
 
 type BaseCompOpts = ref object
@@ -31,9 +29,6 @@ type BaseCompOpts = ref object
   nice: bool
   show_uppercase: bool
   digits: int
-
-proc `$`(comp: FileComposition): string =
-  return fmt"{comp.bases}{'\t'}{comp.num_a}{'\t'}{comp.num_c}{'\t'}{comp.num_g}{'\t'}{comp.num_t}{'\t'}{comp.num_n}{'\t'}{comp.num_other}{'\t'}{comp.num_lower}{'\t'}{comp.ratio_gc}{'\t'}{comp.ratio_upper}"
 
 proc numberToString[T](s: T, opts: BaseCompOpts): string =
   let
@@ -69,82 +64,8 @@ proc toComposition(dict: CountTableRef, filename: string, total: int, opts: Base
     num_t: val_T,
     num_n: val_N,
     num_other: total - val_A - val_C - val_G - val_T - val_N,
-    num_lower: val_L,
-    ratio_gc: float(val_G + val_C) / float(total),
-    ratio_upper: float(total - val_L) / float(total)
+    num_lower: val_L
   )
-
-proc splitToSeq(tabbedStr, filename: string): seq[string] =
-  # Split a string with tabs to a sequence
-  result = @[filename]
-  for c in tabbedStr.split("\t"):
-    result.add($c)
-  if len(result) < 10:
-    result.add("--")
-
-proc toString(c: CountTableRef[char], raw: bool, t, u: bool): string =
-  var
-    bases = 0
-    normal = 0
-    bases_array = newSeq[string]()
-  for k, v in c:
-    bases += v
-
-  let
-    lowerRaw = if 'L' in c: c['L']
-              else: 0
-  
-  bases -= lowerRaw
-
-  let
-    display_total_bases = if t:  ($bases).insertSep(',')
-                          else: $bases
-
-  let cg = if 'C' in c and 'G' in c: c['C'] + c['G']
-           elif 'C' in c: c['C']
-           elif 'G' in c: c['G']
-           else: 0
-    
-
-
-  for base in @['A', 'C', 'G', 'T', 'N']:
-      let
-        count = if base in c: c[base]
-                else: 0
-      normal += count
-      if raw:
-        if t:
-          bases_array.add($( ($count).insertSep(',') ))
-        else:
-          bases_array.add($count)
-      else:
-        bases_array.add(fmt"{float(100 * c[base] / bases):.2f}")
-  # OTHER
-  let 
-    other = bases - normal
-  if raw:
-    if t:
-      bases_array.add($( ($other).insertSep(',') ))
-    else:
-      bases_array.add($other)
-  else:
-    bases_array.add(fmt"{float(100 * other / bases):.2f}")
-
-  # GC
-  let
-    gc_ratio = if cg > 0: float(100 * cg / bases)
-               else: 0.0
-  
-  var caseRatio = ""
-  if u:
-    let 
-      upperRatio = float(100 * (bases - lowerRaw) / bases)
-    caseRatio = fmt"{'\t'}{float(upperRatio):.2f}"
-  result = fmt"{display_total_bases}{'\t'}{bases_array[0]}{'\t'}{bases_array[1]}{'\t'}{bases_array[2]}{'\t'}{bases_array[3]}{'\t'}{bases_array[4]}{'\t'}{bases_array[5]}{'\t'}{gc_ratio:.2f}{caseRatio}"
-    
-    
-
-  return
 
 proc fmtFloat*(value      : float,
                opts       : BaseCompOpts,
