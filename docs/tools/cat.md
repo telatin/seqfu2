@@ -55,6 +55,8 @@ Filtering:
   --max-bp INT           Stop printing each input file after INT bases [default: 0]
 
 Output:
+  -o, --output FILE      Write output to FILE (gzipped if ending in .gz) [default: -]
+  --gz-level INT         Compression level for .gz output (0-9) [default: 6]
   --fasta                Force FASTA output
   --fastq                Force FASTQ output
   --report FILE          Save a report to FILE (original name, new name)
@@ -79,6 +81,14 @@ By default the first printed record selects the output format. Use `--fasta` to 
 The `-q`/`--fastq-qual` option sets that quality as a **Phred score** (not an ASCII character or encoding offset). The default of `33` produces the character `B` in standard Phred+33 encoding, which corresponds to ~99.95% base-call accuracy. To assign a different quality, pass the desired Phred score directly, e.g. `--fastq-qual 40` for `I` (Q40) or `--fastq-qual 0` for `!` (Q0).
 Using `--list` the simple list of records matching the criteria will be printed.
 When multiple input files are provided, `--max-bp` is applied separately to each input file.
+
+Output goes to STDOUT unless `-o FILE` is given. If `FILE` ends in `.gz` the output is gzip-compressed
+(level set with `--gz-level`, default 6). This applies to `--list`/`--long` output too.
+`seqfu cat` refuses to write to a path that is also one of its inputs.
+
+```bash
+seqfu cat --min-len 100 -o filtered.fq.gz reads_R1.fq.gz
+```
 
 ## Anvi'o shortcut
 

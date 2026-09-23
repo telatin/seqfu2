@@ -73,6 +73,7 @@ type
     failedLength: int
     failedTooLong: int
     failedComplexity: int
+    failedMate: int          # PE: read passed its filters but its mate failed
     totalBasesTrimmed: int
     readsTrimmed: int
 
@@ -351,6 +352,9 @@ proc printStats(stats: ProcessingStats, isPaired: bool, verbose: bool) =
     let failedPairs = stats.totalPairs - stats.passedPairs
     stderr.writeLine("  Failed pairs:            ", $failedPairs,
                     " (", formatFloat(failedPairs.float * 100.0 / stats.totalPairs.float, ffDecimal, 1), "%)")
+    # The breakdown below counts reads, so report failed reads as its total
+    let failedReads = stats.totalReads - stats.passedReads
+    stderr.writeLine("  Failed reads:            ", $failedReads, " of ", $stats.totalReads)
   else:
     stderr.writeLine("  Total reads:             ", $stats.totalReads)
     stderr.writeLine("  Passed reads:            ", $stats.passedReads,
@@ -372,6 +376,8 @@ proc printStats(stats: ProcessingStats, isPaired: bool, verbose: bool) =
     stderr.writeLine("    Too long:              ", $stats.failedTooLong)
   if stats.failedComplexity > 0:
     stderr.writeLine("    Complexity:            ", $stats.failedComplexity)
+  if stats.failedMate > 0:
+    stderr.writeLine("    Mate failed:           ", $stats.failedMate)
 
   if stats.readsTrimmed > 0:
     let pctTrimmed = if isPaired: stats.readsTrimmed.float * 100.0 / (stats.passedPairs.float * 2.0)
@@ -406,7 +412,8 @@ proc exportStatsJson(stats: ProcessingStats, isPaired: bool, filename: string,
         "n_bases": stats.failedNBase,
         "length": stats.failedLength,
         "too_long": stats.failedTooLong,
-        "complexity": stats.failedComplexity
+        "complexity": stats.failedComplexity,
+        "mate_failed": stats.failedMate
       },
       "reads_trimmed": stats.readsTrimmed,
       "bases_trimmed": stats.totalBasesTrimmed
@@ -446,6 +453,7 @@ proc processBatch(batch: ptr WorkerBatch, trimOpts: TrimOptions, filterOpts: Fil
     # Paired-end batch processing
     for i in 0 ..< batch.reads1.len:
       batch.stats.totalPairs += 1
+      batch.stats.totalReads += 2
 
       let (pr1, pr2, passed, res1, res2, trim1, trim2) =
         processPairedReads(batch.reads1[i], batch.reads2[i], trimOpts, filterOpts)
@@ -454,6 +462,7 @@ proc processBatch(batch: ptr WorkerBatch, trimOpts: TrimOptions, filterOpts: Fil
         batch.results1.add(pr1)
         batch.results2.add(pr2)
         batch.stats.passedPairs += 1
+        batch.stats.passedReads += 2
 
         if trim1:
           batch.stats.readsTrimmed += 1
@@ -462,10 +471,12 @@ proc processBatch(batch: ptr WorkerBatch, trimOpts: TrimOptions, filterOpts: Fil
           batch.stats.readsTrimmed += 1
           batch.stats.totalBasesTrimmed += batch.reads2[i].sequence.len - pr2.sequence.len
       else:
-        # Update failure stats
-        updateStats(batch.stats, res1, trim1)
-        if res2 != frPass:
-          updateStats(batch.stats, res2, trim2)
+        # Per-read failure reasons; a passing mate is dropped with its pair
+        for (res, trim) in [(res1, trim1), (res2, trim2)]:
+          if res == frPass:
+            batch.stats.failedMate += 1
+          else:
+            updateStats(batch.stats, res, trim)
   else:
     # Single-end batch processing
     for read in batch.reads1:
@@ -492,6 +503,15 @@ proc toFQRecord(record: FastxRecord): FQRecord =
   result.quality = record.qual
 
 
+proc requireQuality(record: FQRecord, filename: string, recordNum: int) =
+  ## Quit unless the record has one quality score per base (e.g. FASTA input)
+  if record.quality.len != record.sequence.len:
+    let source = if filename == "-": "stdin" else: filename
+    stderr.writeLine("ERROR: Record ", recordNum, " (", record.name, ") in ", source,
+                     " has no quality scores: trim requires FASTQ input")
+    quit(1)
+
+
 proc mergeStats(totalStats: var ProcessingStats, batchStats: ProcessingStats) =
   totalStats.totalReads += batchStats.totalReads
   totalStats.totalPairs += batchStats.totalPairs
@@ -503,6 +523,7 @@ proc mergeStats(totalStats: var ProcessingStats, batchStats: ProcessingStats) =
   totalStats.failedLength += batchStats.failedLength
   totalStats.failedTooLong += batchStats.failedTooLong
   totalStats.failedComplexity += batchStats.failedComplexity
+  totalStats.failedMate += batchStats.failedMate
   totalStats.totalBasesTrimmed += batchStats.totalBasesTrimmed
   totalStats.readsTrimmed += batchStats.readsTrimmed
 
@@ -569,8 +590,12 @@ proc processWithThreads(inputR1: string, inputR2: string,
         stderr.writeLine("ERROR: R2 ended prematurely after ", pairCount - 1, " pairs")
         quit(1)
 
-      currentBatch.reads1.add(r1.toFQRecord())
-      currentBatch.reads2.add(r2.toFQRecord())
+      let read1 = r1.toFQRecord()
+      let read2 = r2.toFQRecord()
+      requireQuality(read1, inputR1, pairCount)
+      requireQuality(read2, inputR2, pairCount)
+      currentBatch.reads1.add(read1)
+      currentBatch.reads2.add(read2)
 
       if currentBatch.reads1.len >= batchSize:
         batches.add(currentBatch)
@@ -586,7 +611,10 @@ proc processWithThreads(inputR1: string, inputR2: string,
       stderr.writeLine("ERROR: R1 ended prematurely after ", pairCount, " pairs")
       quit(1)
   else:
+    var readCount = 0
     for read in readFQ(inputR1):
+      readCount += 1
+      requireQuality(read, inputR1, readCount)
       currentBatch.reads1.add(read)
 
       if currentBatch.reads1.len >= batchSize:
@@ -627,18 +655,22 @@ proc processFiles(inputR1: string, inputR2: string,
 
     while fq1.readFastx(r1):
       stats.totalPairs += 1
+      stats.totalReads += 2
       if not fq2.readFastx(r2):
         stderr.writeLine("ERROR: R2 ended prematurely after ", stats.totalPairs - 1, " pairs")
         quit(1)
 
       let read1 = r1.toFQRecord()
       let read2 = r2.toFQRecord()
+      requireQuality(read1, inputR1, stats.totalPairs)
+      requireQuality(read2, inputR2, stats.totalPairs)
       let (pr1, pr2, passed, res1, res2, trim1, trim2) = processPairedReads(read1, read2, trimOpts, filterOpts)
 
       if passed:
         outputR1.writeRecord(pr1)
         outputR2.writeRecord(pr2)
         stats.passedPairs += 1
+        stats.passedReads += 2
 
         if trim1:
           stats.readsTrimmed += 1
@@ -647,10 +679,12 @@ proc processFiles(inputR1: string, inputR2: string,
           stats.readsTrimmed += 1
           stats.totalBasesTrimmed += read2.sequence.len - pr2.sequence.len
       else:
-        # Update failure stats (use worse of the two)
-        updateStats(stats, res1, trim1)
-        if res2 != frPass:
-          updateStats(stats, res2, trim2)
+        # Per-read failure reasons; a passing mate is dropped with its pair
+        for (res, trim) in [(res1, trim1), (res2, trim2)]:
+          if res == frPass:
+            stats.failedMate += 1
+          else:
+            updateStats(stats, res, trim)
 
     if fq2.readFastx(r2):
       stderr.writeLine("ERROR: R1 ended prematurely after ", stats.totalPairs, " pairs")
@@ -660,6 +694,7 @@ proc processFiles(inputR1: string, inputR2: string,
     # Single-end processing
     for read in readFQ(inputR1):
       stats.totalReads += 1
+      requireQuality(read, inputR1, stats.totalReads)
 
       let (trimmedRead, passed, filterRes, wasTrimmed) = processSingleRead(read, trimOpts, filterOpts)
 

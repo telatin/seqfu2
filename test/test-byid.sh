@@ -4,14 +4,16 @@ BYID_BIN="${BINDIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../bin" && pwd)/}/seqfu
 BYID_TMP=$(mktemp -d)
 PASS=${PASS:-0}
 ERRORS=${ERRORS:-0}
+OK=${OK:-'\033[0;32mOK\033[0m'}
+FAIL=${FAIL:-'\033[0;31mFAIL\033[0m'}
 
 byid_ok() {
-  echo "OK: by-id: $1"
+  echo -e "$OK: by-id: $1"
   PASS=$((PASS+1))
 }
 
 byid_fail() {
-  echo "FAIL: by-id: $1"
+  echo -e "$FAIL: by-id: $1"
   ERRORS=$((ERRORS+1))
 }
 

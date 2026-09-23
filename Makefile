@@ -15,8 +15,8 @@ PTHREADLIBS=-pthread
 VERSION := $(shell grep version seqfu.nimble  | grep  -o "[0-9]\\+\.[0-9]\\+\.[0-9]\\+")
 NIMPARAM :=  --mm:orc -d:NimblePkgVersion=$(VERSION) -d:release --opt:speed --passC:"-Wno-error=incompatible-pointer-types"
 TARGETS=$(BIN)/seqfu $(BIN)/fu-msa $(BIN)/fu-primers $(BIN)/dadaist2-mergeseqs $(BIN)/fu-shred $(BIN)/fu-multirelabel $(BIN)/fu-index $(BIN)/fu-cov $(BIN)/fu-16Sregion  $(BIN)/fu-nanotags  $(BIN)/fu-orf  $(BIN)/fu-sw  $(BIN)/fu-virfilter  $(BIN)/fu-tabcheck $(BIN)/byteshift $(BIN)/SeqCountHelper $(BIN)/fu-secheck
-OBSOLETE_TARGETS=$(BIN)/fu-homocomp
-PYTARGETS=$(BIN)/fu-split $(BIN)/fu-pecheck $(BIN)/fu-readtope
+OBSOLETE_TARGETS=$(BIN)/fu-homocomp $(BIN)/fu-readtope
+PYTARGETS=$(BIN)/fu-split $(BIN)/fu-pecheck
 
 all: remove-obsolete $(TARGETS) $(PYTARGETS)
 
@@ -55,12 +55,6 @@ $(BIN)/fu-pecheck: $(SCRIPTS)/fu-pecheck
 	sed -i.bak '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-pecheck
 	rm -f $(BIN)/fu-pecheck.bak
 	chmod 555 $(BIN)/fu-pecheck
-
-$(BIN)/fu-readtope: $(SCRIPTS)/fu-readtope
-	cp -f $(SCRIPTS)/fu-readtope $(BIN)/fu-readtope
-	sed -i.bak '2 s/^/### DO NOT EDIT THIS SCRIPT!\n/' $(BIN)/fu-readtope
-	rm -f $(BIN)/fu-readtope.bak
-	chmod 555 $(BIN)/fu-readtope
 
 $(BIN)/seqfu: src/sfu.nim
 	nim c --threads:on $(NIMPARAM) --out:$@ $<

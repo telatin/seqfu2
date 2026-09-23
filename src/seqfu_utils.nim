@@ -184,6 +184,10 @@ proc get_gc*(s: string): float =
 
   return float(gc_count) / float(gc_count + at_count)
 
+proc charToQual*(c: char, offset = 33): int =
+  ## returns Illumina quality score for a given character
+  c.ord - offset
+
 proc get_ee*(s: string): float =
   ## Returns the expected error for a FASTQ quality string.
   for c in s:
@@ -293,10 +297,6 @@ proc revcompl*(s: FastxRecord): FastxRecord =
   result.qual    = reverse(s.qual)
   result.seq     = seqfuRevCompl(s.seq)
 
-
-proc charToQual*(c: char, offset = 33): int =
-  ## returns Illumina quality score for a given character
-  c.ord - offset
 
 proc getBasename*(filename: string): string =
   let  fileParse = splitFile(filename)

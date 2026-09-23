@@ -147,6 +147,58 @@ else
     ERRORS=$((ERRORS+1))
 fi
 
+# Test 5b: paired-end JSON counts reads, and failure_breakdown sums to failed_reads
+# First two R1 reads are cut to 10bp (fail length), their R2 mates pass (mate_failed)
+gzip -dc $DIR/../data/illumina_1.fq.gz | \
+  awk 'NR<=8 && (NR%4==2 || NR%4==0) {$0=substr($0,1,10)} 1' > /tmp/test_trim_json_R1.fq
+for T in 1 4; do
+  $BIN trim -1 /tmp/test_trim_json_R1.fq -2 $DIR/../data/illumina_2.fq.gz -o /tmp/test_trim_json_t$T \
+    -t $T --batch-size 2 --stats-json /tmp/test_trim_json_t$T.json -v 2>/tmp/test_trim_json_t$T.err
+  JSON=/tmp/test_trim_json_t$T.json
+  MSG="Paired-end JSON stats (-t $T): read counts and failure breakdown are consistent"
+  if grep -q '"total_reads": 14,' $JSON && grep -q '"passed_reads": 10,' $JSON && \
+     grep -q '"failed_reads": 4,' $JSON && grep -q '"failed_pairs": 2,' $JSON && \
+     grep -q '"length": 2,' $JSON && grep -q '"mate_failed": 2' $JSON; then
+      echo -e "$OK: $MSG"
+      PASS=$((PASS+1))
+  else
+      echo -e "$FAIL: $MSG"
+      ERRORS=$((ERRORS+1))
+  fi
+  ERR=/tmp/test_trim_json_t$T.err
+  MSG="Paired-end verbose summary (-t $T): breakdown is reported against failed reads"
+  if grep -Eq 'Failed pairs: +2 ' $ERR && grep -Eq 'Failed reads: +4 of 14' $ERR && \
+     grep -Eq 'Length: +2$' $ERR && grep -Eq 'Mate failed: +2$' $ERR; then
+      echo -e "$OK: $MSG"
+      PASS=$((PASS+1))
+  else
+      echo -e "$FAIL: $MSG"
+      ERRORS=$((ERRORS+1))
+  fi
+done
+
+# Test 5c: FASTA input (no quality scores) is rejected with a clear error, SE and PE, any thread count
+printf ">a\nACGTACGTACGTACGTACGT\n" > /tmp/test_trim_fasta_R1.fa
+cp /tmp/test_trim_fasta_R1.fa /tmp/test_trim_fasta_R2.fa
+for T in 1 4; do
+  for MODE in SE PE; do
+    if [[ $MODE == SE ]]; then
+      $BIN trim /tmp/test_trim_fasta_R1.fa -t $T > /dev/null 2>/tmp/test_trim_fasta.err
+    else
+      $BIN trim -1 /tmp/test_trim_fasta_R1.fa -2 /tmp/test_trim_fasta_R2.fa -o /tmp/test_trim_fasta -t $T 2>/tmp/test_trim_fasta.err
+    fi
+    RET=$?
+    MSG="FASTA input rejected ($MODE, -t $T): exit 1 with 'requires FASTQ input' error"
+    if [[ $RET -eq 1 ]] && grep -q "trim requires FASTQ input" /tmp/test_trim_fasta.err; then
+        echo -e "$OK: $MSG"
+        PASS=$((PASS+1))
+    else
+        echo -e "$FAIL: $MSG (exit $RET)"
+        ERRORS=$((ERRORS+1))
+    fi
+  done
+done
+
 # Test 6: Presets
 $BIN trim $DIR/../data/illumina_1.fq.gz -o /tmp/test_trim_strict.fq --preset strict 2>/dev/null
 RET=$?

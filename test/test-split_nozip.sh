@@ -1,11 +1,11 @@
 #!/bin/bash
 
 PY=$(command -v python)
-
+PYERR=$?
 if [[ -e "$BINDIR"/fu-split ]] && [[ $PYERR == 0 ]]; then
 
 python --version
-
+export SEQFU_BIN="$BINDIR"/seqfu
 # Single file
 OUTDIR=$(mktemp -d)
 

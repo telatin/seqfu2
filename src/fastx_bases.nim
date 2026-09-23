@@ -3,10 +3,11 @@ import readfx
 import strformat
 import terminaltables
 import tables, strutils
-from os import fileExists,  dirExists
+import os
 import docopt
 import ./seqfu_utils
 import math
+import malebolgia
 
 type FileComposition = ref object
   name: string
@@ -19,8 +20,6 @@ type FileComposition = ref object
   num_n: int
   num_other: int
   num_lower: int
-  ratio_gc: float
-  ratio_upper: float
 
 
 type BaseCompOpts = ref object
@@ -31,9 +30,6 @@ type BaseCompOpts = ref object
   nice: bool
   show_uppercase: bool
   digits: int
-
-proc `$`(comp: FileComposition): string =
-  return fmt"{comp.bases}{'\t'}{comp.num_a}{'\t'}{comp.num_c}{'\t'}{comp.num_g}{'\t'}{comp.num_t}{'\t'}{comp.num_n}{'\t'}{comp.num_other}{'\t'}{comp.num_lower}{'\t'}{comp.ratio_gc}{'\t'}{comp.ratio_upper}"
 
 proc numberToString[T](s: T, opts: BaseCompOpts): string =
   let
@@ -53,13 +49,13 @@ proc numberToString[T](s: T, opts: BaseCompOpts): string =
     return number
 
 proc toComposition(dict: CountTableRef, filename: string, total: int, opts: BaseCompOpts): FileComposition =
-  let 
-    val_A = dict['A'] - 1
-    val_C = dict['C'] - 1
-    val_G = dict['G'] - 1
-    val_T = dict['T'] - 1
-    val_N = dict['N'] - 1
-    val_L = dict['L'] - 1
+  let
+    val_A = dict['A']
+    val_C = dict['C']
+    val_G = dict['G']
+    val_T = dict['T']
+    val_N = dict['N']
+    val_L = dict['L']
   result = FileComposition(
     name: filename,
     bases: total,
@@ -69,82 +65,8 @@ proc toComposition(dict: CountTableRef, filename: string, total: int, opts: Base
     num_t: val_T,
     num_n: val_N,
     num_other: total - val_A - val_C - val_G - val_T - val_N,
-    num_lower: val_L,
-    ratio_gc: float(val_G + val_C) / float(total),
-    ratio_upper: float(total - val_L) / float(total)
+    num_lower: val_L
   )
-
-proc splitToSeq(tabbedStr, filename: string): seq[string] =
-  # Split a string with tabs to a sequence
-  result = @[filename]
-  for c in tabbedStr.split("\t"):
-    result.add($c)
-  if len(result) < 10:
-    result.add("--")
-
-proc toString(c: CountTableRef[char], raw: bool, t, u: bool): string =
-  var
-    bases = 0
-    normal = 0
-    bases_array = newSeq[string]()
-  for k, v in c:
-    bases += v
-
-  let
-    lowerRaw = if 'L' in c: c['L']
-              else: 0
-  
-  bases -= lowerRaw
-
-  let
-    display_total_bases = if t:  ($bases).insertSep(',')
-                          else: $bases
-
-  let cg = if 'C' in c and 'G' in c: c['C'] + c['G']
-           elif 'C' in c: c['C']
-           elif 'G' in c: c['G']
-           else: 0
-    
-
-
-  for base in @['A', 'C', 'G', 'T', 'N']:
-      let
-        count = if base in c: c[base]
-                else: 0
-      normal += count
-      if raw:
-        if t:
-          bases_array.add($( ($count).insertSep(',') ))
-        else:
-          bases_array.add($count)
-      else:
-        bases_array.add(fmt"{float(100 * c[base] / bases):.2f}")
-  # OTHER
-  let 
-    other = bases - normal
-  if raw:
-    if t:
-      bases_array.add($( ($other).insertSep(',') ))
-    else:
-      bases_array.add($other)
-  else:
-    bases_array.add(fmt"{float(100 * other / bases):.2f}")
-
-  # GC
-  let
-    gc_ratio = if cg > 0: float(100 * cg / bases)
-               else: 0.0
-  
-  var caseRatio = ""
-  if u:
-    let 
-      upperRatio = float(100 * (bases - lowerRaw) / bases)
-    caseRatio = fmt"{'\t'}{float(upperRatio):.2f}"
-  result = fmt"{display_total_bases}{'\t'}{bases_array[0]}{'\t'}{bases_array[1]}{'\t'}{bases_array[2]}{'\t'}{bases_array[3]}{'\t'}{bases_array[4]}{'\t'}{bases_array[5]}{'\t'}{gc_ratio:.2f}{caseRatio}"
-    
-    
-
-  return
 
 proc fmtFloat*(value      : float,
                opts       : BaseCompOpts,
@@ -206,6 +128,12 @@ proc fmtFloat*(value      : float,
     
     return sign & integer & decimal
 
+proc pctOf(part, total: int): float =
+  # Percentage of `total` that `part` represents; 0.0 for an empty (0-base) file
+  # rather than a NaN from 0/0.
+  if total == 0: 0.0
+  else: float(100 * part) / float(total)
+
 proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
   # 1. Filename
   # 2. Total Bases
@@ -230,23 +158,45 @@ proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
     result.add((c.num_n).numberToString(opts))
     result.add((c.num_other).numberToString(opts))
   else:
-    result.add(fmtFloat(float(100 * c.num_a / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_c / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_g / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_t / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_n / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_other / c.bases), opts))
-  
-  result.add(fmtFloat(float(100 * (c.num_c + c.num_g) / c.bases), opts))
-  
-  result.add(fmtFloat(float(100 * (c.bases - c.num_lower) / c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_a, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_c, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_g, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_t, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_n, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_other, c.bases), opts))
+
+  result.add(fmtFloat(pctOf(c.num_c + c.num_g, c.bases), opts))
+
+  result.add(fmtFloat(pctOf(c.bases - c.num_lower, c.bases), opts))
 
 
 
 proc newDNAtable(): CountTableRef[char] =
-  result = newCountTable[char]("ACGTNL")
-  
-  return
+  result = newCountTable[char]()
+
+type
+  BaseJob = object
+    filename: string
+    opts: BaseCompOpts
+    result: FileComposition
+
+proc processBaseJob(job: ptr BaseJob) {.gcsafe.} =
+  {.cast(gcsafe).}:
+    var
+      total_bases = 0
+      counts      = newDNAtable()
+    for record in readFQ(job[].filename):
+      total_bases += len(record.sequence)
+      for base in record.sequence:
+        let upperBase = base.toUpperAscii()
+        counts.inc(upperBase)
+        if base != upperBase:
+            counts.inc('L')
+
+    if total_bases == 0:
+      stderr.writeLine("Warning: ", job[].filename, " has 0 bases")
+
+    job[].result = counts.toComposition(job[].filename, total_bases, job[].opts)
 
 proc fastx_bases(argv: var seq[string]): int =
     let args = docopt("""
@@ -261,7 +211,8 @@ Options:
   -b, --basename         Print the basename of the file
   -n, --nice             Print terminal table
   -d, --digits INT       Number of digits to print [default: 2]
-  -H, --header           Print header
+  -H, --header           Print header (implied when using --nice)
+  --threads INT          Number of worker threads, one per file [default: 1]
   -v, --verbose          Verbose output
   --debug                Debug output
   --help                 Show this help
@@ -269,7 +220,24 @@ Options:
 
     verbose       = bool(args["--verbose"])
     var
-      files       : seq[string]  
+      files       : seq[string]
+      digits      : int
+      threads     : int
+
+    try:
+      digits = parseInt($args["--digits"])
+    except ValueError:
+      stderr.writeLine("Error: --digits must be an integer (got '" & $args["--digits"] & "')")
+      quit(1)
+
+    try:
+      threads = parseInt($args["--threads"])
+    except ValueError:
+      stderr.writeLine("Error: --threads must be an integer (got '" & $args["--threads"] & "')")
+      quit(1)
+    if threads < 1:
+      stderr.writeLine("Error: --threads must be >= 1 (got ", threads, ")")
+      quit(1)
 
     let
       showHeader    = bool(args["--header"])
@@ -281,8 +249,7 @@ Options:
       abspath       = bool(args["--abspath"])
       uppercaseRatio= true
       nice          = bool(args["--nice"])
-      digits        = parseInt($args["--digits"])
-    
+
     if bool(args["--debug"]):
       stderr.writeLine args
 
@@ -323,40 +290,42 @@ Options:
 
 
     
-    var
-      countTables = newTable[string, FileComposition]()
-
     if verbose:
       stderr.writeLine("Startup: ", files.len(), " files")
-    # ITERATE: files
-    for filename in files:
 
-      let displayname = if not basename and not abspath: filename
-                        elif basename: extractFilename(filename) 
-                        else: absolutePath(filename)
-      var 
-        total_bases  = 0
-        #total_seqs   = 0
-        counts       = newDNAtable()
-      
+    var jobs = newSeq[BaseJob](files.len)
+    for i, filename in files:
+      jobs[i] = BaseJob(filename: filename, opts: opts, result: nil)
+
+    # Parallelize per-file: each file is independent, so this is safe as long as
+    # there's more than one file and STDIN (readable only once) isn't among them.
+    let canParallel = threads > 1 and jobs.len > 1 and ("-" notin files)
+
+    if canParallel:
       if verbose:
-        stderr.writeLine("Parsing: ", filename)
-      # ITERATE: records
-      for record in readFQ(filename):
-        #total_seqs += 1
-        total_bases += len(record.sequence)
-        
-        for base in record.sequence:
-          counts.inc(base.toUpperAscii())
-          if base != base.toUpperAscii():
-              counts.inc('L')
-      
-      let
-        comp : FileComposition = counts.toComposition(filename, total_bases, opts)
-      countTables[displayname] = comp
+        stderr.writeLine("Processing ", jobs.len, " files using up to ", min(threads, ThreadPoolSize), " threads")
+      let parallelChunk = min(threads, ThreadPoolSize)
+      var m = createMaster()
+      var start = 0
+      while start < jobs.len:
+        let stopAt = min(start + parallelChunk, jobs.len)
+        m.awaitAll:
+          for i in start ..< stopAt:
+            m.spawn processBaseJob(addr jobs[i])
+        start = stopAt
+    else:
+      if threads > 1 and ("-" in files) and verbose:
+        stderr.writeLine("INFO: Disabling parallel processing because input includes STDIN ('-').")
+      for i in 0 ..< jobs.len:
+        if verbose:
+          stderr.writeLine("Parsing: ", jobs[i].filename)
+        processBaseJob(addr jobs[i])
 
-      
-    
+    var
+      compositions = newSeq[FileComposition](jobs.len)
+    for i in 0 ..< jobs.len:
+      compositions[i] = jobs[i].result
+
     # HEADER
 
     if nice:
@@ -364,11 +333,11 @@ Options:
       outputTable.separateRows = false
       outputTable.setHeaders(headerFields)
       # Populate table
-      for filename, comp in countTables.pairs():
+      for comp in compositions:
         outputTable.addRow(comp.toRow(opts))
       # Print table
       outputTable.printTable()
     else:
-      for filename, comp in countTables.pairs():
+      for comp in compositions:
         echo (comp.toRow(opts)).join("\t")
       

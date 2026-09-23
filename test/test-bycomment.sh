@@ -4,14 +4,16 @@ BYCOMMENT_BIN="${BINDIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../bin" && pwd)/}/
 BYCOMMENT_TMP=$(mktemp -d)
 PASS=${PASS:-0}
 ERRORS=${ERRORS:-0}
+OK=${OK:-'\033[0;32mOK\033[0m'}
+FAIL=${FAIL:-'\033[0;31mFAIL\033[0m'}
 
 bycomment_ok() {
-  echo "OK: by-comment: $1"
+  echo -e "$OK: by-comment: $1"
   PASS=$((PASS+1))
 }
 
 bycomment_fail() {
-  echo "FAIL: by-comment: $1"
+  echo -e "$FAIL: by-comment: $1"
   ERRORS=$((ERRORS+1))
 }
 

@@ -151,3 +151,35 @@ else
     echo -e "$FAIL: $MSG"
     ERRORS=$((ERRORS+1))
 fi
+
+"$BINDIR"/seqfu cat "$CAT_TRIM" > "$TMP.plain"
+"$BINDIR"/seqfu cat -o "$TMP.out.fq" "$CAT_TRIM"
+MSG="Checking cat -o FILE writes the same records as STDOUT"
+if cmp -s "$TMP.out.fq" "$TMP.plain"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+"$BINDIR"/seqfu cat -o "$TMP.out.fq.gz" "$CAT_TRIM"
+MSG="Checking cat -o FILE.gz writes valid gzip with the same records"
+if gzip -t "$TMP.out.fq.gz" 2>/dev/null && gzip -dc "$TMP.out.fq.gz" | cmp -s - "$TMP.plain"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+
+cp "$CAT_TRIM" "$TMP.self.fq"
+MSG="Checking cat -o refuses to overwrite an input file"
+if ! "$BINDIR"/seqfu cat -o "$TMP.self.fq" "$TMP.self.fq" 2>/dev/null && cmp -s "$TMP.self.fq" "$CAT_TRIM"; then
+    echo -e "$OK: $MSG"
+    PASS=$((PASS+1))
+else
+    echo -e "$FAIL: $MSG"
+    ERRORS=$((ERRORS+1))
+fi
+rm -f "$TMP.plain" "$TMP.out.fq" "$TMP.out.fq.gz" "$TMP.self.fq"

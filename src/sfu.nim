@@ -139,7 +139,7 @@ proc main(args: var seq[string]): int =
                "lanes [mrl]"       : "merge Illumina lanes",
                "stats [st]"        : "statistics on sequence lengths",
                "rotate [rot]"      : "rotate a sequence with a new start position",
-               "sort [srt]"        : "sort sequences by size (uniques)",
+               "sort [srt]"        : "sort FASTA sequences by size (uniques)",
                "metadata [met]"    : "print a table of FASTQ reads (mapping files)",
                "list [lst]"        : "print sequences from a list of names",
                "orf"               : "extract ORFs from nucleotide sequences",
