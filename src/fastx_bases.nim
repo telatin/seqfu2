@@ -127,6 +127,12 @@ proc fmtFloat*(value      : float,
     
     return sign & integer & decimal
 
+proc pctOf(part, total: int): float =
+  # Percentage of `total` that `part` represents; 0.0 for an empty (0-base) file
+  # rather than a NaN from 0/0.
+  if total == 0: 0.0
+  else: float(100 * part) / float(total)
+
 proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
   # 1. Filename
   # 2. Total Bases
@@ -151,16 +157,16 @@ proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
     result.add((c.num_n).numberToString(opts))
     result.add((c.num_other).numberToString(opts))
   else:
-    result.add(fmtFloat(float(100 * c.num_a / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_c / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_g / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_t / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_n / c.bases), opts))
-    result.add(fmtFloat(float(100 * c.num_other / c.bases), opts))
-  
-  result.add(fmtFloat(float(100 * (c.num_c + c.num_g) / c.bases), opts))
-  
-  result.add(fmtFloat(float(100 * (c.bases - c.num_lower) / c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_a, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_c, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_g, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_t, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_n, c.bases), opts))
+    result.add(fmtFloat(pctOf(c.num_other, c.bases), opts))
+
+  result.add(fmtFloat(pctOf(c.num_c + c.num_g, c.bases), opts))
+
+  result.add(fmtFloat(pctOf(c.bases - c.num_lower, c.bases), opts))
 
 
 
@@ -188,7 +194,14 @@ Options:
 
     verbose       = bool(args["--verbose"])
     var
-      files       : seq[string]  
+      files       : seq[string]
+      digits      : int
+
+    try:
+      digits = parseInt($args["--digits"])
+    except ValueError:
+      stderr.writeLine("Error: --digits must be an integer (got '" & $args["--digits"] & "')")
+      quit(1)
 
     let
       showHeader    = bool(args["--header"])
@@ -200,8 +213,7 @@ Options:
       abspath       = bool(args["--abspath"])
       uppercaseRatio= true
       nice          = bool(args["--nice"])
-      digits        = parseInt($args["--digits"])
-    
+
     if bool(args["--debug"]):
       stderr.writeLine args
 
@@ -266,6 +278,9 @@ Options:
           counts.inc(upperBase)
           if base != upperBase:
               counts.inc('L')
+
+      if total_bases == 0:
+        stderr.writeLine("Warning: ", filename, " has 0 bases")
 
       compositions.add(counts.toComposition(filename, total_bases, opts))
 
