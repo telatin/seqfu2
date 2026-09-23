@@ -3,7 +3,7 @@ import readfx
 import strformat
 import terminaltables
 import tables, strutils
-from os import fileExists,  dirExists
+import os
 import docopt
 import ./seqfu_utils
 import math
@@ -324,39 +324,34 @@ Options:
 
     
     var
-      countTables = newTable[string, FileComposition]()
+      compositions = newSeq[FileComposition]()
 
     if verbose:
       stderr.writeLine("Startup: ", files.len(), " files")
     # ITERATE: files
     for filename in files:
-
-      let displayname = if not basename and not abspath: filename
-                        elif basename: extractFilename(filename) 
-                        else: absolutePath(filename)
-      var 
+      var
         total_bases  = 0
         #total_seqs   = 0
         counts       = newDNAtable()
-      
+
       if verbose:
         stderr.writeLine("Parsing: ", filename)
       # ITERATE: records
       for record in readFQ(filename):
         #total_seqs += 1
         total_bases += len(record.sequence)
-        
-        for base in record.sequence:
-          counts.inc(base.toUpperAscii())
-          if base != base.toUpperAscii():
-              counts.inc('L')
-      
-      let
-        comp : FileComposition = counts.toComposition(filename, total_bases, opts)
-      countTables[displayname] = comp
 
-      
-    
+        for base in record.sequence:
+          let upperBase = base.toUpperAscii()
+          counts.inc(upperBase)
+          if base != upperBase:
+              counts.inc('L')
+
+      compositions.add(counts.toComposition(filename, total_bases, opts))
+
+
+
     # HEADER
 
     if nice:
@@ -364,11 +359,11 @@ Options:
       outputTable.separateRows = false
       outputTable.setHeaders(headerFields)
       # Populate table
-      for filename, comp in countTables.pairs():
+      for comp in compositions:
         outputTable.addRow(comp.toRow(opts))
       # Print table
       outputTable.printTable()
     else:
-      for filename, comp in countTables.pairs():
+      for comp in compositions:
         echo (comp.toRow(opts)).join("\t")
       
