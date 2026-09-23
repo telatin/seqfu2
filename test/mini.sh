@@ -23,6 +23,7 @@ NOTE='\033[0;34m'
 BOLD='\033[1m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
+PASS=0
 ERRORS=0
 
 getnumber() {
@@ -67,11 +68,15 @@ then
   echo "Version not found"
   ERRORS=$((ERRORS+1))
 else
-  grep "$VERSION" "$DIR"/../seqfu.nimble
+  if grep -q "$VERSION" "$DIR"/../seqfu.nimble; then
+    echo -e "$OK: Version $VERSION matches seqfu.nimble"
+    PASS=$((PASS+1))
+  else
+    echo -e "$FAIL: Version $VERSION not found in seqfu.nimble"
+    ERRORS=$((ERRORS+1))
+  fi
 fi
 
-PASS=0
-ERRORS=0
 # Dereiplicate
 if [[ $("$BIN" derep "$iAmpli"  | grep -c '>') -eq "18664" ]]; then
 	echo -e "$OK: Dereplicate"
@@ -131,12 +136,6 @@ if [[ $("$BIN" grep -c -n size=3 "$FILES"/comm.fa  | grep -c '>') -eq "1" ]]; th
 else
 	echo -e "$FAIL: grep, size"
 	ERRORS=$((ERRORS+1))
-fi
-
-if SEQFU_BIN="$BIN" bash "$DIR/test-byseq.sh"; then
-  PASS=$((PASS+1))
-else
-  ERRORS=$((ERRORS+1))
 fi
 
 # List
@@ -358,6 +357,7 @@ fi
  
 echo ""
 SEARCH_DONE=0
+MODULE_FOUND=0
 for TEST in "$DIR"/test-*.sh;
 do
   UTIL=$(basename "$TEST" | cut -f 1 -d '.' | cut -f 2 -d -)
@@ -387,11 +387,22 @@ do
 
   if [[ ! -z ${1+x} ]] && [[ "$1" == "$UTIL" ]]; then
     SEARCH_DONE=1
+    MODULE_FOUND=1
     break
   fi
 done
 
 if [[ ! -z ${1+x} ]]; then
+  separator
+  if [[ $MODULE_FOUND -eq 0 ]]; then
+    echo -e "$FAIL: No test module named '$1' (expected $DIR/test-$1.sh)"
+    exit 1
+  fi
+  if [[ $ERRORS -gt 0 ]]; then
+    echo -e "$FAIL: $ERRORS test failed ($PASS passed)"
+    exit 1
+  fi
+  echo -e "$OK: All $PASS tests passed"
   exit 0
 fi
 
@@ -438,7 +449,9 @@ separator "\n Checking release (GitHub)"
 LOCAL_RELEASE=$(grep version "$DIR/../seqfu.nimble"  | cut -f 2 -d = | sed 's/[" ]//g')
 GH_RELEASE=$(curl -s https://api.github.com/repos/telatin/seqfu2/releases/latest  | perl -nE 'my ($tag, $val) = split /:/, $_; if ($tag=~/tag_name/) { my @tag = split /"/, $val; for my $i (@tag) { $i =~s/[^0-9.]//g; say $i if (length($i) > 2); } }')
 
-if [[ $LOCAL_RELEASE == $GH_RELEASE ]]; then
+if [[ -z $GH_RELEASE ]]; then
+  echo " - Remote release check: skipped (could not fetch latest release from GitHub)"
+elif [[ $LOCAL_RELEASE == "$GH_RELEASE" ]]; then
   echo " ****************************************************************************"
   echo " Local $LOCAL_RELEASE matches remote $GH_RELEASE"
   echo " Set RELEASE=1 to make this warning fatal (e.g. when preparing a new release)"
