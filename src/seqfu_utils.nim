@@ -184,6 +184,20 @@ proc get_gc*(s: string): float =
 
   return float(gc_count) / float(gc_count + at_count)
 
+proc get_ee*(s: string): float =
+  ## Returns the expected error for a FASTQ quality string.
+  for c in s:
+    let
+      Q = charToQual(c)
+      P = pow(10, ((-1 * Q) / 10))
+    result += P
+
+proc countNs*(s: string): int =
+  ## Counts the number of N/n bases in a sequence string.
+  for c in s:
+    if c == 'N' or c == 'n':
+      result += 1
+
 proc guessR2*(file_R1: string, pattern_R1="auto", pattern_R2="auto", verbose=false): string =
   if not fileExists(file_R1):
     return ""

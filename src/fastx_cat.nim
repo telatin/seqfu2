@@ -3,26 +3,11 @@ import tables, strutils
 from os import fileExists, lastPathPart
 import docopt
 import ./seqfu_utils
-import math
 
 type outputFormat = enum
   sINIT # First value is the default
   sFASTQ
   sFASTA
-
-proc get_ee(s: string): float =
-  
-  # Requires math
-  for c in s:
-    let
-      Q = charToQual(c)
-      P = pow(10, ((-1 * Q) / 10))
-    result += P
-
-proc countNs(s: string): int =
-  for c in s:
-    if c == 'N' or c == 'n':
-      result += 1
 
 proc addZeros(n: string, digits: int): string =
   result = $n
@@ -477,6 +462,6 @@ Output:
         defer: f.close()
         f.write(renameReport)
       except Exception:
-        stderr.writeLine("Unable to write MultiQC report to ", $args["--multiqc"],": printing to STDOUT instead.")
+        stderr.writeLine("Unable to write report to ", reportFileName, ": printing to STDOUT instead.")
         echo renameReport
  
