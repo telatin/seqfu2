@@ -37,13 +37,13 @@ Stage: build
 
     # Install Nim binaries and the Python helper scripts.
     find bin -maxdepth 1 -type f -perm -111 -exec install -m 0755 {} /usr/local/bin/ \;
-    install -m 0755 scripts/fu-split scripts/fu-pecheck scripts/fu-readtope /usr/local/bin/
+    install -m 0755 scripts/fu-split scripts/fu-pecheck /usr/local/bin/
 
     # Fail the build if any expected tool is missing (mirrors namedBin in seqfu.nimble).
     for tool in \
         seqfu dadaist2-mergeseqs fu-16Sregion fu-cov fu-index fu-msa \
         fu-multirelabel fu-nanotags fu-orf fu-primers fu-shred fu-sw \
-        fu-tabcheck fu-virfilter fu-split fu-pecheck fu-readtope; do
+        fu-tabcheck fu-virfilter fu-split fu-pecheck; do
         test -x "/usr/local/bin/$tool"
     done
 
@@ -115,4 +115,3 @@ Stage: final
     # Python helper scripts must be installed and executable.
     test -x /usr/local/bin/fu-split
     test -x /usr/local/bin/fu-pecheck
-    test -x /usr/local/bin/fu-readtope
