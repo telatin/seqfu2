@@ -68,7 +68,7 @@ Output:
   --list                 Output a list of sequence names
   --long                 Output a list, with sequence name and comments 
   --anvio                Output in Anvio format (-p c_ -s -z --zeropad 12 --report rename_report.txt)
-  -q, --fastq-qual INT   FASTQ default quality [default: 33]
+  -q, --fastq-qual INT   Phred score assigned to bases when converting FASTA to FASTQ [default: 33]
   -v, --verbose          Verbose output
   --debug                Debug output
   -h, --help             Show this help
@@ -91,7 +91,7 @@ Output:
     var
       outputFormat : outputFormat # added: 1.18
       reportFileName: string
-      renameReport : string = ""
+      reportFile: File
       newMod = 0
       appendToName: string
       appendSuffixToName: bool
@@ -159,7 +159,7 @@ Output:
 
 
 
-    if stripName and not args["--prefix"] and not args["--basename"]:
+    if stripName and not args["--prefix"] and not args["--basename"] and not args["--anvio"]:
       stderr.writeLine("WARNING: Suppressing names is not recommended.")
       
     if args["--prefix"]:
@@ -187,6 +187,13 @@ Output:
       outputFormat = sFASTA
     elif bool(args["--fastq"]):
       outputFormat = sFASTQ
+
+    if reportFileName != "nil":
+      try:
+        reportFile = open(reportFileName, fmWrite)
+      except Exception as e:
+        stderr.writeLine("Unable to open report file ", reportFileName, ": ", e.msg)
+        quit(1)
 
     var
       totalPrintedSeqs = 0
@@ -446,8 +453,8 @@ Output:
               quit(1)
 
           # REPORT: original_name\t r.name
-          if $args["--report"] != "nil" or bool(args["--anvio"]) == true:
-            renameReport &= r.name & "\t" & original_name & "\n"
+          if reportFile != nil:
+            reportFile.writeLine(r.name & "\t" & original_name)
           echo printFastxRecord(r)
 
       # File parsed
@@ -456,12 +463,6 @@ Output:
       if printLast:
         stderr.writeLine("Last:", lastName)
       
-    if reportFileName != "nil":
-      try:
-        var f = open(reportFileName, fmWrite)
-        defer: f.close()
-        f.write(renameReport)
-      except Exception:
-        stderr.writeLine("Unable to write report to ", reportFileName, ": printing to STDOUT instead.")
-        echo renameReport
+    if reportFile != nil:
+      reportFile.close()
  

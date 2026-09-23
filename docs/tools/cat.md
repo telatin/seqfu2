@@ -60,7 +60,7 @@ Output:
   --report FILE          Save a report to FILE (original name, new name)
   --list                 Output a list of sequence names 
   --anvio                Output in Anvio format (-p c_ -s -z --zeropad 12 --report rename_report.txt)
-  -q, --fastq-qual INT   FASTQ default quality [default: 33]
+  -q, --fastq-qual INT   Phred score assigned to bases when converting FASTA to FASTQ [default: 33]
   -v, --verbose          Verbose output
   --debug                Debug output
   -h, --help             Show this help
@@ -75,7 +75,8 @@ by adding `-`.
 ## Output
 
 It is possible to pass both FASTA and FASTQ inputs, but `seqfu cat` keeps a single output format instead of producing a mixed stream.
-By default the first printed record selects the output format. Use `--fasta` to normalize mixed inputs to FASTA, or `--fastq` when FASTA records should be emitted with the default quality value.
+By default the first printed record selects the output format. Use `--fasta` to normalize mixed inputs to FASTA, or `--fastq` when FASTA records should be emitted with a synthetic quality value.
+The `-q`/`--fastq-qual` option sets that quality as a **Phred score** (not an ASCII character or encoding offset). The default of `33` produces the character `B` in standard Phred+33 encoding, which corresponds to ~99.95% base-call accuracy. To assign a different quality, pass the desired Phred score directly, e.g. `--fastq-qual 40` for `I` (Q40) or `--fastq-qual 0` for `!` (Q0).
 Using `--list` the simple list of records matching the criteria will be printed.
 When multiple input files are provided, `--max-bp` is applied separately to each input file.
 
