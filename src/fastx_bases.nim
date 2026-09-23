@@ -53,13 +53,13 @@ proc numberToString[T](s: T, opts: BaseCompOpts): string =
     return number
 
 proc toComposition(dict: CountTableRef, filename: string, total: int, opts: BaseCompOpts): FileComposition =
-  let 
-    val_A = dict['A'] - 1
-    val_C = dict['C'] - 1
-    val_G = dict['G'] - 1
-    val_T = dict['T'] - 1
-    val_N = dict['N'] - 1
-    val_L = dict['L'] - 1
+  let
+    val_A = dict['A']
+    val_C = dict['C']
+    val_G = dict['G']
+    val_T = dict['T']
+    val_N = dict['N']
+    val_L = dict['L']
   result = FileComposition(
     name: filename,
     bases: total,
@@ -244,9 +244,7 @@ proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
 
 
 proc newDNAtable(): CountTableRef[char] =
-  result = newCountTable[char]("ACGTNL")
-  
-  return
+  result = newCountTable[char]()
 
 proc fastx_bases(argv: var seq[string]): int =
     let args = docopt("""
