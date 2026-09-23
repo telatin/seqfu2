@@ -6,6 +6,57 @@ parent: Core Tools
 
 # seqfu by-seq
 
+```text
+Usage:
+  by-seq [options] [-e PATTERN]... [<item>...]
+
+Select FASTA/FASTQ records by sequence. Without -e/-f, the first positional
+item is the pattern; remaining items are input files. Default: IUPAC DNA,
+forward strand, at least one site per pattern and mate.
+
+Patterns:
+  -e, --pattern PATTERN       Add a pattern; may be repeated
+  -f, --patterns-file FILE    Read patterns or name<TAB>pattern lines
+  --logic MODE               Combine patterns: any|all [default: any]
+  --regex                    Use pure-Nim regular expressions
+  --literal                  Use literal strings instead of IUPAC DNA
+  --case-sensitive           Match letter case
+
+Biological matching:
+  --strand MODE              Search forward|reverse|both [default: forward]
+  -m, --max-mismatches INT   Maximum substitutions per site (default: 0)
+  --circular                 Allow matches across the sequence origin
+  --occurrences INT          Require exactly INT sites per pattern and mate
+  --min-occurrences INT      Minimum sites per pattern and mate
+  --max-occurrences INT      Maximum sites per pattern and mate
+  -v, --invert-match         Invert final selection
+
+Input:
+  <item>...                  Pattern then files, or files with -e/-f
+  -1, --r1 FILE             Paired-end R1 FASTQ
+  -2, --r2 FILE             Paired-end R2 FASTQ
+  --interleaved             Treat one input as interleaved FASTQ
+
+Paired selection:
+  --pair-mode MODE           Match each pattern in any|both mates [default: any]
+
+Output:
+  -o, --output FILE          Write to FILE (gzip if .gz)
+  -O, --output-r2 FILE       Write selected R2 reads to FILE
+  --interleaved-output       Keep paired output interleaved
+  --hits FILE                Write sites for selected records as TSV
+  --gzip-level INT           Gzip compression level [default: 6]
+
+Performance:
+  -t, --threads INT          Worker threads [default: 1]
+  --batch-size INT           Records or pairs per batch [default: 4096]
+
+Other:
+  --stats                    Print processed and selected counts to stderr
+  --verbose                  Print input and output routing to stderr
+  -h, --help                 Show this help
+```
+
 `by-seq` selects FASTA/FASTQ records by sequence. The default is a
 case-insensitive IUPAC DNA search on the forward strand. Use
 [`by-id`]({{site.baseurl}}/tools/by-id.html) or
