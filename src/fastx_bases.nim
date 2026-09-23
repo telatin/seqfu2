@@ -7,6 +7,7 @@ import os
 import docopt
 import ./seqfu_utils
 import math
+import malebolgia
 
 type FileComposition = ref object
   name: string
@@ -173,6 +174,30 @@ proc toRow(c: FileComposition, opts: BaseCompOpts): seq[string] =
 proc newDNAtable(): CountTableRef[char] =
   result = newCountTable[char]()
 
+type
+  BaseJob = object
+    filename: string
+    opts: BaseCompOpts
+    result: FileComposition
+
+proc processBaseJob(job: ptr BaseJob) {.gcsafe.} =
+  {.cast(gcsafe).}:
+    var
+      total_bases = 0
+      counts      = newDNAtable()
+    for record in readFQ(job[].filename):
+      total_bases += len(record.sequence)
+      for base in record.sequence:
+        let upperBase = base.toUpperAscii()
+        counts.inc(upperBase)
+        if base != upperBase:
+            counts.inc('L')
+
+    if total_bases == 0:
+      stderr.writeLine("Warning: ", job[].filename, " has 0 bases")
+
+    job[].result = counts.toComposition(job[].filename, total_bases, job[].opts)
+
 proc fastx_bases(argv: var seq[string]): int =
     let args = docopt("""
 Usage: bases [options] [<inputfile> ...]
@@ -186,7 +211,8 @@ Options:
   -b, --basename         Print the basename of the file
   -n, --nice             Print terminal table
   -d, --digits INT       Number of digits to print [default: 2]
-  -H, --header           Print header
+  -H, --header           Print header (implied when using --nice)
+  --threads INT          Number of worker threads, one per file [default: 1]
   -v, --verbose          Verbose output
   --debug                Debug output
   --help                 Show this help
@@ -196,11 +222,21 @@ Options:
     var
       files       : seq[string]
       digits      : int
+      threads     : int
 
     try:
       digits = parseInt($args["--digits"])
     except ValueError:
       stderr.writeLine("Error: --digits must be an integer (got '" & $args["--digits"] & "')")
+      quit(1)
+
+    try:
+      threads = parseInt($args["--threads"])
+    except ValueError:
+      stderr.writeLine("Error: --threads must be an integer (got '" & $args["--threads"] & "')")
+      quit(1)
+    if threads < 1:
+      stderr.writeLine("Error: --threads must be >= 1 (got ", threads, ")")
       quit(1)
 
     let
@@ -254,37 +290,41 @@ Options:
 
 
     
-    var
-      compositions = newSeq[FileComposition]()
-
     if verbose:
       stderr.writeLine("Startup: ", files.len(), " files")
-    # ITERATE: files
-    for filename in files:
-      var
-        total_bases  = 0
-        #total_seqs   = 0
-        counts       = newDNAtable()
 
+    var jobs = newSeq[BaseJob](files.len)
+    for i, filename in files:
+      jobs[i] = BaseJob(filename: filename, opts: opts, result: nil)
+
+    # Parallelize per-file: each file is independent, so this is safe as long as
+    # there's more than one file and STDIN (readable only once) isn't among them.
+    let canParallel = threads > 1 and jobs.len > 1 and ("-" notin files)
+
+    if canParallel:
       if verbose:
-        stderr.writeLine("Parsing: ", filename)
-      # ITERATE: records
-      for record in readFQ(filename):
-        #total_seqs += 1
-        total_bases += len(record.sequence)
+        stderr.writeLine("Processing ", jobs.len, " files using up to ", min(threads, ThreadPoolSize), " threads")
+      let parallelChunk = min(threads, ThreadPoolSize)
+      var m = createMaster()
+      var start = 0
+      while start < jobs.len:
+        let stopAt = min(start + parallelChunk, jobs.len)
+        m.awaitAll:
+          for i in start ..< stopAt:
+            m.spawn processBaseJob(addr jobs[i])
+        start = stopAt
+    else:
+      if threads > 1 and ("-" in files) and verbose:
+        stderr.writeLine("INFO: Disabling parallel processing because input includes STDIN ('-').")
+      for i in 0 ..< jobs.len:
+        if verbose:
+          stderr.writeLine("Parsing: ", jobs[i].filename)
+        processBaseJob(addr jobs[i])
 
-        for base in record.sequence:
-          let upperBase = base.toUpperAscii()
-          counts.inc(upperBase)
-          if base != upperBase:
-              counts.inc('L')
-
-      if total_bases == 0:
-        stderr.writeLine("Warning: ", filename, " has 0 bases")
-
-      compositions.add(counts.toComposition(filename, total_bases, opts))
-
-
+    var
+      compositions = newSeq[FileComposition](jobs.len)
+    for i in 0 ..< jobs.len:
+      compositions[i] = jobs[i].result
 
     # HEADER
 
