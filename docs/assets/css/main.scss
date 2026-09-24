@@ -395,6 +395,9 @@ img { max-width: 100%; height: auto; }
 .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 8px; }
 .recipe-card-title { font-weight: 700; font-size: 17px; }
 .recipe-card-text { font-size: 14px; color: var(--ink-3); line-height: 1.5; }
+.app-card { grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: start; }
+.app-card-body { display: grid; gap: 8px; align-content: start; }
+.app-card-icon { width: clamp(64px, 18vw, 96px); height: auto; aspect-ratio: 1; }
 
 // ---------------------------------------------------------------- footer
 .footer {

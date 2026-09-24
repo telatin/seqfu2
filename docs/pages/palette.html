@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SeqFu palette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --surface: #faf8f4; --raised: #ffffff; --ink: #181100; --muted: #6a6356;
+    --border: #e2ddd3; --purple: #73449b; --orange: #fcbe00;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface); color: var(--ink);
+    font-family: "Figtree", "Helvetica Neue", Arial, sans-serif; }
+  header { background: var(--purple); color: #fff; padding: 40px 48px; }
+  header h1 { margin: 0; font-size: 48px; line-height: 48px; font-weight: 800; letter-spacing: -0.02em; }
+  header h1 span { color: var(--orange); }
+  header p { margin: 12px 0 0; font-size: 17px; line-height: 26px; color: #f7f3ea; max-width: 640px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 16px 48px 64px; }
+  section { margin-top: 48px; }
+  section > h2 { margin: 0; font-size: 26px; line-height: 32px; font-weight: 800; }
+  section > p { margin: 4px 0 20px; font-size: 16px; line-height: 24px; color: var(--muted); max-width: 720px; }
+  .tier { display: inline-block; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; padding: 2px 8px; border-radius: 3px; margin-right: 10px; vertical-align: 4px;
+    background: #e8ddf1; color: #56317a; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .grid.primary { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .sw { background: var(--raised); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+    display: flex; flex-direction: column; }
+  .chip { height: 112px; display: flex; align-items: flex-end; justify-content: space-between; padding: 12px 14px;
+    border-bottom: 1px solid var(--border); }
+  .primary .chip { height: 168px; }
+  .chip .aa { font-size: 28px; line-height: 28px; font-weight: 800; }
+  .chip .ratio { font-family: "JetBrains Mono", monospace; font-size: 12px; font-weight: 700; }
+  .info { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .name { font-family: "JetBrains Mono", monospace; font-size: 14px; font-weight: 700; }
+  .hex { align-self: flex-start; font-family: "JetBrains Mono", monospace; font-size: 14px; font-weight: 500;
+    background: #f1ede6; color: var(--ink); border: 0; border-radius: 3px; padding: 3px 8px; cursor: pointer; }
+  .hex:hover { background: #e8ddf1; }
+  .hex:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+  .role { font-size: 14px; line-height: 20px; color: var(--muted); }
+  .seq { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 700; letter-spacing: .1em;
+    background: var(--raised); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; margin-top: 16px; }
+  .rules { margin: 56px 0 0; padding: 24px 28px; background: #181100; color: #f7f3ea; border-radius: 6px;
+    font-size: 15px; line-height: 24px; }
+  .rules h2 { margin: 0 0 8px; font-size: 20px; color: var(--orange); }
+  .rules ul { margin: 0; padding-left: 20px; }
+  .rules code { font-family: "JetBrains Mono", monospace; color: var(--orange); }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #181100; color: #fff;
+    font-family: "JetBrains Mono", monospace; font-size: 14px; padding: 8px 16px; border-radius: 3px;
+    opacity: 0; transition: opacity .15s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+  @media (max-width: 600px) { header, main { padding-left: 16px; padding-right: 16px; } header h1 { font-size: 36px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>seq<span>fu</span> palette</h1>
+  <p>18 colours in four tiers. Each swatch shows the text colour to put on it and the WCAG contrast ratio. Click a hex code to copy it.</p>
+</header>
+
+<main>
+  <section>
+    <h2><span class="tier">Tier 1</span>Primary</h2>
+    <p>The three colours of the logo. Purple carries the brand, orange marks evidence, black gives depth.</p>
+    <div class="grid primary" data-group="primary"></div>
+  </section>
+
+  <section>
+    <h2><span class="tier">Tier 2</span>Accessory shades</h2>
+    <p>Lighter and darker steps of the two brand hues, for tints, borders and coloured text. Shades only, never blended into gradients.</p>
+    <div class="grid" data-group="shades"></div>
+  </section>
+
+  <section>
+    <h2><span class="tier">Tier 3</span>Neutrals and status</h2>
+    <p>Backgrounds, borders and secondary text; status colours always come with a word.</p>
+    <div class="grid" data-group="neutral"></div>
+  </section>
+
+  <section>
+    <h2><span class="tier">Tier 4</span>Sequence</h2>
+    <p>For nucleotide letters only, never for UI. The letter carries the meaning; colour is a second cue.</p>
+    <div class="grid" data-group="seq"></div>
+    <div class="seq" id="seqdemo" aria-label="Example sequence coloured by base"></div>
+  </section>
+
+  <div class="rules">
+    <h2>Rules of thumb</h2>
+    <ul>
+      <li>White on <code>seqfu-purple</code>; black on <code>seqfu-orange</code>. Never orange text on light grounds.</li>
+      <li>Orange on purple only at 24px and above, as in the wordmark.</li>
+      <li>One orange highlight per view: the number, match or new thing that matters.</li>
+      <li>Flat fills only: no gradients, glows or blends between colours.</li>
+    </ul>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  var P = [
+    // group, name, hex, text colour on it, role
+    ["primary", "seqfu-purple", "#73449b", "#ffffff", "Primary brand colour: logo ground, headers, primary buttons, large fields."],
+    ["primary", "seqfu-orange", "#fcbe00", "#181100", "Highlight and evidence: the key figure, a match, anything new."],
+    ["primary", "seqfu-black",  "#181100", "#f7f3ea", "Silhouette black: terminal blocks, deep contrast fields, body text."],
+
+    ["shades", "purple-100", "#e8ddf1", "#56317a", "Light tint: badges, info panels."],
+    ["shades", "purple-300", "#a882c8", "#181100", "Decorative: charts and illustrations. Not for text."],
+    ["shades", "purple-700", "#56317a", "#ffffff", "Pressed state; dark purple text on tints."],
+    ["shades", "amber-100",  "#fff3c7", "#181100", "Soft highlight: search matches, marked lines."],
+    ["shades", "amber-700",  "#8a6a00", "#ffffff", "Amber as text: warnings on light grounds."],
+
+    ["neutral", "surface",        "#faf8f4", "#181100", "Page background."],
+    ["neutral", "surface-sunken", "#f1ede6", "#181100", "Inline code, table headers, wells."],
+    ["neutral", "border",         "#e2ddd3", "#181100", "Hairline dividers and card edges."],
+    ["neutral", "ink-muted",      "#6a6356", "#ffffff", "Secondary text and captions."],
+    ["neutral", "success",        "#1b6fb3", "#ffffff", "Pass / OK. Blue, so it never relies on red vs green."],
+    ["neutral", "danger",         "#b3261e", "#ffffff", "Error / fail."],
+
+    ["seq", "base-a", "#1b7a3a", "#ffffff", "Adenine (A)."],
+    ["seq", "base-c", "#1f5fbf", "#ffffff", "Cytosine (C)."],
+    ["seq", "base-g", "#9a5b00", "#ffffff", "Guanine (G)."],
+    ["seq", "base-t", "#c0392b", "#ffffff", "Thymine / uracil (T/U)."]
+  ];
+
+  function lum(h) {
+    var c = [1, 3, 5].map(function (i) {
+      var v = parseInt(h.substr(i, 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function ratio(a, b) {
+    var x = lum(a), y = lum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+
+  P.forEach(function (c) {
+    var r = ratio(c[2], c[3]);
+    var grade = r >= 7 ? "AAA" : r >= 4.5 ? "AA" : r >= 3 ? "AA large" : "decorative";
+    var el = document.createElement("div");
+    el.className = "sw";
+    el.innerHTML =
+      '<div class="chip" style="background:' + c[2] + ';color:' + c[3] + '">' +
+        '<span class="aa">Aa</span><span class="ratio">' + r.toFixed(1) + ':1 · ' + grade + '</span></div>' +
+      '<div class="info"><span class="name">' + c[1] + '</span>' +
+        '<button class="hex" type="button" aria-label="Copy ' + c[2] + '">' + c[2] + '</button>' +
+        '<span class="role">' + c[4] + '</span></div>';
+    document.querySelector('[data-group="' + c[0] + '"]').appendChild(el);
+  });
+
+  var toast = document.getElementById("toast"), t;
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest(".hex");
+    if (!b) return;
+    var hex = b.textContent;
+    var done = function () { toast.textContent = "Copied " + hex; toast.classList.add("on");
+      clearTimeout(t); t = setTimeout(function () { toast.classList.remove("on"); }, 1400); };
+    if (navigator.clipboard) navigator.clipboard.writeText(hex).then(done, done); else done();
+  });
+
+  var cols = { A: "#1b7a3a", C: "#1f5fbf", G: "#9a5b00", T: "#c0392b", N: "#6b6b6b" };
+  document.getElementById("seqdemo").innerHTML = "ATGGCGTACGTTAGCNNCTAGGATCCGTTACGATAA".split("").map(function (b) {
+    return '<span style="color:' + (cols[b] || cols.N) + '">' + b + "</span>";
+  }).join("");
+</script>
+</body>
+</html>
