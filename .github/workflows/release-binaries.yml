@@ -3,30 +3,90 @@ name: Release binaries
 on:
   release:
     types: [published]
+  # Manual runs build and test, and keep the tarballs as workflow artifacts only
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+env:
+  # Pinned Nim for the Linux containers (official builds are statically linked)
+  NIM_VERSION: 2.2.10
+  NIM_SHA256_linux_x64: 0a3a38752e97e9d44aa479b3a7b37336dfe0176daf22ee5b5218ad0991ecd211
+  NIM_SHA256_linux_arm64: cd86a6e2bcbf029c4870aa51df5c0169345dbf9959889112fd15d403c13ae33a
+
 jobs:
-  build:
-    name: Build ${{ matrix.asset_name }}
+  build-linux:
+    name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.runner }}
+    # manylinux_2_28 (glibc 2.28) keeps the binaries runnable on RHEL/Rocky 8,
+    # Ubuntu 20.04, Debian 11 and most HPC systems
+    container: quay.io/pypa/manylinux_2_28_${{ matrix.arch }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - runner: ubuntu-24.04
-            asset_name: seqfu-linux-x86_64
-            linux: true
+            platform: linux-x86_64
+            arch: x86_64
+            nim_build: linux_x64
           - runner: ubuntu-24.04-arm
-            asset_name: seqfu-linux-aarch64
-            linux: true
+            platform: linux-aarch64
+            arch: aarch64
+            nim_build: linux_arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: dnf install -y zlib-devel xz which
+
+      - name: Install Nim ${{ env.NIM_VERSION }}
+        env:
+          NIM_SHA256: ${{ env[format('NIM_SHA256_{0}', matrix.nim_build)] }}
+        run: |
+          curl -fsSL "https://nim-lang.org/download/nim-${NIM_VERSION}-${{ matrix.nim_build }}.tar.xz" -o nim.tar.xz
+          echo "${NIM_SHA256}  nim.tar.xz" | sha256sum -c -
+          tar -xJf nim.tar.xz -C /opt
+          echo "/opt/nim-${NIM_VERSION}/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.nimble/bin" >> "$GITHUB_PATH"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Build
+        run: |
+          nim --version
+          make -j"$(nproc)" all
+
+      - name: Test
+        run: bash test/mini.sh
+
+      - name: Package
+        run: bash .github/scripts/package-binaries.sh "${{ matrix.platform }}"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: seqfu-${{ matrix.platform }}
+          path: dist/*
+          if-no-files-found: error
+
+  build-macos:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
           - runner: macos-15
-            asset_name: seqfu-macos-arm64
-            linux: false
+            platform: macos-arm64
+            deployment_target: "11.0"
           - runner: macos-15-intel
-            asset_name: seqfu-macos-x86_64
-            linux: false
+            platform: macos-x86_64
+            deployment_target: "10.13"
+    env:
+      # Without this the binaries require the runner's macOS version (15.0)
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
 
     steps:
       - name: Checkout
@@ -35,39 +95,43 @@ jobs:
       - name: Set up Nim
         uses: jiro4989/setup-nim-action@v2
         with:
-          nim-version: 2.2.x
+          nim-version: ${{ env.NIM_VERSION }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Linux system dependencies
-        if: matrix.linux
-        run: sudo apt-get update && sudo apt-get install -y zlib1g-dev libpcre3-dev
-
-      - name: Build seqfu
+      - name: Build
         run: |
-          echo "--threads:on" >> nim.cfg
-          mkdir -p bin dist
-          make bin/seqfu
-          ./bin/seqfu --version
-          cp bin/seqfu "dist/${{ matrix.asset_name }}"
-          chmod 755 "dist/${{ matrix.asset_name }}"
+          nim --version
+          make -j"$(sysctl -n hw.ncpu)" all
+          otool -l bin/seqfu | grep -A3 LC_BUILD_VERSION
+
+      - name: Test
+        run: bash test/mini.sh
+
+      - name: Package
+        run: bash .github/scripts/package-binaries.sh "${{ matrix.platform }}"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset_name }}
-          path: dist/${{ matrix.asset_name }}
+          name: seqfu-${{ matrix.platform }}
+          path: dist/*
           if-no-files-found: error
 
   attach:
     name: Attach binaries to release
+    if: github.event_name == 'release'
     runs-on: ubuntu-24.04
-    needs: build
+    needs: [build-linux, build-macos]
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           path: release-assets
           merge-multiple: true
+
+      - name: Checksums
+        working-directory: release-assets
+        run: sha256sum * | tee SHA256SUMS
 
       - name: Attach binaries
         env:
