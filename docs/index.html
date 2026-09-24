@@ -23,20 +23,30 @@ redirect_from:
       </div>
     </div>
 
-    <div class="terminal" id="install" data-tabs>
-      <div class="terminal-tabs" role="tablist">
+    <div class="hero-terminals">
+      <div class="terminal" id="install" data-tabs>
+        <div class="terminal-tabs" role="tablist">
+          {%- for t in site.data.install %}
+          <button type="button" role="tab" data-tab="{{ t.id }}"{% if forloop.first %} class="active" aria-selected="true"{% endif %}>{{ t.label }}</button>
+          {%- endfor %}
+        </div>
         {%- for t in site.data.install %}
-        <button type="button" role="tab" data-tab="{{ t.id }}"{% if forloop.first %} class="active" aria-selected="true"{% endif %}>{{ t.label }}</button>
+        <pre class="terminal-cmd" data-tab-panel="{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}><span class="prompt">$ </span>{{ t.command | escape }}</pre>
         {%- endfor %}
       </div>
-      {%- for t in site.data.install %}
-      <pre class="terminal-cmd" data-tab-panel="{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}><span class="prompt">$ </span>{{ t.command | escape }}</pre>
-      {%- endfor %}
-      <div class="terminal-examples">
-        <div><span class="prompt">$ </span><b>seqfu stats</b> -n *.fastq.gz</div>
-        <div><span class="prompt">$ </span><b>seqfu head</b> -n 10 reads.fq.gz</div>
-        <div><span class="prompt">$ </span><b>seqfu grep</b> -o ACGTTGCA contigs.fa</div>
-        <div><span class="prompt">$ </span><b>seqfu count</b> reads_R1.fq.gz reads_R2.fq.gz</div>
+
+      <div class="terminal" id="examples">
+        <div class="terminal-title">Examples</div>
+        <div class="terminal-examples">
+          <div class="comment"># Summary statistics (N50, lengths…) as a readable table</div>
+          <div><span class="prompt">$ </span><b>seqfu stats</b> -n *.fastq.gz</div>
+          <div class="comment"># Print the first 10 sequences of a file</div>
+          <div><span class="prompt">$ </span><b>seqfu head</b> -n 10 reads.fq.gz</div>
+          <div class="comment"># Keep sequences containing an oligo (IUPAC, both strands)</div>
+          <div><span class="prompt">$ </span><b>seqfu grep</b> -o ACGTTGCA contigs.fa</div>
+          <div class="comment"># Count reads, checking that paired files match</div>
+          <div><span class="prompt">$ </span><b>seqfu count</b> reads_R1.fq.gz reads_R2.fq.gz</div>
+        </div>
       </div>
     </div>
   </section>
