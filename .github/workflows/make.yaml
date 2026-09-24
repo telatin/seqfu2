@@ -35,7 +35,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
-        run: sudo apt install -y zlib1g-dev gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }} libpcre3-dev
+        run: sudo apt install -y zlib1g-dev gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }}
 
         # Build and demo overwriting some variables
       - name: Build
