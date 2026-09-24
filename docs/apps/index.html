@@ -1,0 +1,35 @@
+---
+layout: page
+title: Apps
+section: apps
+summary: Interactive tools that run entirely in your browser. Your files are read locally and never uploaded.
+---
+{%- comment -%}
+  Every *.html file in apps/ (other than this index) is listed automatically:
+  - pages with front matter (layout: app) show their title and summary;
+  - plain HTML files without front matter are copied as static files, and
+    their card title is derived from the file name.
+{%- endcomment -%}
+{%- assign apps = site.pages | where: "layout", "app" | sort: "title" -%}
+<div class="recipe-grid">
+  {%- for a in apps %}
+  <a class="card" href="{{ a.url | relative_url }}">
+    <span class="recipe-card-title">{{ a.title }}</span>
+    <span class="recipe-card-text">{{ a.summary }}</span>
+    {%- if a.tools %}
+    <span class="tool-card-foot">
+      {%- for t in a.tools %}<span class="chip-input">{{ t }}</span>{% endfor -%}
+    </span>
+    {%- endif %}
+  </a>
+  {%- endfor %}
+  {%- for f in site.static_files %}
+  {%- if f.extname == ".html" and f.path contains "/apps/" %}
+  <a class="card" href="{{ f.path | relative_url }}">
+    <span class="recipe-card-title">{{ f.basename | replace: "-", " " | replace: "_", " " | capitalize }}</span>
+    <span class="recipe-card-text"><code>apps/{{ f.name }}</code></span>
+  </a>
+  {%- endif %}
+  {%- endfor %}
+</div>
+<p class="muted small" style="margin-top:32px">Want to add an app? Drop a self-contained HTML file in <code>apps/</code> and it will appear here. Add front matter with a <code>title</code> and <code>summary</code> to give it the site header and a proper card.</p>

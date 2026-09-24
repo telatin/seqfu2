@@ -42,6 +42,7 @@ plugins:
 #   tools/*.md      -> a `seqfu <command>` page      (kind: core)
 #   utilities/*.md  -> a standalone `fu-*` program   (kind: utility)
 #   recipes/*.md    -> a tutorial                    (layout: recipe)
+#   apps/*.html     -> an in-browser tool            (layout: app)
 defaults:
   - scope: { path: "" }
     values: { layout: page }
@@ -51,6 +52,8 @@ defaults:
     values: { layout: tool, kind: utility, language: nim }
   - scope: { path: "recipes" }
     values: { layout: recipe, section: recipes }
+  - scope: { path: "apps" }
+    values: { layout: app, section: apps }
   - scope: { path: "getting-started" }
     values: { section: getting-started }
   - scope: { path: "about" }

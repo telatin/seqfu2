@@ -1,0 +1,1052 @@
+---
+title: SeqFu Less
+summary: Browse the records of a FASTA or FASTQ file (plain or gzipped) like seqfu less, with coloured bases and per-base quality bars. Click a record to inspect and copy it. Files are read locally and never uploaded.
+tools: [less, view]
+keywords: less view viewer browse reads quality phred fastq fasta gzip
+fullscreen: true
+---
+{% raw %}
+<style>
+  .lx {
+    /* bases and quality: dark (terminal pane) and light (inspector) variants */
+    --lx-a: #5fcf82; --lx-c: #7fb0ff; --lx-g: #f0a64a; --lx-t: #ff8a7a; --lx-n: #9a9a9a;
+    --lx-q3: #b590d8; --lx-q2: #fcbe00; --lx-q1: #ff8a7a; --lx-q0: #8a8190;
+    --lx-la: #1b7a3a; --lx-lc: #1f5fbf; --lx-lg: #9a5b00; --lx-lt: #c0392b; --lx-ln: #6b6b6b;
+    --lx-lq3: #73449b; --lx-lq2: #e0a800; --lx-lq1: #b3261e; --lx-lq0: #b9afc2;
+    --lx-line: 18px;
+    height: calc(100vh - var(--topbar-h) - 3px);
+    height: calc(100dvh - var(--topbar-h) - 3px);
+    display: grid; grid-template-rows: auto minmax(120px, 1fr) 8px var(--lx-bottom, 33%);
+    background: var(--bg); overflow: hidden;
+  }
+  .lx button, .lx input, .lx select { font-family: inherit; }
+  .lx-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---- toolbar */
+  .lx-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 20px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .lx-title { display: flex; align-items: baseline; gap: 8px; margin-right: 4px; white-space: nowrap; }
+  .lx-title a { font-size: 13px; color: var(--muted); }
+  .lx-title h1 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+  .lx-open { font-size: 13px; padding: 7px 12px; border: 0; cursor: pointer; }
+  .lx-file { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; color: var(--muted); }
+  .lx-file strong { font-family: var(--mono); color: var(--ink); font-size: 13px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lx-spacer { flex: 1; }
+  .lx-search { position: relative; display: flex; align-items: center; }
+  .lx-search input {
+    width: 240px; height: 32px; border: 1px solid var(--border-2); border-radius: 6px; padding: 0 64px 0 10px;
+    font-size: 13px; background: var(--bg); color: var(--ink); outline: none;
+  }
+  .lx-search input:focus { border-color: var(--purple); }
+  .lx-search output { position: absolute; right: 8px; font-size: 11.5px; color: var(--muted); pointer-events: none; }
+  .lx .chip { font-size: 12px; padding: 4px 10px; }
+  .lx .chip:disabled { opacity: .45; cursor: default; }
+  .lx-select { font-size: 12.5px; padding: 3px 6px; border: 1px solid var(--border-2); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  .lx-help-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-2); background: var(--surface); cursor: pointer; font-weight: 700; color: var(--ink-3); }
+  .lx-help-btn:hover { border-color: var(--purple); color: var(--purple); }
+
+  /* ---- the less pane */
+  .lx-top { position: relative; display: grid; grid-template-rows: 1fr auto; min-height: 0; background: var(--term-bg); color: var(--term-ink); }
+  .lx-scroller { position: relative; overflow: auto; min-height: 0; outline: none; overscroll-behavior: contain; }
+  .lx-scroller:focus-visible { box-shadow: inset 0 0 0 2px var(--amber); }
+  .lx-inner { position: relative; }
+  .lx-view {
+    position: sticky; top: 0; left: 0; overflow: hidden;
+    font-family: var(--mono); font-size: 13px; line-height: var(--lx-line); white-space: pre;
+  }
+  .lx-ln { position: absolute; left: 0; right: 0; height: var(--lx-line); display: flex; cursor: default; }
+  .lx-ln.is-sel { background: rgba(114, 67, 154, .2); }
+  .lx-ln.h.is-sel { background: rgba(114, 67, 154, .5); }
+  .lx-ln.is-sel .lx-gut { color: var(--amber); }
+  .lx-gut { flex: none; width: var(--lx-gut, 0); padding-right: 1ch; text-align: right; color: #6f6678; user-select: none; overflow: hidden; }
+  .lx-tx { flex: none; padding-left: 1ch; }
+  .lx-ln.h .lx-tx { overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; padding-right: 1ch; cursor: pointer; }
+  .lx-ln.s, .lx-ln.q { cursor: pointer; }
+  .lx-nm { color: #fff; font-weight: 700; }
+  .lx-cm { color: #7fd6e6; }
+  .lx-ln.gap { color: var(--amber); justify-content: center; background: repeating-linear-gradient(135deg, #15101b 0 6px, #0b080e 6px 12px); }
+  .lx-ln.gap .lx-tx { padding: 0; }
+  .ba { color: var(--lx-a); } .bc { color: var(--lx-c); } .bg { color: var(--lx-g); } .bt { color: var(--lx-t); } .bn { color: var(--lx-n); }
+  .q0 { color: var(--lx-q0); } .q1 { color: var(--lx-q1); } .q2 { color: var(--lx-q2); } .q3 { color: var(--lx-q3); }
+  .hl { background: var(--amber); color: #000 !important; }
+  .lx-empty {
+    position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center;
+    padding: 20px; color: var(--term-muted); cursor: pointer;
+  }
+  .lx-empty.is-over { background: #1a1321; box-shadow: inset 0 0 0 2px var(--purple); }
+  .lx-empty svg { color: var(--amber); }
+  .lx-empty strong { color: #fff; font-size: 17px; }
+  .lx-empty u { color: var(--amber); text-underline-offset: 3px; }
+  .lx-empty .lx-err { color: #ff8a8a; max-width: 560px; }
+  .lx-status {
+    display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; padding: 4px 12px; min-height: 26px;
+    background: #16121A; border-top: 1px solid var(--term-border); font-family: var(--mono); font-size: 12px; color: var(--term-muted);
+  }
+  .lx-status b { color: #fff; font-weight: 500; }
+  .lx-status .lx-hover { margin-left: auto; color: var(--amber); }
+  .lx-progress { width: 120px; height: 5px; border-radius: 3px; background: #2a2230; overflow: hidden; display: inline-block; vertical-align: middle; }
+  .lx-progress i { display: block; height: 100%; width: 0; background: var(--amber); }
+
+  /* ---- splitter */
+  .lx-split { cursor: row-resize; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: grid; place-items: center; touch-action: none; }
+  .lx-split::before { content: ""; width: 44px; height: 3px; border-radius: 2px; background: var(--border-2); }
+  .lx-split:hover::before, .lx-split:focus-visible::before, .lx-split.is-drag::before { background: var(--purple); }
+  .lx-split:focus-visible { outline: none; }
+
+  /* ---- inspector */
+  .lx-detail { overflow: auto; min-height: 0; padding: 16px 20px 24px; background: var(--bg); overscroll-behavior: contain; }
+  .lx-detail-empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+  .lx-dhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 10px; }
+  .lx-dname { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--purple); overflow-wrap: anywhere; }
+  .lx-dcomment { font-family: var(--mono); font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  .lx-dactions { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; align-items: center; }
+  .lx-btn {
+    font-size: 12.5px; font-weight: 600; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--border-2); background: var(--surface); color: var(--ink);
+  }
+  .lx-btn:hover { border-color: var(--purple); color: var(--purple); }
+  .lx-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+  .lx-facts b { font-family: var(--mono); color: var(--ink); font-weight: 600; margin-left: 4px; }
+  .lx-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin-left: auto; }
+  .lx-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; vertical-align: -1px; }
+  .lx-track { display: flex; flex-wrap: wrap; row-gap: 10px; font-family: var(--mono); padding: 12px 12px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .lx-col { width: 15px; display: flex; flex-direction: column; align-items: center; }
+  .lx-col:nth-child(10n) { margin-right: 5px; }
+  .lx-col > span { font-size: 14px; line-height: 20px; font-weight: 500; }
+  .lx-well { height: 30px; width: 11px; display: flex; align-items: flex-end; }
+  .lx-well i { width: 100%; border-radius: 2px 2px 0 0; }
+  .lx-col:hover > span { background: var(--purple-tint); border-radius: 3px; }
+  .lx-track .ba { color: var(--lx-la); } .lx-track .bc { color: var(--lx-lc); } .lx-track .bg { color: var(--lx-lg); }
+  .lx-track .bt { color: var(--lx-lt); } .lx-track .bn { color: var(--lx-ln); }
+  .lx-track .q0, .lx-legend .q0 { background: var(--lx-lq0); } .lx-track .q1, .lx-legend .q1 { background: var(--lx-lq1); }
+  .lx-track .q2, .lx-legend .q2 { background: var(--lx-lq2); } .lx-track .q3, .lx-legend .q3 { background: var(--lx-lq3); }
+  .lx-fasta { font-family: var(--mono); font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .lx-fasta .ba { color: var(--lx-la); } .lx-fasta .bc { color: var(--lx-lc); } .lx-fasta .bg { color: var(--lx-lg); } .lx-fasta .bt { color: var(--lx-lt); } .lx-fasta .bn { color: var(--lx-ln); }
+  .lx-more { margin-top: 10px; }
+  .lx-readout { font-size: 12.5px; color: var(--muted); min-height: 20px; margin: 6px 2px 0; font-family: var(--mono); }
+  .lx-text {
+    margin: 0; font-family: var(--mono); font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-all;
+    padding: 12px 14px; background: var(--term-bg); color: var(--term-ink); border-radius: var(--radius); user-select: all;
+  }
+
+  /* ---- help */
+  .lx-help {
+    position: fixed; right: 20px; top: calc(var(--topbar-h) + 64px); z-index: 60; width: min(440px, calc(100vw - 32px));
+    max-height: calc(100vh - var(--topbar-h) - 90px); overflow: auto;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 16px 40px rgba(0,0,0,.2);
+    padding: 16px 18px; font-size: 13px;
+  }
+  .lx-help h2 { margin: 0 0 8px; font-size: 15px; }
+  .lx-help table { width: 100%; border-collapse: collapse; }
+  .lx-help td { padding: 3px 0; vertical-align: top; color: var(--ink-3); }
+  .lx-help td:first-child { width: 128px; white-space: nowrap; }
+  .lx-help kbd { font-size: 11.5px; border: 1px solid var(--border-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--bg); color: var(--ink); }
+  .lx-help p { color: var(--muted); margin: 10px 0 0; }
+
+  @media (max-width: 860px) {
+    .lx-bar { padding: 8px 16px; }
+    .lx-search input { width: 180px; }
+    .lx-detail { padding: 12px 16px 20px; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+
+<div class="lx" id="lx">
+  <div class="lx-bar">
+    <div class="lx-title"><a href="./">Apps</a><span class="muted">/</span><h1>SeqFu Less</h1></div>
+    <button type="button" class="btn btn-primary lx-open" id="lx-open">Open file</button>
+    <input type="file" id="lx-picker" hidden>
+    <div class="lx-file" id="lx-file" hidden><strong id="lx-file-name"></strong><span id="lx-file-meta"></span></div>
+    <div class="lx-spacer"></div>
+    <form class="lx-search" id="lx-search" role="search" autocomplete="off">
+      <label class="lx-sr" for="lx-query">Search names, oligos, or :record</label>
+      <input type="search" id="lx-query" placeholder="Name, oligo or :record" disabled>
+      <output id="lx-count" for="lx-query"></output>
+    </form>
+    <div class="chip-group" role="group" aria-label="Display options">
+      <button type="button" class="chip" data-toggle="wrap" aria-pressed="true" title="Wrap long sequences (S)">Wrap</button>
+      <button type="button" class="chip" data-toggle="numbers" aria-pressed="true" title="Record numbers and positions (R)">Numbers</button>
+      <button type="button" class="chip" data-toggle="colors" aria-pressed="true" title="Colour bases (0)">Colours</button>
+      <button type="button" class="chip" data-toggle="qchars" aria-pressed="false" title="Quality as characters instead of bars (U)">Q chars</button>
+    </div>
+    <label class="check" title="How many bases to keep in memory from the start and from the end of the file">Keep
+      <select class="lx-select" id="lx-budget">
+        <option value="5">5 Mbp</option><option value="10">10 Mbp</option>
+        <option value="20" selected>20 Mbp</option><option value="50">50 Mbp</option>
+      </select> per end
+    </label>
+    <button type="button" class="lx-help-btn" id="lx-help-btn" aria-expanded="false" aria-controls="lx-help" title="Keyboard shortcuts (?)">?</button>
+  </div>
+
+  <div class="lx-top">
+    <div class="lx-scroller" id="lx-scroller" tabindex="0" aria-label="Records. Arrow keys scroll, Shift+arrows select, ? for help.">
+      <div class="lx-inner" id="lx-inner"><div class="lx-view" id="lx-view"></div></div>
+    </div>
+    <div class="lx-empty" id="lx-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <strong>Drop a FASTA or FASTQ file here, or <u>browse</u></strong>
+      <span id="lx-empty-note">Plain text or gzip-compressed. Big files are fine: the first and last part are kept in memory, the middle is counted.</span>
+    </div>
+    <div class="lx-status" id="lx-status" aria-live="polite"><span>No file loaded</span></div>
+  </div>
+
+  <div class="lx-split" id="lx-split" role="separator" aria-orientation="horizontal" aria-label="Resize the inspector" tabindex="0"></div>
+
+  <section class="lx-detail" id="lx-detail" aria-label="Selected record">
+    <p class="lx-detail-empty">Click a record above to inspect it here. <kbd>Shift</kbd> + <kbd>&darr;</kbd>/<kbd>&uarr;</kbd> moves between records.</p>
+  </section>
+
+  <div class="lx-help" id="lx-help" hidden role="dialog" aria-label="Keyboard shortcuts">
+    <h2>Keyboard shortcuts</h2>
+    <table>
+      <tr><td><kbd>&darr;</kbd> <kbd>&uarr;</kbd> <kbd>j</kbd> <kbd>k</kbd></td><td>Scroll one line</td></tr>
+      <tr><td><kbd>PgDn</kbd> <kbd>Space</kbd> / <kbd>PgUp</kbd></td><td>Scroll one page</td></tr>
+      <tr><td><kbd>Home</kbd> <kbd>g</kbd> / <kbd>End</kbd> <kbd>G</kbd></td><td>Start / end of the loaded records</td></tr>
+      <tr><td><kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>Scroll sideways when Wrap is off (<kbd>Shift</kbd>: 25 bp)</td></tr>
+      <tr><td><kbd>Shift</kbd> <kbd>&darr;</kbd> <kbd>&uarr;</kbd> or <kbd>]</kbd> <kbd>[</kbd></td><td>Select next / previous record</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Select the first record on screen</td></tr>
+      <tr><td><kbd>c</kbd></td><td>Copy the selected record</td></tr>
+      <tr><td><kbd>/</kbd></td><td>Search: an oligo (ACGTN) searches sequences, anything else searches names and comments</td></tr>
+      <tr><td><kbd>n</kbd> / <kbd>N</kbd></td><td>Next / previous match</td></tr>
+      <tr><td><kbd>:</kbd></td><td>Jump to a record number</td></tr>
+      <tr><td><kbd>S</kbd> <kbd>R</kbd> <kbd>0</kbd> <kbd>U</kbd></td><td>Toggle wrap, numbers, colours, quality characters</td></tr>
+      <tr><td><kbd>?</kbd> <kbd>Esc</kbd></td><td>Show / hide this help</td></tr>
+    </table>
+    <p>Quality bars follow <code>seqfu less</code>: bar height steps at Q3, 15, 25, 28, 30, 35, 40; colour marks Q30+, Q20&ndash;29, below Q20 and Q3 or less.</p>
+  </div>
+</div>
+
+<script id="lx-core">
+/*
+ * Core: streaming FASTA/FASTQ record reader that keeps only the first and
+ * the last part of the file in memory. No DOM access, so it runs in Node too.
+ */
+var LessCore = (function () {
+  'use strict';
+
+  class InputError extends Error {}
+
+  // Same grammar as the SeqFu Stats app: multi-line FASTA and FASTQ, CRLF,
+  // blank lines, empty records; quality is consumed by length.
+  class RecordParser {
+    constructor(onRecord) {
+      this.onRecord = onRecord;
+      this.rest = ''; this.lineNo = 0; this.format = null; this.state = 0;
+      this.header = null; this.seq = []; this.qual = []; this.slen = 0; this.qlen = 0;
+    }
+    push(text) {
+      if (!text) return;
+      var data = this.rest + text, start = 0, nl;
+      while ((nl = data.indexOf('\n', start)) !== -1) {
+        this.line(data.slice(start, nl));
+        start = nl + 1;
+      }
+      this.rest = data.slice(start);
+    }
+    end() {
+      var last = this.rest.replace(/\r$/, '');
+      if (last && !(last === '>' && this.format === 'FASTA')) this.line(this.rest);
+      this.rest = '';
+      if (this.format === null) throw new InputError('the file is empty');
+      if (this.format === 'FASTA' && this.header !== null) this.emit();
+      if (this.format === 'FASTQ' && this.state !== 0) throw new InputError('truncated FASTQ record at the end of the file');
+    }
+    fail(msg) { throw new InputError(msg + ' (line ' + this.lineNo + ')'); }
+    line(raw) {
+      this.lineNo++;
+      var line = raw.charCodeAt(raw.length - 1) === 13 ? raw.slice(0, -1) : raw;
+      if (this.format === null) {
+        if (!line.trim()) return;
+        if (line[0] === '>') this.format = 'FASTA';
+        else if (line[0] === '@') this.format = 'FASTQ';
+        else this.fail('not a FASTA or FASTQ file: the first record should start with ">" or "@"');
+      }
+      if (this.format === 'FASTA') {
+        if (line[0] === '>') {
+          if (this.header !== null) this.emit();
+          this.header = line.slice(1);
+        } else if (line) {
+          this.seq.push(line); this.slen += line.length;
+        }
+        return;
+      }
+      if (this.state === 0) {
+        if (!line.trim()) return;
+        if (line[0] !== '@') this.fail('malformed FASTQ: expected a header starting with "@"');
+        this.header = line.slice(1); this.state = 1;
+      } else if (this.state === 1) {
+        if (line[0] === '+') {
+          this.state = 2;
+          if (this.slen === 0) this.emitFastq();
+        } else if (line) {
+          this.seq.push(line); this.slen += line.length;
+        }
+      } else {
+        this.qual.push(line); this.qlen += line.length;
+        if (this.qlen >= this.slen) {
+          if (this.qlen > this.slen) this.fail('malformed FASTQ: quality (' + this.qlen + ') longer than sequence (' + this.slen + ')');
+          this.emitFastq();
+        }
+      }
+    }
+    emitFastq() { this.emit(); this.state = 0; }
+    emit() {
+      var h = this.header, sp = h.search(/\s/);
+      this.onRecord({
+        name: sp < 0 ? h : h.slice(0, sp),
+        comment: sp < 0 ? '' : h.slice(sp + 1).trim(),
+        seq: this.seq.length === 1 ? this.seq[0] : this.seq.join(''),
+        qual: this.format === 'FASTQ' ? (this.qual.length === 1 ? this.qual[0] : this.qual.join('')) : null
+      });
+      this.header = null; this.seq = []; this.qual = []; this.slen = 0; this.qlen = 0;
+    }
+  }
+
+  function sniff(b) {
+    if (b[0] === 0x1f && b[1] === 0x8b) return 'gzip';
+    if (b[0] === 0x42 && b[1] === 0x5a && b[2] === 0x68) return 'bzip2';
+    if (b[0] === 0x28 && b[1] === 0xb5 && b[2] === 0x2f && b[3] === 0xfd) return 'zstd';
+    if (b[0] === 0xfd && b[1] === 0x37 && b[2] === 0x7a && b[3] === 0x58) return 'xz';
+    return 'plain';
+  }
+
+  // Approximate in-memory size of a record: one byte per sequence, quality
+  // and header character (V8 one-byte strings) plus ~240 bytes of object and
+  // string overhead, measured with 150 bp Illumina reads in V8.
+  function recordBytes(r) {
+    return r.seq.length + (r.qual ? r.qual.length : 0) + r.name.length + r.comment.length + 240;
+  }
+
+  // Reads the whole file once. The first records go to `head` until
+  // `budgetBp` bases (or `maxRecords`) are stored; after that every record
+  // passes through a sliding window, so `tail` ends up holding the last
+  // `budgetBp` bases. Records in between are counted, not stored.
+  async function load(file, opts) {
+    var budget = opts.budgetBp, maxRecords = opts.maxRecords || 300000;
+    var res = {
+      format: null, compression: 'plain', done: false,
+      head: [], tail: [], total: 0, totalBp: 0, headBp: 0, tailBp: 0,
+      maxLen: 0, minQ: 255, maxQ: 0, bytes: 0, headFull: false
+    };
+    var tail = [], t0 = 0;
+    var lastUpdate = 0;
+    var parser = new RecordParser(function (rec) {
+      var len = rec.seq.length;
+      rec.i = res.total++;
+      res.totalBp += len;
+      if (!res.headFull) {
+        if (res.head.length && (res.headBp + len > budget || res.head.length >= maxRecords)) {
+          res.headFull = true;
+          if (opts.onUpdate) opts.onUpdate(res);
+        } else {
+          res.head.push(rec); res.headBp += len; res.bytes += recordBytes(rec);
+          if (len > res.maxLen) res.maxLen = len;
+          if (rec.qual && res.head.length <= 2000) {
+            for (var k = 0; k < rec.qual.length; k++) {
+              var c = rec.qual.charCodeAt(k);
+              if (c < res.minQ) res.minQ = c;
+              if (c > res.maxQ) res.maxQ = c;
+            }
+          }
+          return;
+        }
+      }
+      tail.push(rec); res.tailBp += len;
+      while (tail.length - t0 > 1 && (res.tailBp > budget || tail.length - t0 > maxRecords)) {
+        res.tailBp -= tail[t0].seq.length; tail[t0] = undefined; t0++;
+      }
+      if (t0 > 50000 && t0 > tail.length / 2) { tail = tail.slice(t0); t0 = 0; }
+    });
+
+    var compression = sniff(new Uint8Array(await file.slice(0, 4).arrayBuffer()));
+    res.compression = compression;
+    if (compression !== 'gzip' && compression !== 'plain') {
+      throw new InputError(compression + '-compressed files are not supported here; use gzip or plain text');
+    }
+    var Gunzip = opts.Gunzip || (typeof fflate !== 'undefined' ? fflate.Gunzip : null);
+    var decoder = new TextDecoder('utf-8'), gunzip = null;
+    if (compression === 'gzip') {
+      if (!Gunzip) throw new Error('the gzip library could not be loaded; check your connection and reload the page');
+      gunzip = new Gunzip(function (chunk) { parser.push(decoder.decode(chunk, { stream: true })); });
+    }
+    var reader = file.stream().getReader(), read = 0, lastYield = Date.now();
+    function wrap(e) {
+      if (!gunzip || e instanceof InputError) return e;
+      return new InputError('could not decompress the gzip data (' + e.message + '); the file may be truncated or corrupt');
+    }
+    try {
+      for (;;) {
+        if (opts.signal && opts.signal.aborted) throw new DOMException('Cancelled', 'AbortError');
+        var next = await reader.read();
+        if (next.done) break;
+        read += next.value.length;
+        try {
+          // final=true only on an empty push: fflate would otherwise stop
+          // after the first member of a concatenated gzip file.
+          if (gunzip) gunzip.push(next.value);
+          else parser.push(decoder.decode(next.value, { stream: true }));
+        } catch (e) { throw wrap(e); }
+        res.format = parser.format;
+        if (opts.onProgress) opts.onProgress(file.size ? read / file.size : 1, res);
+        if (!res.headFull && opts.onUpdate && Date.now() - lastUpdate > 400) { lastUpdate = Date.now(); opts.onUpdate(res); }
+        if (Date.now() - lastYield > 40) {
+          await new Promise(function (r) { setTimeout(r, 0); });
+          lastYield = Date.now();
+        }
+      }
+      try { if (gunzip) gunzip.push(new Uint8Array(0), true); } catch (e) { throw wrap(e); }
+      parser.push(decoder.decode());
+      parser.end();
+    } finally {
+      reader.cancel().catch(function () {});
+    }
+    res.format = parser.format;
+    res.tail = tail.slice(t0);
+    res.tail.forEach(function (r) { res.bytes += recordBytes(r); if (r.seq.length > res.maxLen) res.maxLen = r.seq.length; });
+    res.skipped = res.total - res.head.length - res.tail.length;
+    res.skippedBp = res.totalBp - res.headBp - res.tailBp;
+    res.done = true;
+    return res;
+  }
+
+  // Phred+64 files never use characters below ';' (59) and reach above 'J' (74).
+  function guessOffset(res) {
+    return res.maxQ > 0 && res.minQ >= 59 && res.maxQ > 74 ? 64 : 33;
+  }
+
+  return { RecordParser: RecordParser, InputError: InputError, load: load, sniff: sniff, guessOffset: guessOffset };
+})();
+</script>
+
+<script>
+(function () {
+  'use strict';
+  if (typeof document === 'undefined') return;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var E = {
+    root: $('lx'), open: $('lx-open'), picker: $('lx-picker'), file: $('lx-file'), fileName: $('lx-file-name'), fileMeta: $('lx-file-meta'),
+    search: $('lx-search'), query: $('lx-query'), count: $('lx-count'), budget: $('lx-budget'),
+    helpBtn: $('lx-help-btn'), help: $('lx-help'),
+    scroller: $('lx-scroller'), inner: $('lx-inner'), view: $('lx-view'), empty: $('lx-empty'), emptyNote: $('lx-empty-note'),
+    status: $('lx-status'), split: $('lx-split'), detail: $('lx-detail')
+  };
+
+  var QTH = [3, 15, 25, 28, 30, 35, 40];                          // seqfu less thresholds
+  var GLYPHS = ['_', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+  var MAXPX = 8e6;                                                // keep spacer sizes well below browser limits
+  var TRACK_CHUNK = 2000, FASTA_CHUNK = 50000;
+
+  var S = {
+    file: null, res: null, items: [], loading: false, error: null, controller: null, offset: 33,
+    wrap: true, numbers: true, colors: true, qchars: false,
+    prefix: new Float64Array(1), totalLines: 0, cols: 80, cw: 7.8, lh: 18, gutCh: 0,
+    selected: -1, hover: '', progress: 0,
+    matches: [], matchPos: -1, matcher: null, matchCache: new Map(),
+    detailLimit: 0, detailView: 'visual', raf: 0
+  };
+
+  // ------------------------------------------------------------ helpers
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fmtInt(n) { return Math.round(n).toLocaleString('en-US'); }
+  function fmtBp(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + ' Gbp';
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + ' Mbp';
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + ' kbp';
+    return n + ' bp';
+  }
+  function fmtBytes(b) {
+    if (b < 1024) return b + ' B';
+    var u = ['KB', 'MB', 'GB'], i = -1;
+    do { b /= 1024; i++; } while (b >= 1024 && i < u.length - 1);
+    return b.toFixed(b < 10 ? 1 : 0) + ' ' + u[i];
+  }
+  function baseClass(code) {
+    switch (code | 32) {
+      case 97: return 'ba'; case 99: return 'bc'; case 103: return 'bg';
+      case 116: case 117: return 'bt'; default: return 'bn';
+    }
+  }
+  function qLevel(q) { for (var i = 0; i < QTH.length; i++) if (q <= QTH[i]) return i; return 7; }
+  function qBand(q) { return q >= 30 ? 'q3' : q >= 20 ? 'q2' : q > 3 ? 'q1' : 'q0'; }
+  function hasQual() { return S.res && S.res.format === 'FASTQ'; }
+  function isRecord(it) { return it && !it.gap; }
+
+  // Groups consecutive characters with the same class into one span.
+  function runs(str, from, to, classAt) {
+    var out = '', cur = null, buf = '';
+    for (var p = from; p < to; p++) {
+      var c = classAt(p);
+      if (c !== cur) { if (buf) out += cur ? '<span class="' + cur + '">' + esc(buf) + '</span>' : esc(buf); cur = c; buf = ''; }
+      buf += str[p];
+    }
+    if (buf) out += cur ? '<span class="' + cur + '">' + esc(buf) + '</span>' : esc(buf);
+    return out;
+  }
+
+  // ------------------------------------------------------------ search
+  function buildMatcher(q) {
+    q = q.trim();
+    if (!q || q[0] === ':') return null;
+    if (/^[ACGTUN]{2,}$/i.test(q)) {
+      var src = q.toUpperCase().replace(/U/g, 'T').split('').map(function (c) { return c === 'N' ? '.' : c === 'T' ? '[TU]' : c; }).join('');
+      return { kind: 'seq', label: q, re: new RegExp(src, 'gi') };
+    }
+    return { kind: 'name', label: q, needle: q.toLowerCase() };
+  }
+  function matchIntervals(idx) {
+    var m = S.matcher, it = S.items[idx];
+    if (!m || m.kind !== 'seq' || !isRecord(it)) return null;
+    if (S.matchCache.has(idx)) return S.matchCache.get(idx);
+    var out = [], r;
+    m.re.lastIndex = 0;
+    while ((r = m.re.exec(it.seq))) { out.push(r.index, r.index + r[0].length); m.re.lastIndex = r.index + 1; }
+    if (S.matchCache.size > 5000) S.matchCache.clear();
+    S.matchCache.set(idx, out);
+    return out;
+  }
+  function inIntervals(iv, p) {
+    for (var k = 0; k < iv.length; k += 2) { if (p < iv[k]) return false; if (p < iv[k + 1]) return true; }
+    return false;
+  }
+  function runSearch() {
+    var q = E.query.value.trim();
+    clearTimeout(searchTimer);
+    var key = q + '\u0000' + S.items.length;
+    if (key === S.searchKey) return;
+    S.searchKey = key;
+    S.matcher = buildMatcher(q); S.matchCache = new Map(); S.matches = []; S.matchPos = -1;
+    if (q[0] === ':') { E.count.textContent = ''; return; }
+    if (!S.matcher) { E.count.textContent = ''; scheduleRender(); return; }
+    var m = S.matcher;
+    S.items.forEach(function (it, idx) {
+      if (!isRecord(it)) return;
+      if (m.kind === 'seq') { m.re.lastIndex = 0; if (m.re.test(it.seq)) S.matches.push(idx); }
+      else if ((it.name + ' ' + it.comment).toLowerCase().indexOf(m.needle) !== -1) S.matches.push(idx);
+    });
+    updateCount();
+    scheduleRender();
+  }
+  function updateCount() {
+    E.count.textContent = S.matcher ? (S.matches.length ? (S.matchPos + 1 || '–') + '/' + fmtInt(S.matches.length) : 'none') : '';
+  }
+  function gotoMatch(dir) {
+    if (!S.matches.length) { flash(S.matcher ? 'No matches for "' + S.matcher.label + '" in the loaded records' : 'Type a search first (/)'); return; }
+    var from = S.selected >= 0 ? S.selected : topItem() - (dir > 0 ? 1 : 0);
+    var pos;
+    if (dir > 0) { pos = S.matches.findIndex(function (i) { return i > from; }); if (pos < 0) pos = 0; }
+    else { pos = -1; for (var k = S.matches.length - 1; k >= 0; k--) if (S.matches[k] < from) { pos = k; break; } if (pos < 0) pos = S.matches.length - 1; }
+    S.matchPos = pos;
+    updateCount();
+    select(S.matches[pos], true);
+  }
+  function jumpToRecord(n) {
+    if (!S.items.length || !(n >= 1)) return;
+    var target = n - 1, lo = 0, hi = S.items.length - 1, mid;
+    // items are ordered by record index; the gap covers the skipped middle
+    while (lo < hi) { mid = (lo + hi + 1) >> 1; if (firstIndex(S.items[mid]) <= target) lo = mid; else hi = mid - 1; }
+    var it = S.items[lo];
+    if (it.gap) { scrollToItem(lo); flash('Record ' + fmtInt(n) + ' is in the middle part of the file, which is not kept in memory'); return; }
+    if (it.i !== target) { flash('There is no record ' + fmtInt(n)); if (target > it.i) select(lo, true); return; }
+    select(lo, true);
+  }
+  function firstIndex(it) { return it.gap ? it.from : it.i; }
+
+  // ------------------------------------------------------------ layout
+  function measure() {
+    var probe = document.createElement('span');
+    probe.textContent = 'ACGTACGTAC'.repeat(10);
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:13px var(--mono)';
+    E.view.appendChild(probe);
+    S.cw = probe.getBoundingClientRect().width / 100 || 7.8;
+    probe.remove();
+    S.lh = parseFloat(getComputedStyle(E.root).getPropertyValue('--lx-line')) || 18;
+  }
+  function itemLines(it) {
+    if (it.gap) return 1;
+    var segs = S.wrap ? Math.max(1, Math.ceil(it.seq.length / S.cols)) : 1;
+    return 1 + segs * (it.qual ? 2 : 1);
+  }
+  // keepItem: item index to bring to the top. Without it, the current top
+  // item stays put, including how far into it the view is scrolled.
+  function relayout(keepItem) {
+    var anchor, delta = 0;
+    if (keepItem !== undefined) anchor = keepItem;
+    else if (S.items.length && S.totalLines) { var f = scrollLine().first; anchor = itemAtLine(f); delta = f - S.prefix[anchor]; }
+    else anchor = 0;
+    var maxNum = S.res ? S.res.total : 0;
+    var maxPos = S.res ? S.res.maxLen : 0;
+    S.gutCh = S.numbers ? String(Math.max(maxNum, maxPos, 9)).length + 2 : 0;
+    E.root.style.setProperty('--lx-gut', S.gutCh ? S.gutCh + 'ch' : '0');
+    var textW = E.scroller.clientWidth - S.gutCh * S.cw - 3 * S.cw;
+    S.cols = Math.max(10, Math.floor(textW / S.cw));
+    var n = S.items.length, pre = new Float64Array(n + 1);
+    for (var i = 0; i < n; i++) pre[i + 1] = pre[i] + itemLines(S.items[i]);
+    S.prefix = pre; S.totalLines = pre[n];
+    var vh = E.scroller.clientHeight, vw = E.scroller.clientWidth;
+    var H = Math.min(S.totalLines * S.lh + S.lh, MAXPX);
+    var W = S.wrap ? vw : Math.min((S.gutCh + 3 + (S.res ? S.res.maxLen : 0)) * S.cw, MAXPX);
+    E.inner.style.height = Math.max(H, vh) + 'px';
+    E.inner.style.width = Math.max(W, vw) + 'px';
+    E.view.style.height = vh + 'px';
+    E.view.style.width = vw + 'px';
+    if (anchor >= 0 && anchor < n) setScrollLine(pre[anchor] + Math.min(delta, pre[anchor + 1] - pre[anchor] - 1));
+    render();
+  }
+  function vmap() {
+    var vh = E.scroller.clientHeight, totalPx = S.totalLines * S.lh + S.lh;
+    var H = Math.max(Math.min(totalPx, MAXPX), vh);
+    var visible = Math.floor(vh / S.lh);
+    return { vh: vh, scaled: totalPx > MAXPX, maxScroll: Math.max(1, H - vh), maxLine: Math.max(0, S.totalLines - visible + 1), visible: visible };
+  }
+  function scrollLine() {
+    var m = vmap(), st = E.scroller.scrollTop;
+    if (!m.scaled) return { first: Math.floor(st / S.lh), off: -(st % S.lh) };
+    return { first: Math.round(st / m.maxScroll * m.maxLine), off: 0 };
+  }
+  function setScrollLine(L) {
+    var m = vmap();
+    L = Math.max(0, Math.min(L, m.maxLine));
+    E.scroller.scrollTop = m.scaled ? L / m.maxLine * m.maxScroll : L * S.lh;
+  }
+  function hcol() {
+    if (S.wrap) return 0;
+    var maxLen = S.res ? S.res.maxLen : 0, full = (S.gutCh + 3 + maxLen) * S.cw;
+    var sl = E.scroller.scrollLeft;
+    if (full <= MAXPX) return Math.floor(sl / S.cw);
+    var maxS = Math.max(1, E.scroller.scrollWidth - E.scroller.clientWidth);
+    return Math.round(sl / maxS * Math.max(0, maxLen - S.cols));
+  }
+  function itemAtLine(L) {
+    var lo = 0, hi = S.items.length - 1, mid;
+    while (lo < hi) { mid = (lo + hi + 1) >> 1; if (S.prefix[mid] <= L) lo = mid; else hi = mid - 1; }
+    return lo;
+  }
+  function topItem() { return S.items.length ? itemAtLine(scrollLine().first) : -1; }
+  // Brings a record into view: whole if it fits, otherwise its first lines.
+  function scrollToItem(idx) {
+    var start = S.prefix[idx], end = S.prefix[idx + 1], v = vmap().visible, cur = scrollLine().first;
+    var fits = end - start <= v - 1;
+    if (start >= cur && (fits ? end <= cur + v : start < cur + v - 2)) return;
+    setScrollLine(!fits || start < cur ? start - 1 : end - v + 1);
+  }
+
+  // ------------------------------------------------------------ render the less pane
+  function scheduleRender() { if (!S.raf) S.raf = requestAnimationFrame(function () { S.raf = 0; render(); }); }
+  function render() {
+    if (!S.items.length) { E.view.innerHTML = ''; renderStatus(); return; }
+    var pos = scrollLine(), m = vmap(), rows = m.visible + 2, hc = hcol();
+    var L = Math.max(0, pos.first), idx = itemAtLine(L), html = '';
+    var gut = S.gutCh > 0;
+    for (var row = 0; row < rows && L < S.totalLines; row++, L++) {
+      while (idx < S.items.length - 1 && S.prefix[idx + 1] <= L) idx++;
+      var it = S.items[idx], k = L - S.prefix[idx], top = pos.off + row * S.lh;
+      var sel = idx === S.selected ? ' is-sel' : '';
+      if (it.gap) {
+        html += '<div class="lx-ln gap" style="top:' + top + 'px"><span class="lx-tx">' + esc(gapText(it)) + '</span></div>';
+        continue;
+      }
+      if (k === 0) {
+        var head = (it.qual ? '@' : '>');
+        var nameHtml, cm = it.comment;
+        if (S.matcher && S.matcher.kind === 'name') {
+          nameHtml = highlightText(it.name, S.matcher.needle); cm = cm ? highlightText(cm, S.matcher.needle) : '';
+        } else { nameHtml = esc(it.name); cm = esc(cm); }
+        html += '<div class="lx-ln h' + sel + '" data-i="' + idx + '" style="top:' + top + 'px">' +
+          (gut ? '<span class="lx-gut">' + fmtInt(it.i + 1) + '</span>' : '') +
+          '<span class="lx-tx"><span class="lx-nm">' + head + nameHtml + '</span>' + (cm ? ' <span class="lx-cm">' + cm + '</span>' : '') + '</span></div>';
+        continue;
+      }
+      var j = k - 1, seg = it.qual ? j >> 1 : j, isQ = it.qual ? (j & 1) === 1 : false;
+      var from = S.wrap ? seg * S.cols : hc, to = Math.min(it.seq.length, from + S.cols);
+      var body = from < to ? (isQ ? qualRun(it, from, to) : seqRun(it, idx, from, to)) : '';
+      html += '<div class="lx-ln ' + (isQ ? 'q' : 's') + sel + '" data-i="' + idx + '" data-s="' + from + '" style="top:' + top + 'px">' +
+        (gut ? '<span class="lx-gut">' + (isQ ? '' : fmtInt(from + 1)) + '</span>' : '') +
+        '<span class="lx-tx">' + body + '</span></div>';
+    }
+    E.view.innerHTML = html;
+    renderStatus();
+  }
+  function seqRun(it, idx, from, to) {
+    var s = it.seq, iv = matchIntervals(idx), colors = S.colors;
+    return runs(s, from, to, function (p) {
+      var c = colors ? baseClass(s.charCodeAt(p)) : '';
+      return iv && iv.length && inIntervals(iv, p) ? (c ? c + ' hl' : 'hl') : c;
+    });
+  }
+  function qualRun(it, from, to) {
+    var q = it.qual, off = S.offset, out = '', cur = null, buf = '';
+    for (var p = from; p < to; p++) {
+      var v = q.charCodeAt(p) - off, c = qBand(v), g = S.qchars ? q[p] : GLYPHS[qLevel(v)];
+      if (c !== cur) { if (buf) out += '<span class="' + cur + '">' + esc(buf) + '</span>'; cur = c; buf = ''; }
+      buf += g;
+    }
+    if (buf) out += '<span class="' + cur + '">' + esc(buf) + '</span>';
+    return out;
+  }
+  function highlightText(text, needle) {
+    var low = text.toLowerCase(), out = '', at = 0, k;
+    while ((k = low.indexOf(needle, at)) !== -1) { out += esc(text.slice(at, k)) + '<span class="hl">' + esc(text.slice(k, k + needle.length)) + '</span>'; at = k + needle.length; }
+    return out + esc(text.slice(at));
+  }
+  function gapText(it) {
+    if (it.loading) return '── reading the rest of the file… ' + Math.floor(S.progress * 100) + '% ──';
+    return '── ' + fmtInt(it.count) + ' records (' + fmtBp(it.bp) + ') in the middle of the file are not kept in memory ──';
+  }
+  function renderStatus() {
+    var r = S.res, parts = [];
+    if (S.error) { E.status.innerHTML = '<span>' + esc(S.error) + '</span>'; return; }
+    if (!r) { E.status.innerHTML = '<span>No file loaded</span>'; return; }
+    if (S.items.length) {
+      var pos = scrollLine(), m = vmap();
+      var a = S.items[itemAtLine(Math.max(0, pos.first))], b = S.items[itemAtLine(Math.min(S.totalLines - 1, pos.first + m.visible - 1))];
+      parts.push('<span>Records <b>' + fmtInt(firstIndex(a) + 1) + '–' + fmtInt(b.gap ? b.from + b.count : b.i + 1) + '</b> of <b>' + fmtInt(r.total) + (S.loading ? '+' : '') + '</b></span>');
+    }
+    parts.push('<span>' + (r.format || '…') + (r.compression === 'gzip' ? ' · gzip' : '') + (hasQual() ? ' · Phred+' + S.offset : '') + '</span>');
+    if (S.loading) parts.push('<span>reading <span class="lx-progress"><i style="width:' + (S.progress * 100).toFixed(1) + '%"></i></span> ' + Math.floor(S.progress * 100) + '%</span>');
+    else if (r.done) parts.push('<span>' + (r.skipped ? 'kept first ' + fmtInt(r.head.length) + ' + last ' + fmtInt(r.tail.length) : 'all records kept') + ' · ≈' + fmtBytes(r.bytes) + ' in memory</span>');
+    parts.push('<span class="lx-hover">' + esc(S.hover) + '</span>');
+    E.status.innerHTML = parts.join('');
+  }
+  var flashTimer, searchTimer;
+  function flash(msg) { S.hover = msg; renderStatus(); clearTimeout(flashTimer); flashTimer = setTimeout(function () { S.hover = ''; renderStatus(); }, 3500); }
+
+  // ------------------------------------------------------------ selection + inspector
+  function select(idx, scroll) {
+    if (!isRecord(S.items[idx])) return;
+    S.selected = idx;
+    S.detailLimit = TRACK_CHUNK;
+    if (scroll) scrollToItem(idx);
+    render();
+    renderDetail();
+  }
+  function step(dir) {
+    if (!S.items.length) return;
+    var i;
+    if (S.selected >= 0 && isVisible(S.selected)) i = S.selected;
+    else {
+      // start from the edge of the screen in the direction of travel
+      var f = scrollLine().first, v = vmap().visible;
+      i = dir > 0 ? itemAtLine(Math.max(0, f)) - 1 : itemAtLine(Math.min(S.totalLines - 1, f + v - 1)) + 1;
+    }
+    do { i += dir; } while (i >= 0 && i < S.items.length && !isRecord(S.items[i]));
+    if (i >= 0 && i < S.items.length) select(i, true);
+  }
+  function recordText(it) {
+    return it.qual ? '@' + it.name + (it.comment ? ' ' + it.comment : '') + '\n' + it.seq + '\n+\n' + it.qual + '\n'
+                   : '>' + it.name + (it.comment ? ' ' + it.comment : '') + '\n' + it.seq + '\n';
+  }
+  function readStats(it) {
+    var s = it.seq, gc = 0, at = 0, n = 0, c;
+    for (var p = 0; p < s.length; p++) {
+      c = s.charCodeAt(p) | 32;
+      if (c === 103 || c === 99) gc++; else if (c === 97 || c === 116 || c === 117) at++; else if (c === 110) n++;
+    }
+    var out = { len: s.length, gc: gc + at ? gc / (gc + at) : 0, n: n };
+    if (it.qual && it.qual.length) {
+      var sum = 0, q30 = 0, min = 99, ee = 0;
+      for (p = 0; p < it.qual.length; p++) {
+        var q = it.qual.charCodeAt(p) - S.offset;
+        sum += q; if (q >= 30) q30++; if (q < min) min = q; ee += Math.pow(10, -q / 10);
+      }
+      out.meanQ = sum / it.qual.length; out.q30 = q30 / it.qual.length; out.minQ = min; out.ee = ee;
+    }
+    return out;
+  }
+  function renderDetail() {
+    var it = S.items[S.selected];
+    if (!isRecord(it)) {
+      E.detail.innerHTML = '<p class="lx-detail-empty">' + (S.items.length ? 'Click a record above to inspect it here. <kbd>Shift</kbd> + <kbd>&darr;</kbd>/<kbd>&uarr;</kbd> moves between records.' : 'Open a file to start.') + '</p>';
+      return;
+    }
+    var st = readStats(it), kind = it.qual ? 'FASTQ' : 'FASTA';
+    var facts = [['Record', fmtInt(it.i + 1)], ['Length', fmtInt(st.len) + ' bp'], ['GC', (st.gc * 100).toFixed(1) + '%']];
+    if (st.n) facts.push(['N', fmtInt(st.n)]);
+    if (st.meanQ !== undefined) {
+      facts.push(['Mean Q', st.meanQ.toFixed(1)], ['≥Q30', (st.q30 * 100).toFixed(0) + '%'], ['Min Q', String(st.minQ)], ['Expected errors', st.ee.toFixed(2)]);
+    }
+    var h = '<div class="lx-dhead"><span class="lx-dname">' + (it.qual ? '@' : '>') + esc(it.name) + '</span>' +
+      (it.comment ? '<span class="lx-dcomment">' + esc(it.comment) + '</span>' : '') +
+      '<div class="lx-dactions">' +
+      '<div class="chip-group" role="group" aria-label="Inspector view">' +
+      '<button type="button" class="chip' + (S.detailView === 'visual' ? ' active' : '') + '" data-dview="visual" aria-pressed="' + (S.detailView === 'visual') + '">' + (it.qual ? 'Bases &amp; quality' : 'Bases') + '</button>' +
+      '<button type="button" class="chip' + (S.detailView === 'text' ? ' active' : '') + '" data-dview="text" aria-pressed="' + (S.detailView === 'text') + '">Text</button></div>' +
+      '<button type="button" class="lx-btn" data-copy="record">Copy ' + kind + '</button>' +
+      '<button type="button" class="lx-btn" data-copy="seq">Copy sequence</button>' +
+      '<button type="button" class="lx-btn" data-copy="rc">Copy reverse complement</button>' +
+      '</div></div>';
+    h += '<div class="lx-facts">' + facts.map(function (f) { return '<span>' + f[0] + '<b>' + f[1] + '</b></span>'; }).join('') +
+      (it.qual && S.detailView === 'visual' ? '<span class="lx-legend" aria-label="Quality legend"><span><i class="q3"></i>Q30+</span><span><i class="q2"></i>Q20–29</span><span><i class="q1"></i>&lt;Q20</span><span><i class="q0"></i>≤Q3</span></span>' : '') +
+      '</div>';
+    if (S.detailView === 'text') {
+      h += '<pre class="lx-text" tabindex="0">' + esc(recordText(it)) + '</pre>';
+    } else if (it.qual) {
+      var lim = Math.min(it.seq.length, S.detailLimit), cols = '';
+      for (var p = 0; p < lim; p++) {
+        var b = it.seq[p], q = it.qual.charCodeAt(p) - S.offset;
+        var hgt = (Math.max(2, Math.min(41, q)) / 41 * 30).toFixed(1);
+        cols += '<div class="lx-col" data-p="' + p + '"><span class="' + baseClass(b.charCodeAt(0)) + '">' + esc(b) + '</span><div class="lx-well"><i class="' + qBand(q) + '" style="height:' + hgt + 'px"></i></div></div>';
+      }
+      h += '<div class="lx-track" role="img" aria-label="' + fmtInt(lim) + ' bases with per-base quality bars">' + cols + '</div>';
+      h += '<div class="lx-readout" id="lx-readout">Hover a base to see its position and quality.</div>';
+      if (lim < it.seq.length) h += '<button type="button" class="lx-btn lx-more" data-more="1">Show ' + fmtInt(Math.min(TRACK_CHUNK, it.seq.length - lim)) + ' more bases (' + fmtInt(it.seq.length - lim) + ' left)</button>';
+    } else {
+      var flim = Math.min(it.seq.length, Math.max(S.detailLimit, FASTA_CHUNK));
+      h += '<div class="lx-fasta">' + runs(it.seq, 0, flim, function (p) { return baseClass(it.seq.charCodeAt(p)); }) + '</div>';
+      if (flim < it.seq.length) h += '<button type="button" class="lx-btn lx-more" data-more="1">Show ' + fmtInt(Math.min(FASTA_CHUNK, it.seq.length - flim)) + ' more bases (' + fmtInt(it.seq.length - flim) + ' left)</button>';
+    }
+    E.detail.innerHTML = h;
+  }
+  function revcomp(s) {
+    var map = { A: 'T', C: 'G', G: 'C', T: 'A', U: 'A', N: 'N', a: 't', c: 'g', g: 'c', t: 'a', u: 'a', n: 'n',
+                R: 'Y', Y: 'R', K: 'M', M: 'K', B: 'V', V: 'B', D: 'H', H: 'D', S: 'S', W: 'W' };
+    var out = new Array(s.length);
+    for (var i = 0, j = s.length - 1; j >= 0; i++, j--) out[i] = map[s[j]] || s[j];
+    return out.join('');
+  }
+  async function copy(text, label, btn) {
+    try {
+      await navigator.clipboard.writeText(text);
+      flash('Copied ' + label + ' (' + fmtBytes(text.length) + ')');
+      if (btn) { var old = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = old; }, 1200); }
+    } catch (e) {
+      flash('Copy failed: switch to the Text view and select the record');
+    }
+  }
+  function copySelected(what, btn) {
+    var it = S.items[S.selected];
+    if (!isRecord(it)) { flash('Select a record first'); return; }
+    if (what === 'seq') copy(it.seq, 'sequence', btn);
+    else if (what === 'rc') copy(revcomp(it.seq), 'reverse complement', btn);
+    else copy(recordText(it), 'record', btn);
+  }
+
+  // ------------------------------------------------------------ loading
+  function buildItems(res) {
+    var items = res.head.slice();
+    if (!res.done) {
+      if (res.headFull) items.push({ gap: true, loading: true, from: res.head.length, count: 0, bp: 0 });
+    } else {
+      if (res.skipped > 0) items.push({ gap: true, from: res.head.length, count: res.skipped, bp: res.skippedBp });
+      for (var i = 0; i < res.tail.length; i++) items.push(res.tail[i]);
+    }
+    return items;
+  }
+  function setItems(res) {
+    var keepTop = S.items.length ? topItem() : 0;
+    S.res = res;
+    S.offset = LessCore.guessOffset(res);
+    S.items = buildItems(res);
+    E.empty.hidden = S.items.length > 0;
+    E.query.disabled = !S.items.length;
+    if (S.selected < 0 && S.items.length) { S.selected = 0; S.detailLimit = TRACK_CHUNK; renderDetail(); }
+    relayout(keepTop);
+    if (S.matcher) runSearch();
+  }
+  async function openFile(file) {
+    if (!file) return;
+    if (S.controller) S.controller.abort();
+    var ctrl = new AbortController();
+    S.controller = ctrl; S.file = file; S.res = null; S.items = []; S.selected = -1; S.error = null;
+    S.loading = true; S.progress = 0; S.matches = []; S.matchPos = -1; S.matchCache = new Map(); S.searchKey = '';
+    E.file.hidden = false; E.fileName.textContent = file.name; E.fileName.title = file.name; E.fileMeta.textContent = fmtBytes(file.size);
+    E.empty.hidden = true;
+    E.scroller.scrollTop = 0; E.scroller.scrollLeft = 0;
+    relayout(0); renderDetail(); updateCount();
+    try {
+      var res = await LessCore.load(file, {
+        budgetBp: parseInt(E.budget.value, 10) * 1e6,
+        signal: ctrl.signal,
+        onUpdate: function (r) { if (S.controller === ctrl) setItems(r); },
+        onProgress: function (p, r) {
+          if (S.controller !== ctrl) return;
+          S.progress = p;
+          if (!S.res && r.format) { S.res = r; }
+          scheduleRender();
+        }
+      });
+      if (S.controller !== ctrl) return;
+      S.loading = false;
+      setItems(res);
+      E.fileMeta.textContent = fmtBytes(file.size) + ' · ' + fmtInt(res.total) + ' records · ' + fmtBp(res.totalBp);
+      E.scroller.focus({ preventScroll: true });
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      if (S.controller !== ctrl) return;
+      S.loading = false;
+      S.error = file.name + ': ' + (e instanceof LessCore.InputError ? e.message : 'unexpected error: ' + (e && e.message || e));
+      if (!(e instanceof LessCore.InputError)) console.error(e);
+      if (!S.items.length) {
+        E.empty.hidden = false;
+        E.emptyNote.innerHTML = '<span class="lx-err">' + esc(S.error) + '</span>';
+      }
+      renderStatus();
+    }
+  }
+
+  // ------------------------------------------------------------ events
+  E.open.addEventListener('click', function () { E.picker.click(); });
+  E.empty.addEventListener('click', function () { E.picker.click(); });
+  E.picker.addEventListener('change', function () { openFile(E.picker.files[0]); E.picker.value = ''; });
+  E.budget.addEventListener('change', function () { if (S.file) openFile(S.file); });
+
+  var dragDepth = 0;
+  function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1; }
+  window.addEventListener('dragenter', function (e) { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; E.empty.classList.add('is-over'); });
+  window.addEventListener('dragover', function (e) { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+  window.addEventListener('dragleave', function (e) { if (!hasFiles(e)) return; if (--dragDepth <= 0) { dragDepth = 0; E.empty.classList.remove('is-over'); } });
+  window.addEventListener('drop', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); dragDepth = 0; E.empty.classList.remove('is-over');
+    if (e.dataTransfer.files.length > 1) flash('One file at a time: opening ' + e.dataTransfer.files[0].name);
+    openFile(e.dataTransfer.files[0]);
+  });
+
+  E.scroller.addEventListener('scroll', scheduleRender, { passive: true });
+  E.view.addEventListener('click', function (e) {
+    var ln = e.target.closest('.lx-ln[data-i]');
+    if (ln) { select(+ln.dataset.i, false); E.scroller.focus({ preventScroll: true }); }
+  });
+  E.view.addEventListener('mousemove', function (e) {
+    var ln = e.target.closest('.lx-ln.s, .lx-ln.q'), msg = '';
+    if (ln) {
+      var tx = ln.querySelector('.lx-tx'), it = S.items[+ln.dataset.i];
+      var col = Math.floor((e.clientX - tx.getBoundingClientRect().left) / S.cw - 1);
+      var p = +ln.dataset.s + col;
+      if (col >= 0 && it && p < it.seq.length) {
+        msg = '#' + fmtInt(it.i + 1) + ' pos ' + fmtInt(p + 1) + ' ' + it.seq[p] + (it.qual ? ' Q' + (it.qual.charCodeAt(p) - S.offset) : '');
+      }
+    }
+    if (msg !== S.hover) { S.hover = msg; renderStatus(); }
+  });
+  E.view.addEventListener('mouseleave', function () { if (S.hover) { S.hover = ''; renderStatus(); } });
+
+  E.detail.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.copy) copySelected(b.dataset.copy, b);
+    else if (b.dataset.dview) { S.detailView = b.dataset.dview; renderDetail(); }
+    else if (b.dataset.more) { S.detailLimit += S.items[S.selected].qual ? TRACK_CHUNK : FASTA_CHUNK; renderDetail(); }
+  });
+  E.detail.addEventListener('mouseover', function (e) {
+    var col = e.target.closest('.lx-col'), out = document.getElementById('lx-readout'), it = S.items[S.selected];
+    if (!col || !out || !isRecord(it)) return;
+    var p = +col.dataset.p;
+    out.textContent = 'Position ' + fmtInt(p + 1) + ': ' + it.seq[p] + ', Q' + (it.qual.charCodeAt(p) - S.offset) + ' (\'' + it.qual[p] + '\')';
+  });
+
+  function setToggle(name, value) {
+    S[name] = value;
+    var b = document.querySelector('[data-toggle="' + name + '"]');
+    b.classList.toggle('active', value); b.setAttribute('aria-pressed', value);
+    if (name === 'wrap') E.scroller.scrollLeft = 0;
+    if (name === 'wrap' || name === 'numbers') relayout(S.selected >= 0 && isVisible(S.selected) ? S.selected : topItem());
+    else render();
+  }
+  function isVisible(idx) { var f = scrollLine().first, v = vmap().visible; return S.prefix[idx + 1] > f && S.prefix[idx] < f + v; }
+  document.querySelectorAll('[data-toggle]').forEach(function (b) {
+    b.classList.toggle('active', S[b.dataset.toggle]);
+    b.addEventListener('click', function () { setToggle(b.dataset.toggle, !S[b.dataset.toggle]); });
+  });
+
+  E.search.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var q = E.query.value.trim();
+    if (q[0] === ':') { jumpToRecord(parseInt(q.slice(1).replace(/[,_\s]/g, ''), 10)); E.scroller.focus({ preventScroll: true }); return; }
+    runSearch();
+    gotoMatch(1);
+    E.scroller.focus({ preventScroll: true });
+  });
+  E.query.addEventListener('input', function () { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 250); });
+  E.query.addEventListener('keydown', function (e) { if (e.key === 'Escape') { E.query.blur(); E.scroller.focus({ preventScroll: true }); } });
+
+  function toggleHelp(show) {
+    if (show === undefined) show = E.help.hidden;
+    E.help.hidden = !show; E.helpBtn.setAttribute('aria-expanded', show);
+  }
+  E.helpBtn.addEventListener('click', function () { toggleHelp(); });
+  document.addEventListener('click', function (e) {
+    if (!E.help.hidden && !E.help.contains(e.target) && e.target !== E.helpBtn) toggleHelp(false);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (t.closest && (t.closest('input, select, textarea') || (t.closest('button') && (e.key === 'Enter' || e.key === ' ')))) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!E.root.contains(t) && t !== document.body) return;
+    var key = e.key, m = vmap(), cur = scrollLine().first, handled = true;
+    if (key === '?') toggleHelp();
+    else if (key === 'Escape') toggleHelp(false);
+    else if (!S.items.length) handled = false;
+    else if (e.shiftKey && key === 'ArrowDown' || key === ']') step(1);
+    else if (e.shiftKey && key === 'ArrowUp' || key === '[') step(-1);
+    else if (key === 'ArrowDown' || key === 'j') setScrollLine(cur + 1);
+    else if (key === 'ArrowUp' || key === 'k') setScrollLine(cur - 1);
+    else if (key === 'PageDown' || key === ' ' || key === 'f') setScrollLine(cur + Math.max(1, m.visible - 1));
+    else if (key === 'PageUp' || key === 'b') setScrollLine(cur - Math.max(1, m.visible - 1));
+    else if (key === 'Home' || key === 'g') setScrollLine(0);
+    else if (key === 'End' || key === 'G') setScrollLine(S.totalLines);
+    else if (key === 'ArrowRight' && !S.wrap) E.scroller.scrollLeft += S.cw * (e.shiftKey ? 25 : 1);
+    else if (key === 'ArrowLeft' && !S.wrap) E.scroller.scrollLeft -= S.cw * (e.shiftKey ? 25 : 1);
+    else if (key === 'Enter') { var ti = topItem(); if (S.items[ti] && S.items[ti].gap) ti++; select(ti, false); }
+    else if (key === '/') { E.query.focus(); E.query.select(); }
+    else if (key === ':') { E.query.value = ':'; E.query.focus(); }
+    else if (key === 'n') gotoMatch(1);
+    else if (key === 'N') gotoMatch(-1);
+    else if (key === 'c') copySelected('record');
+    else if (key === 's' || key === 'S') setToggle('wrap', !S.wrap);
+    else if (key === 'r' || key === 'R') setToggle('numbers', !S.numbers);
+    else if (key === '0') setToggle('colors', !S.colors);
+    else if (key === 'u' || key === 'U') setToggle('qchars', !S.qchars);
+    else handled = false;
+    // stop the site-wide "/" shortcut (focus the docs search) as well
+    if (handled) { e.preventDefault(); e.stopImmediatePropagation(); }
+  });
+
+  // splitter: drag or arrow keys; the inspector starts at a third of the height
+  var SPLIT_KEY = 'seqfu-less-split';
+  function setSplit(px) {
+    var total = E.root.clientHeight, minB = 90, maxB = total - E.root.firstElementChild.offsetHeight - 160;
+    px = Math.max(minB, Math.min(px, maxB));
+    E.root.style.setProperty('--lx-bottom', px + 'px');
+    E.split.setAttribute('aria-valuenow', Math.round(px / total * 100));
+    try { localStorage.setItem(SPLIT_KEY, String(px / total)); } catch (e) { /* storage unavailable */ }
+  }
+  E.split.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    E.split.setPointerCapture(e.pointerId); E.split.classList.add('is-drag');
+    var bottom = E.root.getBoundingClientRect().bottom;
+    function move(ev) { setSplit(bottom - ev.clientY - 4); }
+    function up() { E.split.classList.remove('is-drag'); E.split.removeEventListener('pointermove', move); E.split.removeEventListener('pointerup', up); }
+    E.split.addEventListener('pointermove', move); E.split.addEventListener('pointerup', up);
+  });
+  E.split.addEventListener('keydown', function (e) {
+    var cur = E.detail.getBoundingClientRect().height;
+    if (e.key === 'ArrowUp') { setSplit(cur + 24); e.preventDefault(); e.stopPropagation(); }
+    else if (e.key === 'ArrowDown') { setSplit(cur - 24); e.preventDefault(); e.stopPropagation(); }
+  });
+  try {
+    var saved = parseFloat(localStorage.getItem(SPLIT_KEY));
+    if (saved > 0.05 && saved < 0.9) E.root.style.setProperty('--lx-bottom', (saved * 100).toFixed(1) + '%');
+  } catch (e) { /* storage unavailable */ }
+
+  var lastW = 0, resizeTimer;
+  new ResizeObserver(function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      var w = E.scroller.clientWidth;
+      if (w !== lastW) { lastW = w; relayout(S.selected >= 0 && isVisible(S.selected) ? S.selected : undefined); }
+      else relayout();
+    }, 60);
+  }).observe(E.scroller);
+
+  measure();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); relayout(); });
+  relayout();
+  renderDetail();
+})();
+</script>
+{% endraw %}

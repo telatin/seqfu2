@@ -1,0 +1,27 @@
+---
+layout: default
+---
+{%- comment -%}
+  Layout for apps/*.html: interactive in-browser tools. Front matter: title,
+  summary. The page body brings its own markup, styles and scripts; it is not
+  wrapped in .prose, so documentation typography does not leak into the app.
+
+  With `fullscreen: true` the page gets the whole viewport below the top bar
+  and draws its own title bar (used by viewers such as SeqFu Less).
+{%- endcomment -%}
+{%- assign sec = site.data.navigation.main | where: "section", "apps" | first -%}
+{%- if page.fullscreen %}
+<main class="app-full">
+  {{ content }}
+</main>
+{%- else %}
+<div class="shell shell-nosidebar">
+  <main class="content app-content">
+    <div class="crumbs"><a href="{{ sec.url | relative_url }}">{{ sec.title }}</a> / {{ page.title }}</div>
+    <h1>{{ page.title }}</h1>
+    {% if page.summary %}<p class="lede">{{ page.summary }}</p>{% endif %}
+    {{ content }}
+    {% include edit-link.html %}
+  </main>
+</div>
+{%- endif %}

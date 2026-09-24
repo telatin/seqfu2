@@ -163,6 +163,7 @@ img { max-width: 100%; height: auto; }
 
 .content { flex: 1; min-width: 0; padding: 40px 48px 96px; max-width: 880px; }
 .content-wide { max-width: none; padding-right: 40px; }
+.app-content { max-width: 1160px; width: 100%; }
 .shell-nosidebar .content { margin: 0 auto; }
 .crumbs { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
 .crumbs a { color: var(--muted); }

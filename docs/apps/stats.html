@@ -1,0 +1,980 @@
+---
+title: SeqFu Stats
+summary: Drop FASTA or FASTQ files, plain or gzipped, to get the same table as seqfu stats, plus a length distribution for each file. Files are read locally in your browser and never uploaded.
+tools: [stats]
+keywords: stats n50 aun gc length distribution histogram browser
+---
+{% raw %}
+<style>
+  .sfs { --sfs-bar: var(--purple); --sfs-bar-hover: var(--purple-dark); }
+  .sfs button { font-family: inherit; }
+  .sfs-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---- drop zone */
+  .sfs-drop {
+    display: grid; justify-items: center; gap: 6px; text-align: center; cursor: pointer;
+    padding: 36px 20px; border: 2px dashed var(--border-2); border-radius: var(--radius-lg);
+    background: var(--surface); color: var(--ink-3); transition: border-color .15s, background .15s;
+  }
+  .sfs-drop:hover, .sfs-drop:focus-visible { border-color: var(--purple); outline: none; }
+  .sfs-drop.is-over { border-color: var(--purple); background: var(--purple-tint-2); }
+  .sfs-drop.is-compact { grid-auto-flow: column; justify-content: center; align-items: center; gap: 12px; padding: 16px 20px; }
+  .sfs-drop.is-compact .sfs-drop-note { display: none; }
+  .sfs-drop svg { color: var(--purple); }
+  .sfs-drop-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .sfs-drop-title u { color: var(--purple); text-underline-offset: 3px; }
+  .sfs-drop-note { font-size: 13px; color: var(--muted); }
+
+  /* ---- toolbar */
+  .sfs-toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; margin: 20px 0 12px;
+  }
+  .sfs-toolbar .check { white-space: nowrap; }
+  .sfs-toolbar .check code { font-size: 11.5px; color: var(--muted); }
+  .sfs-select { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--border-2); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  .sfs-actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .sfs-btn {
+    font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--border-2); background: var(--surface); color: var(--ink);
+  }
+  .sfs-btn:hover:not(:disabled) { border-color: var(--purple); color: var(--purple); }
+  .sfs-btn:disabled, .sfs .chip:disabled { opacity: .45; cursor: default; }
+
+  /* ---- command line echo */
+  .sfs-cmd {
+    display: flex; align-items: center; gap: 12px; background: var(--term-bg); color: var(--term-ink);
+    border-radius: var(--radius); padding: 10px 14px; font-family: var(--mono); font-size: 13px; margin-bottom: 12px;
+  }
+  .sfs-cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; }
+  .sfs-cmd .sfs-prompt { color: var(--amber); user-select: none; }
+  .sfs-cmd button {
+    flex-shrink: 0; font: 600 11px var(--sans); color: var(--term-muted); background: none; cursor: pointer;
+    border: 1px solid var(--term-border); border-radius: 4px; padding: 3px 8px;
+  }
+  .sfs-cmd button:hover { color: #fff; }
+
+  /* ---- results table */
+  .sfs-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+  .sfs-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .sfs-table th, .sfs-table td { padding: 9px 12px; border-bottom: 1px solid var(--border-soft); text-align: right; white-space: nowrap; }
+  .sfs-table th:first-child, .sfs-table td:first-child { text-align: left; }
+  .sfs-table tbody tr:last-child td { border-bottom: 0; }
+  .sfs-table th { background: #FBFAFC; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
+  .sfs-table th button {
+    background: none; border: 0; padding: 0; color: inherit; font-weight: inherit; cursor: pointer; letter-spacing: inherit;
+  }
+  .sfs-table th button:hover, .sfs-table th[aria-sort] button { color: var(--purple); }
+  .sfs-table th[aria-sort="ascending"] button::after { content: " \2191"; }
+  .sfs-table th[aria-sort="descending"] button::after { content: " \2193"; }
+  .sfs-table td { font-family: var(--mono); font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .sfs-table tbody tr { cursor: pointer; }
+  .sfs-table tbody tr:hover td { background: var(--purple-tint-2); }
+  .sfs-table tbody tr.is-selected td { background: var(--purple-tint); }
+  .sfs-table tbody tr.is-selected td:first-child { box-shadow: inset 3px 0 0 var(--purple); }
+  .sfs-file { display: flex; align-items: center; gap: 8px; }
+  .sfs-file-name {
+    background: none; border: 0; padding: 0; cursor: pointer; font: 600 13px var(--mono); color: var(--ink);
+    max-width: 320px; overflow: hidden; text-overflow: ellipsis; text-align: left;
+  }
+  .sfs-file-name:hover { color: var(--purple); }
+  .sfs-remove {
+    margin-left: auto; background: none; border: 0; cursor: pointer; color: var(--muted-2);
+    font-size: 16px; line-height: 1; padding: 2px 4px; border-radius: 4px;
+  }
+  .sfs-remove:hover { color: var(--red-text); background: var(--red-tint); }
+  .sfs-status { text-align: left !important; font-family: var(--sans) !important; color: var(--muted) !important; }
+  .sfs-status .badge-danger { white-space: normal; }
+  .sfs-progress { display: flex; align-items: center; gap: 10px; }
+  .sfs-progress-track { flex: 1; max-width: 360px; height: 6px; border-radius: 3px; background: var(--border-soft); overflow: hidden; }
+  .sfs-progress-fill { height: 100%; width: 0; background: var(--purple); border-radius: 3px; transition: width .2s; }
+  .sfs-empty-row td { text-align: center !important; color: var(--muted); font-family: var(--sans); padding: 28px; cursor: default; }
+  .sfs-empty-row:hover td { background: none !important; }
+  .sfs-note { font-size: 12.5px; color: var(--muted); margin: 10px 2px 0; }
+
+  /* ---- detail panel */
+  .sfs-detail { margin-top: 40px; }
+  .sfs-detail .group-head h2 { font-family: var(--mono); font-size: 17px; overflow-wrap: anywhere; }
+  .sfs-detail .facts { margin-bottom: 24px; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+  .sfs-detail .facts .mono { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .sfs-chart-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 8px; }
+  .sfs-chart-head h3 { margin: 0; font-size: 15px; font-weight: 700; margin-right: auto; }
+  .sfs-chart-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 12px 8px 4px; }
+  .sfs-chart svg { display: block; width: 100%; overflow: visible; }
+  .sfs-chart text { font-family: var(--sans); font-size: 11px; fill: var(--muted); }
+  .sfs-chart .sfs-grid { stroke: var(--border-soft); stroke-width: 1; }
+  .sfs-chart .sfs-axis { stroke: var(--border-2); stroke-width: 1; }
+  .sfs-chart .sfs-bar { fill: var(--sfs-bar); }
+  .sfs-chart .sfs-bar.is-hover { fill: var(--sfs-bar-hover); }
+  .sfs-chart .sfs-hit { fill: transparent; cursor: crosshair; }
+  .sfs-chart .sfs-ref { stroke: var(--amber-text); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .sfs-chart .sfs-ref-label { fill: var(--amber-text); font-weight: 700; }
+  .sfs-tooltip {
+    position: absolute; pointer-events: none; z-index: 5; background: var(--ink); color: #fff; font-size: 12.5px;
+    line-height: 1.45; padding: 7px 10px; border-radius: 6px; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  }
+  .sfs-tooltip strong { font-family: var(--mono); }
+  .sfs-tooltip span { color: var(--term-muted); }
+  .sfs-bins { margin-top: 14px; font-size: 13px; }
+  .sfs-bins summary { cursor: pointer; color: var(--purple); font-weight: 600; }
+  .sfs-bins-scroll { max-height: 320px; overflow: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: var(--radius); }
+  .sfs-bins .sfs-table td, .sfs-bins .sfs-table th { padding: 5px 12px; }
+  .sfs-bins .sfs-table tbody tr { cursor: default; }
+
+  @media (max-width: 640px) {
+    .sfs-actions { margin-left: 0; }
+    .sfs-drop.is-compact { grid-auto-flow: row; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+
+<div class="sfs" id="sfs">
+  <div class="sfs-drop" id="sfs-drop" role="button" tabindex="0" aria-describedby="sfs-drop-note">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    <div class="sfs-drop-title">Drop FASTA/FASTQ files here, or <u>browse</u></div>
+    <div class="sfs-drop-note" id="sfs-drop-note">Plain text or gzip-compressed (<code>.fa</code>, <code>.fasta</code>, <code>.fq</code>, <code>.fastq</code>, <code>.gz</code>). Several files at once is fine.</div>
+  </div>
+  <input type="file" id="sfs-picker" multiple hidden>
+
+  <div class="sfs-toolbar" role="group" aria-label="Output options">
+    <label class="check"><input type="checkbox" id="opt-gc" checked> %GC <code>--gc</code></label>
+    <label class="check"><input type="checkbox" id="opt-index"> L50/L75/L90 <code>--index</code></label>
+    <label class="check"><input type="checkbox" id="opt-thousands"> Thousands separator <code>-t</code></label>
+    <label class="check">Decimals
+      <select class="sfs-select" id="opt-precision">
+        <option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option>
+      </select>
+    </label>
+    <div class="sfs-actions">
+      <button type="button" class="sfs-btn" id="act-copy" disabled>Copy TSV</button>
+      <button type="button" class="sfs-btn" id="act-download" disabled>Download TSV</button>
+      <button type="button" class="sfs-btn" id="act-clear" disabled>Clear</button>
+    </div>
+  </div>
+
+  <div class="sfs-cmd" id="sfs-cmd" hidden>
+    <code><span class="sfs-prompt">$ </span><span id="sfs-cmd-text"></span></code>
+    <button type="button" id="sfs-cmd-copy">Copy</button>
+  </div>
+
+  <div class="sfs-table-wrap">
+    <table class="sfs-table" id="sfs-table">
+      <thead><tr id="sfs-head"></tr></thead>
+      <tbody id="sfs-body"></tbody>
+    </table>
+  </div>
+  <p class="sfs-note">Numbers follow <a href="../tools/stats.html"><code>seqfu stats</code></a>: %GC is the GC fraction of the unambiguous bases (A, C, G, T, U); auN is the sum of squared lengths divided by the total length. Select a row to see its length distribution.</p>
+  <p class="sfs-visually-hidden" id="sfs-live" aria-live="polite"></p>
+
+  <section class="sfs-detail" id="sfs-detail" hidden aria-labelledby="sfs-detail-title">
+    <div class="group-head">
+      <h2 id="sfs-detail-title"></h2>
+      <span class="count" id="sfs-detail-sub"></span>
+    </div>
+    <div class="facts" id="sfs-facts"></div>
+
+    <div class="sfs-chart-head">
+      <h3 id="sfs-chart-title">Length distribution</h3>
+      <div class="chip-group" role="group" aria-label="Bar height">
+        <span class="chip-label">Height</span>
+        <button type="button" class="chip" data-weight="count" aria-pressed="true">Sequences</button>
+        <button type="button" class="chip" data-weight="bases" aria-pressed="false">Bases</button>
+      </div>
+      <div class="chip-group" role="group" aria-label="Length axis">
+        <span class="chip-label">Length axis</span>
+        <button type="button" class="chip" data-scale="linear" aria-pressed="true">Linear</button>
+        <button type="button" class="chip" data-scale="log" aria-pressed="false">Log</button>
+      </div>
+    </div>
+    <div class="sfs-chart-card">
+      <div class="sfs-chart" id="sfs-chart" role="img" aria-labelledby="sfs-chart-title"></div>
+      <div class="sfs-tooltip" id="sfs-tooltip" hidden></div>
+    </div>
+    <details class="sfs-bins">
+      <summary>Show the distribution as a table</summary>
+      <div class="sfs-bins-scroll">
+        <table class="sfs-table"><thead><tr><th>Length (bp)</th><th id="sfs-bins-weight">Sequences</th><th>Share</th></tr></thead><tbody id="sfs-bins-body"></tbody></table>
+      </div>
+    </details>
+  </section>
+</div>
+
+<script id="sfs-core">
+/*
+ * Core: streaming FASTA/FASTQ parsing and seqfu-compatible statistics.
+ * No DOM access here, so the same code can be exercised from Node.
+ */
+var SeqfuStats = (function () {
+  'use strict';
+
+  class InputError extends Error {}
+
+  // Base classes, as in seqfu's count_all(): A/T/U and G/C, case-insensitive.
+  var IS_GC = new Uint8Array(128), IS_AT = new Uint8Array(128);
+  'GCgc'.split('').forEach(function (c) { IS_GC[c.charCodeAt(0)] = 1; });
+  'ATUatu'.split('').forEach(function (c) { IS_AT[c.charCodeAt(0)] = 1; });
+
+  // Line-oriented parser. Handles multi-line FASTA, multi-line FASTQ (the
+  // quality block is consumed by length, so '@' at the start of a quality
+  // line is not mistaken for a header), CRLF line endings, blank lines and
+  // records with an empty sequence. As in seqfu, every character of a
+  // sequence line counts towards its length (only a trailing CR is removed).
+  class FastxParser {
+    constructor(onRecord) {
+      this.onRecord = onRecord;
+      this.rest = '';
+      this.lineNo = 0;
+      this.format = null;
+      this.state = 0;      // FASTQ: 0 header, 1 sequence, 2 quality
+      this.open = false;   // a record has started and is not yet emitted
+      this.len = 0; this.gc = 0; this.at = 0; this.qlen = 0;
+    }
+    push(text) {
+      if (!text) return;
+      var data = this.rest + text, start = 0, nl;
+      while ((nl = data.indexOf('\n', start)) !== -1) {
+        this.line(data.slice(start, nl));
+        start = nl + 1;
+      }
+      this.rest = data.slice(start);
+    }
+    end() {
+      // Like readfx, ignore a bare ">" that is the very last byte of the file.
+      var last = this.rest.replace(/\r$/, '');
+      if (last && !(last === '>' && this.format === 'FASTA')) this.line(this.rest);
+      this.rest = '';
+      if (this.format === null) throw new InputError('the file is empty');
+      if (this.format === 'FASTA' && this.open) this.emit();
+      if (this.format === 'FASTQ' && this.state !== 0) {
+        throw new InputError('truncated FASTQ record at the end of the file');
+      }
+    }
+    fail(msg) { throw new InputError(msg + ' (line ' + this.lineNo + ')'); }
+    line(raw) {
+      this.lineNo++;
+      var line = raw.charCodeAt(raw.length - 1) === 13 ? raw.slice(0, -1) : raw;
+      if (this.format === null) {
+        if (!line.trim()) return;
+        if (line[0] === '>') this.format = 'FASTA';
+        else if (line[0] === '@') this.format = 'FASTQ';
+        else this.fail('not a FASTA or FASTQ file: the first record should start with ">" or "@"');
+      }
+      if (this.format === 'FASTA') this.fastaLine(line);
+      else this.fastqLine(line);
+    }
+    fastaLine(line) {
+      if (line[0] === '>') {
+        if (this.open) this.emit();
+        this.open = true;
+        return;
+      }
+      this.addSequence(line);
+    }
+    fastqLine(line) {
+      if (this.state === 0) {
+        if (!line.trim()) return;
+        if (line[0] !== '@') this.fail('malformed FASTQ: expected a header starting with "@"');
+        this.open = true;
+        this.state = 1;
+      } else if (this.state === 1) {
+        if (line[0] === '+') {
+          this.state = 2;
+          if (this.len === 0) this.emitFastq();
+        } else {
+          this.addSequence(line);
+        }
+      } else {
+        this.qlen += line.length;
+        if (this.qlen >= this.len) {
+          if (this.qlen > this.len) {
+            this.fail('malformed FASTQ: quality (' + this.qlen + ') longer than sequence (' + this.len + ')');
+          }
+          this.emitFastq();
+        }
+      }
+    }
+    addSequence(s) {
+      var gc = 0, at = 0, c;
+      for (var i = 0; i < s.length; i++) {
+        c = s.charCodeAt(i);
+        if (c < 128) { gc += IS_GC[c]; at += IS_AT[c]; }
+      }
+      this.len += s.length; this.gc += gc; this.at += at;
+    }
+    emitFastq() { this.emit(); this.state = 0; }
+    emit() {
+      this.onRecord(this.len, this.gc, this.at);
+      this.len = 0; this.gc = 0; this.at = 0; this.qlen = 0;
+      this.open = false;
+    }
+  }
+
+  class StatsAccumulator {
+    constructor() {
+      this.lengths = new Map();
+      this.count = 0; this.sum = 0; this.sumSq = 0; this.gc = 0; this.at = 0;
+    }
+    add(len, gc, at) {
+      this.lengths.set(len, (this.lengths.get(len) || 0) + 1);
+      this.count++; this.sum += len; this.sumSq += len * len;
+      this.gc += gc; this.at += at;
+    }
+    // Mirrors getFastxStats() in src/stats_utils.nim.
+    summary() {
+      if (this.sum === 0) throw new InputError('no sequence data: the file is empty or malformed');
+      var groups = Array.from(this.lengths.entries()).sort(function (a, b) { return b[0] - a[0]; });
+      var r = {
+        count: this.count, sum: this.sum,
+        max: groups[0][0], min: groups[groups.length - 1][0],
+        avg: this.sum / this.count,
+        auN: this.sumSq / this.sum,
+        gc: this.gc + this.at > 0 ? this.gc / (this.gc + this.at) : 0,
+        n50: 0, n75: 0, n90: 0, l50: 0, l75: 0, l90: 0
+      };
+      var marks = [[50, 'n50', 'l50'], [75, 'n75', 'l75'], [90, 'n90', 'l90']];
+      var cum = 0, idx = 0, total = this.sum;
+      groups.forEach(function (g) {
+        var len = g[0], n = g[1];
+        marks.forEach(function (m) {
+          var target = total * (m[0] / 100);
+          if (!r[m[1]] && cum + len * n >= target) {
+            r[m[1]] = len;
+            r[m[2]] = idx + Math.max(1, Math.ceil((target - cum) / len));
+          }
+        });
+        cum += len * n; idx += n;
+      });
+      return r;
+    }
+  }
+
+  function sniff(bytes) {
+    if (bytes[0] === 0x1f && bytes[1] === 0x8b) return 'gzip';
+    if (bytes[0] === 0x42 && bytes[1] === 0x5a && bytes[2] === 0x68) return 'bzip2';
+    if (bytes[0] === 0x28 && bytes[1] === 0xb5 && bytes[2] === 0x2f && bytes[3] === 0xfd) return 'zstd';
+    if (bytes[0] === 0xfd && bytes[1] === 0x37 && bytes[2] === 0x7a && bytes[3] === 0x58) return 'xz';
+    return 'plain';
+  }
+
+  // Streams a File/Blob through the parser without loading it in memory.
+  // Compression is detected from the content, not the file name.
+  async function analyze(file, opts) {
+    opts = opts || {};
+    var gunzipCtor = opts.Gunzip || (typeof fflate !== 'undefined' ? fflate.Gunzip : null);
+    var stats = new StatsAccumulator();
+    var parser = new FastxParser(function (len, gc, at) { stats.add(len, gc, at); });
+    var decoder = new TextDecoder('utf-8');
+    var compression = sniff(new Uint8Array(await file.slice(0, 4).arrayBuffer()));
+    if (compression !== 'gzip' && compression !== 'plain') {
+      throw new InputError(compression + '-compressed files are not supported here; use gzip or plain text');
+    }
+    var gunzip = null;
+    if (compression === 'gzip') {
+      if (!gunzipCtor) throw new Error('the gzip library could not be loaded; check your connection and reload the page');
+      gunzip = new gunzipCtor(function (chunk) { parser.push(decoder.decode(chunk, { stream: true })); });
+    }
+    var reader = file.stream().getReader();
+    var read = 0, lastYield = Date.now();
+    try {
+      for (;;) {
+        if (opts.signal && opts.signal.aborted) throw new DOMException('Cancelled', 'AbortError');
+        var next = await reader.read();
+        if (next.done) break;
+        read += next.value.length;
+        try {
+          // Never pass final=true together with data: fflate would then stop
+          // after the first gzip member of concatenated (e.g. bgzip) files.
+          if (gunzip) gunzip.push(next.value);
+          else parser.push(decoder.decode(next.value, { stream: true }));
+        } catch (e) {
+          throw wrapGzipError(e, gunzip);
+        }
+        if (opts.onProgress) opts.onProgress(file.size ? read / file.size : 1);
+        if (Date.now() - lastYield > 40) {
+          await new Promise(function (res) { setTimeout(res, 0); });
+          lastYield = Date.now();
+        }
+      }
+      try {
+        if (gunzip) gunzip.push(new Uint8Array(0), true);
+      } catch (e) {
+        throw wrapGzipError(e, gunzip);
+      }
+      parser.push(decoder.decode());
+      parser.end();
+    } finally {
+      reader.cancel().catch(function () {});
+    }
+    var summary = stats.summary();
+    summary.format = parser.format;
+    summary.compression = compression;
+    summary.lengths = stats.lengths;
+    return summary;
+  }
+
+  function wrapGzipError(e, gunzip) {
+    if (!gunzip || e instanceof InputError) return e;
+    return new InputError('could not decompress the gzip data (' + e.message + '); the file may be truncated or corrupt');
+  }
+
+  return { FastxParser: FastxParser, StatsAccumulator: StatsAccumulator, InputError: InputError, analyze: analyze, sniff: sniff };
+})();
+</script>
+
+<script>
+(function () {
+  'use strict';
+  if (typeof document === 'undefined') return;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {
+    drop: $('sfs-drop'), picker: $('sfs-picker'),
+    gc: $('opt-gc'), index: $('opt-index'), thousands: $('opt-thousands'), precision: $('opt-precision'),
+    copy: $('act-copy'), download: $('act-download'), clear: $('act-clear'),
+    cmd: $('sfs-cmd'), cmdText: $('sfs-cmd-text'), cmdCopy: $('sfs-cmd-copy'),
+    head: $('sfs-head'), body: $('sfs-body'), live: $('sfs-live'),
+    detail: $('sfs-detail'), detailTitle: $('sfs-detail-title'), detailSub: $('sfs-detail-sub'), facts: $('sfs-facts'),
+    chart: $('sfs-chart'), tooltip: $('sfs-tooltip'), binsBody: $('sfs-bins-body'), binsWeight: $('sfs-bins-weight')
+  };
+
+  // Columns in the order printed by `seqfu stats`.
+  var COLUMNS = [
+    { key: 'name', label: 'File', tsv: 'File' },
+    { key: 'count', label: '#Seq', dec: false },
+    { key: 'sum', label: 'Total bp', dec: false },
+    { key: 'avg', label: 'Avg', dec: true },
+    { key: 'n50', label: 'N50', dec: false },
+    { key: 'n75', label: 'N75', dec: false },
+    { key: 'n90', label: 'N90', dec: false },
+    { key: 'auN', label: 'auN', dec: true },
+    { key: 'min', label: 'Min', dec: false },
+    { key: 'max', label: 'Max', dec: false },
+    { key: 'gc', label: '%GC', dec: true, opt: 'gc' },
+    { key: 'l50', label: 'L50', dec: false, opt: 'index' },
+    { key: 'l75', label: 'L75', dec: false, opt: 'index' },
+    { key: 'l90', label: 'L90', dec: false, opt: 'index' }
+  ];
+
+  var state = {
+    items: [],          // { id, file, name, size, status, progress, stats, error, ms }
+    selected: null,
+    sort: null,         // { key, dir: 1 | -1 }
+    weight: 'count',
+    scale: 'linear',
+    scaleTouched: false,
+    running: false,
+    controller: null,
+    nextId: 1
+  };
+
+  // ------------------------------------------------------------ formatting
+  function options() {
+    return {
+      gc: els.gc.checked, index: els.index.checked,
+      thousands: els.thousands.checked, precision: parseInt(els.precision.value, 10)
+    };
+  }
+  function fmt(value, decimals, thousands) {
+    if (thousands) {
+      return value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    }
+    return value.toFixed(decimals);
+  }
+  function fmtCell(col, stats, o) {
+    return fmt(stats[col.key], col.dec ? o.precision : 0, o.thousands);
+  }
+  function fmtInt(n) { return Math.round(n).toLocaleString('en-US'); }
+  function fmtBytes(b) {
+    if (b < 1024) return b + ' B';
+    var u = ['KB', 'MB', 'GB', 'TB'], i = -1;
+    do { b /= 1024; i++; } while (b >= 1024 && i < u.length - 1);
+    return b.toFixed(b < 10 ? 2 : 1) + ' ' + u[i];
+  }
+  function fmtLen(n) {
+    if (n >= 1e6) return +(n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + ' Mb';
+    if (n >= 1e4) return +(n / 1e3).toFixed(n >= 1e5 ? 0 : 1) + ' kb';
+    return fmtInt(n);
+  }
+  function fmtAxis(n) {
+    if (n >= 1e9) return +(n / 1e9).toFixed(1) + 'G';
+    if (n >= 1e6) return +(n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return +(n / 1e3).toFixed(1) + 'k';
+    return String(n);
+  }
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'text') node.textContent = attrs[k];
+      else if (k === 'class') node.className = attrs[k];
+      else node.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { if (c) node.appendChild(c); });
+    return node;
+  }
+  function announce(msg) { els.live.textContent = msg; }
+
+  // ------------------------------------------------------------ queue
+  function addFiles(list) {
+    var files = Array.from(list || []);
+    if (!files.length) return;
+    files.forEach(function (f) {
+      state.items.push({ id: state.nextId++, file: f, name: f.name, size: f.size, status: 'queued', progress: 0 });
+    });
+    announce(files.length + (files.length === 1 ? ' file' : ' files') + ' added');
+    render();
+    run();
+  }
+
+  async function run() {
+    if (state.running) return;
+    state.running = true;
+    var item;
+    while ((item = state.items.find(function (i) { return i.status === 'queued'; }))) {
+      item.status = 'reading';
+      state.controller = new AbortController();
+      renderTable();
+      var started = performance.now();
+      try {
+        var current = item;
+        item.stats = await SeqfuStats.analyze(item.file, {
+          signal: state.controller.signal,
+          onProgress: function (p) { current.progress = p; updateProgress(current); }
+        });
+        item.status = 'done';
+        item.ms = performance.now() - started;
+        if (state.selected === null) state.selected = item.id;
+        announce(item.name + ': ' + fmtInt(item.stats.count) + ' sequences');
+      } catch (e) {
+        if (e && e.name === 'AbortError') continue;   // removed while reading
+        item.status = 'error';
+        item.error = e instanceof SeqfuStats.InputError ? e.message : 'unexpected error: ' + (e && e.message || e);
+        if (!(e instanceof SeqfuStats.InputError)) console.error(e);
+        announce(item.name + ': ' + item.error);
+      }
+      item.file = null;   // release the File handle once processed
+      render();
+    }
+    state.controller = null;
+    state.running = false;
+  }
+
+  function removeItem(id) {
+    var item = state.items.find(function (i) { return i.id === id; });
+    if (!item) return;
+    if (item.status === 'reading' && state.controller) state.controller.abort();
+    state.items = state.items.filter(function (i) { return i.id !== id; });
+    if (state.selected === id) {
+      var done = state.items.find(function (i) { return i.status === 'done'; });
+      state.selected = done ? done.id : null;
+    }
+    render();
+  }
+
+  function clearAll() {
+    if (state.controller) state.controller.abort();
+    state.items = [];
+    state.selected = null;
+    render();
+    announce('Cleared');
+  }
+
+  // ------------------------------------------------------------ table
+  function visibleColumns(o) {
+    return COLUMNS.filter(function (c) { return !c.opt || o[c.opt]; });
+  }
+
+  function sortedItems() {
+    var items = state.items.slice();
+    if (!state.sort) return items;
+    var key = state.sort.key, dir = state.sort.dir;
+    return items.sort(function (a, b) {
+      // Rows without results always go to the bottom, in input order.
+      if (!a.stats || !b.stats) return (a.stats ? -1 : b.stats ? 1 : a.id - b.id);
+      var va = key === 'name' ? a.name : a.stats[key];
+      var vb = key === 'name' ? b.name : b.stats[key];
+      var c = key === 'name' ? va.localeCompare(vb, undefined, { numeric: true }) : va - vb;
+      return c * dir || a.id - b.id;
+    });
+  }
+
+  function renderHead(cols) {
+    els.head.textContent = '';
+    cols.forEach(function (col) {
+      var th = el('th', { scope: 'col' });
+      if (state.sort && state.sort.key === col.key) {
+        th.setAttribute('aria-sort', state.sort.dir > 0 ? 'ascending' : 'descending');
+      }
+      var btn = el('button', { type: 'button', text: col.label, title: 'Sort by ' + col.label });
+      btn.addEventListener('click', function () { toggleSort(col.key); });
+      th.appendChild(btn);
+      els.head.appendChild(th);
+    });
+  }
+
+  function toggleSort(key) {
+    // Numeric columns sort largest-first on the first click; File sorts A-Z.
+    var first = key === 'name' ? 1 : -1;
+    if (!state.sort || state.sort.key !== key) state.sort = { key: key, dir: first };
+    else if (state.sort.dir === first) state.sort.dir = -first;
+    else state.sort = null;
+    renderTable();
+  }
+
+  function renderTable() {
+    var o = options(), cols = visibleColumns(o);
+    renderHead(cols);
+    els.body.textContent = '';
+    if (!state.items.length) {
+      els.body.appendChild(el('tr', { class: 'sfs-empty-row' }, [
+        el('td', { colspan: cols.length, text: 'No files yet. Results appear here, one row per file.' })
+      ]));
+      return;
+    }
+    sortedItems().forEach(function (item) {
+      var tr = el('tr', { 'data-id': item.id });
+      if (item.id === state.selected) tr.className = 'is-selected';
+      var nameBtn = el('button', { type: 'button', class: 'sfs-file-name', text: item.name, title: item.name });
+      var remove = el('button', { type: 'button', class: 'sfs-remove', title: 'Remove ' + item.name, 'aria-label': 'Remove ' + item.name, text: '×' });
+      remove.addEventListener('click', function (e) { e.stopPropagation(); removeItem(item.id); });
+      tr.appendChild(el('td', null, [el('div', { class: 'sfs-file' }, [nameBtn, remove])]));
+
+      if (item.status === 'done') {
+        cols.slice(1).forEach(function (col) { tr.appendChild(el('td', { text: fmtCell(col, item.stats, o) })); });
+        tr.addEventListener('click', function () { select(item.id); });
+      } else {
+        var td = el('td', { class: 'sfs-status', colspan: cols.length - 1 });
+        if (item.status === 'error') {
+          td.appendChild(el('span', { class: 'badge badge-danger', text: 'Error' }));
+          td.appendChild(document.createTextNode(' ' + item.error));
+        } else if (item.status === 'queued') {
+          td.textContent = 'Waiting…';
+        } else {
+          var fill = el('div', { class: 'sfs-progress-fill' });
+          fill.style.width = (item.progress * 100).toFixed(1) + '%';
+          td.appendChild(el('div', { class: 'sfs-progress' }, [
+            el('div', { class: 'sfs-progress-track' }, [fill]),
+            el('span', { class: 'sfs-progress-label', text: 'Reading ' + Math.floor(item.progress * 100) + '%' })
+          ]));
+        }
+        tr.appendChild(td);
+        tr.style.cursor = 'default';
+      }
+      els.body.appendChild(tr);
+    });
+  }
+
+  function updateProgress(item) {
+    var tr = els.body.querySelector('tr[data-id="' + item.id + '"]');
+    if (!tr) return;
+    var fill = tr.querySelector('.sfs-progress-fill'), label = tr.querySelector('.sfs-progress-label');
+    if (fill) fill.style.width = (item.progress * 100).toFixed(1) + '%';
+    if (label) label.textContent = 'Reading ' + Math.floor(item.progress * 100) + '%';
+  }
+
+  function doneItems() { return sortedItems().filter(function (i) { return i.status === 'done'; }); }
+
+  function toTSV() {
+    var o = options(), cols = visibleColumns(o);
+    var lines = [cols.map(function (c) { return c.label; }).join('\t')];
+    doneItems().forEach(function (item) {
+      lines.push([item.name].concat(cols.slice(1).map(function (c) { return fmtCell(c, item.stats, o); })).join('\t'));
+    });
+    return lines.join('\n') + '\n';
+  }
+
+  function commandLine() {
+    var o = options(), flags = [];
+    if (o.gc) flags.push('--gc');
+    if (o.index) flags.push('--index');
+    if (o.thousands) flags.push('-t');
+    if (o.precision !== 2) flags.push('--precision ' + o.precision);
+    var names = state.items.map(function (i) { return /^[\w.+\-\/]+$/.test(i.name) ? i.name : "'" + i.name.replace(/'/g, "'\\''") + "'"; });
+    return ['seqfu stats'].concat(flags, names).join(' ');
+  }
+
+  async function copyText(text, button) {
+    var old = button.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = 'Copied';
+    } catch (e) {
+      button.textContent = 'Copy failed';
+    }
+    setTimeout(function () { button.textContent = old; }, 1400);
+  }
+
+  function download() {
+    var blob = new Blob([toTSV()], { type: 'text/tab-separated-values' });
+    var a = el('a', { href: URL.createObjectURL(blob), download: 'seqfu-stats.tsv' });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  // ------------------------------------------------------------ detail
+  function select(id) {
+    state.selected = id;
+    state.scaleTouched = false;
+    renderTable();
+    renderDetail();
+  }
+
+  function renderDetail() {
+    var item = state.items.find(function (i) { return i.id === state.selected && i.status === 'done'; });
+    els.detail.hidden = !item;
+    if (!item) return;
+    var s = item.stats;
+    els.detailTitle.textContent = item.name;
+    els.detailSub.textContent = s.format + (s.compression === 'gzip' ? ', gzip' : '') + ' · ' + fmtBytes(item.size) +
+      ' · read in ' + (item.ms < 1000 ? Math.round(item.ms) + ' ms' : (item.ms / 1000).toFixed(1) + ' s');
+
+    var facts = [
+      ['Sequences', fmtInt(s.count), null],
+      ['Total length', fmtLen(s.sum), fmtInt(s.sum) + ' bp'],
+      ['Min / Max', fmtLen(s.min) + ' / ' + fmtLen(s.max), 'bp'],
+      ['Average', fmtLen(Math.round(s.avg)), s.avg.toFixed(2) + ' bp'],
+      ['N50', fmtLen(s.n50), 'L50 = ' + fmtInt(s.l50)],
+      ['auN', fmtLen(Math.round(s.auN)), s.auN.toFixed(2) + ' bp'],
+      ['GC', (s.gc * 100).toFixed(2) + '%', 'of A/C/G/T/U bases']
+    ];
+    els.facts.textContent = '';
+    facts.forEach(function (f) {
+      els.facts.appendChild(el('div', null, [
+        el('div', { class: 'eyebrow', text: f[0] }),
+        el('div', { class: 'mono', text: f[1] }),
+        f[2] ? el('div', { class: 'facts-sub', text: f[2] }) : null
+      ]));
+    });
+
+    // A wide spread (assemblies, long reads) reads better on a log axis.
+    var spread = s.max / Math.max(1, s.min);
+    var logUseful = s.max - s.min + 1 > 60;
+    if (!state.scaleTouched) state.scale = logUseful && spread >= 100 ? 'log' : 'linear';
+    document.querySelector('[data-scale="log"]').disabled = !logUseful;
+    if (!logUseful) state.scale = 'linear';
+    syncChips();
+    renderChart(item);
+  }
+
+  function syncChips() {
+    document.querySelectorAll('[data-weight]').forEach(function (b) {
+      var on = b.dataset.weight === state.weight;
+      b.classList.toggle('active', on); b.setAttribute('aria-pressed', on);
+    });
+    document.querySelectorAll('[data-scale]').forEach(function (b) {
+      var on = b.dataset.scale === state.scale;
+      b.classList.toggle('active', on); b.setAttribute('aria-pressed', on);
+    });
+  }
+
+  function niceStep(raw) {
+    var p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  }
+
+  // Bins are [lo, hi) in bp. Exact per-length bars when the range is small.
+  function makeBins(s, scale, target) {
+    var bins = [], lo, hi, i, w;
+    if (s.max - s.min + 1 <= 60) {
+      for (i = s.min; i <= s.max; i++) bins.push({ lo: i, hi: i + 1, count: 0, bases: 0 });
+    } else if (scale === 'log') {
+      lo = Math.max(1, s.min); hi = s.max + 1;
+      var n = Math.min(target, Math.max(8, Math.ceil(Math.log10(hi / lo) * 12)));
+      var r = Math.pow(hi / lo, 1 / n), edge = lo;
+      for (i = 0; i < n; i++) {
+        var next = i === n - 1 ? hi : Math.min(hi, Math.max(Math.ceil(edge * r), Math.floor(edge) + 1));
+        bins.push({ lo: Math.floor(edge), hi: next, count: 0, bases: 0 });
+        edge = next;
+        if (edge >= hi) break;
+      }
+      bins[0].lo = s.min;   // zero-length records land in the first bin
+    } else {
+      w = Math.max(1, Math.ceil(niceStep((s.max - s.min + 1) / target)));
+      lo = Math.floor(s.min / w) * w;
+      for (var e = lo; e <= s.max; e += w) bins.push({ lo: e, hi: e + w, count: 0, bases: 0 });
+    }
+    s.lengths.forEach(function (count, len) {
+      var a = 0, b = bins.length - 1, m;
+      while (a < b) { m = (a + b + 1) >> 1; if (bins[m].lo <= len) a = m; else b = m - 1; }
+      bins[a].count += count; bins[a].bases += count * len;
+    });
+    return bins;
+  }
+
+  function binLabel(b) { return b.hi - b.lo === 1 ? fmtInt(b.lo) : fmtInt(b.lo) + '–' + fmtInt(b.hi - 1); }
+
+  var lastItem = null;
+  function renderChart(item) {
+    lastItem = item;
+    var s = item.stats, weight = state.weight;
+    var W = Math.max(280, els.chart.clientWidth), H = 260;
+    var M = { top: 18, right: 14, bottom: 34, left: 52 };
+    var iw = W - M.left - M.right, ih = H - M.top - M.bottom;
+    var bins = makeBins(s, state.scale, iw < 480 ? 24 : 48);
+    var total = weight === 'count' ? s.count : s.sum;
+    var ymax = Math.max.apply(null, bins.map(function (b) { return b[weight]; })) || 1;
+    var ystep = niceStep(ymax / 4), ytop = Math.ceil(ymax / ystep) * ystep;
+    var slot = iw / bins.length, gap = slot > 6 ? 2 : slot > 3 ? 1 : 0, bw = Math.max(1, slot - gap);
+    var y = function (v) { return M.top + ih - (v / ytop) * ih; };
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('height', H);
+    function add(tag, attrs, text) {
+      var n = document.createElementNS(NS, tag);
+      Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+      if (text !== undefined) n.textContent = text;
+      svg.appendChild(n);
+      return n;
+    }
+
+    for (var t = 0; t <= ytop + 1e-9; t += ystep) {
+      add('line', { class: 'sfs-grid', x1: M.left, x2: W - M.right, y1: y(t), y2: y(t) });
+      add('text', { x: M.left - 8, y: y(t) + 4, 'text-anchor': 'end' }, fmtAxis(t));
+    }
+    add('text', { x: M.left - 8, y: M.top - 8, 'text-anchor': 'end' }, weight === 'count' ? 'seqs' : 'bp');
+
+    var bars = bins.map(function (b, i) {
+      var v = b[weight], x = M.left + i * slot + gap / 2, top = y(v), h = M.top + ih - top;
+      if (v <= 0) return null;
+      h = Math.max(h, 1);
+      var r = Math.min(4, bw / 2, h);
+      var d = 'M' + x + ',' + (top + h) + 'V' + (top + r) + 'Q' + x + ',' + top + ' ' + (x + r) + ',' + top +
+              'H' + (x + bw - r) + 'Q' + (x + bw) + ',' + top + ' ' + (x + bw) + ',' + (top + r) + 'V' + (top + h) + 'Z';
+      return add('path', { class: 'sfs-bar', d: d });
+    });
+    add('line', { class: 'sfs-axis', x1: M.left, x2: W - M.right, y1: M.top + ih, y2: M.top + ih });
+
+    // x labels: at most ~7, placed under bin starts
+    var every = Math.max(1, Math.ceil(bins.length / Math.max(2, Math.floor(iw / 80))));
+    for (var j = 0; j < bins.length; j += every) {
+      add('text', { x: M.left + j * slot + (bins[j].hi - bins[j].lo === 1 ? slot / 2 : 0), y: H - M.bottom + 18,
+                    'text-anchor': bins[j].hi - bins[j].lo === 1 ? 'middle' : 'start' }, fmtAxis(bins[j].lo));
+    }
+    add('text', { x: W - M.right, y: H - 4, 'text-anchor': 'end' }, 'length (bp)' + (state.scale === 'log' ? ', log scale' : ''));
+
+    // N50 reference line, positioned inside its bin
+    var k = bins.findIndex(function (b) { return s.n50 >= b.lo && s.n50 < b.hi; });
+    if (k >= 0 && bins.length > 1) {
+      var b = bins[k], frac = b.hi - b.lo === 1 ? 0.5 : (s.n50 - b.lo) / (b.hi - b.lo);
+      if (state.scale === 'log' && b.hi - b.lo > 1) frac = Math.log(Math.max(1, s.n50) / Math.max(1, b.lo)) / Math.log(b.hi / Math.max(1, b.lo));
+      var xr = M.left + (k + frac) * slot;
+      add('line', { class: 'sfs-ref', x1: xr, x2: xr, y1: M.top - 4, y2: M.top + ih });
+      add('text', { class: 'sfs-ref-label', x: xr + 4, y: M.top + 6 }, 'N50');
+    }
+
+    // hover targets: full-height columns, larger than the bars
+    bins.forEach(function (bin, i) {
+      var hit = add('rect', { class: 'sfs-hit', x: M.left + i * slot, y: M.top, width: slot, height: ih });
+      hit.addEventListener('mouseenter', function () {
+        if (bars[i]) bars[i].classList.add('is-hover');
+        showTip(bin, total, weight, M.left + (i + 0.5) * slot, W);
+      });
+      hit.addEventListener('mouseleave', function () {
+        if (bars[i]) bars[i].classList.remove('is-hover');
+        els.tooltip.hidden = true;
+      });
+    });
+
+    els.chart.textContent = '';
+    els.chart.appendChild(svg);
+    els.chart.setAttribute('aria-label', 'Histogram of sequence lengths from ' + fmtInt(s.min) + ' to ' + fmtInt(s.max) +
+      ' bp in ' + bins.length + ' bins; N50 is ' + fmtInt(s.n50) + ' bp.');
+
+    els.binsWeight.textContent = weight === 'count' ? 'Sequences' : 'Bases';
+    els.binsBody.textContent = '';
+    bins.forEach(function (bin) {
+      if (!bin[weight]) return;
+      els.binsBody.appendChild(el('tr', null, [
+        el('td', { text: binLabel(bin) }),
+        el('td', { text: fmtInt(bin[weight]) }),
+        el('td', { text: (bin[weight] / total * 100).toFixed(2) + '%' })
+      ]));
+    });
+  }
+
+  function showTip(bin, total, weight, cx, W) {
+    var v = bin[weight], tip = els.tooltip;
+    tip.textContent = '';
+    tip.appendChild(el('strong', { text: binLabel(bin) + ' bp' }));
+    tip.appendChild(el('br'));
+    tip.appendChild(document.createTextNode(fmtInt(bin.count) + (bin.count === 1 ? ' sequence' : ' sequences') + ', ' + fmtInt(bin.bases) + ' bp'));
+    tip.appendChild(el('br'));
+    tip.appendChild(el('span', { text: (v / total * 100).toFixed(2) + '% of all ' + (weight === 'count' ? 'sequences' : 'bases') }));
+    tip.hidden = false;
+    var card = els.chart.getBoundingClientRect(), scale = card.width / W;
+    var left = 4 + cx * scale - tip.offsetWidth / 2;
+    tip.style.left = Math.max(4, Math.min(left, card.width - tip.offsetWidth + 4)) + 'px';
+    tip.style.top = '8px';
+  }
+
+  // ------------------------------------------------------------ render all
+  function render() {
+    var hasItems = state.items.length > 0, hasDone = state.items.some(function (i) { return i.status === 'done'; });
+    els.drop.classList.toggle('is-compact', hasItems);
+    els.copy.disabled = els.download.disabled = !hasDone;
+    els.clear.disabled = !hasItems;
+    els.cmd.hidden = !hasItems;
+    if (hasItems) els.cmdText.textContent = commandLine();
+    renderTable();
+    renderDetail();
+  }
+
+  // ------------------------------------------------------------ events
+  els.drop.addEventListener('click', function () { els.picker.click(); });
+  els.drop.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); els.picker.click(); }
+  });
+  els.picker.addEventListener('change', function () { addFiles(els.picker.files); els.picker.value = ''; });
+
+  // Accept drops anywhere on the page, so a near miss does not make the
+  // browser navigate away and open the file.
+  var dragDepth = 0;
+  function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1; }
+  window.addEventListener('dragenter', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); dragDepth++; els.drop.classList.add('is-over');
+  });
+  window.addEventListener('dragover', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+  });
+  window.addEventListener('dragleave', function (e) {
+    if (!hasFiles(e)) return;
+    if (--dragDepth <= 0) { dragDepth = 0; els.drop.classList.remove('is-over'); }
+  });
+  window.addEventListener('drop', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); dragDepth = 0; els.drop.classList.remove('is-over');
+    addFiles(e.dataTransfer.files);
+  });
+
+  [els.gc, els.index, els.thousands, els.precision].forEach(function (input) {
+    input.addEventListener('change', render);
+  });
+  els.copy.addEventListener('click', function () { copyText(toTSV(), els.copy); });
+  els.download.addEventListener('click', download);
+  els.clear.addEventListener('click', clearAll);
+  els.cmdCopy.addEventListener('click', function () { copyText(commandLine(), els.cmdCopy); });
+
+  document.querySelectorAll('[data-weight]').forEach(function (b) {
+    b.addEventListener('click', function () { state.weight = b.dataset.weight; syncChips(); if (lastItem) renderChart(lastItem); });
+  });
+  document.querySelectorAll('[data-scale]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.disabled) return;
+      state.scale = b.dataset.scale; state.scaleTouched = true; syncChips(); if (lastItem) renderChart(lastItem);
+    });
+  });
+
+  var resizeTimer;
+  new ResizeObserver(function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { if (lastItem && !els.detail.hidden) renderChart(lastItem); }, 80);
+  }).observe(els.chart);
+
+  render();
+})();
+</script>
+{% endraw %}

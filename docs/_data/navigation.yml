@@ -9,6 +9,9 @@ main:
   - title: Recipes
     url: /recipes/
     section: recipes
+  - title: Apps
+    url: /apps/
+    section: apps
   - title: About
     url: /about/
     section: about

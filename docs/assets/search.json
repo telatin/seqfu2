@@ -3,6 +3,7 @@ layout: null
 ---
 {%- assign tools = site.pages | where: "layout", "tool" | sort: "title" -%}
 {%- assign recipes = site.pages | where: "layout", "recipe" | sort: "title" -%}
+{%- assign apps = site.pages | where: "layout", "app" | sort: "title" -%}
 {%- assign docs = site.pages | where: "layout", "page" | sort: "title" -%}
 [
 {%- for t in tools -%}
@@ -13,6 +14,9 @@ layout: null
 {%- endfor -%}
 {%- for r in recipes -%}
   {"title": {{ r.title | jsonify }}, "url": {{ r.url | relative_url | jsonify }}, "type": "Recipe", "group": "Recipes", "summary": {{ r.summary | jsonify }}, "keywords": {{ r.tools | join: " " | jsonify }}, "input": {{ r.input | join: " " | jsonify }}, "deprecated": false},
+{%- endfor -%}
+{%- for a in apps -%}
+  {"title": {{ a.title | jsonify }}, "url": {{ a.url | relative_url | jsonify }}, "type": "App", "group": "Apps", "summary": {{ a.summary | jsonify }}, "keywords": {{ a.keywords | default: "" | jsonify }}, "input": "", "deprecated": false},
 {%- endfor -%}
 {%- for d in docs -%}
   {%- if d.title and d.url != "/" -%}
