@@ -2,7 +2,7 @@
 version = "1.30.0"
 author = "Andrea Telatin"
 description = "SeqFu command-line tools"
-license = "MIT"
+license = "GPL-3.0-only"
 
 srcDir = "src"
 binDir = "bin"
@@ -20,7 +20,7 @@ requires "malebolgia >= 1.3.2"
 requires "readfx >= 0.8.0"
 requires "regex >= 0.23"
 requires "kexpr >= 0.0.2"
-requires "tableview >= 0.3.6"
+requires "tableview >= 0.6.0"
 requires "terminaltables"
 requires "zip"
 
