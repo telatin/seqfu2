@@ -17,7 +17,7 @@ fullscreen: true
     --lx-line: 18px;
     height: calc(100vh - var(--topbar-h) - 3px);
     height: calc(100dvh - var(--topbar-h) - 3px);
-    display: grid; grid-template-rows: auto minmax(120px, 1fr) 8px var(--lx-bottom, 33%);
+    display: grid; grid-template-rows: auto minmax(120px, 1fr) 8px var(--lx-bottom, 33%) auto;
     background: var(--bg); overflow: hidden;
   }
   .lx button, .lx input, .lx select { font-family: inherit; }
@@ -132,6 +132,15 @@ fullscreen: true
     padding: 12px 14px; background: var(--term-bg); color: var(--term-ink); border-radius: var(--radius); user-select: all;
   }
 
+  /* ---- whole-file summary */
+  .lx-sum {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 20px; padding: 7px 20px;
+    background: var(--surface); border-top: 1px solid var(--border); font-size: 12.5px; color: var(--muted);
+  }
+  .lx-sum[hidden] { display: none; }
+  .lx-sum b { font-family: var(--mono); color: var(--ink); font-weight: 600; margin-left: 5px; }
+  .lx-sum-title { font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; font-size: 11px; }
+
   /* ---- help */
   .lx-help {
     position: fixed; right: 20px; top: calc(var(--topbar-h) + 64px); z-index: 60; width: min(440px, calc(100vw - 32px));
@@ -150,6 +159,7 @@ fullscreen: true
     .lx-bar { padding: 8px 16px; }
     .lx-search input { width: 180px; }
     .lx-detail { padding: 12px 16px 20px; }
+    .lx-sum { padding: 6px 16px; gap: 2px 14px; }
   }
 </style>
 
@@ -199,6 +209,8 @@ fullscreen: true
   <section class="lx-detail" id="lx-detail" aria-label="Selected record">
     <p class="lx-detail-empty">Click a record above to inspect it here. <kbd>Shift</kbd> + <kbd>&darr;</kbd>/<kbd>&uarr;</kbd> moves between records.</p>
   </section>
+
+  <footer class="lx-sum" id="lx-sum" aria-label="Whole-file summary" aria-live="polite" hidden></footer>
 
   <div class="lx-help" id="lx-help" hidden role="dialog" aria-label="Keyboard shortcuts">
     <h2>Keyboard shortcuts</h2>
@@ -321,6 +333,50 @@ var LessCore = (function () {
     return r.seq.length + (r.qual ? r.qual.length : 0) + r.name.length + r.comment.length + 240;
   }
 
+  // Whole-file metrics, fed every record including the ones not kept.
+  // Bases and quality characters go into byte histograms so the Phred
+  // offset can be applied at the end, once it is known.
+  function newStats() {
+    return { n: 0, bp: 0, minLen: Infinity, maxLen: 0, lens: new Map(), base: new Float64Array(256), qual: new Float64Array(256), qn: 0 };
+  }
+  function addStats(st, rec) {
+    var s = rec.seq, len = s.length, base = st.base, p;
+    st.n++; st.bp += len;
+    if (len < st.minLen) st.minLen = len;
+    if (len > st.maxLen) st.maxLen = len;
+    st.lens.set(len, (st.lens.get(len) || 0) + 1);
+    for (p = 0; p < len; p++) base[s.charCodeAt(p) & 255]++;
+    if (rec.qual) {
+      var q = rec.qual, qual = st.qual;
+      for (p = 0; p < q.length; p++) qual[q.charCodeAt(p) & 255]++;
+      st.qn += q.length;
+    }
+  }
+  function sumCodes(h, codes) { var t = 0; for (var i = 0; i < codes.length; i++) t += h[codes.charCodeAt(i)]; return t; }
+  // withN50 is optional because it sorts every distinct length.
+  function summarize(st, offset, withN50) {
+    var gc = sumCodes(st.base, 'GCgc'), at = sumCodes(st.base, 'ATUatu'), n = sumCodes(st.base, 'Nn');
+    var out = {
+      n: st.n, bp: st.bp, meanLen: st.n ? st.bp / st.n : 0, minLen: st.n ? st.minLen : 0, maxLen: st.maxLen,
+      gc: gc + at ? gc / (gc + at) : 0, nFrac: st.bp ? n / st.bp : 0, n50: null
+    };
+    if (withN50 && st.n) {
+      var keys = Array.from(st.lens.keys()).sort(function (a, b) { return b - a; }), acc = 0;
+      for (var k = 0; k < keys.length; k++) { acc += keys[k] * st.lens.get(keys[k]); if (acc * 2 >= st.bp) { out.n50 = keys[k]; break; } }
+    }
+    if (st.qn) {
+      var sum = 0, q20 = 0, q30 = 0;
+      for (var c = 0; c < 256; c++) {
+        var cnt = st.qual[c];
+        if (!cnt) continue;
+        var v = c - offset;
+        sum += v * cnt; if (v >= 20) q20 += cnt; if (v >= 30) q30 += cnt;
+      }
+      out.meanQ = sum / st.qn; out.q20 = q20 / st.qn; out.q30 = q30 / st.qn;
+    }
+    return out;
+  }
+
   // Reads the whole file once. The first records go to `head` until
   // `budgetBp` bases (or `maxRecords`) are stored; after that every record
   // passes through a sliding window, so `tail` ends up holding the last
@@ -330,12 +386,13 @@ var LessCore = (function () {
     var res = {
       format: null, compression: 'plain', done: false,
       head: [], tail: [], total: 0, totalBp: 0, headBp: 0, tailBp: 0,
-      maxLen: 0, minQ: 255, maxQ: 0, bytes: 0, headFull: false
+      maxLen: 0, minQ: 255, maxQ: 0, bytes: 0, headFull: false, stats: newStats()
     };
     var tail = [], t0 = 0;
     var lastUpdate = 0;
     var parser = new RecordParser(function (rec) {
       var len = rec.seq.length;
+      addStats(res.stats, rec);
       rec.i = res.total++;
       res.totalBp += len;
       if (!res.headFull) {
@@ -418,7 +475,7 @@ var LessCore = (function () {
     return res.maxQ > 0 && res.minQ >= 59 && res.maxQ > 74 ? 64 : 33;
   }
 
-  return { RecordParser: RecordParser, InputError: InputError, load: load, sniff: sniff, guessOffset: guessOffset };
+  return { RecordParser: RecordParser, InputError: InputError, load: load, sniff: sniff, guessOffset: guessOffset, summarize: summarize };
 })();
 </script>
 
@@ -433,7 +490,7 @@ var LessCore = (function () {
     search: $('lx-search'), query: $('lx-query'), count: $('lx-count'), budget: $('lx-budget'),
     helpBtn: $('lx-help-btn'), help: $('lx-help'),
     scroller: $('lx-scroller'), inner: $('lx-inner'), view: $('lx-view'), empty: $('lx-empty'), emptyNote: $('lx-empty-note'),
-    status: $('lx-status'), split: $('lx-split'), detail: $('lx-detail')
+    status: $('lx-status'), split: $('lx-split'), detail: $('lx-detail'), sum: $('lx-sum')
   };
 
   var QTH = [3, 15, 25, 28, 30, 35, 40];                          // seqfu less thresholds
@@ -712,6 +769,24 @@ var LessCore = (function () {
     parts.push('<span class="lx-hover">' + esc(S.hover) + '</span>');
     E.status.innerHTML = parts.join('');
   }
+  // Metrics over every record in the file, not only the ones kept in memory.
+  var lastSummary = 0;
+  function renderSummary(force) {
+    var r = S.res;
+    if (!r || !r.stats || !r.stats.n) { E.sum.hidden = true; return; }
+    if (!force && Date.now() - lastSummary < 250) return;
+    lastSummary = Date.now();
+    var m = LessCore.summarize(r.stats, S.offset, r.done), pct = function (x, d) { return (x * 100).toFixed(d) + '%'; };
+    var f = [['Sequences', fmtInt(m.n) + (r.done ? '' : '+')], ['Bases', fmtBp(m.bp)], ['Mean length', m.meanLen.toFixed(1) + ' bp']];
+    f.push(m.minLen === m.maxLen ? ['Length', fmtInt(m.minLen) + ' bp'] : ['Min–max', fmtInt(m.minLen) + '–' + fmtInt(m.maxLen) + ' bp']);
+    if (m.n50 !== null) f.push(['N50', fmtInt(m.n50) + ' bp']);
+    f.push(['GC', pct(m.gc, 1)]);
+    if (m.nFrac) f.push(['N', pct(m.nFrac, m.nFrac < 0.001 ? 3 : 2)]);
+    if (m.meanQ !== undefined) f.push(['Mean Q', m.meanQ.toFixed(1)], ['≥Q20', pct(m.q20, 1)], ['≥Q30', pct(m.q30, 1)]);
+    E.sum.innerHTML = '<span class="lx-sum-title">' + (r.done ? 'Whole file' : 'Reading… ' + Math.floor(S.progress * 100) + '%') + '</span>' +
+      f.map(function (x) { return '<span>' + x[0] + '<b>' + x[1] + '</b></span>'; }).join('');
+    E.sum.hidden = false;
+  }
   var flashTimer, searchTimer;
   function flash(msg) { S.hover = msg; renderStatus(); clearTimeout(flashTimer); flashTimer = setTimeout(function () { S.hover = ''; renderStatus(); }, 3500); }
 
@@ -856,7 +931,7 @@ var LessCore = (function () {
     E.file.hidden = false; E.fileName.textContent = file.name; E.fileName.title = file.name; E.fileMeta.textContent = fmtBytes(file.size);
     E.empty.hidden = true;
     E.scroller.scrollTop = 0; E.scroller.scrollLeft = 0;
-    relayout(0); renderDetail(); updateCount();
+    relayout(0); renderDetail(); updateCount(); renderSummary(true);
     try {
       var res = await LessCore.load(file, {
         budgetBp: parseInt(E.budget.value, 10) * 1e6,
@@ -867,11 +942,13 @@ var LessCore = (function () {
           S.progress = p;
           if (!S.res && r.format) { S.res = r; }
           scheduleRender();
+          renderSummary();
         }
       });
       if (S.controller !== ctrl) return;
       S.loading = false;
       setItems(res);
+      renderSummary(true);
       E.fileMeta.textContent = fmtBytes(file.size) + ' · ' + fmtInt(res.total) + ' records · ' + fmtBp(res.totalBp);
       E.scroller.focus({ preventScroll: true });
     } catch (e) {
@@ -884,6 +961,7 @@ var LessCore = (function () {
         E.empty.hidden = false;
         E.emptyNote.innerHTML = '<span class="lx-err">' + esc(S.error) + '</span>';
       }
+      E.sum.hidden = true;
       renderStatus();
     }
   }
@@ -1010,7 +1088,7 @@ var LessCore = (function () {
   // splitter: drag or arrow keys; the inspector starts at a third of the height
   var SPLIT_KEY = 'seqfu-less-split';
   function setSplit(px) {
-    var total = E.root.clientHeight, minB = 90, maxB = total - E.root.firstElementChild.offsetHeight - 160;
+    var total = E.root.clientHeight, minB = 90, maxB = total - E.root.firstElementChild.offsetHeight - E.sum.offsetHeight - 160;
     px = Math.max(minB, Math.min(px, maxB));
     E.root.style.setProperty('--lx-bottom', px + 'px');
     E.split.setAttribute('aria-valuenow', Math.round(px / total * 100));
@@ -1019,7 +1097,7 @@ var LessCore = (function () {
   E.split.addEventListener('pointerdown', function (e) {
     e.preventDefault();
     E.split.setPointerCapture(e.pointerId); E.split.classList.add('is-drag');
-    var bottom = E.root.getBoundingClientRect().bottom;
+    var bottom = E.root.getBoundingClientRect().bottom - E.sum.offsetHeight;
     function move(ev) { setSplit(bottom - ev.clientY - 4); }
     function up() { E.split.classList.remove('is-drag'); E.split.removeEventListener('pointermove', move); E.split.removeEventListener('pointerup', up); }
     E.split.addEventListener('pointermove', move); E.split.addEventListener('pointerup', up);
