@@ -1,44 +1,29 @@
----
-layout: home
-title: Home
-nav_order: 1
-nav_exclude: true
----
+# SeqFu documentation site
 
-<a href="https://telatin.github.io/seqfu2" description="SeqFu documentation">
-  <img align="right" width="128" height="128" src="img/seqfu-512.png">
-</a>
+Jekyll site published by GitHub Pages at <https://telatin.github.io/seqfu2/>.
+No theme gem and no custom plugins: everything is generated with Liquid from page front matter.
 
-# SeqFu
-
-[![Seqfu-Make-Build](https://github.com/telatin/seqfu2/actions/workflows/make.yaml/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/make.yaml)
-[![pages-build-deployment](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/telatin/seqfu2/actions/workflows/pages/pages-build-deployment)
-[![GitHub Stars](https://img.shields.io/github/stars/telatin/seqfu2?label=%E2%AD%90%EF%B8%8F)](https://github.com/telatin/seqfu2)
-[![Latest release](https://img.shields.io/github/v/release/telatin/seqfu2)](https://github.com/telatin/seqfu2/releases)
-[![Bioconda Downloads](https://img.shields.io/conda/dn/bioconda/seqfu?label=Bioconda%20Downloads)](https://anaconda.org/bioconda/seqfu)
-
-:package: See the **[repository](https://github.com/telatin/seqfu2)** | :dvd: **[releases](https://github.com/telatin/seqfu2/releases)**
-
-A general-purpose program to manipulate and parse information from FASTA/FASTQ files,
-supporting gzipped input files.
-Includes functions to _interleave_ and _de-interleave_ FASTQ files,
-to _rename_ sequences and to _count_ and print _statistics_ on sequence lengths.
-SeqFu is available for Linux and MacOS.
-
-* A compiled program delivering high performance analyses
-* Supports FASTA/FASTQ files, also Gzip compressed
-* A growing collection of handy utilities, also for quick inspection of the datasets
-* UNIX like commands but specific for sequences like `seqfu cat`, `seqfu head`, `seqfu tail`, `seqfu grep`
-* Terminal friendly reports from `seqfu stats` or `seqfu count`...
-
-Can be easily [installed](installation) via conda:
-
-```bash
-conda install -c conda-forge -c bioconda "seqfu>1.0"
+```
+index.html                 home page
+getting-started/*.md       quick start, installation, overview, conventions
+tools/<command>.md         one page per `seqfu <command>`   (kind: core, by folder)
+tools/index.html           the filterable Tools catalogue
+utilities/<program>.md     one page per `fu-*` program       (kind: utility, by folder)
+recipes/<name>.md          tutorials
+about/                     about, changelog, contributing
+_data/                     categories, input types, navigation, install commands
+_layouts/ _includes/       templates
+assets/css/main.scss       styles (design tokens at the top)
+assets/js/site.js          search, filters, tabs, table of contents, copy buttons
+assets/search.json         search index (Liquid)
 ```
 
-## Citation
+The front-matter schema for tools and recipes is documented in
+[about/contributing.md](about/contributing.md).
 
-Telatin A, Fariselli P, Birolo G. *SeqFu: A Suite of Utilities for the Robust
-and Reproducible Manipulation of Sequence Files*.
-Bioengineering 2021, 8, 59. [doi.org/10.3390/bioengineering8050059](https://doi.org/10.3390/bioengineering8050059)
+Build locally:
+
+```bash
+bundle install
+bundle exec jekyll serve      # http://localhost:4000/seqfu2/
+```

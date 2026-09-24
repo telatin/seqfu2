@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu lanes
-parent: Core Tools
+summary: "Merge Illumina lanes (L001, L002...) into one file per sample."
+category: paired
+input: [Directory]
+output: "FASTQ files"
+aliases: [ill]
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu metadata", "seqfu count"]
+keywords: "lanes merge illumina L001 L002"
 ---
-
-
-# seqfu lanes
 
 ```note
 This function was called `merge` in a pre-release.

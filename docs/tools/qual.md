@@ -1,11 +1,17 @@
 ---
-layout: default
 title: seqfu qual
-parent: Core Tools
+summary: "Detect the quality encoding and profile per-position quality scores."
+category: qc
+input: [FASTQ]
+output: "TSV table"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu view", "seqfu trim", "seqfu amplicheck"]
+keywords: "quality encoding phred profile qualified position"
 ---
-
-
-# seqfu qual
 
 *qual* allows to detect the range of qualities of a FASTQ file, returning the possible encodings.
 Can be used to detect the last qualified position ().

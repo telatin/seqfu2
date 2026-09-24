@@ -1,11 +1,17 @@
 ---
-layout: default
 title: seqfu view
-parent: Core Tools
+summary: "Display sequences with colour-coded quality bars and highlighted oligo matches."
+category: inspect
+input: [FASTA, FASTQ]
+output: "Terminal"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu less", "seqfu qual", "seqfu grep"]
+keywords: "view terminal colour quality inspect oligo"
 ---
-
-
-# seqfu view
 
 *view*  is one of the core subprograms of *SeqFu*.
 
@@ -88,4 +94,3 @@ The following screenshot shows how quality scores are rendered using the differe
 ## Screenshot
 
 ![Screenshot of "seqfu view, help"]({{site.baseurl}}/img/screenshot-view.svg "SeqFu view")
-

@@ -1,0 +1,55 @@
+---
+layout: default
+---
+{%- comment -%}
+  Layout for recipes/*.md. Front matter: title, summary, tools (list of tool
+  titles, e.g. "seqfu stats"), input (list), level (beginner/intermediate/advanced).
+{%- endcomment -%}
+{%- assign tools = site.pages | where: "layout", "tool" -%}
+{%- assign recipes = site.pages | where: "layout", "recipe" | sort: "order" -%}
+<div class="shell">
+  <aside class="sidebar" data-sidebar>
+    <div class="eyebrow">Recipes</div>
+    <nav class="sidebar-list">
+      {%- for r in recipes %}
+      <a href="{{ r.url | relative_url }}"{% if r.url == page.url %} class="active" aria-current="page"{% endif %}>{{ r.title }}</a>
+      {%- endfor %}
+    </nav>
+    <a class="sidebar-more" href="{{ '/recipes/' | relative_url }}">All recipes &rarr;</a>
+  </aside>
+
+  <main class="content">
+    <div class="crumbs"><a href="{{ '/recipes/' | relative_url }}">Recipes</a> / {{ page.title }}</div>
+    <h1>{{ page.title }}</h1>
+    {% if page.summary %}<p class="lede">{{ page.summary }}</p>{% endif %}
+
+    <div class="facts">
+      <div>
+        <div class="eyebrow">Commands used</div>
+        <div class="facts-links">
+          {%- for name in page.tools -%}
+            {%- assign tp = tools | where: "title", name | first -%}
+            {%- if tp %}<a class="mono" href="{{ tp.url | relative_url }}">{{ tp.title }}</a>{% else %}<span class="mono">{{ name }}</span>{% endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow">Input</div>
+        <div>{{ page.input | join: ", " }}</div>
+      </div>
+      {% if page.level %}
+      <div>
+        <div class="eyebrow">Level</div>
+        <div>{{ page.level | capitalize }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <article class="prose" data-prose>
+      {{ content }}
+    </article>
+    {% include edit-link.html %}
+  </main>
+
+  {% include toc.html %}
+</div>

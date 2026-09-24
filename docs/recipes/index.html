@@ -1,0 +1,19 @@
+---
+layout: page
+title: Recipes
+section: recipes
+summary: Short, end-to-end workflows that combine several SeqFu commands.
+---
+{%- assign recipes = site.pages | where: "layout", "recipe" | sort: "order" -%}
+<div class="recipe-grid">
+  {%- for r in recipes %}
+  <a class="card" href="{{ r.url | relative_url }}">
+    <span class="recipe-card-title">{{ r.title }}</span>
+    <span class="recipe-card-text">{{ r.summary }}</span>
+    <span class="tool-card-foot">
+      {%- for t in r.tools %}<span class="chip-input">{{ t }}</span>{% endfor -%}
+    </span>
+  </a>
+  {%- endfor %}
+</div>
+<p class="muted small" style="margin-top:32px">Want to add a recipe? Create a Markdown file in <code>recipes/</code>; see <a href="{{ '/about/contributing.html' | relative_url }}">Contributing to the docs</a>.</p>

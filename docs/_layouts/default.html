@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% include head.html %}
+</head>
+<body class="layout-{{ page.layout | default: 'default' }}">
+{% include header.html %}
+<div class="topbar-spacer"></div>
+{{ content }}
+{% include footer.html %}
+</body>
+</html>

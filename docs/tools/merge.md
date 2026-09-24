@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu merge
-parent: Core Tools
+summary: "Merge overlapping paired-end reads into single fragments."
+category: paired
+input: [FASTQ]
+output: "FASTQ"
+aliases: [mrg]
+wrapper: false
+deprecated: false
+experimental: true
+paired: true
+interactive: false
+related: ["seqfu interleave", "seqfu trim"]
+keywords: "merge join overlap paired pear flash"
 ---
-
-
-# seqfu merge
 
 ```note
 Function under development: APIs and default parameters are likely going to change.

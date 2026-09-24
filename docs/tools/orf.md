@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu orf
-parent: Core Tools
+summary: "Extract open reading frames from nucleotide sequences or read pairs."
+category: analysis
+input: [FASTA, FASTQ]
+output: "FASTA (protein)"
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["fu-orf"]
+keywords: "orf open reading frame protein translate genetic code"
 ---
-
-# seqfu orf
 
 Extract open reading frames (ORFs) from nucleotide sequences (FASTA/FASTQ, gzipped supported).
 

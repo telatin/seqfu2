@@ -1,0 +1,29 @@
+{%- comment -%}
+  A card in the Tools catalogue. The data-* attributes drive the client-side filters.
+  Usage: include tool-card.html t=tool_page
+{%- endcomment -%}
+{%- assign t = include.t -%}
+{%- assign pair = "" -%}
+{%- if t.wraps -%}{%- assign pair = t.wraps -%}{%- else -%}
+  {%- assign w = site.pages | where: "wraps", t.title | first -%}
+  {%- if w -%}{%- assign pair = w.title -%}{%- endif -%}
+{%- endif -%}
+{%- capture txt -%}{{ t.title }} {{ t.summary }} {{ t.keywords }} {{ t.aliases | join: ' ' }} {{ t.input | join: ' ' }}{%- endcapture -%}
+<a class="card tool-card" href="{{ t.url | relative_url }}"
+   data-tool
+   data-kind="{{ t.kind }}"
+   data-category="{{ t.category }}"
+   data-input="{{ t.input | join: '|' }}"
+   data-wrapper="{{ t.wrapper | default: false }}"
+   data-deprecated="{{ t.deprecated | default: false }}"
+   data-text="{{ txt | downcase | escape }}">
+  <span class="tool-card-head">
+    <span class="tool-card-name">{{ t.title }}</span>
+    {% include badges.html p=t %}
+  </span>
+  <span class="tool-card-summary">{{ t.summary }}</span>
+  <span class="tool-card-foot">
+    {%- for i in t.input %}<span class="chip-input">{{ i }}</span>{% endfor -%}
+    {%- if pair != "" %}<span class="tool-card-pair">&harr; {{ pair }}</span>{% endif -%}
+  </span>
+</a>

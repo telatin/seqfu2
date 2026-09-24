@@ -1,0 +1,100 @@
+---
+layout: default
+---
+{%- comment -%}
+  Layout for every page in tools/ and utilities/.
+  All metadata comes from the page front matter; see README.md for the schema.
+{%- endcomment -%}
+{%- assign tools = site.pages | where: "layout", "tool" -%}
+{%- assign cat = site.data.categories | where: "id", page.category | first -%}
+{%- assign kind = site.data.kinds | where: "id", page.kind | first -%}
+{%- assign fam = tools | where: "category", page.category | sort: "title" -%}
+{%- assign fam_core = fam | where: "kind", "core" -%}
+{%- assign fam_util = fam | where: "kind", "utility" -%}
+{%- assign siblings = fam_core | concat: fam_util -%}
+{%- assign wrappers = tools | where: "wraps", page.title -%}
+{%- if page.wraps -%}{%- assign target = tools | where: "title", page.wraps | first -%}{%- endif -%}
+
+<div class="shell">
+  <aside class="sidebar" data-sidebar>
+    <div class="eyebrow">{{ cat.name | default: "Tools" }}</div>
+    <nav class="sidebar-list mono">
+      {%- for s in siblings %}
+      <a href="{{ s.url | relative_url }}"{% if s.url == page.url %} class="active" aria-current="page"{% endif %}>{{ s.title }}{% if s.deprecated %} <span class="dim">(deprecated)</span>{% endif %}</a>
+      {%- endfor %}
+    </nav>
+    <a class="sidebar-more" href="{{ '/tools/' | relative_url }}">All tools &rarr;</a>
+  </aside>
+
+  <main class="content">
+    <div class="crumbs">
+      <a href="{{ '/tools/' | relative_url }}">Tools</a> /
+      <a href="{{ '/tools/' | relative_url }}?kind={{ page.kind }}">{{ kind.name }}</a> /
+      <a href="{{ '/tools/' | relative_url }}?category={{ page.category }}">{{ cat.name }}</a>
+    </div>
+
+    <div class="tool-title">
+      <h1 class="mono">{{ page.title }}</h1>
+      <span class="badge">{{ kind.label }}</span>
+      {% include badges.html p=page %}
+      {% if page.since %}<span class="since">since v{{ page.since }}</span>{% endif %}
+    </div>
+    {% if page.summary %}<p class="lede">{{ page.summary }}</p>{% endif %}
+
+    <div class="facts">
+      <div>
+        <div class="eyebrow">Invocation</div>
+        <div class="mono">{{ page.title }}</div>
+        {% if page.aliases %}<div class="facts-sub">aliases: {% for a in page.aliases %}<code>{{ a }}</code>{% unless forloop.last %}, {% endunless %}{% endfor %}</div>{% endif %}
+      </div>
+      <div>
+        <div class="eyebrow">Input</div>
+        <div>{{ page.input | join: ", " }}</div>
+      </div>
+      <div>
+        <div class="eyebrow">Output</div>
+        <div>{{ page.output }}</div>
+      </div>
+      <div>
+        <div class="eyebrow">Paired-end</div>
+        <div>{% if page.paired %}Supported{% else %}&mdash;{% endif %}</div>
+      </div>
+    </div>
+
+    {% if page.deprecated %}
+    <div class="callout callout-danger">
+      <strong>Deprecated.</strong>
+      <span>{% if target %}Use <a class="mono" href="{{ target.url | relative_url }}">{{ target.title }}</a> instead; this program is kept only so existing pipelines keep working.{% else %}This program is kept for compatibility and may be removed in a future release.{% endif %}</span>
+    </div>
+    {% elsif page.wraps %}
+    <div class="callout callout-warn">
+      <strong>Compatibility wrapper.</strong>
+      <span>Same behaviour and options as {% if target %}<a class="mono" href="{{ target.url | relative_url }}">{{ target.title }}</a>{% else %}<code>{{ page.wraps }}</code>{% endif %}, which is preferred in new pipelines.</span>
+    </div>
+    {% endif %}
+    {% if wrappers.size > 0 %}
+    <div class="callout callout-warn">
+      <strong>Also available as</strong>
+      <span>{% for w in wrappers %}<a class="mono" href="{{ w.url | relative_url }}">{{ w.title }}</a>{% unless forloop.last %}, {% endunless %}{% endfor %} (legacy binary{% if wrappers.size > 1 %}s{% endif %} accepting the same options).</span>
+    </div>
+    {% endif %}
+
+    <article class="prose" data-prose>
+      {{ content }}
+    </article>
+
+    {% if page.related %}
+    <h2 id="related">Related</h2>
+    <div class="related">
+      {%- for r in page.related %}
+        {%- assign rp = tools | where: "title", r | first -%}
+        {%- if rp %}<a class="mono" href="{{ rp.url | relative_url }}">{{ rp.title }}</a>{% endif -%}
+      {%- endfor %}
+    </div>
+    {% endif %}
+
+    {% include edit-link.html %}
+  </main>
+
+  {% include toc.html %}
+</div>

@@ -1,0 +1,79 @@
+---
+layout: default
+title: Tools
+section: tools
+summary: Every SeqFu core command and utility, filterable by task, input type and kind.
+redirect_from:
+  - /tools/README.html
+  - /utilities/
+  - /utilities/README.html
+  - /scripts/
+  - /scripts/README.html
+---
+{%- comment -%}
+  Tools catalogue. Cards are rendered here from page front matter;
+  assets/js/site.js only shows/hides them. Deep links:
+  ?kind=core|utility  &category=<id>  &input=FASTQ  &q=text
+{%- endcomment -%}
+{%- assign tools = site.pages | where: "layout", "tool" | sort: "title" -%}
+<div class="shell" data-catalog>
+  <aside class="sidebar" data-sidebar>
+    <div class="eyebrow">Task families</div>
+    <nav class="sidebar-list">
+      {%- for c in site.data.categories %}
+      {%- assign n = tools | where: "category", c.id | size %}
+      <button type="button" class="sidebar-filter" data-filter-category="{{ c.id }}">
+        <span>{{ c.name }}</span><span class="count" data-count-category="{{ c.id }}">{{ n }}</span>
+      </button>
+      {%- endfor %}
+    </nav>
+  </aside>
+
+  <main class="content content-wide">
+    <div class="crumbs"><a href="{{ '/' | relative_url }}">Docs</a> / Tools</div>
+    <h1 data-catalog-title>Tools</h1>
+    <p class="lede" data-catalog-lede>{{ page.summary }}</p>
+
+    <div class="filters">
+      <input type="search" class="filters-query" placeholder="Filter by name, task or option (e.g. “n50”, “primers”, “paired”)" aria-label="Filter tools" data-filter-query>
+      <div class="filters-row">
+        <div class="chip-group" role="group" aria-label="Kind">
+          <span class="chip-label">Kind</span>
+          <button type="button" class="chip" data-filter-kind="all">All</button>
+          {%- for k in site.data.kinds %}
+          <button type="button" class="chip" data-filter-kind="{{ k.id }}">{{ k.name }}</button>
+          {%- endfor %}
+        </div>
+        <div class="chip-group" role="group" aria-label="Input">
+          <span class="chip-label">Input</span>
+          <button type="button" class="chip" data-filter-input="any">Any</button>
+          {%- for i in site.data.inputs %}
+          <button type="button" class="chip" data-filter-input="{{ i }}">{{ i }}</button>
+          {%- endfor %}
+        </div>
+        <label class="check"><input type="checkbox" data-filter-hide="wrapper"> Hide wrappers</label>
+        <label class="check"><input type="checkbox" data-filter-hide="deprecated" checked> Hide deprecated</label>
+        <span class="filters-count"><span data-shown-count>{{ tools.size }}</span> shown</span>
+      </div>
+    </div>
+
+    {%- for c in site.data.categories %}
+    {%- assign items = tools | where: "category", c.id %}
+    {%- if items.size > 0 %}
+    <section class="group" data-group="{{ c.id }}">
+      <div class="group-head">
+        <h2 id="{{ c.id }}">{{ c.name }}</h2>
+        <span class="count" data-group-count>{{ items.size }}</span>
+        <p>{{ c.description }}</p>
+      </div>
+      <div class="card-grid">
+        {%- for t in items %}
+        {% include tool-card.html t=t %}
+        {%- endfor %}
+      </div>
+    </section>
+    {%- endif %}
+    {%- endfor %}
+    <div class="empty" hidden data-empty>No tools match these filters.</div>
+  </main>
+</div>

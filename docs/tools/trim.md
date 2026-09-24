@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu trim
-parent: Core Tools
+summary: "Quality-trim and filter single- or paired-end FASTQ files."
+category: filter
+input: [FASTQ]
+output: "FASTQ"
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu qual", "fu-primers"]
+keywords: "trim quality filter adapter sliding window fastp"
 ---
-
-# trim
 
 The `trim` command provides comprehensive quality trimming and filtering for FASTQ files, with an interface and efficiency similar to `fastp`. It supports both single-end and paired-end reads.
 

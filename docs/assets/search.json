@@ -1,0 +1,23 @@
+---
+layout: null
+---
+{%- assign tools = site.pages | where: "layout", "tool" | sort: "title" -%}
+{%- assign recipes = site.pages | where: "layout", "recipe" | sort: "title" -%}
+{%- assign docs = site.pages | where: "layout", "page" | sort: "title" -%}
+[
+{%- for t in tools -%}
+  {%- assign cat = site.data.categories | where: "id", t.category | first -%}
+  {%- assign kind = site.data.kinds | where: "id", t.kind | first -%}
+  {%- capture kw -%}{{ t.keywords }} {{ t.aliases | join: " " }}{%- endcapture -%}
+  {"title": {{ t.title | jsonify }}, "url": {{ t.url | relative_url | jsonify }}, "type": {{ kind.label | jsonify }}, "group": {{ cat.name | jsonify }}, "summary": {{ t.summary | jsonify }}, "keywords": {{ kw | strip | jsonify }}, "input": {{ t.input | join: " " | jsonify }}, "deprecated": {{ t.deprecated | default: false }}},
+{%- endfor -%}
+{%- for r in recipes -%}
+  {"title": {{ r.title | jsonify }}, "url": {{ r.url | relative_url | jsonify }}, "type": "Recipe", "group": "Recipes", "summary": {{ r.summary | jsonify }}, "keywords": {{ r.tools | join: " " | jsonify }}, "input": {{ r.input | join: " " | jsonify }}, "deprecated": false},
+{%- endfor -%}
+{%- for d in docs -%}
+  {%- if d.title and d.url != "/" -%}
+  {"title": {{ d.title | jsonify }}, "url": {{ d.url | relative_url | jsonify }}, "type": "Guide", "group": "Docs", "summary": {{ d.summary | default: "" | jsonify }}, "keywords": "", "input": "", "deprecated": false},
+  {%- endif -%}
+{%- endfor -%}
+  {}
+]

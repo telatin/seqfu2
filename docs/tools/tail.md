@@ -1,11 +1,17 @@
 ---
-layout: default
 title: seqfu tail
-parent: Core Tools
+summary: "Print the last sequences of one or more files."
+category: inspect
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu head", "seqfu cat"]
+keywords: "tail last end"
 ---
-
-
-# seqfu tail
 
 *tail*  is one of the core subprograms of *SeqFu*.
 

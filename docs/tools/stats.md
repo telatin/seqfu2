@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu stats
-parent: Core Tools
+summary: "Report counts, total length, N50, auN and other assembly metrics per file."
+category: qc
+input: [FASTA, FASTQ]
+output: "TSV, CSV, JSON or MultiQC"
+aliases: [st, stat]
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu count", "seqfu bases", "seqfu qual"]
+keywords: "stats n50 n75 n90 aun length summary assembly metrics multiqc"
 ---
-
-
-# seqfu stats
 
 *stats*  is one of the core subprograms of *SeqFu*.
 

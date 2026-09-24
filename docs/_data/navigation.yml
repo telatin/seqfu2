@@ -1,0 +1,33 @@
+# Top navigation. `section` is matched against the page's `section` (or kind for tools).
+main:
+  - title: Getting started
+    url: /getting-started/
+    section: getting-started
+  - title: Tools
+    url: /tools/
+    section: tools
+  - title: Recipes
+    url: /recipes/
+    section: recipes
+  - title: About
+    url: /about/
+    section: about
+
+# Side navigation for the long-form sections.
+getting-started:
+  - title: Quick start
+    url: /getting-started/
+  - title: Installation
+    url: /getting-started/installation.html
+  - title: Overview of the commands
+    url: /getting-started/overview.html
+  - title: Common conventions
+    url: /getting-started/conventions.html
+
+about:
+  - title: About SeqFu
+    url: /about/
+  - title: Changelog
+    url: /about/changelog.html
+  - title: Contributing to the docs
+    url: /about/contributing.html

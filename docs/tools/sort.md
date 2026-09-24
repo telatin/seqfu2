@@ -1,10 +1,18 @@
 ---
-layout: default
 title: seqfu sort
-parent: Core Tools
+summary: "Sort sequences by length, removing duplicates across all input files."
+category: transform
+input: [FASTA]
+output: "FASTA"
+aliases: [srt]
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu derep", "seqfu stats"]
+keywords: "sort length order unique"
 ---
-
-# seqfu sort
 
 *sort*  is one of the core subprograms of *SeqFu*, that allows
 sorting FASTA sequences by length, printing only unique sequences

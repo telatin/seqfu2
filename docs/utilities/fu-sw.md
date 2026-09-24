@@ -1,11 +1,17 @@
 ---
-layout: default
 title: fu-sw
-parent: Utilities
+summary: "Align query sequences against a target with Smith-Waterman local alignment."
+category: analysis
+input: [FASTA, FASTQ]
+output: "Alignment report"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["fu-nanotags", "fu-16Sregion"]
+keywords: "smith-waterman alignment local align"
 ---
-
-
-# fu-sw
 
 Simple implementation of the _Smith-Waterman_ alignment:
 

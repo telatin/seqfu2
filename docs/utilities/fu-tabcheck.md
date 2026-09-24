@@ -1,10 +1,16 @@
 ---
-layout: default
 title: fu-tabcheck
-parent: Utilities
+summary: "Compatibility wrapper for seqfu tabcheck."
+category: tables
+input: [TSV-CSV]
+output: "Report and exit status"
+wrapper: true
+wraps: seqfu tabcheck
+deprecated: false
+experimental: false
+paired: false
+interactive: false
 ---
-
-# fu-tabcheck
 
 `fu-tabcheck` is a compatibility wrapper for `seqfu tabcheck`.
 

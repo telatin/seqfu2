@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu count
-parent: Core Tools
+summary: "Count sequences in FASTA/FASTQ files, pairing R1/R2 automatically."
+category: qc
+input: [FASTA, FASTQ]
+output: "TSV table"
+aliases: [c, cnt]
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu stats", "seqfu check"]
+keywords: "count reads number paired"
 ---
-
-
-# seqfu count
 
 *count* (or *cnt*) is one of the core subprograms of *SeqFu*.
 It's used to count the sequences in FASTA/FASTQ files, and it's _paired-end_ aware so

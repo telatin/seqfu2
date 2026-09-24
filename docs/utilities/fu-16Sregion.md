@@ -1,11 +1,16 @@
 ---
-layout: default
 title: fu-16Sregion
-parent: Utilities
+summary: "Detect the 16S hypervariable region(s) covered by amplicon reads."
+category: analysis
+input: [FASTA, FASTQ]
+output: "Report"
+wrapper: false
+deprecated: false
+experimental: true
+paired: true
+interactive: false
+keywords: "16s hypervariable region v3 v4 amplicon smith-waterman"
 ---
-
-
-# fu-16Sregion
 
 ```note
 This utility is still in development, but feedback is welcome.

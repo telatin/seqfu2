@@ -1,11 +1,17 @@
 ---
-layout: default
 title: seqfu less
-parent: Core Tools
+summary: "Interactive full-screen pager for FASTA/FASTQ files, like less for sequences."
+category: inspect
+input: [FASTA, FASTQ]
+output: "Terminal (TUI)"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: true
+related: ["seqfu view", "seqfu msa"]
+keywords: "pager interactive viewer tui browse search"
 ---
-
-
-# seqfu less
 
 ![Screenshot of "seqfu less"]({{site.baseurl}}/img/seqfu-less.png "SeqFu less example")
 
@@ -267,5 +273,5 @@ If you see the Euro sign, your terminal supports Unicode.
 
 ## See Also
 
-- [seqfu view](view.md) - Non-interactive sequence viewer
-- [seqfu msa](msa.md) - Interactive multiple sequence alignment viewer
+- [seqfu view]({{ '/tools/view.html' | relative_url }}) - Non-interactive sequence viewer
+- [seqfu msa]({{ '/tools/msa.html' | relative_url }}) - Interactive multiple sequence alignment viewer

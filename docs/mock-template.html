@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FAF9FB;color:#16121A;font-family:'Public Sans',Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#72439A;text-decoration:none}a:hover{color:#4E2A6E;text-decoration:underline}
+input::placeholder{color:#8A8190}
+*{box-sizing:border-box}
+</style>
+</helmet>
+
+<header style="position:fixed;top:0;left:0;right:0;z-index:50;height:60px;background:#000;border-bottom:3px solid #72439A;display:flex;align-items:center;gap:16px;padding:0 20px">
+  <div onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0">
+    <div style="width:26px;height:26px;background:#72439A;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:#FFBF00">fu</div>
+    <span style="color:#fff;font-weight:800;font-size:18px;letter-spacing:-0.01em">SeqFu</span>
+  </div>
+  <nav style="display:flex;gap:0;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none">
+    <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="7">
+      <div onClick="{{ n.go }}" style="position:relative;padding:20px 8px;color:#D9D2E0;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="color:#fff">
+        {{ n.label }}
+        <sc-if value="{{ n.active }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:8px;right:8px;bottom:-3px;height:3px;background:#FFBF00"></div></sc-if>
+      </div>
+    </sc-for>
+  </nav>
+  <div style="position:relative;width:clamp(140px,16vw,300px);flex-shrink:0">
+    <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Search commands, tasks, options…" style="width:100%;height:36px;border-radius:6px;border:1px solid #3A2F42;background:#16121A;color:#fff;padding:0 44px 0 12px;font-family:inherit;font-size:14px;outline:none" style-focus="border-color:#FFBF00"></input>
+    <span style="position:absolute;right:8px;top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8A8190;border:1px solid #3A2F42;border-radius:4px;padding:1px 5px">/</span>
+    <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;top:44px;right:0;width:min(420px,90vw);background:#fff;border:1px solid #E2DCE8;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.18);overflow:hidden">
+        <div style="padding:10px 14px;font-size:12px;color:#6B6272;border-bottom:1px solid #EEE9F2">{{ resultCount }} results for “{{ query }}”</div>
+        <sc-for list="{{ results }}" as="r" hint-placeholder-count="3">
+          <div onClick="{{ r.open }}" style="padding:12px 14px;border-bottom:1px solid #F3EFF6;cursor:pointer;display:grid;gap:4px" style-hover="background:#F6F1FA">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#16121A">{{ r.cmd }}</span>
+              <span style="font-size:11px;font-weight:600;color:#72439A;background:#F1EBF6;padding:2px 7px;border-radius:10px">{{ r.kindLabel }}</span>
+              <span style="font-size:11px;color:#6B6272">{{ r.family }}</span>
+            </div>
+            <div style="font-size:13px;color:#4A4250;line-height:1.45">{{ r.pre }}<mark style="background:#FFE9A8;color:#16121A;padding:0 1px">{{ r.mid }}</mark>{{ r.post }}</div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}"><div style="padding:18px 14px;font-size:13px;color:#6B6272">No commands match. Try a file type (fastq, tsv) or a task (dereplicate, validate).</div></sc-if>
+      </div>
+    </sc-if>
+  </div>
+  <a href="#install" onClick="{{ goHome }}" style="flex-shrink:0;background:#FFBF00;color:#000;font-weight:700;font-size:13px;padding:8px 14px;border-radius:6px;text-decoration:none">Install</a>
+</header>
+
+<div style="height:63px"></div>
+
+<!-- HOME -->
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<main style="max-width:1160px;margin:0 auto;padding:64px 32px 96px">
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:48px;align-items:start">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#72439A;font-weight:500;margin-bottom:16px">v1.22 · FASTA / FASTQ toolkit</div>
+      <h1 style="font-size:clamp(34px,4.6vw,52px);line-height:1.05;letter-spacing:-0.025em;margin:0 0 20px;font-weight:800;text-wrap:pretty">Inspect, filter and reshape sequence files from the command line.</h1>
+      <p style="font-size:18px;line-height:1.6;color:#4A4250;margin:0 0 28px;max-width:540px;text-wrap:pretty">SeqFu is a fast, general-purpose toolkit for FASTA and FASTQ files. Core programs run as <code style="font-family:'JetBrains Mono',monospace;font-size:15px">seqfu &lt;command&gt;</code>; companion tools ship as standalone <code style="font-family:'JetBrains Mono',monospace;font-size:15px">fu-*</code> utilities.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div onClick="{{ goStart }}" style="background:#72439A;color:#fff;font-weight:600;padding:12px 20px;border-radius:6px;cursor:pointer;font-size:15px" style-hover="background:#5E3582">Get started</div>
+        <div onClick="{{ goCore }}" style="border:1px solid #CFC5D8;color:#16121A;font-weight:600;padding:12px 20px;border-radius:6px;cursor:pointer;font-size:15px;background:#fff" style-hover="border-color:#72439A">Browse commands</div>
+      </div>
+    </div>
+    <div id="install" style="background:#000;border-radius:10px;overflow:hidden">
+      <div style="display:flex;gap:0;border-bottom:1px solid #2A2230">
+        <sc-for list="{{ installTabs }}" as="t" hint-placeholder-count="3">
+          <div onClick="{{ t.pick }}" style="position:relative;padding:12px 16px;font-size:13px;font-weight:600;color:#B9AFC2;cursor:pointer" style-hover="color:#fff">{{ t.label }}<sc-if value="{{ t.active }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#FFBF00"></div></sc-if></div>
+        </sc-for>
+      </div>
+      <pre style="margin:0;padding:20px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.7;color:#EDE7F2;white-space:pre-wrap"><span style="color:#FFBF00">$ </span>{{ installCmd }}</pre>
+      <div style="padding:14px 20px;border-top:1px solid #2A2230;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.9;color:#B9AFC2">
+        <div><span style="color:#FFBF00">$ </span><span style="color:#fff">seqfu cat</span> reads.fq.gz</div>
+        <div><span style="color:#FFBF00">$ </span><span style="color:#fff">seqfu head</span> -n 10 reads.fq.gz</div>
+        <div><span style="color:#FFBF00">$ </span><span style="color:#fff">seqfu grep</span> -r ACGTTGCA contigs.fa</div>
+        <div><span style="color:#FFBF00">$ </span><span style="color:#fff">seqfu stats</span> -b *.fastq.gz</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-top:88px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+    <div onClick="{{ goCore }}" style="background:#fff;border:1px solid #E2DCE8;border-radius:10px;padding:28px;cursor:pointer;display:grid;gap:10px" style-hover="border-color:#72439A;box-shadow:0 6px 20px rgba(114,67,154,.12)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:800">Core Tools</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#72439A">{{ coreCount }} commands</span></div>
+      <code style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#4A4250">seqfu &lt;command&gt; [options] FILE...</code>
+      <p style="margin:0;color:#4A4250;line-height:1.55;font-size:15px">Subcommands of the main binary: viewing, statistics, QC, filtering and conversion.</p>
+    </div>
+    <div onClick="{{ goUtil }}" style="background:#fff;border:1px solid #E2DCE8;border-radius:10px;padding:28px;cursor:pointer;display:grid;gap:10px" style-hover="border-color:#72439A;box-shadow:0 6px 20px rgba(114,67,154,.12)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:800">Utilities</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#72439A">{{ utilCount }} tools</span></div>
+      <code style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#4A4250">fu-&lt;tool&gt; [options] FILE...</code>
+      <p style="margin:0;color:#4A4250;line-height:1.55;font-size:15px">Standalone executables, specialised analyses and compatibility wrappers.</p>
+    </div>
+  </section>
+
+  <section style="margin-top:72px">
+    <h2 style="font-size:24px;font-weight:800;margin:0 0 6px;letter-spacing:-0.01em">Find a tool by task</h2>
+    <p style="margin:0 0 24px;color:#6B6272;font-size:15px">Commands grouped by what they do, across both Core Tools and Utilities.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+      <sc-for list="{{ familyCards }}" as="f" hint-placeholder-count="8">
+        <div onClick="{{ f.go }}" style="border:1px solid #E2DCE8;background:#fff;border-radius:8px;padding:16px 18px;cursor:pointer;display:grid;gap:6px" style-hover="border-color:#72439A">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:15px">{{ f.name }}</span><span style="font-size:12px;color:#6B6272">{{ f.count }}</span></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#72439A;line-height:1.5">{{ f.sample }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="margin-top:72px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:40px">
+    <div>
+      <h2 style="font-size:24px;font-weight:800;margin:0 0 20px;letter-spacing:-0.01em">Recipes</h2>
+      <div style="display:grid;border-top:1px solid #E2DCE8">
+        <sc-for list="{{ recipes }}" as="r" hint-placeholder-count="5">
+          <div style="padding:14px 0;border-bottom:1px solid #E2DCE8;display:flex;justify-content:space-between;gap:16px;cursor:pointer" style-hover="color:#72439A">
+            <span style="font-weight:600;font-size:15px">{{ r.title }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6B6272;white-space:nowrap">{{ r.cmds }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="background:#F1EBF6;border-radius:10px;padding:28px;align-self:start">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#72439A;margin-bottom:10px">Cite SeqFu</div>
+      <p style="margin:0 0 14px;font-size:15px;line-height:1.6">Telatin A, Fariselli P, Birolo G. <em>SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files.</em> Bioengineering 2021, 8(5), 59.</p>
+      <a href="#">doi:10.3390/bioengineering8050059</a>
+    </div>
+  </section>
+</main>
+</sc-if>
+
+<!-- INDEX -->
+<sc-if value="{{ isIndex }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;max-width:1320px;margin:0 auto">
+  <sc-if value="{{ showSidebar }}" hint-placeholder-val="{{ true }}">
+  <aside style="width:240px;flex-shrink:0;position:sticky;top:63px;align-self:flex-start;height:calc(100vh - 63px);overflow-y:auto;padding:32px 20px 32px 32px;border-right:1px solid #E2DCE8">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6272;margin-bottom:10px">Task families</div>
+    <sc-for list="{{ familyFilters }}" as="f" hint-placeholder-count="8">
+      <div onClick="{{ f.toggle }}" style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:5px;font-size:14px;cursor:pointer;margin:0 -10px" style-hover="background:#F1EBF6">
+        <sc-if value="{{ f.active }}" hint-placeholder-val="{{ false }}"><span style="color:#72439A;font-weight:700">{{ f.name }}</span></sc-if>
+        <sc-if value="{{ f.inactive }}" hint-placeholder-val="{{ true }}"><span style="color:#16121A">{{ f.name }}</span></sc-if>
+        <span style="color:#8A8190;font-size:12px">{{ f.count }}</span>
+      </div>
+    </sc-for>
+  </aside>
+  </sc-if>
+  <main style="flex:1;min-width:0;padding:40px 40px 96px">
+    <div style="font-size:13px;color:#6B6272;margin-bottom:10px"><span onClick="{{ goHome }}" style="cursor:pointer">Docs</span> / {{ indexTitle }}</div>
+    <h1 style="font-size:38px;font-weight:800;letter-spacing:-0.02em;margin:0 0 8px">{{ indexTitle }}</h1>
+    <p style="margin:0 0 28px;color:#4A4250;font-size:16px;line-height:1.6;max-width:680px">{{ indexLede }}</p>
+
+    <div style="display:grid;gap:12px;padding:16px;background:#fff;border:1px solid #E2DCE8;border-radius:10px;margin-bottom:32px">
+      <input value="{{ localQuery }}" onChange="{{ onLocalQuery }}" placeholder="Filter by name, task or option (e.g. “csv consistency”, “integrity”)" style="height:40px;border:1px solid #E2DCE8;border-radius:6px;padding:0 12px;font-family:inherit;font-size:14px;outline:none;background:#FAF9FB" style-focus="border-color:#72439A"></input>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:#6B6272;margin-right:4px">Kind</span>
+          <sc-for list="{{ kindChips }}" as="c" hint-placeholder-count="3">
+            <div onClick="{{ c.pick }}" style="cursor:pointer">
+              <sc-if value="{{ c.active }}" hint-placeholder-val="{{ false }}"><span style="display:block;font-size:13px;font-weight:600;padding:5px 11px;border-radius:14px;background:#72439A;color:#fff;border:1px solid #72439A">{{ c.label }}</span></sc-if>
+              <sc-if value="{{ c.inactive }}" hint-placeholder-val="{{ true }}"><span style="display:block;font-size:13px;font-weight:500;padding:5px 11px;border-radius:14px;background:#fff;color:#4A4250;border:1px solid #D8D0E0">{{ c.label }}</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:#6B6272;margin-right:4px">Input</span>
+          <sc-for list="{{ inputChips }}" as="c" hint-placeholder-count="4">
+            <div onClick="{{ c.pick }}" style="cursor:pointer">
+              <sc-if value="{{ c.active }}" hint-placeholder-val="{{ false }}"><span style="display:block;font-size:13px;font-weight:600;padding:5px 11px;border-radius:14px;background:#72439A;color:#fff;border:1px solid #72439A">{{ c.label }}</span></sc-if>
+              <sc-if value="{{ c.inactive }}" hint-placeholder-val="{{ true }}"><span style="display:block;font-size:13px;font-weight:500;padding:5px 11px;border-radius:14px;background:#fff;color:#4A4250;border:1px solid #D8D0E0">{{ c.label }}</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div onClick="{{ toggleWrappers }}" style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:13px;color:#4A4250">
+          <sc-if value="{{ hideWrappers }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border-radius:3px;background:#72439A;display:block"></span></sc-if>
+          <sc-if value="{{ showWrappers }}" hint-placeholder-val="{{ true }}"><span style="width:16px;height:16px;border-radius:3px;border:1px solid #B9AFC2;display:block;background:#fff"></span></sc-if>
+          Hide compatibility wrappers
+        </div>
+        <span style="margin-left:auto;font-size:13px;color:#6B6272">{{ shownCount }} shown</span>
+      </div>
+    </div>
+
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+      <section style="margin-bottom:40px">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #E2DCE8">
+          <h2 style="margin:0;font-size:18px;font-weight:800">{{ g.name }}</h2>
+          <span style="font-size:13px;color:#8A8190">{{ g.count }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+          <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="4">
+            <div onClick="{{ c.open }}" style="background:#fff;border:1px solid #E2DCE8;border-radius:8px;padding:16px 18px;cursor:pointer;display:grid;gap:8px;align-content:start" style-hover="border-color:#72439A;box-shadow:0 4px 14px rgba(114,67,154,.10)">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px">{{ c.cmd }}</span>
+                <sc-if value="{{ c.isWrapper }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;color:#6B4E00;background:#FFF1C2;padding:2px 7px;border-radius:10px">wrapper</span></sc-if>
+              </div>
+              <div style="font-size:14px;color:#4A4250;line-height:1.5;text-wrap:pretty">{{ c.summary }}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <sc-for list="{{ c.inputs }}" as="i" hint-placeholder-count="2"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#72439A;background:#F1EBF6;padding:2px 6px;border-radius:4px">{{ i }}</span></sc-for>
+                <sc-if value="{{ c.hasPair }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#8A8190">↔ {{ c.pair }}</span></sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+    <sc-if value="{{ indexEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:40px;text-align:center;color:#6B6272;border:1px dashed #D8D0E0;border-radius:10px">No commands match these filters.</div></sc-if>
+  </main>
+</div>
+</sc-if>
+
+<!-- COMMAND PAGE -->
+<sc-if value="{{ isCommand }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;max-width:1320px;margin:0 auto">
+  <sc-if value="{{ showSidebar }}" hint-placeholder-val="{{ true }}">
+  <aside style="width:240px;flex-shrink:0;position:sticky;top:63px;align-self:flex-start;height:calc(100vh - 63px);overflow-y:auto;padding:32px 20px 32px 32px;border-right:1px solid #E2DCE8">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6272;margin-bottom:10px">{{ sel.familyName }}</div>
+    <sc-for list="{{ siblings }}" as="s" hint-placeholder-count="5">
+      <div onClick="{{ s.open }}" style="padding:6px 10px;margin:0 -10px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:13px" style-hover="background:#F1EBF6">
+        <sc-if value="{{ s.active }}" hint-placeholder-val="{{ false }}"><span style="color:#72439A;font-weight:700">{{ s.cmd }}</span></sc-if>
+        <sc-if value="{{ s.inactive }}" hint-placeholder-val="{{ true }}"><span style="color:#16121A">{{ s.cmd }}</span></sc-if>
+      </div>
+    </sc-for>
+  </aside>
+  </sc-if>
+  <main style="flex:1;min-width:0;padding:40px 48px 96px;max-width:860px">
+    <div style="font-size:13px;color:#6B6272;margin-bottom:12px"><span onClick="{{ goHome }}" style="cursor:pointer">Docs</span> / <span onClick="{{ sel.goKind }}" style="cursor:pointer">{{ sel.kindLabel }}</span> / {{ sel.familyName }}</div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+      <h1 style="font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;letter-spacing:-0.02em;margin:0">{{ sel.cmd }}</h1>
+      <span style="font-size:12px;font-weight:600;color:#72439A;background:#F1EBF6;padding:3px 9px;border-radius:10px">{{ sel.kindLabel }}</span>
+      <span style="font-size:12px;color:#6B6272">since {{ sel.since }}</span>
+    </div>
+    <p style="font-size:19px;line-height:1.55;color:#2E2733;margin:0 0 28px;text-wrap:pretty">{{ sel.summary }}</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid #E2DCE8;overflow:hidden;border-radius:10px;background:#fff;margin-bottom:40px">
+      <div style="padding:14px 16px;border-right:1px solid #E2DCE8"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6B6272;margin-bottom:6px">Invocation</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px">{{ sel.cmd }}</div></div>
+      <div style="padding:14px 16px;border-right:1px solid #E2DCE8"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6B6272;margin-bottom:6px">Input</div><div style="font-size:14px">{{ sel.inputsStr }}</div></div>
+      <div style="padding:14px 16px;border-right:1px solid #E2DCE8"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6B6272;margin-bottom:6px">Output</div><div style="font-size:14px">{{ sel.output }}</div></div>
+      <div style="padding:14px 16px"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6B6272;margin-bottom:6px">Streaming</div><div style="font-size:14px">stdin ✓ · stdout ✓</div></div>
+    </div>
+
+    <sc-if value="{{ sel.hasPair }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:12px;align-items:flex-start;background:#FFF6DA;border:1px solid #F2D577;border-radius:8px;padding:14px 16px;margin:-16px 0 40px;font-size:14px;line-height:1.55">
+        <span style="font-weight:700;color:#6B4E00;flex-shrink:0">Also available as</span>
+        <span><code style="font-family:'JetBrains Mono',monospace">{{ sel.pair }}</code>. Both invocations accept the same options.</span>
+      </div>
+    </sc-if>
+
+    <h2 id="usecases" style="font-size:22px;font-weight:800;margin:0 0 14px">Typical use cases</h2>
+    <ul style="margin:0 0 40px;padding-left:20px;line-height:1.8;font-size:15px;color:#2E2733">
+      <sc-for list="{{ sel.uses }}" as="u" hint-placeholder-count="3"><li>{{ u }}</li></sc-for>
+    </ul>
+
+    <h2 id="examples" style="font-size:22px;font-weight:800;margin:0 0 14px">Minimal example</h2>
+    <pre style="margin:0 0 28px;background:#000;color:#EDE7F2;border-radius:8px;padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.7;white-space:pre-wrap"><span style="color:#FFBF00">$ </span>{{ sel.example }}</pre>
+    <h3 style="font-size:17px;font-weight:700;margin:0 0 12px">Advanced</h3>
+    <div style="display:grid;gap:14px;margin-bottom:40px">
+      <sc-for list="{{ sel.advanced }}" as="a" hint-placeholder-count="2">
+        <div>
+          <div style="font-size:14px;color:#4A4250;margin-bottom:6px">{{ a.label }}</div>
+          <pre style="margin:0;background:#000;color:#EDE7F2;border-radius:8px;padding:14px 20px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.7;white-space:pre-wrap"><span style="color:#FFBF00">$ </span>{{ a.cmd }}</pre>
+        </div>
+      </sc-for>
+    </div>
+
+    <h2 id="options" style="font-size:22px;font-weight:800;margin:0 0 14px">Options</h2>
+    <sc-for list="{{ optionGroups }}" as="og" hint-placeholder-count="3">
+      <div style="margin-bottom:24px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#72439A;margin-bottom:8px">{{ og.name }}</div>
+        <div style="border:1px solid #E2DCE8;border-radius:8px;background:#fff">
+          <sc-for list="{{ og.opts }}" as="o" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:minmax(120px,220px) minmax(0,1fr);gap:16px;padding:11px 16px;border-bottom:1px solid #F0EBF4;font-size:14px">
+              <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#16121A">{{ o.flag }}</code>
+              <span style="color:#4A4250;line-height:1.5">{{ o.desc }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+
+    <h2 id="notes" style="font-size:22px;font-weight:800;margin:16px 0 14px">Notes</h2>
+    <p style="font-size:15px;line-height:1.7;color:#2E2733;margin:0 0 40px">Gzipped input is detected automatically. Use <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#F1EBF6;padding:1px 5px;border-radius:3px">-</code> as the filename to read from stdin, so the command can sit in the middle of a pipe.</p>
+
+    <h2 id="related" style="font-size:22px;font-weight:800;margin:0 0 14px">Related</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <sc-for list="{{ related }}" as="r" hint-placeholder-count="3">
+        <div onClick="{{ r.open }}" style="font-family:'JetBrains Mono',monospace;font-size:13px;border:1px solid #D8D0E0;background:#fff;padding:7px 12px;border-radius:6px;cursor:pointer" style-hover="border-color:#72439A;color:#72439A">{{ r.cmd }}</div>
+      </sc-for>
+    </div>
+  </main>
+  <aside style="width:200px;flex-shrink:0;position:sticky;top:63px;align-self:flex-start;padding:48px 24px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6272;margin-bottom:10px">On this page</div>
+    <div style="display:grid;gap:8px;font-size:13px">
+      <a href="#usecases">Use cases</a><a href="#examples">Examples</a><a href="#options">Options</a><a href="#notes">Notes</a><a href="#related">Related</a>
+    </div>
+  </aside>
+</div>
+</sc-if>
+
+<footer style="border-top:1px solid #E2DCE8;padding:28px 32px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px;color:#6B6272;max-width:1320px;margin:0 auto">
+  <span>SeqFu · MIT License · Quadram Institute Bioscience</span>
+  <div style="display:flex;gap:18px"><a href="#">GitHub</a><a href="#">Changelog</a><a href="#">Cite</a></div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;index&quot;,&quot;command&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showSidebar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const FAM = ['Inspection','Statistics & QC','Filtering & extraction','Transformation','Pairing & lanes','Metadata','Tabular','Specialised analysis'];
+const C = [
+ ['seqfu head','core',0,'Print the first N sequences of one or more files.',['FASTA','FASTQ'],'head top first n reads subset preview'],
+ ['seqfu tail','core',0,'Print the last N sequences of one or more files.',['FASTA','FASTQ'],'tail last end reads'],
+ ['seqfu view','core',0,'Display sequences in the terminal with colour-coded quality and oligo matches.',['FASTA','FASTQ'],'view terminal colour quality inspect'],
+ ['seqfu cat','core',3,'Concatenate files, with options to rename, strip comments or add prefixes.',['FASTA','FASTQ'],'cat concatenate rename prefix'],
+ ['seqfu stats','core',1,'Report counts, total length, N50 and other assembly metrics per file.',['FASTA','FASTQ'],'stats n50 length summary assembly metrics'],
+ ['seqfu count','core',1,'Count sequences in files, pairing R1/R2 automatically.',['FASTA','FASTQ'],'count reads number paired'],
+ ['seqfu qual','core',1,'Detect the quality encoding and profile per-position quality scores.',['FASTQ'],'quality encoding phred profile qc'],
+ ['seqfu bases','core',1,'Report base composition, GC content and IUPAC counts.',['FASTA','FASTQ'],'bases composition gc content iupac'],
+ ['seqfu check','core',1,'Check FASTQ integrity, including paired-end consistency, across files or directories.',['FASTQ','Directory'],'check integrity validate corrupt paired fastq'],
+ ['seqfu grep','core',2,'Select sequences by name, comment or oligo match, allowing mismatches.',['FASTA','FASTQ'],'grep search pattern oligo primer select'],
+ ['seqfu list','core',2,'Extract sequences whose names appear in a list file.',['FASTA','FASTQ'],'list extract by names ids subset'],
+ ['seqfu derep','core',2,'Dereplicate sequences, keeping counts in the header.',['FASTA','FASTQ'],'derep dereplicate unique duplicates'],
+ ['seqfu sort','core',3,'Sort sequences by length or by abundance.',['FASTA','FASTQ'],'sort length order'],
+ ['seqfu rc','core',3,'Reverse-complement sequences or IUPAC strings.',['FASTA','FASTQ'],'reverse complement rc'],
+ ['seqfu interleave','core',4,'Interleave paired-end reads from two files into one.',['FASTQ'],'interleave paired merge'],
+ ['seqfu deinterleave','core',4,'Split an interleaved file into R1 and R2 files.',['FASTQ'],'deinterleave split paired'],
+ ['seqfu lanes','core',4,'Merge Illumina lanes into a single file per sample.',['FASTQ','Directory'],'lanes merge illumina L001'],
+ ['seqfu metadata','core',5,'Generate sample sheets and metadata tables from a directory of reads.',['Directory'],'metadata read sample sheet manifest qiime'],
+ ['seqfu tabcheck','core',6,'Validate TSV/CSV files for column-count consistency.',['TSV/CSV'],'tabcheck csv consistency tsv validate columns'],
+ ['seqfu orf','core',7,'Extract open reading frames from nucleotide sequences.',['FASTA','FASTQ'],'orf open reading frame protein translate'],
+ ['seqfu msa','core',7,'Summarise a multiple sequence alignment.',['Alignment'],'msa alignment summary'],
+ ['fu-cov','utility',1,'Filter assembly contigs by coverage using the header annotations.',['FASTA'],'coverage contigs spades megahit filter'],
+ ['fu-orf','utility',7,'Standalone wrapper for seqfu orf.',['FASTA','FASTQ'],'orf wrapper'],
+ ['fu-msa','utility',7,'Standalone wrapper for seqfu msa.',['Alignment'],'msa wrapper'],
+ ['fu-tabcheck','utility',6,'Standalone wrapper for seqfu tabcheck.',['TSV/CSV'],'tabcheck csv wrapper'],
+ ['fu-split','utility',3,'Split a file into chunks by number of sequences or files.',['FASTA','FASTQ'],'split chunk'],
+ ['fu-shred','utility',3,'Shred long sequences into overlapping fragments.',['FASTA'],'shred fragments reads simulate'],
+ ['fu-primers','utility',2,'Remove amplification primers from the start of reads.',['FASTQ'],'primers trim amplicon'],
+ ['fu-nanotags','utility',0,'Parse and filter Nanopore read tags.',['FASTQ'],'nanopore tags ont'],
+ ['fu-homocomp','utility',3,'Compress homopolymers in sequences.',['FASTA','FASTQ'],'homopolymer compress'],
+ ['fu-multirelabel','utility',3,'Relabel sequences across multiple files with unique names.',['FASTA','FASTQ'],'relabel rename'],
+ ['fu-index','utility',0,'Report index sequences found in Illumina read headers.',['FASTQ'],'index barcode illumina'],
+];
+const WRAP = {'fu-orf':'seqfu orf','fu-msa':'seqfu msa','fu-tabcheck':'seqfu tabcheck'};
+const PAIR = {'seqfu orf':'fu-orf','seqfu msa':'fu-msa','seqfu tabcheck':'fu-tabcheck','fu-orf':'seqfu orf','fu-msa':'seqfu msa','fu-tabcheck':'seqfu tabcheck'};
+const CMDS = C.map(([cmd,kind,f,summary,inputs,kw]) => ({cmd,kind,family:f,summary,inputs,kw,wrapper:!!WRAP[cmd],pair:PAIR[cmd]||''}));
+const INSTALL = {conda:'conda install -c conda-forge -c bioconda seqfu', binary:'curl -L https://github.com/telatin/seqfu2/releases/latest/download/seqfu-linux.zip -o seqfu.zip', source:'git clone https://github.com/telatin/seqfu2 && cd seqfu2 && make'};
+
+function score(c, q){
+  const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if(!toks.length) return 1;
+  const hay = (c.cmd+' '+c.summary+' '+c.kw+' '+c.inputs.join(' ')+' '+FAM[c.family]).toLowerCase();
+  let s = 0;
+  for(const t of toks){ if(!hay.includes(t)) return 0; s += c.cmd.includes(t)?5:(c.kw.includes(t)?2:1); }
+  return s;
+}
+
+class Component extends DCLogic {
+  state = { view: this.props.startView ?? 'home', kind:'all', input:'Any', fams:[], query:'', localQuery:'', hideWrap:false, sel:'seqfu head', install:'conda' };
+  go(view, extra){ this.setState({view, query:'', ...(extra||{})}); window.scrollTo(0,0); }
+  open(cmd){ this.go('command',{sel:cmd}); }
+  renderVals(){
+    const s = this.state;
+    const kindOf = s.view==='index' ? s.kind : null;
+    const navItems = [
+      ['Getting Started',()=>this.go('home'),false],
+      ['Core Tools',()=>this.go('index',{kind:'core',fams:[]}), s.view==='index'&&s.kind==='core' || s.view==='command'&&s.sel.startsWith('seqfu')],
+      ['Utilities',()=>this.go('index',{kind:'utility',fams:[]}), s.view==='index'&&s.kind==='utility' || s.view==='command'&&s.sel.startsWith('fu-')],
+      ['Recipes',()=>this.go('home'),false],
+      ['Reference',()=>this.go('index',{kind:'all',fams:[]}), kindOf==='all'],
+      ['About',()=>this.go('home'),false],
+    ].map(([label,go,active])=>({label,go,active}));
+
+    const q = s.query.trim();
+    const hits = q ? CMDS.map(c=>({c,sc:score(c,q)})).filter(x=>x.sc).sort((a,b)=>b.sc-a.sc) : [];
+    const results = hits.slice(0,7).map(({c})=>{
+      const t = q.toLowerCase().split(/\s+/)[0]; const i = c.summary.toLowerCase().indexOf(t);
+      return {cmd:c.cmd, kindLabel:c.kind==='core'?'Core':'Utility', family:FAM[c.family], open:()=>this.open(c.cmd),
+        pre: i>=0?c.summary.slice(0,i):c.summary, mid: i>=0?c.summary.slice(i,i+t.length):'', post: i>=0?c.summary.slice(i+t.length):''};
+    });
+
+    const filtered = CMDS.filter(c =>
+      (s.kind==='all'||c.kind===s.kind) &&
+      (s.input==='Any'||c.inputs.includes(s.input)) &&
+      (!s.fams.length||s.fams.includes(c.family)) &&
+      (!s.hideWrap||!c.wrapper) && score(c,s.localQuery));
+    const card = c => ({...c, open:()=>this.open(c.cmd), isWrapper:c.wrapper, hasPair:!!c.pair});
+    const groups = FAM.map((name,i)=>{const items=filtered.filter(c=>c.family===i).map(card); return {name,items,count:items.length};}).filter(g=>g.count);
+    const scope = CMDS.filter(c=>s.kind==='all'||c.kind===s.kind);
+
+    const cur = CMDS.find(c=>c.cmd===s.sel) || CMDS[0];
+    const base = cur.cmd;
+    const sel = {...cur, familyName:FAM[cur.family], kindLabel:cur.kind==='core'?'Core Tools':'Utilities', since:'v1.'+(8+cur.family),
+      goKind:()=>this.go('index',{kind:cur.kind,fams:[]}), inputsStr:cur.inputs.join(', '), hasPair:!!cur.pair,
+      output: cur.family<=1&&cur.family!==0 ? 'TSV table' : (cur.inputs[0]==='TSV/CSV'?'Report':'Same as input'),
+      uses:['Preview or subset '+cur.inputs.join('/')+' input before a long analysis','Use inside a pipe between other SeqFu commands','Batch over many files with a shell glob'],
+      example: base+' reads.fq.gz',
+      advanced:[{label:'Read from stdin and compress the output',cmd:'zcat reads.fq.gz | '+base+' - | gzip > out.fq.gz'},{label:'Run over every sample in a directory',cmd:base+' data/*_R1_*.fastq.gz > summary.txt'}]};
+
+    return {
+      navItems, query:s.query, onQuery:e=>this.setState({query:e.target.value}),
+      showResults:!!q, results, resultCount:hits.length, noResults:!!q&&!hits.length,
+      goHome:()=>this.go('home'), goStart:()=>this.go('home'),
+      goCore:()=>this.go('index',{kind:'core',fams:[]}), goUtil:()=>this.go('index',{kind:'utility',fams:[]}),
+      isHome:s.view==='home', isIndex:s.view==='index', isCommand:s.view==='command',
+      showSidebar:this.props.showSidebar ?? true,
+      installTabs:[['conda','Bioconda'],['binary','Binary'],['source','Source']].map(([k,label])=>({label,active:s.install===k,pick:()=>this.setState({install:k})})),
+      installCmd:INSTALL[s.install],
+      coreCount:CMDS.filter(c=>c.kind==='core').length, utilCount:CMDS.filter(c=>c.kind==='utility').length,
+      familyCards:FAM.map((name,i)=>{const cs=CMDS.filter(c=>c.family===i);return {name,count:cs.length,sample:cs.slice(0,3).map(c=>c.cmd.replace('seqfu ','')).join(' · '),go:()=>this.go('index',{kind:'all',fams:[i]})};}),
+      recipes:[['Inspect a new sequencing run','stats · qual · check'],['Validate files before submission','check · tabcheck'],['Merge lanes per sample','lanes'],['Dereplicate amplicon reads','derep · sort'],['Extract reads by a list of IDs','list · grep']].map(([title,cmds])=>({title,cmds})),
+      indexTitle: s.kind==='core'?'Core Tools':s.kind==='utility'?'Utilities':'Command Reference',
+      indexLede: s.kind==='core'?'Subcommands of the seqfu binary, invoked as seqfu <command>. Grouped by task.':s.kind==='utility'?'Standalone fu-* executables, specialised analyses and compatibility wrappers for core commands.':'Every Core Tool and Utility, filterable by task, input type and kind.',
+      localQuery:s.localQuery, onLocalQuery:e=>this.setState({localQuery:e.target.value}),
+      kindChips:[['all','All'],['core','Core'],['utility','Utilities']].map(([k,label])=>({label,active:s.kind===k,inactive:s.kind!==k,pick:()=>this.setState({kind:k})})),
+      inputChips:['Any','FASTA','FASTQ','TSV/CSV','Directory'].map(k=>({label:k,active:s.input===k,inactive:s.input!==k,pick:()=>this.setState({input:k})})),
+      familyFilters:FAM.map((name,i)=>{const a=s.fams.includes(i);return {name,count:scope.filter(c=>c.family===i).length,active:a,inactive:!a,toggle:()=>this.setState({fams:a?s.fams.filter(x=>x!==i):[...s.fams,i]})};}),
+      hideWrappers:s.hideWrap, showWrappers:!s.hideWrap, toggleWrappers:()=>this.setState({hideWrap:!s.hideWrap}),
+      groups, shownCount:filtered.length, indexEmpty:!filtered.length,
+      sel,
+      siblings:CMDS.filter(c=>c.family===cur.family).map(c=>({cmd:c.cmd,active:c.cmd===cur.cmd,inactive:c.cmd!==cur.cmd,open:()=>this.open(c.cmd)})),
+      related:CMDS.filter(c=>c.cmd!==cur.cmd&&(c.family===cur.family||c.cmd===cur.pair)).slice(0,5).map(c=>({cmd:c.cmd,open:()=>this.open(c.cmd)})),
+      optionGroups:[
+        {name:'Selection',opts:[{flag:'-n, --num NUM',desc:'Number of sequences to process [default: 10]'},{flag:'-k, --skip NUM',desc:'Skip the first NUM sequences'}]},
+        {name:'Output format',opts:[{flag:'--fasta',desc:'Force FASTA output'},{flag:'-p, --prefix STR',desc:'Rename sequences with prefix and progressive number'},{flag:'-s, --strip-comments',desc:'Remove comments from headers'}]},
+        {name:'General',opts:[{flag:'-q, --quiet',desc:'Suppress warnings'},{flag:'--help',desc:'Show help and exit'}]},
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

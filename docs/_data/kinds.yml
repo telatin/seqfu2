@@ -1,0 +1,11 @@
+# Program kinds. Assigned automatically by folder (see `defaults` in _config.yml).
+- id: core
+  name: Core tools
+  label: Core
+  invocation: "seqfu <command> [options] FILE..."
+  description: Subcommands of the main seqfu binary, with a stable, tested command-line interface.
+- id: utility
+  name: Utilities
+  label: Utility
+  invocation: "fu-<tool> [options] FILE..."
+  description: Standalone fu-* programs shipped with SeqFu, including compatibility wrappers.

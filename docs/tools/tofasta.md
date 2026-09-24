@@ -1,10 +1,18 @@
 ---
-layout: default
 title: seqfu tofasta
-parent: Core Tools
+summary: "Convert GenBank, EMBL, GFF, GFA, alignments and FASTQ to FASTA."
+category: transform
+input: [FASTA, FASTQ, Alignment, GenBank, GFF, GFA]
+output: "FASTA"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+since: "1.23.0"
+related: ["seqfu cat"]
+keywords: "convert fasta genbank embl gff gfa clustal stockholm any2fasta"
 ---
-
-# seqfu tofasta
 
 Converts various sequence file formats to FASTA format.
 
@@ -146,4 +154,3 @@ ERROR: Duplicate sequence ID found: NZ_12345
 - Only processes S (segment) lines
 - Uses segment name as sequence ID
 - Ignores paths, links, and other graph elements
-

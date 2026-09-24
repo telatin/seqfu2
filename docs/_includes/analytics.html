@@ -1,0 +1,9 @@
+{% if site.gtag4 %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ site.gtag4 }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{ site.gtag4 }}');
+</script>
+{% endif %}

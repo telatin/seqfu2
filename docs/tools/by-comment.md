@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu by-comment
-parent: Core Tools
+summary: "Select records by comment text or typed key=value attributes and expressions."
+category: filter
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu by-id", "seqfu by-seq", "seqfu grep"]
+keywords: "comment attributes where expression select filter"
 ---
-
-# seqfu by-comment
 
 `by-comment` selects FASTA and FASTQ records by the comment after the sequence
 identifier. It can search raw comment text, compare embedded `key=value`

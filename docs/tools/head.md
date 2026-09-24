@@ -1,11 +1,17 @@
 ---
-layout: default
 title: seqfu head
-parent: Core Tools
+summary: "Print the first sequences of one or more files, optionally sampling one every N."
+category: inspect
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu tail", "seqfu view", "seqfu cat"]
+keywords: "head first subset preview sample"
 ---
-
-
-# seqfu head
 
 *head*  is one of the core subprograms of *SeqFu*.
 
@@ -60,4 +66,4 @@ are specified to force a different output.
 
 ## Screenshot
 
-![Screenshot of "seqfu head"](img/screenshot-head.svg "SeqFu head")
+![Screenshot of "seqfu head"]({{ '/img/screenshot-head.svg' | relative_url }} "SeqFu head")

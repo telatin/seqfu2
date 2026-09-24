@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu msa
-parent: Core Tools
+summary: "Interactive viewer for multiple sequence alignments in the terminal."
+category: inspect
+input: [Alignment, FASTA]
+output: "Terminal (TUI)"
+wrapper: false
+deprecated: false
+experimental: true
+paired: false
+interactive: true
+related: ["fu-msa", "seqfu less"]
+keywords: "msa alignment viewer clustal stockholm tui"
 ---
-
-# seqfu msa
 
 ```note
 Preliminary version

@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu deinterleave
-parent: Core Tools
+summary: "Split an interleaved FASTQ file into separate R1 and R2 files."
+category: paired
+input: [FASTQ]
+output: "Two FASTQ files"
+aliases: [dei]
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu interleave", "seqfu tabulate"]
+keywords: "deinterleave split paired r1 r2"
 ---
-
-
-# seqfu deinterleave
 
 *deinterleave* (or *dei*) is one of the core subprograms of *SeqFu*.
 It's used to produce two separate FASTQ files from an interleaved file. 

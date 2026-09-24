@@ -1,11 +1,16 @@
 ---
-layout: default
 title: fu-virfilter
-parent: Utilities
+summary: "Filter sequences using a VirFinder predictions table."
+category: filter
+input: [FASTA, TSV-CSV]
+output: "FASTA"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+keywords: "virfinder virus viral filter prediction"
 ---
-
-
-# fu-virfilter
 
 Filter sequences from VirFinder predictions CSV file.
 

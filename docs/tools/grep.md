@@ -1,11 +1,17 @@
 ---
-layout: default
 title: seqfu grep
-parent: Core Tools
+summary: "Select sequences by name, comment or oligonucleotide match, allowing mismatches."
+category: filter
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu by-id", "seqfu by-comment", "seqfu by-seq", "seqfu list"]
+keywords: "grep search pattern regex oligo primer select"
 ---
-
-
-# seqfu grep
 
 *grep*  is one of the core subprograms of *SeqFu*.
 

@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu cat
-parent: Core Tools
+summary: "Concatenate FASTA/FASTQ files, renaming, annotating and filtering records on the way."
+category: transform
+input: [FASTA, FASTQ]
+output: "FASTA or FASTQ"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["fu-multirelabel", "seqfu head"]
+keywords: "concatenate rename prefix comments length filter convert"
 ---
-
-# seqfu cat
 
 Concatenate multiple FASTA/FASTQ files, in a similar way of the GNU `cat` utility.
 
