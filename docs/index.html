@@ -1,0 +1,91 @@
+---
+layout: default
+title: SeqFu
+summary: Inspect, filter and reshape FASTA and FASTQ files from the command line.
+redirect_from:
+  - /readme.html
+---
+{%- assign tools = site.pages | where: "layout", "tool" -%}
+{%- assign core = tools | where: "kind", "core" -%}
+{%- assign utils = tools | where: "kind", "utility" -%}
+{%- assign recipes = site.pages | where: "layout", "recipe" | sort: "order" -%}
+<main class="home">
+  <section class="hero">
+    <div>
+      <img class="hero-logo" src="{{ '/assets/img/seqfu-logo-square.svg' | relative_url }}" alt="SeqFu logo" width="112" height="112">
+      <div class="hero-kicker mono">v{{ site.seqfu_version }} &middot; FASTA / FASTQ toolkit</div>
+      <h1>Inspect, filter and reshape sequence files from the command line.</h1>
+      <p class="hero-lede">SeqFu is a fast, general-purpose toolkit for FASTA and FASTQ files, gzipped or not.
+        Core programs run as <code>seqfu &lt;command&gt;</code>; companion tools ship as standalone <code>fu-*</code> utilities.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="{{ '/getting-started/' | relative_url }}">Get started</a>
+        <a class="btn btn-secondary" href="{{ '/tools/' | relative_url }}">Browse commands</a>
+      </div>
+    </div>
+
+    <div class="terminal" id="install" data-tabs>
+      <div class="terminal-tabs" role="tablist">
+        {%- for t in site.data.install %}
+        <button type="button" role="tab" data-tab="{{ t.id }}"{% if forloop.first %} class="active" aria-selected="true"{% endif %}>{{ t.label }}</button>
+        {%- endfor %}
+      </div>
+      {%- for t in site.data.install %}
+      <pre class="terminal-cmd" data-tab-panel="{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}><span class="prompt">$ </span>{{ t.command | escape }}</pre>
+      {%- endfor %}
+      <div class="terminal-examples">
+        <div><span class="prompt">$ </span><b>seqfu stats</b> -n *.fastq.gz</div>
+        <div><span class="prompt">$ </span><b>seqfu head</b> -n 10 reads.fq.gz</div>
+        <div><span class="prompt">$ </span><b>seqfu grep</b> -o ACGTTGCA contigs.fa</div>
+        <div><span class="prompt">$ </span><b>seqfu count</b> reads_R1.fq.gz reads_R2.fq.gz</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="kind-cards">
+    {%- for k in site.data.kinds %}
+    {%- assign n = tools | where: "kind", k.id | size %}
+    <a class="card kind-card" href="{{ '/tools/' | relative_url }}?kind={{ k.id }}">
+      <span class="kind-card-head"><span class="kind-card-title">{{ k.name }}</span><span class="mono accent">{{ n }} {% if k.id == "core" %}commands{% else %}tools{% endif %}</span></span>
+      <code>{{ k.invocation | escape }}</code>
+      <span class="kind-card-text">{{ k.description }}</span>
+    </a>
+    {%- endfor %}
+  </section>
+
+  <section class="home-section">
+    <h2>Find a tool by task</h2>
+    <p class="muted">Commands grouped by what they do, across both core tools and utilities.</p>
+    <div class="family-grid">
+      {%- for c in site.data.categories %}
+      {%- assign items = tools | where: "category", c.id | where_exp: "t", "t.deprecated != true" | sort: "title" %}
+      {%- assign items_core = items | where: "kind", "core" %}
+      {%- assign items_util = items | where: "kind", "utility" %}
+      {%- assign items = items_core | concat: items_util %}
+      <a class="card family-card" href="{{ '/tools/' | relative_url }}?category={{ c.id }}">
+        <span class="family-card-head"><b>{{ c.name }}</b><span class="muted">{{ items.size }}</span></span>
+        <span class="mono accent small">{% for t in items limit: 4 %}{{ t.title | remove_first: "seqfu " }}{% unless forloop.last %} &middot; {% endunless %}{% endfor %}</span>
+      </a>
+      {%- endfor %}
+    </div>
+  </section>
+
+  <section class="home-split">
+    <div>
+      <h2>Recipes</h2>
+      <div class="recipe-list">
+        {%- for r in recipes limit: 6 %}
+        <a href="{{ r.url | relative_url }}">
+          <span class="recipe-title">{{ r.title }}</span>
+          <span class="mono muted small">{% for t in r.tools limit: 3 %}{{ t | remove_first: "seqfu " }}{% unless forloop.last %} &middot; {% endunless %}{% endfor %}</span>
+        </a>
+        {%- endfor %}
+      </div>
+      <a class="more" href="{{ '/recipes/' | relative_url }}">All recipes &rarr;</a>
+    </div>
+    <div class="cite-box">
+      <div class="eyebrow accent">Cite SeqFu</div>
+      <p>Telatin A, Fariselli P, Birolo G. <em>SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files.</em> Bioengineering 2021, 8(5), 59.</p>
+      <a href="https://doi.org/{{ site.doi }}">doi:{{ site.doi }}</a>
+    </div>
+  </section>
+</main>

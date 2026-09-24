@@ -1,5 +1,514 @@
-<!DOCTYPE html> <html lang="en-US"> <head> <meta charset="UTF-8"> <meta http-equiv="X-UA-Compatible" content="IE=Edge"> <link rel="stylesheet" href="/seqfu2/assets/css/just-the-docs-default.css"> <link rel="stylesheet" href="/seqfu2/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet"> <style id="jtd-nav-activation"> .site-nav > ul.nav-list:first-child > li > a, .site-nav > ul.nav-list:first-child > li > ul > li:not(:nth-child(1)) > a, .site-nav > ul.nav-list:first-child > li > ul > li > ul > li a { background-image: none; } .site-nav > ul.nav-list:not(:first-child) a, .site-nav li.external a { background-image: none; } .site-nav > ul.nav-list:first-child > li:nth-child(5) > ul > li:nth-child(1) > a { font-weight: 600; text-decoration: none; }.site-nav > ul.nav-list:first-child > li:nth-child(5) > button svg, .site-nav > ul.nav-list:first-child > li:nth-child(5) > ul > li:nth-child(1) > button svg { transform: rotate(-90deg); }.site-nav > ul.nav-list:first-child > li.nav-list-item:nth-child(5) > ul.nav-list, .site-nav > ul.nav-list:first-child > li.nav-list-item:nth-child(5) > ul.nav-list > li.nav-list-item:nth-child(1) > ul.nav-list { display: block; } </style> <script src="/seqfu2/assets/js/vendor/lunr.min.js"></script> <script src="/seqfu2/assets/js/just-the-docs.js"></script> <meta name="viewport" content="width=device-width, initial-scale=1"> <link rel="icon" href="/seqfu2/favicon.ico" type="image/x-icon"> <!-- Begin Jekyll SEO tag v2.8.0 --> <title>seqfu trim | SeqFu Documentation</title> <meta name="generator" content="Jekyll v3.10.0" /> <meta property="og:title" content="seqfu trim" /> <meta property="og:locale" content="en_US" /> <meta name="description" content="A general-purpose toolkit to manipulate and parse FASTA/FASTQ files" /> <meta property="og:description" content="A general-purpose toolkit to manipulate and parse FASTA/FASTQ files" /> <link rel="canonical" href="http://0.0.0.0:4000/seqfu2/tools/trim.html" /> <meta property="og:url" content="http://0.0.0.0:4000/seqfu2/tools/trim.html" /> <meta property="og:site_name" content="SeqFu Documentation" /> <meta property="og:type" content="website" /> <meta name="twitter:card" content="summary" /> <meta property="twitter:title" content="seqfu trim" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"WebPage","description":"A general-purpose toolkit to manipulate and parse FASTA/FASTQ files","headline":"seqfu trim","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://0.0.0.0:4000/seqfu2/img/seqfu-512.png"}},"url":"http://0.0.0.0:4000/seqfu2/tools/trim.html"}</script> <!-- End Jekyll SEO tag --> </head> <body> <a class="skip-to-main" href="#main-content">Skip to main content</a> <svg xmlns="http://www.w3.org/2000/svg" class="d-none"> <symbol id="svg-link" viewBox="0 0 24 24"> <title>Link</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link"> <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path> </svg> </symbol> <symbol id="svg-menu" viewBox="0 0 24 24"> <title>Menu</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"> <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line> </svg> </symbol> <symbol id="svg-arrow-right" viewBox="0 0 24 24"> <title>Expand</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"> <polyline points="9 18 15 12 9 6"></polyline> </svg> </symbol> <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE --> <symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link"> <title id="svg-external-link-title">(external link)</title> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line> </symbol> <symbol id="svg-doc" viewBox="0 0 24 24"> <title>Document</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"> <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline> </svg> </symbol> <symbol id="svg-search" viewBox="0 0 24 24"> <title>Search</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"> <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line> </svg> </symbol> <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md --> <symbol id="svg-copy" viewBox="0 0 16 16"> <title>Copy</title> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16"> <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/> <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/> </svg> </symbol> <symbol id="svg-copied" viewBox="0 0 16 16"> <title>Copied</title> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16"> <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/> <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/> </svg> </symbol> </svg> <div class="side-bar"> <div class="site-header" role="banner"> <a href="/seqfu2/" class="site-title lh-tight"> <div class="site-logo" role="img" aria-label="SeqFu Documentation"></div> </a> <button id="menu-button" class="site-button btn-reset" aria-label="Toggle menu" aria-pressed="false"> <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg> </button> </div> <nav aria-label="Main" id="site-nav" class="site-nav"> <ul class="nav-list"><li class="nav-list-item"><a href="/seqfu2/" class="nav-list-link">Home</a></li><li class="nav-list-item"><a href="/seqfu2/installation" class="nav-list-link">Installation</a></li><li class="nav-list-item"><a href="/seqfu2/intro" class="nav-list-link">Overview</a></li><li class="nav-list-item"><a href="/seqfu2/usage" class="nav-list-link">Usage Guide</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Core Tools category" aria-pressed="false"> <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg> </button><a href="/seqfu2/tools/README.html" class="nav-list-link">Core Tools</a><ul class="nav-list"><li class="nav-list-item"><a href="/seqfu2/tools/trim.html" class="nav-list-link">seqfu trim</a></li><li class="nav-list-item"><a href="/seqfu2/tools/bases.html" class="nav-list-link">seqfu bases</a></li><li class="nav-list-item"><a href="/seqfu2/tools/cat.html" class="nav-list-link">seqfu cat</a></li><li class="nav-list-item"><a href="/seqfu2/tools/check.html" class="nav-list-link">seqfu check</a></li><li class="nav-list-item"><a href="/seqfu2/tools/count.html" class="nav-list-link">seqfu count</a></li><li class="nav-list-item"><a href="/seqfu2/tools/deinterleave.html" class="nav-list-link">seqfu deinterleave</a></li><li class="nav-list-item"><a href="/seqfu2/tools/derep.html" class="nav-list-link">seqfu derep</a></li><li class="nav-list-item"><a href="/seqfu2/tools/grep.html" class="nav-list-link">seqfu grep</a></li><li class="nav-list-item"><a href="/seqfu2/tools/head.html" class="nav-list-link">seqfu head</a></li><li class="nav-list-item"><a href="/seqfu2/tools/interleave.html" class="nav-list-link">seqfu interleave</a></li><li class="nav-list-item"><a href="/seqfu2/tools/lanes.html" class="nav-list-link">seqfu lanes</a></li><li class="nav-list-item"><a href="/seqfu2/tools/list.html" class="nav-list-link">seqfu list</a></li><li class="nav-list-item"><a href="/seqfu2/tools/merge.html" class="nav-list-link">seqfu merge</a></li><li class="nav-list-item"><a href="/seqfu2/tools/metadata.html" class="nav-list-link">seqfu metadata</a></li><li class="nav-list-item"><a href="/seqfu2/tools/qual.html" class="nav-list-link">seqfu qual</a></li><li class="nav-list-item"><a href="/seqfu2/tools/rc.html" class="nav-list-link">seqfu rc</a></li><li class="nav-list-item"><a href="/seqfu2/tools/rotate.html" class="nav-list-link">seqfu rotate</a></li><li class="nav-list-item"><a href="/seqfu2/tools/sort.html" class="nav-list-link">seqfu sort</a></li><li class="nav-list-item"><a href="/seqfu2/tools/stats.html" class="nav-list-link">seqfu stats</a></li><li class="nav-list-item"><a href="/seqfu2/tools/tabulate.html" class="nav-list-link">seqfu tabulate</a></li><li class="nav-list-item"><a href="/seqfu2/tools/tail.html" class="nav-list-link">seqfu tail</a></li><li class="nav-list-item"><a href="/seqfu2/tools/view.html" class="nav-list-link">seqfu view</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Utilities category" aria-pressed="false"> <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg> </button><a href="/seqfu2/utilities/README.html" class="nav-list-link">Utilities</a><ul class="nav-list"><li class="nav-list-item"><a href="/seqfu2/utilities/fu-16Sregion.html" class="nav-list-link">fu-16Sregion</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-cov.html" class="nav-list-link">fu-cov</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-homocomp.html" class="nav-list-link">fu-homocom</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-index.html" class="nav-list-link">fu-index</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-msa.html" class="nav-list-link">fu-msa</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-multirelabel.html" class="nav-list-link">fu-multirelabel</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-nanotags.html" class="nav-list-link">fu-nanotags</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-orf.html" class="nav-list-link">fu-orf</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-primers.html" class="nav-list-link">fu-primers</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-shred.html" class="nav-list-link">fu-shred</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-sw.html" class="nav-list-link">fu-sw</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-tabcheck.html" class="nav-list-link">fu-tabcheck</a></li><li class="nav-list-item"><a href="/seqfu2/utilities/fu-virfilter.html" class="nav-list-link">fu-virfilter</a></li></ul></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Helper Utilities category" aria-pressed="false"> <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg> </button><a href="/seqfu2/scripts/README.html" class="nav-list-link">Helper Utilities</a><ul class="nav-list"><li class="nav-list-item"><a href="/seqfu2/scripts/fu-pecheck.html" class="nav-list-link">fu-pecheck</a></li><li class="nav-list-item"><a href="/seqfu2/scripts/fu-split.html" class="nav-list-link">fu-split</a></li></ul></li><li class="nav-list-item"><a href="/seqfu2/about" class="nav-list-link">About</a></li><li class="nav-list-item"><button class="nav-list-expander btn-reset" aria-label="toggle items in Releases category" aria-pressed="false"> <svg viewBox="0 0 24 24" aria-hidden="true"><use xlink:href="#svg-arrow-right"></use></svg> </button><a href="/seqfu2/releases/README.html" class="nav-list-link">Releases</a><ul class="nav-list"><li class="nav-list-item"><a href="/seqfu2/releases/history.html" class="nav-list-link">version 1.3.6</a></li></ul></li></ul> </nav> <footer class="site-footer"> This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll. </footer> </div> <div class="main" id="top"> <div id="main-header" class="main-header"> <div class="search" role="search"> <div class="search-input-wrap"> <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search SeqFu Documentation" aria-label="Search SeqFu Documentation" autocomplete="off"> <label for="search-input" class="search-label"><svg viewBox="0 0 24 24" class="search-icon"><use xlink:href="#svg-search"></use></svg></label> </div> <div id="search-results" class="search-results"></div> </div> <nav aria-label="Auxiliary" class="aux-nav"> <ul class="aux-nav-list"> <li class="aux-nav-list-item"> <a href="https://github.com/telatin/seqfu2" class="site-button" target="_blank" rel="noopener noreferrer" > GitHub Repository </a> </li> <li class="aux-nav-list-item"> <a href="https://github.com/telatin/seqfu2/issues" class="site-button" target="_blank" rel="noopener noreferrer" > Report Issue </a> </li> </ul> </nav> </div> <div class="main-content-wrap"> <nav aria-label="Breadcrumb" class="breadcrumb-nav"> <ol class="breadcrumb-nav-list"> <li class="breadcrumb-nav-list-item"><a href="/seqfu2/tools/README.html">Core Tools</a></li> <li class="breadcrumb-nav-list-item"><span>seqfu trim</span></li> </ol> </nav> <div id="main-content" class="main-content"> <main> <h1 id="trim"> <a href="#trim" class="anchor-heading" aria-labelledby="trim"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> trim </h1> <p>The <code class="language-plaintext highlighter-rouge">trim</code> command trims FASTQ sequences from the 3’ end when quality drops below a threshold in a sliding window.</p> <h2 id="usage"> <a href="#usage" class="anchor-heading" aria-labelledby="usage"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Usage </h2> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim [options] [&lt;inputfile&gt; ...]
-</code></pre></div></div> <h2 id="options"> <a href="#options" class="anchor-heading" aria-labelledby="options"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Options </h2> <div class="table-wrapper"><table> <thead> <tr> <th>Option</th> <th>Description</th> <th>Default</th> </tr> </thead> <tbody> <tr> <td><code class="language-plaintext highlighter-rouge">-w, --window-size INT</code></td> <td>Window size for quality calculation</td> <td>5</td> </tr> <tr> <td><code class="language-plaintext highlighter-rouge">-q, --min-avg-qual INT</code></td> <td>Minimum average quality within window</td> <td>20</td> </tr> <tr> <td><code class="language-plaintext highlighter-rouge">--offset INT</code></td> <td>Quality offset (33 for Illumina)</td> <td>33</td> </tr> <tr> <td><code class="language-plaintext highlighter-rouge">-o, --output FILE</code></td> <td>Output filename</td> <td>stdout</td> </tr> <tr> <td><code class="language-plaintext highlighter-rouge">-v, --verbose</code></td> <td>Verbose output</td> <td>off</td> </tr> <tr> <td><code class="language-plaintext highlighter-rouge">-h, --help</code></td> <td>Show help</td> <td> </td> </tr> </tbody> </table></div> <h2 id="description"> <a href="#description" class="anchor-heading" aria-labelledby="description"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Description </h2> <p>This command scans the quality scores of FASTQ sequences using a sliding window of the specified size. When the average quality within the window drops below the specified threshold, it trims the sequence from that position, discarding all subsequent bases.</p> <p>This is useful for removing low-quality regions from the 3’ end of sequencing reads, which often contain more errors as the sequencing reaction progresses.</p> <h2 id="examples"> <a href="#examples" class="anchor-heading" aria-labelledby="examples"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Examples </h2> <p>Trim sequences when the quality drops below 20 in a window of 5 bases:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim input.fastq <span class="nt">-o</span> output.fastq
-</code></pre></div></div> <p>Use a more stringent quality threshold:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim <span class="nt">-q</span> 25 input.fastq <span class="nt">-o</span> output.fastq
-</code></pre></div></div> <p>Change the window size:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim <span class="nt">-w</span> 10 <span class="nt">-q</span> 20 input.fastq <span class="nt">-o</span> output.fastq
-</code></pre></div></div> </main> <hr> <footer> <p><a href="#top" id="back-to-top">Back to top</a></p> <p class="text-small text-grey-dk-100 mb-0">Copyright &copy; 2019-2025 Andrea Telatin. Distributed by an <a href="https://github.com/telatin/seqfu2/blob/main/LICENSE">MIT license</a>.</p> <div class="d-flex mt-2"> </div> </footer> </div> </div> <button id="search-button" class="search-button btn-reset" aria-label="Focus on search"> <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-search"></use></svg> </button> <div class="search-overlay"></div> </div> </body> </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Begin Jekyll SEO tag v2.9.0 -->
+<title>seqfu trim | SeqFu</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="seqfu trim" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A suite of utilities for the robust and reproducible manipulation of FASTA and FASTQ files" />
+<meta name="twitter:description" property="og:description" content="A suite of utilities for the robust and reproducible manipulation of FASTA and FASTQ files" />
+<link rel="canonical" href="http://localhost:4000/seqfu2/tools/trim.html" />
+<meta property="og:url" content="http://localhost:4000/seqfu2/tools/trim.html" />
+<meta property="og:site_name" content="SeqFu" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="seqfu trim" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"A suite of utilities for the robust and reproducible manipulation of FASTA and FASTQ files","headline":"seqfu trim","url":"http://localhost:4000/seqfu2/tools/trim.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/seqfu2/assets/css/main.css">
+<link rel="apple-touch-icon" sizes="180x180" href="/seqfu2/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/seqfu2/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/seqfu2/favicon-16x16.png">
+<link rel="manifest" href="/seqfu2/site.webmanifest">
+<script>window.SEQFU = { baseurl: "/seqfu2", searchIndex: "/seqfu2/assets/search.json" };</script>
+<script defer src="/seqfu2/assets/js/site.js"></script>
+
+
+
+</head>
+<body class="layout-tool">
+<header class="topbar">
+  <a class="brand" href="/seqfu2/" aria-label="SeqFu home">
+    <img class="brand-logo" src="/seqfu2/assets/img/seqfu-logo-square.svg" alt="" width="32" height="32">
+    <span class="brand-name">SeqFu</span>
+  </a>
+  <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" data-nav-toggle>
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="topnav" data-nav>
+    <a href="/seqfu2/getting-started/">Getting started</a>
+    <a href="/seqfu2/tools/" class="active" aria-current="page">Tools</a>
+    <a href="/seqfu2/recipes/">Recipes</a>
+    <a href="/seqfu2/about/">About</a>
+    <a class="topnav-ext" href="https://github.com/telatin/seqfu2">GitHub</a>
+  </nav>
+  <div class="search" data-search>
+    <input type="search" placeholder="Search commands, tasks, options…" aria-label="Search the documentation" autocomplete="off" data-search-input>
+    <kbd>/</kbd>
+    <div class="search-results" hidden data-search-results></div>
+  </div>
+  <a class="btn-install" href="/seqfu2/getting-started/installation.html">Install</a>
+</header>
+
+<div class="topbar-spacer"></div>
+<div class="shell">
+  <aside class="sidebar" data-sidebar>
+    <div class="eyebrow">Filtering & extraction</div>
+    <nav class="sidebar-list mono">
+      <a href="/seqfu2/tools/by-comment.html">seqfu by-comment</a>
+      <a href="/seqfu2/tools/by-id.html">seqfu by-id</a>
+      <a href="/seqfu2/tools/by-seq.html">seqfu by-seq</a>
+      <a href="/seqfu2/tools/derep.html">seqfu derep</a>
+      <a href="/seqfu2/tools/grep.html">seqfu grep</a>
+      <a href="/seqfu2/tools/list.html">seqfu list</a>
+      <a href="/seqfu2/tools/subtract.html">seqfu subtract</a>
+      <a href="/seqfu2/tools/trim.html" class="active" aria-current="page">seqfu trim</a>
+      <a href="/seqfu2/utilities/fu-cov.html">fu-cov</a>
+      <a href="/seqfu2/utilities/fu-primers.html">fu-primers</a>
+      <a href="/seqfu2/utilities/fu-virfilter.html">fu-virfilter</a>
+    </nav>
+    <a class="sidebar-more" href="/seqfu2/tools/">All tools &rarr;</a>
+  </aside>
+
+  <main class="content">
+    <div class="crumbs">
+      <a href="/seqfu2/tools/">Tools</a> /
+      <a href="/seqfu2/tools/?kind=core">Core tools</a> /
+      <a href="/seqfu2/tools/?category=filter">Filtering & extraction</a>
+    </div>
+
+    <div class="tool-title">
+      <h1 class="mono">seqfu trim</h1>
+      <span class="badge">Core</span>
+      
+      
+    </div>
+    <p class="lede">Quality-trim and filter single- or paired-end FASTQ files.</p>
+
+    <div class="facts">
+      <div>
+        <div class="eyebrow">Invocation</div>
+        <div class="mono">seqfu trim</div>
+        
+      </div>
+      <div>
+        <div class="eyebrow">Input</div>
+        <div>FASTQ</div>
+      </div>
+      <div>
+        <div class="eyebrow">Output</div>
+        <div>FASTQ</div>
+      </div>
+      <div>
+        <div class="eyebrow">Paired-end</div>
+        <div>Supported</div>
+      </div>
+    </div>
+
+    
+    
+
+    <article class="prose" data-prose>
+      <p>The <code class="language-plaintext highlighter-rouge">trim</code> command provides comprehensive quality trimming and filtering for FASTQ files, with an interface and efficiency similar to <code class="language-plaintext highlighter-rouge">fastp</code>. It supports both single-end and paired-end reads.</p>
+
+<p>By default, it performs 3’ sliding window trimming and quality filtering.</p>
+
+<h2 id="usage">Usage</h2>
+
+<p>For single-end reads:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim [options] &lt;input.fq&gt;
+</code></pre></div></div>
+
+<p>For paired-end reads:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim [options] -1 &lt;R1.fq&gt; [-2 &lt;R2.fq&gt;]
+</code></pre></div></div>
+
+<h2 id="options">Options</h2>
+
+<h3 id="input-options">Input Options</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">&lt;input&gt;</code></td>
+      <td>Single-end FASTQ file. Use <code class="language-plaintext highlighter-rouge">-</code> for stdin.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-1, --r1 FILE</code></td>
+      <td>R1 file for paired-end reads.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-2, --r2 FILE</code></td>
+      <td>R2 file for paired-end reads. If not specified, it’s auto-detected based on the R1 filename.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--for-tag TAG</code></td>
+      <td>Pattern for R1 files for auto-detection.</td>
+      <td><code class="language-plaintext highlighter-rouge">auto</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--rev-tag TAG</code></td>
+      <td>Pattern for R2 files for auto-detection.</td>
+      <td><code class="language-plaintext highlighter-rouge">auto</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="output-options">Output Options</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-o, --output FILE/BASE</code></td>
+      <td>Output file for single-end, or output basename for paired-end (required for PE).</td>
+      <td><code class="language-plaintext highlighter-rouge">stdout</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--r1-suffix SUFFIX</code></td>
+      <td>Suffix for the R1 output file in paired-end mode.</td>
+      <td><code class="language-plaintext highlighter-rouge">_R1.fastq</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--r2-suffix SUFFIX</code></td>
+      <td>Suffix for the R2 output file in paired-end mode.</td>
+      <td><code class="language-plaintext highlighter-rouge">_R2.fastq</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-z, --compress</code></td>
+      <td>Compress output with gzip. Paired output names gain <code class="language-plaintext highlighter-rouge">.gz</code> unless already present.</td>
+      <td>off</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="fixed-position-trimming">Fixed Position Trimming</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--trim-front N</code></td>
+      <td>Trim N bases from the 5’ end of each read.</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--trim-tail N</code></td>
+      <td>Trim N bases from the 3’ end of each read.</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="sliding-window-trimming">Sliding Window Trimming</h3>
+
+<p>This is used to remove low-quality ends of reads.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-5, --cut-front</code></td>
+      <td>Enable 5’ sliding window trimming.</td>
+      <td>off</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--no-cut-front</code></td>
+      <td>Explicitly disable 5’ sliding window trimming.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--cut-front-window N</code></td>
+      <td>Window size for 5’ trimming.</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--cut-front-qual N</code></td>
+      <td>Quality threshold for 5’ trimming.</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-3, --cut-tail</code></td>
+      <td>Enable 3’ sliding window trimming.</td>
+      <td><strong>on</strong></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--no-cut-tail</code></td>
+      <td>Disable the default 3’ sliding window trimming.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--cut-tail-window N</code></td>
+      <td>Window size for 3’ trimming.</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--cut-tail-qual N</code></td>
+      <td>Quality threshold for 3’ trimming.</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-r, --cut-right</code></td>
+      <td>Enable right-side sliding window trimming (takes precedence over <code class="language-plaintext highlighter-rouge">cut-tail</code>).</td>
+      <td>off</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--cut-right-window N</code></td>
+      <td>Window size for right-side trimming.</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--cut-right-qual N</code></td>
+      <td>Quality threshold for right-side trimming.</td>
+      <td>20</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="quality-filtering">Quality Filtering</h3>
+
+<p>Enabled by default.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-Q, --disable-quality</code></td>
+      <td>Disable all quality filtering.</td>
+      <td>off</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--qualified-qual N</code></td>
+      <td>A base is considered qualified if its quality is &gt;= N.</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--unqualified-percent N</code></td>
+      <td>Maximum allowed percentage of unqualified bases per read.</td>
+      <td>40.0</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--avg-qual N</code></td>
+      <td>Minimum average quality for a read. Disabled if 0.</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="other-filtering">Other Filtering</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-n, --n-base-limit N</code></td>
+      <td>Maximum number of N bases allowed in a read.</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-l, --min-length N</code></td>
+      <td>Minimum read length to keep a read.</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--max-length N</code></td>
+      <td>Maximum read length. Disabled if 0.</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--complexity</code></td>
+      <td>Enable low complexity filter.</td>
+      <td>off</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--complexity-threshold F</code></td>
+      <td>Minimum complexity ratio (0 to 1).</td>
+      <td>0.3</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="performance">Performance</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-t, --threads N</code></td>
+      <td>Number of threads to use.</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--batch-size N</code></td>
+      <td>Number of reads to process in each batch per thread.</td>
+      <td>10000</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="other-options">Other Options</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--offset N</code></td>
+      <td>Quality score offset.</td>
+      <td>33</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--preset PRESET</code></td>
+      <td>Apply a preset configuration (<code class="language-plaintext highlighter-rouge">strict</code> or <code class="language-plaintext highlighter-rouge">lenient</code>).</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-v, --verbose</code></td>
+      <td>Print verbose statistics to stderr.</td>
+      <td>off</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--stats-json FILE</code></td>
+      <td>Write detailed statistics in JSON format to a file.</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">-h, --help</code></td>
+      <td>Show the help message.</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="description">Description</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">trim</code> command is a versatile tool for cleaning FASTQ data. It can handle both single-end and paired-end reads and offers a wide range of options for trimming and filtering.</p>
+
+<p>By default, <code class="language-plaintext highlighter-rouge">seqfu trim</code> enables 3’ tail trimming (<code class="language-plaintext highlighter-rouge">--cut-tail</code>) and quality filtering (based on <code class="language-plaintext highlighter-rouge">--qualified-qual</code> and <code class="language-plaintext highlighter-rouge">--unqualified-percent</code>). Front trimming composes with the default tail trim; use <code class="language-plaintext highlighter-rouge">--no-cut-tail</code> for front-only trimming. For paired-end data, both reads must pass all filtering steps to be included in the output.</p>
+
+<h2 id="presets">Presets</h2>
+
+<p>Two presets are available for convenience:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">strict</code>: Enables aggressive filtering. Equivalent to <code class="language-plaintext highlighter-rouge">--cut-right -l 50 --avg-qual 25</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">lenient</code>: Enables light filtering. Equivalent to <code class="language-plaintext highlighter-rouge">--cut-tail -l 30 -Q</code> (disables quality filtering).</li>
+</ul>
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="basic-trimming-defaults">Basic trimming (defaults)</h3>
+
+<p>For a single-end file, this uses the default settings: 3’ tail trimming and quality filtering.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim input.fq <span class="nt">-o</span> output.fq
+</code></pre></div></div>
+
+<h3 id="paired-end-trimming">Paired-end trimming</h3>
+
+<p>The R2 file is auto-detected from the R1 name. The output files will be <code class="language-plaintext highlighter-rouge">trimmed_R1.fastq</code> and <code class="language-plaintext highlighter-rouge">trimmed_R2.fastq</code>.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim <span class="nt">-1</span> sample_R1.fq <span class="nt">-o</span> trimmed
+</code></pre></div></div>
+
+<h3 id="aggressive-filtering">Aggressive filtering</h3>
+
+<p>This example uses the <code class="language-plaintext highlighter-rouge">--cut-right</code> method, sets a minimum average quality of 25, and a minimum length of 50 bp.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim <span class="nt">-1</span> R1.fq <span class="nt">-2</span> R2.fq <span class="nt">-o</span> out <span class="nt">--cut-right</span> <span class="nt">--avg-qual</span> 25 <span class="nt">-l</span> 50
+</code></pre></div></div>
+
+<h3 id="minimal-processing">Minimal processing</h3>
+
+<p>This disables quality filtering and the default sliding-window tail trim, then applies fixed trimming from both ends.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>seqfu trim input.fq <span class="nt">-o</span> output.fq <span class="nt">-Q</span> <span class="nt">--no-cut-tail</span> <span class="nt">--trim-front</span> 5 <span class="nt">--trim-tail</span> 5
+</code></pre></div></div>
+
+    </article>
+
+    
+    <h2 id="related">Related</h2>
+    <div class="related"><a class="mono" href="/seqfu2/tools/qual.html">seqfu qual</a><a class="mono" href="/seqfu2/utilities/fu-primers.html">fu-primers</a>
+    </div>
+    
+
+    <p class="edit-link"><a href="https://github.com/telatin/seqfu2/edit/main/docs/tools/trim.md">Edit this page on GitHub</a></p>
+
+  </main>
+
+  <aside class="toc" data-toc hidden>
+  <div class="eyebrow">On this page</div>
+  <nav data-toc-list></nav>
+</aside>
+
+</div>
+
+<footer class="footer">
+  <span>SeqFu &middot; MIT License &middot; &copy; 2019&ndash;2026 Andrea Telatin &middot; Quadram Institute Bioscience</span>
+  <nav>
+    <a href="https://github.com/telatin/seqfu2">GitHub</a>
+    <a href="/seqfu2/about/changelog.html">Changelog</a>
+    <a href="/seqfu2/about/#citing">Cite</a>
+    <a href="https://github.com/telatin/seqfu2/issues">Report an issue</a>
+    <a rel="me" href="https://mas.to/@seqfu">Mastodon</a>
+  </nav>
+</footer>
+
+</body>
+</html>

@@ -1,10 +1,18 @@
 ---
-layout: default
 title: seqfu check
-parent: Core Tools
+summary: "Check the integrity of FASTQ files, pairs or whole directories."
+category: qc
+input: [FASTQ, Directory]
+output: "Report and exit status"
+wrapper: false
+deprecated: false
+experimental: true
+paired: true
+interactive: false
+since: "1.15"
+related: ["fu-pecheck", "seqfu count"]
+keywords: "integrity validate corrupt paired truncated"
 ---
-
-# seqfu check
 
 ```note
 **EXPERIMENTAL**: Introduced in SeqFu 1.15, updated with --deep in 1.18 (see below).

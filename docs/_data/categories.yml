@@ -1,0 +1,23 @@
+# Task families used to group tools. A tool page picks one with `category: <id>`.
+# Order here is the order used on the home page and in the Tools catalogue.
+- id: inspect
+  name: Inspection
+  description: Look at sequences in the terminal, page through files and alignments.
+- id: qc
+  name: Statistics & QC
+  description: Counts, length metrics, composition, quality encodings and integrity checks.
+- id: filter
+  name: Filtering & extraction
+  description: Select, subtract, dereplicate or trim records by name, comment, sequence or quality.
+- id: transform
+  name: Transformation
+  description: Concatenate, rename, sort, rotate, convert and split sequence files.
+- id: paired
+  name: Pairing & lanes
+  description: Interleave, deinterleave and merge paired-end reads and Illumina lanes.
+- id: tables
+  name: Metadata & tables
+  description: Sample sheets, TSV/CSV validation and tabular views of sequence files.
+- id: analysis
+  name: Specialised analysis
+  description: ORFs, local alignments, 16S regions and long-read tags.

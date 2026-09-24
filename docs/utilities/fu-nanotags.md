@@ -1,10 +1,16 @@
 ---
-layout: default
 title: fu-nanotags
-parent: Utilities
+summary: "Search for tags in long reads with Smith-Waterman alignment."
+category: analysis
+input: [FASTQ]
+output: "FASTQ"
+wrapper: false
+deprecated: false
+experimental: true
+paired: false
+interactive: false
+keywords: "nanopore ont tags barcodes long reads smith-waterman"
 ---
-
-# fu-nanotags
 
 ```note
 Experimental utility. Feedback for this tool is welcome.

@@ -1,11 +1,16 @@
 ---
-layout: default
 title: seqfu rc
-parent: Core Tools
+summary: "Reverse-complement sequence files or IUPAC strings given on the command line."
+category: transform
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+keywords: "reverse complement rc iupac primer"
 ---
-
-
-# seqfu rc
 
 *rc*  is one of the core subprograms of *SeqFu*, that allows 
 to print the _reverse complement_ of sequences, either from
@@ -61,5 +66,3 @@ GTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGT
 >Seq3
 GGGGGGGGGGGGGGGGGGGGG
 ```
-
-

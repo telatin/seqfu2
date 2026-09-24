@@ -1,12 +1,18 @@
 ---
-layout: default
 title: seqfu rotate
-parent: Core Tools
+summary: "Rotate (restart) sequences at a new position or at a motif."
+category: transform
+input: [FASTA, FASTQ]
+output: "Same as input"
+aliases: [rot, restart]
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+since: "1.8.6"
+keywords: "rotate circular restart origin motif plasmid"
 ---
-
-
-
-# seqfu rotate
 
 Rotate a sequence setting a new starting position, using 
 a new position or an oligonucleotide.

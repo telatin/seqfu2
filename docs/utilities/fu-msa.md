@@ -1,14 +1,18 @@
 ---
-layout: default
 title: fu-msa
-parent: Utilities
+summary: "Legacy launcher for seqfu msa (prints a migration notice first)."
+category: inspect
+input: [Alignment, FASTA]
+output: "Terminal (TUI)"
+wrapper: true
+wraps: seqfu msa
+deprecated: true
+experimental: false
+paired: false
+interactive: false
 ---
 
-
-
-# fu-msa
-
-`fu-msa` has moved to [`seqfu msa`](../tools/msa.md).
+`fu-msa` has moved to [`seqfu msa`]({{ '/tools/msa.html' | relative_url }}).
 
 The `fu-msa` binary is still shipped for compatibility with existing workflows. It prints a migration notice, waits three seconds, and then runs `seqfu msa` with the same arguments.
 

@@ -1,0 +1,10 @@
+# Tabs of the install box on the home page.
+- id: conda
+  label: Bioconda
+  command: conda install -c conda-forge -c bioconda "seqfu>=1.30"
+- id: binary
+  label: Binary
+  command: curl -fsSL https://telatin.github.io/seqfu2/install.sh | sh
+- id: source
+  label: Source
+  command: git clone https://github.com/telatin/seqfu2 && cd seqfu2 && make

@@ -1,95 +1,72 @@
-# SeqFu Documentation Site Configuration
+# SeqFu documentation site
+# Built by GitHub Pages (Jekyll 3.x, github-pages gem). No custom Ruby plugins:
+# all listings, filters and search indexes are generated with plain Liquid.
 
-# Site settings
-title: SeqFu Documentation
-description: A general-purpose toolkit to manipulate and parse FASTA/FASTQ files
-baseurl: "/seqfu2"
+title: SeqFu
+description: A suite of utilities for the robust and reproducible manipulation of FASTA and FASTQ files
 url: "https://telatin.github.io"
+baseurl: "/seqfu2"
+repository: telatin/seqfu2
 
-# Theme configuration
-theme: just-the-docs
-remote_theme: just-the-docs/just-the-docs
+# Shown in the hero and in the install box. Keep in sync with seqfu.nimble.
+seqfu_version: "1.30.0"
 
-# Color scheme
-color_scheme: light
+github_url: "https://github.com/telatin/seqfu2"
+bioconda_url: "https://anaconda.org/bioconda/seqfu"
+mastodon_url: "https://mas.to/@seqfu"
+doi: "10.3390/bioengineering8050059"
 
-# Logo
-logo: "/img/seqfu-512.png"
+# Optional analytics (see _includes/analytics.html)
+# gtag4: G-XXXXXXXXXX
 
-# Search configuration
-search_enabled: true
-search:
-  heading_level: 2
-  previews: 3
-  preview_words_before: 5
-  preview_words_after: 10
-  tokenizer_separator: /[\s/]+/
-  rel_url: true
-  button: false
-
-# Navigation
-nav_sort: title
-nav_enabled: true
-
-# Enable or disable heading anchors
-heading_anchors: true
-
-# Aux links for the upper right navigation
-aux_links:
-  "GitHub Repository":
-    - "https://github.com/telatin/seqfu2"
-  "Report Issue":
-    - "https://github.com/telatin/seqfu2/issues"
-
-# Makes Aux links open in a new tab
-aux_links_new_tab: true
-
-# Footer
-footer_content: "Copyright &copy; 2019-2025 Andrea Telatin. Distributed by an <a href=\"https://github.com/telatin/seqfu2/blob/main/LICENSE\">MIT license</a>."
-
-# Back to top link
-back_to_top: true
-back_to_top_text: "Back to top"
-
-# Footer last edited timestamp
-last_edit_timestamp: true
-last_edit_time_format: "%b %e %Y at %I:%M %p"
-
-# Navigation is handled via front matter in individual pages
-# using parent, nav_order, and has_children properties
-
-# Plugins
-plugins:
-  - jekyll-seo-tag
-  - jekyll-github-metadata
-  - jekyll-include-cache
-
-# Exclude from processing
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor/bundle/
-  - vendor/cache/
-  - vendor/gems/
-  - vendor/ruby/
-  - Contest_
-
-# Markdown settings
 markdown: kramdown
+highlighter: rouge
 kramdown:
   input: GFM
+  hard_wrap: false
   syntax_highlighter: rouge
   syntax_highlighter_opts:
     block:
       line_numbers: false
 
-# Sass settings
 sass:
   style: compressed
 
-# Repository information (for GitHub metadata)
-repository: telatin/seqfu2
+plugins:
+  - jekyll-seo-tag
+  - jekyll-redirect-from
+  - jemoji
+  - jekyll-relative-links
 
-# GA tracking (optional - uncomment and add your tracking ID if needed)
-# ga_tracking: UA-XXXXXXXXX-X
+# Front matter defaults: the folder a page lives in decides what it is.
+#   tools/*.md      -> a `seqfu <command>` page      (kind: core)
+#   utilities/*.md  -> a standalone `fu-*` program   (kind: utility)
+#   recipes/*.md    -> a tutorial                    (layout: recipe)
+defaults:
+  - scope: { path: "" }
+    values: { layout: page }
+  - scope: { path: "tools" }
+    values: { layout: tool, kind: core, language: nim }
+  - scope: { path: "utilities" }
+    values: { layout: tool, kind: utility, language: nim }
+  - scope: { path: "recipes" }
+    values: { layout: recipe, section: recipes }
+  - scope: { path: "getting-started" }
+    values: { section: getting-started }
+  - scope: { path: "about" }
+    values: { section: about }
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - existing-website
+  - mock-template.html
+  - support.js
+  - node_modules
+  - vendor
+  - .thumbnail
+  - "*.afdesign"
+
+# Folder of this site inside the repository, used for "Edit this page" links.
+docs_dir: docs

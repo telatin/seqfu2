@@ -1,0 +1,24 @@
+{%- comment -%} Work out which top-level section is active {%- endcomment -%}
+{%- assign current = page.section -%}
+{%- if page.layout == "tool" or page.section == "tools" -%}{%- assign current = "tools" -%}{%- endif -%}
+<header class="topbar">
+  <a class="brand" href="{{ '/' | relative_url }}" aria-label="SeqFu home">
+    <img class="brand-logo" src="{{ '/assets/img/seqfu-logo-square.svg' | relative_url }}" alt="" width="32" height="32">
+    <span class="brand-name">SeqFu</span>
+  </a>
+  <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" data-nav-toggle>
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="topnav" data-nav>
+    {%- for item in site.data.navigation.main %}
+    <a href="{{ item.url | relative_url }}"{% if current == item.section %} class="active" aria-current="page"{% endif %}>{{ item.title }}</a>
+    {%- endfor %}
+    <a class="topnav-ext" href="{{ site.github_url }}">GitHub</a>
+  </nav>
+  <div class="search" data-search>
+    <input type="search" placeholder="Search commands, tasks, options…" aria-label="Search the documentation" autocomplete="off" data-search-input>
+    <kbd>/</kbd>
+    <div class="search-results" hidden data-search-results></div>
+  </div>
+  <a class="btn-install" href="{{ '/getting-started/installation.html' | relative_url }}">Install</a>
+</header>

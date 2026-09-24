@@ -1,11 +1,16 @@
 ---
-layout: default
 title: fu-multirelabel
-parent: Utilities
+summary: "Relabel sequences across multiple files, ensuring unique names."
+category: transform
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+keywords: "relabel rename basename unique names"
 ---
-
-
-# fu-multirelabel
 
 A program to rename sequences from multiple files
 (adding the filename, and or numerical postfix).

@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu amplicheck
-parent: Core Tools
+summary: "QC single- or paired-end amplicon FASTQ files and suggest DADA2-style trimming parameters."
+category: qc
+input: [FASTQ]
+output: "JSON, text and HTML reports"
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu qual", "fu-primers", "fu-16Sregion"]
+keywords: "amplicon 16s its dada2 truncLen maxEE primers qc"
 ---
-
-# seqfu amplicheck
 
 `seqfu amplicheck` inspects single-end or paired-end amplicon FASTQ files and
 writes a JSON report with DADA2-style quality-control recommendations. It does

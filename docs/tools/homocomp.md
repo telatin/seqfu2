@@ -1,10 +1,16 @@
 ---
-layout: default
 title: seqfu homocomp
-parent: Core Tools
+summary: "Collapse homopolymer runs in FASTA/FASTQ records."
+category: transform
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+keywords: "homopolymer compress collapse nanopore"
 ---
-
-# seqfu homocomp
 
 `seqfu homocomp` collapses each homopolymer run in FASTA or FASTQ sequences to
 one base. Record names, comments, format, and input order are preserved. For

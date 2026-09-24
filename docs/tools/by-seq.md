@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu by-seq
-parent: Core Tools
+summary: "Select records by biological sequence using IUPAC patterns, mismatches and strands."
+category: filter
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu by-id", "seqfu grep", "fu-primers"]
+keywords: "sequence motif oligo primer iupac mismatches select"
 ---
-
-# seqfu by-seq
 
 ```text
 Usage:

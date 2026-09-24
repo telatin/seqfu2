@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu bases
-parent: Core Tools
+summary: "Report base composition and %GC content of FASTA/FASTQ files."
+category: qc
+input: [FASTA, FASTQ]
+output: "TSV table"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+since: "1.15.1"
+keywords: "composition gc content iupac nucleotides"
 ---
-
-# seqfu bases
 
 Counts the number of A, C, G, T and Ns in FASTA and FASTQ files.
 

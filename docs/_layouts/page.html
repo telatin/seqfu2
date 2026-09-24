@@ -1,0 +1,33 @@
+---
+layout: default
+---
+{%- comment -%}
+  Generic documentation page. If the page's `section` has a side menu in
+  _data/navigation.yml, it is shown on the left.
+{%- endcomment -%}
+{%- assign menu = site.data.navigation[page.section] -%}
+{%- assign sec = site.data.navigation.main | where: "section", page.section | first -%}
+<div class="shell{% unless menu %} shell-nosidebar{% endunless %}">
+  {% if menu %}
+  <aside class="sidebar" data-sidebar>
+    <div class="eyebrow">{{ sec.title }}</div>
+    <nav class="sidebar-list">
+      {%- for item in menu %}
+      <a href="{{ item.url | relative_url }}"{% if item.url == page.url %} class="active" aria-current="page"{% endif %}>{{ item.title }}</a>
+      {%- endfor %}
+    </nav>
+  </aside>
+  {% endif %}
+
+  <main class="content">
+    {% if sec and page.url != sec.url %}<div class="crumbs"><a href="{{ sec.url | relative_url }}">{{ sec.title }}</a> / {{ page.title }}</div>{% endif %}
+    <h1>{{ page.title }}</h1>
+    {% if page.summary %}<p class="lede">{{ page.summary }}</p>{% endif %}
+    <article class="prose" data-prose>
+      {{ content }}
+    </article>
+    {% include edit-link.html %}
+  </main>
+
+  {% include toc.html %}
+</div>

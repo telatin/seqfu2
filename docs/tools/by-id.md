@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu by-id
-parent: Core Tools
+summary: "Select records by identifier, with patterns, lists and numeric-suffix ranges."
+category: filter
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu by-comment", "seqfu by-seq", "seqfu list"]
+keywords: "identifier name id list select filter"
 ---
-
-# seqfu by-id
 
 `by-id` selects FASTA or FASTQ records by identifier (the text before the first
 whitespace in a record header). Comments and sequence content are not searched.

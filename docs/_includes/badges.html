@@ -1,0 +1,7 @@
+{%- comment -%} Status badges for a tool page. Usage: include badges.html p=page {%- endcomment -%}
+{%- assign p = include.p -%}
+{%- if p.wrapper %}<span class="badge badge-warn">wrapper</span>{% endif -%}
+{%- if p.deprecated %}<span class="badge badge-danger">deprecated</span>{% endif -%}
+{%- if p.experimental %}<span class="badge badge-muted">experimental</span>{% endif -%}
+{%- if p.interactive %}<span class="badge badge-muted">interactive</span>{% endif -%}
+{%- if p.language and p.language != "nim" %}<span class="badge badge-muted">{{ p.language }}</span>{% endif -%}

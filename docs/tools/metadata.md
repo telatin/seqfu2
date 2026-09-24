@@ -1,10 +1,18 @@
 ---
-layout: default
 title: seqfu metadata
-parent: Core Tools
+summary: "Generate sample sheets and mapping files from directories of reads."
+category: tables
+input: [Directory]
+output: "TSV/CSV table"
+aliases: [met]
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu lanes", "seqfu count"]
+keywords: "metadata mapping sample sheet manifest qiime dadaist irida"
 ---
-
-# seqfu metadata
 
 Given one (or more) directories containing sequencing reads, this tool produces a metadata file by extracting the ID from the filename and optionally adding file paths or read counts.
 

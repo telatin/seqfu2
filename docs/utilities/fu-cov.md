@@ -1,11 +1,17 @@
 ---
-layout: default
 title: fu-cov
-parent: Utilities
+summary: "Filter assembly contigs by length and by the coverage stored in their names."
+category: filter
+input: [FASTA]
+output: "FASTA"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu stats"]
+keywords: "coverage contigs spades megahit shovill unicycler assembly filter"
 ---
-
-
-# fu-cov
 
 A program to filter the output of assembly programs using the
 coverage information they print

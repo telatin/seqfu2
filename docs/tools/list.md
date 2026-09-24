@@ -1,11 +1,19 @@
 ---
-layout: default
 title: seqfu list
-parent: Core Tools
+summary: "Extract sequences whose names appear in one or more list files."
+category: filter
+input: [FASTA, FASTQ]
+output: "Same as input"
+aliases: [lst]
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+since: "1.8"
+related: ["seqfu by-id", "seqfu subtract"]
+keywords: "list names ids extract subset"
 ---
-
-
-# seqfu list
 
 Extract sequences from sequence files using a list of requested items.
 Introduced in **SeqFu 1.8**.

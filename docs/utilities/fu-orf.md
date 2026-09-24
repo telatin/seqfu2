@@ -1,10 +1,16 @@
 ---
-layout: default
 title: fu-orf
-parent: Utilities
+summary: "Compatibility wrapper for seqfu orf."
+category: analysis
+input: [FASTA, FASTQ]
+output: "FASTA (protein)"
+wrapper: true
+wraps: seqfu orf
+deprecated: false
+experimental: false
+paired: false
+interactive: false
 ---
-
-# fu-orf
 
 `fu-orf` is a compatibility wrapper for `seqfu orf`.
 

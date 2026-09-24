@@ -1,11 +1,17 @@
 ---
-layout: default
 title: fu-primers
-parent: Utilities
+summary: "Remove amplification primers from single- or paired-end amplicon reads."
+category: filter
+input: [FASTQ]
+output: "FASTQ"
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu amplicheck", "seqfu trim"]
+keywords: "primers trim amplicon degenerate iupac dimers"
 ---
-
-
-# fu-primers
 
 A program to remove primers from raw reads (FASTQ)
 of amplicons, 

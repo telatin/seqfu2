@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu derep
-parent: Core Tools
+summary: "Dereplicate sequences, keeping the number of identical copies in the header."
+category: filter
+input: [FASTA, FASTQ]
+output: "FASTA"
+aliases: [der, dereplicate, uniques]
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu sort", "seqfu count"]
+keywords: "dereplicate unique duplicates size amplicon"
 ---
-
-
-# seqfu derep
 
 *derep*  is one of the core subprograms of *SeqFu*, that allows the dereplication of FASTA and FASTQ files. 
 Dereplication, in R. C. Edgard [words](https://drive5.com/usearch/manual/dereplication.html) is *A rather obscure name for finding the set of unique sequences. Or, equivalently, the process of finding duplicated (replicate) sequences.* 

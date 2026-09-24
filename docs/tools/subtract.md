@@ -1,11 +1,17 @@
 ---
-layout: default
 title: seqfu subtract
-parent: Core Tools
+summary: "Print sequences from a first file that are absent from a second file."
+category: filter
+input: [FASTA, FASTQ]
+output: "Same as input"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["seqfu list", "seqfu by-id"]
+keywords: "subtract difference set remove exclude"
 ---
-
-
-# seqfu subtract
 
 *subtract* is a subprogram of *SeqFu* that prints sequences present in a
 first file but **absent** from a second file — the set difference A \ B.

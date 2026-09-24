@@ -1,0 +1,7 @@
+# Input types offered as filters in the Tools catalogue.
+# Pages may list other values in `input:` too; they are displayed but not filterable.
+- FASTA
+- FASTQ
+- TSV-CSV
+- Directory
+- Alignment

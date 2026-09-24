@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu tabulate
-parent: Core Tools
+summary: "Convert FASTA/FASTQ to a tabular format and back, for line-based processing."
+category: tables
+input: [FASTA, FASTQ, TSV-CSV]
+output: "TSV or FASTQ"
+aliases: [tab]
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+since: "1.2.2"
+keywords: "tabulate detabulate tsv convert awk"
 ---
-
-
-# seqfu tabulate
 
 ```note
 This tool has been introduced with seqfu 1.2.2

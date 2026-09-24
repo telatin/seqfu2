@@ -1,10 +1,17 @@
 ---
-layout: default
 title: seqfu tabcheck
-parent: Core Tools
+summary: "Validate TSV/CSV files for consistent column counts, and inspect column types."
+category: tables
+input: [TSV-CSV]
+output: "Report and exit status"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+related: ["fu-tabcheck", "seqfu metadata"]
+keywords: "tabcheck csv tsv validate columns consistency"
 ---
-
-# seqfu tabcheck
 
 Validate TSV/CSV files by checking consistent field counts across rows (gzipped input supported).
 

@@ -1,11 +1,18 @@
 ---
-layout: default
 title: seqfu interleave
-parent: Core Tools
+summary: "Interleave paired-end reads from two FASTQ files into one stream."
+category: paired
+input: [FASTQ]
+output: "FASTQ"
+aliases: [ilv]
+wrapper: false
+deprecated: false
+experimental: false
+paired: true
+interactive: false
+related: ["seqfu deinterleave", "seqfu merge"]
+keywords: "interleave paired r1 r2 merge"
 ---
-
-
-# seqfu interleave
 
 *interleave* (or *ilv*) is one of the core subprograms of *SeqFu*.
 It's used to produce an _interleaved FASTQ file_ from two separate 

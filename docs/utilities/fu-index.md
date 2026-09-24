@@ -1,11 +1,16 @@
 ---
-layout: default
 title: fu-index
-parent: Utilities
+summary: "Report the Illumina index (barcode) found in the headers of FASTQ files."
+category: qc
+input: [FASTQ]
+output: "TSV table"
+wrapper: false
+deprecated: false
+experimental: false
+paired: false
+interactive: false
+keywords: "index barcode illumina casava demultiplex"
 ---
-
-
-# fu-index
 
 Extracts the index (barcode) from Illumina demultiplexed files.
 
