@@ -10,6 +10,7 @@ import json
 import tables
 import malebolgia
 import "./seqfu_utils"
+import ./filt_utils
 
 ###################
 # Type Definitions
@@ -83,93 +84,17 @@ type
 
 proc calculateCutFront(quality: string, startPos, endPos: int,
                        windowSize, qualThreshold, offset: int): int =
-  ## Find first position from 5' where window has avg quality >= threshold
-  ## Returns new start position
-  ## Uses efficient O(1) rolling window update
-
-  let targetQualSum = windowSize * (qualThreshold + offset)
-
-  if (endPos - startPos) < windowSize:
-    return endPos  # Trim entire read
-
-  # Initialize first window sum (ASCII values)
-  var qualSum = 0
-  for i in startPos ..< (startPos + windowSize):
-    qualSum += quality[i].ord
-
-  # Check first window
-  if qualSum >= targetQualSum:
-    return startPos
-
-  # Roll window with O(1) update
-  for pos in (startPos + 1) .. (endPos - windowSize):
-    qualSum += quality[pos + windowSize - 1].ord  # Add new base
-    qualSum -= quality[pos - 1].ord                # Remove old base
-
-    if qualSum >= targetQualSum:
-      return pos  # Found good window
-
-  return endPos  # No good window found
+  slidingCutFront(quality, startPos, endPos, windowSize, qualThreshold, offset)
 
 
 proc calculateCutTail(quality: string, startPos, endPos: int,
                       windowSize, qualThreshold, offset: int): int =
-  ## Mirror of cutFront, operates right to left
-  ## Returns new end position
-  ## Uses efficient O(1) rolling window update
-
-  let targetQualSum = windowSize * (qualThreshold + offset)
-
-  if (endPos - startPos) < windowSize:
-    return startPos
-
-  # Initialize last window
-  var qualSum = 0
-  for i in (endPos - windowSize) ..< endPos:
-    qualSum += quality[i].ord
-
-  if qualSum >= targetQualSum:
-    return endPos
-
-  # Roll window from right to left
-  for pos in countdown(endPos - windowSize - 1, startPos):
-    qualSum += quality[pos].ord
-    qualSum -= quality[pos + windowSize].ord
-
-    if qualSum >= targetQualSum:
-      return pos + windowSize
-
-  return startPos
+  slidingCutTail(quality, startPos, endPos, windowSize, qualThreshold, offset)
 
 
 proc calculateCutRight(sequence, quality: string, startPos, endPos: int,
                        windowSize, qualThreshold, offset: int): int =
-  ## Find first bad window from 5' and truncate there
-  ## Returns new end position
-  ## Uses efficient O(1) rolling window update
-
-  let targetQualSum = windowSize * (qualThreshold + offset)
-
-  if (endPos - startPos) < windowSize:
-    return startPos
-
-  var qualSum = 0
-  for i in startPos ..< (startPos + windowSize):
-    qualSum += quality[i].ord
-
-  for pos in startPos .. (endPos - windowSize):
-    if pos > startPos:
-      qualSum += quality[pos + windowSize - 1].ord
-      qualSum -= quality[pos - 1].ord
-
-    if qualSum < targetQualSum:
-      # Found bad window, find first truly bad base
-      for cutPos in pos ..< (pos + windowSize):
-        if (quality[cutPos].ord - offset) < qualThreshold:
-          return cutPos
-      return pos
-
-  return endPos
+  slidingCutRight(sequence, quality, startPos, endPos, windowSize, qualThreshold, offset)
 
 
 proc trimAndCut(record: FQRecord, opts: TrimOptions): tuple[record: FQRecord, trimmed: bool] =

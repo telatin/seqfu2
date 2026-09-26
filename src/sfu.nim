@@ -48,6 +48,8 @@ include ./fastx_count_threads_v3
 include ./fastx_list
 include ./fastx_bases
 include ./fastx_trim
+include ./fastq_longtrim
+include ./adapters
 
 proc fastxCountDispatch(argv: var seq[string]): int {.gcsafe.} =
   {.cast(gcsafe).}:
@@ -70,6 +72,10 @@ proc splashHelpKey(key: string, width: int): string =
 var progs = {
 
        "trim": fastx_trim,
+       "adapters": adapters,
+       "primers": primers,
+       "longtrim": fastq_longtrim,
+       "lt":       fastq_longtrim,
        "bases": fastx_bases,
        "cat": fastx_cat,
        "ilv": fastq_interleave,       
@@ -132,6 +138,9 @@ proc main(args: var seq[string]): int =
                "check"             : "check FASTQ file for errors",
                "bases"             : "count bases in FASTA/FASTQ files",
                "trim"              : "trim FASTQ sequences based on quality",
+               "adapters"          : "trim 3' and linked adapters from FASTQ reads",
+               "primers"           : "trim PCR primers from single- or paired-end reads",
+               "longtrim [lt]"     : "long-read FASTQ quality filtering and trimming (ONT/PacBio)",
                "amplicheck"        : "QC single- or paired-end amplicon FASTQ files",
                "homocomp"          : "collapse homopolymer runs in FASTA/FASTQ records",
                "merge [mrg]"       : "merge paired-end FASTQ reads",
