@@ -19,14 +19,13 @@ Usage:
 
 Trim 3' or linked adapters from FASTQ reads. A plain SPEC is a 3' adapter;
 FRONT...BACK is a linked adapter with required FRONT and optional BACK.
-Specify exactly one of -a or -K.
-Automatic detection scans at most 100,000 reads or 100 Mb per input and
-requires seekable FASTQ files.
+Without -a/-A, known adapters are detected automatically unless -K is used.
+Explicit adapter specifications disable known-adapter detection.
 
 Input and adapters:
   -a, --adapter SPEC         R1 adapter specification
   -A, --adapter-r2 SPEC      R2 adapter specification
-  -K, --known-adaptors       Detect known adapters before trimming
+  -K, --skip-known-adapters  Skip automatic known-adapter detection
   -1, --r1 FILE             R1 or single-end FASTQ
   -2, --r2 FILE             R2 FASTQ
 
@@ -97,14 +96,14 @@ normalized to `T`.
 
 ## Automatic known-adapter detection
 
-`-K` (or `--known-adaptors`) selects an adapter from an internal database of
-234 known adapter and primer sequences derived from
+When neither `-a` nor `-A` is supplied, `seqfu adapters` selects an adapter
+from an internal database of 234 known adapter and primer sequences derived from
 [fastp](https://github.com/OpenGene/fastp)'s `src/knownadapters.h`. The selected
 sequence and its database description are reported to standard error before
 trimming.
 
 ```bash
-seqfu adapters -K -1 reads.fastq.gz -o trimmed.fastq.gz
+seqfu adapters -1 reads.fastq.gz -o trimmed.fastq.gz
 ```
 
 Detection is a bounded preliminary pass over at most 100,000 reads or 100 Mb
@@ -115,16 +114,23 @@ that mate unchanged rather than guessing.
 
 Because trimming requires reopening the file after this scan, automatic
 detection does not accept stdin. Use an explicit `-a` specification for a
-stream, or save the stream to a seekable FASTQ file first. `-K` cannot be
-combined with `-a` or `-A`.
+stream, use `-K` to disable adapter processing, or save the stream to a
+seekable FASTQ file first.
+
+Supplying either `-a` or `-A` makes the explicit adapter configuration
+authoritative and skips the bundled database. `-K` (or
+`--skip-known-adapters`) also disables automatic detection. If it is used
+without an explicit adapter, reads pass through unchanged.
 
 Automatic detection identifies entries from the bundled database only; it does
 not perform de novo adapter assembly.
 
 ## Paired-end adapters
 
-For paired reads, `-a` applies to R1 and `-A` applies to R2. If `-A` is omitted,
-R2 is passed through unchanged. A pair is always kept or discarded together.
+For paired reads, `-a` applies to R1 and `-A` applies to R2. A mate without an
+explicit specification is passed through unchanged; it is not automatically
+scanned when the other mate has an explicit adapter. A pair is always kept or
+discarded together.
 
 ```bash
 seqfu adapters \
@@ -134,11 +140,11 @@ seqfu adapters \
   -o clean_R1.fastq.gz -O clean_R2.fastq.gz
 ```
 
-With `-K`, R1 and R2 are scanned independently. This allows the usual Read 1
-and Read 2 adapters to be selected separately.
+With no explicit specifications, R1 and R2 are scanned independently. This
+allows the usual Read 1 and Read 2 adapters to be selected separately.
 
 ```bash
-seqfu adapters -K \
+seqfu adapters \
   -1 sample_R1.fastq.gz -2 sample_R2.fastq.gz \
   -o clean_R1.fastq.gz -O clean_R2.fastq.gz
 ```
@@ -147,7 +153,7 @@ If paired input is supplied without `-O`, both mates are written to `-o` as
 interleaved FASTQ in R1, R2 order.
 
 ```bash
-seqfu adapters -K \
+seqfu adapters \
   -1 sample_R1.fastq.gz -2 sample_R2.fastq.gz \
   -o clean.interleaved.fastq.gz
 ```
