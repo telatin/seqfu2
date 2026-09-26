@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeqFu · Flag Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #07080a;
+  --surface:   #0d0f12;
+  --surface2:  #13161b;
+  --border:    #1e2228;
+  --border2:   #2a303a;
+  --text:      #b8c4d0;
+  --muted:     #4a5568;
+  --amber:     #e8a020;
+  --amber-lo:  #4a3208;
+  --amber-hi:  #ffc060;
+  --green:     #4aaa72;
+  --blue:      #4888d0;
+  --purple:    #9060d0;
+  --red:       #c05050;
+  --glow-a:    rgba(232,160,32,0.25);
+  --glow-b:    rgba(232,160,32,0.08);
+
+  --cat-input:  #4888d0;
+  --cat-output: #4aaa72;
+  --cat-format: #9060d0;
+  --cat-misc:   #e8a020;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none; z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    to bottom, transparent, transparent 3px,
+    rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+  );
+  pointer-events: none; z-index: 100;
+}
+
+/* ─── Header ─── */
+header {
+  position: relative; z-index: 10; flex-shrink: 0;
+  display: flex; align-items: center; gap: 2rem;
+  padding: 0.85rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(to bottom, rgba(232,160,32,0.04), transparent);
+}
+
+.wordmark {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--amber);
+  text-shadow: 0 0 20px var(--glow-a), 0 0 40px rgba(232,160,32,0.1);
+  white-space: nowrap;
+}
+.wordmark em { color: var(--muted); font-style: normal; font-weight: 300; margin: 0 0.3em; }
+
+.header-sub { font-size: 0.65rem; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 1.5rem; }
+
+#stats { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
+#stats b { color: var(--amber); font-weight: 500; }
+
+/* ─── Drop Zone ─── */
+#drop-zone {
+  position: relative; z-index: 10; flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 0.8rem;
+  cursor: pointer; transition: background 0.2s;
+}
+
+#drop-zone::before {
+  content: '';
+  position: absolute; inset: 2rem;
+  border: 1px dashed var(--amber-lo); border-radius: 4px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#drop-zone:hover::before, #drop-zone.drag-over::before {
+  border-color: var(--amber);
+  box-shadow: 0 0 24px var(--glow-b), inset 0 0 24px var(--glow-b);
+}
+#drop-zone.drag-over { background: rgba(232,160,32,0.03); }
+
+.drop-icon { font-size: 2.5rem; line-height: 1; opacity: 0.2; transition: opacity 0.2s, transform 0.2s; }
+#drop-zone:hover .drop-icon, #drop-zone.drag-over .drop-icon { opacity: 0.5; transform: translateY(-4px); }
+
+.drop-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.drop-hint { font-size: 0.68rem; color: var(--border2); letter-spacing: 0.06em; }
+#file-input { display: none; }
+
+/* ─── Controls ─── */
+#controls {
+  position: relative; z-index: 10; flex-shrink: 0;
+  display: none; flex-direction: column; gap: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+#controls.visible { display: flex; }
+
+.ctrl-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.55rem 2rem;
+}
+.ctrl-row + .ctrl-row { border-top: 1px solid var(--border); }
+
+#search {
+  flex: 1; max-width: 320px;
+  background: var(--bg); border: 1px solid var(--border2);
+  color: var(--text); padding: 0.3rem 0.7rem;
+  font-family: inherit; font-size: 0.78rem;
+  border-radius: 2px; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#search:focus { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber-lo); }
+#search::placeholder { color: var(--muted); }
+
+.kbd {
+  display: inline-block; background: var(--surface2);
+  border: 1px solid var(--border2); border-radius: 2px;
+  padding: 0 0.3rem; font-size: 0.62rem; color: var(--muted); line-height: 1.6;
+}
+
+.filter-count { font-size: 0.7rem; color: var(--muted); margin-left: auto; }
+.filter-count b { color: var(--amber); }
+
+/* Category filter buttons */
+.cat-filters { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+.cat-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); margin-right: 0.25rem;
+}
+
+.cat-btn {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.2rem 0.6rem; border-radius: 2px; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; border: 1px solid transparent;
+  background: var(--surface2); color: var(--muted);
+  transition: all 0.15s; user-select: none;
+}
+.cat-btn:hover { color: var(--text); border-color: var(--border2); }
+.cat-btn.active { color: #fff; }
+.cat-btn[data-cat="All"].active   { background: rgba(232,160,32,0.15); border-color: var(--amber);   color: var(--amber); }
+.cat-btn[data-cat="Input"].active  { background: rgba(72,136,208,0.18); border-color: var(--cat-input);  color: var(--cat-input); }
+.cat-btn[data-cat="Output"].active { background: rgba(74,170,114,0.15); border-color: var(--cat-output); color: var(--cat-output); }
+.cat-btn[data-cat="Format"].active { background: rgba(144,96,208,0.15); border-color: var(--cat-format); color: var(--cat-format); }
+.cat-btn[data-cat="Misc"].active   { background: rgba(232,160,32,0.12); border-color: var(--amber);   color: var(--amber); }
+.cat-btn[data-cat="Conflicts"].active { background: rgba(192,80,80,0.15); border-color: var(--red); color: var(--red); }
+.cat-btn[data-cat="NonStd"].active { background: rgba(74,85,104,0.25); border-color: var(--muted); color: var(--text); }
+
+.cat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+.conflicts-legend {
+  margin-left: auto; font-size: 0.66rem; color: var(--muted);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.conflicts-legend .warn-icon { color: var(--red); }
+
+/* ─── Standard panel ─── */
+#std-panel {
+  position: relative; z-index: 10; flex-shrink: 0;
+  display: none; flex-direction: column;
+  border-bottom: 2px solid var(--border2);
+}
+#std-panel.visible { display: flex; }
+
+.std-header {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.5rem 2rem;
+  background: rgba(232,160,32,0.04);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none;
+}
+.std-toggle-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--amber);
+}
+.std-toggle-icon { color: var(--muted); font-size: 0.7rem; margin-left: auto; transition: transform 0.2s; }
+.std-toggle-icon.open { transform: rotate(180deg); }
+
+.std-body {
+  display: none;
+  padding: 1rem 2rem 1.2rem;
+  background: var(--surface);
+  overflow-x: auto;
+}
+.std-body.open { display: block; }
+
+.std-sections {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) { .std-sections { grid-template-columns: repeat(2, 1fr); } }
+
+.std-section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase; margin-bottom: 0.6rem;
+  padding-bottom: 0.35rem; border-bottom: 1px solid var(--border);
+}
+
+.std-row {
+  display: flex; align-items: baseline; gap: 0.4rem;
+  padding: 0.22rem 0; font-size: 0.75rem;
+  border-bottom: 1px solid rgba(30,34,40,0.5);
+}
+.std-row:last-child { border-bottom: none; }
+
+.std-short { color: var(--green); font-weight: 500; min-width: 2rem; }
+.std-none  { color: var(--border2); font-weight: 300; min-width: 2rem; font-size: 0.7rem; }
+.std-long  { color: var(--amber); }
+.std-arg   { color: var(--muted); font-size: 0.7em; font-weight: 300; }
+.std-note  { color: var(--muted); font-size: 0.68rem; margin-left: auto; text-align: right; }
+
+/* ─── Table wrap ─── */
+#table-wrap {
+  position: relative; z-index: 10; flex: 1;
+  overflow: auto; display: none;
+}
+#table-wrap.visible { display: block; }
+
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+col.c-flag  { width: 280px; }
+col.c-count { width: 76px;  }
+col.c-tools { width: auto;  }
+
+thead {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--surface);
+}
+thead::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px; background: var(--border2);
+}
+
+thead th {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600; font-size: 0.62rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted); text-align: left;
+  padding: 0.5rem 1rem 0.5rem 0; cursor: pointer;
+  user-select: none; white-space: nowrap; transition: color 0.15s;
+}
+thead th:first-child { padding-left: 2rem; }
+thead th:hover { color: var(--amber); }
+thead th .sarr { display: inline-block; margin-left: 0.3em; opacity: 0; transition: opacity 0.15s, transform 0.15s; color: var(--amber); }
+thead th.sort-asc .sarr  { opacity: 1; transform: rotate(0deg); }
+thead th.sort-desc .sarr { opacity: 1; transform: rotate(180deg); }
+
+tbody tr {
+  border-bottom: 1px solid rgba(30,34,40,0.8);
+  transition: background 0.1s;
+  animation: rowIn 0.12s ease both;
+}
+@keyframes rowIn { from { opacity: 0; transform: translateX(-3px); } to { opacity: 1; transform: none; } }
+tbody tr:hover { background: rgba(232,160,32,0.03); }
+tbody tr.conflict-row { background: rgba(192,80,80,0.03); }
+tbody tr.conflict-row:hover { background: rgba(192,80,80,0.06); }
+
+td {
+  padding: 0.5rem 1rem 0.5rem 0;
+  vertical-align: middle; overflow: hidden;
+}
+td:first-child { padding-left: 2rem; }
+
+/* ─── Flag cell ─── */
+.flag-cell { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+.cat-pill {
+  display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 0.1rem 0.35rem;
+  border-radius: 2px; border: 1px solid; flex-shrink: 0;
+}
+.cat-pill.Input  { color: var(--cat-input);  border-color: rgba(72,136,208,0.4);  background: rgba(72,136,208,0.08); }
+.cat-pill.Output { color: var(--cat-output); border-color: rgba(74,170,114,0.4);  background: rgba(74,170,114,0.07); }
+.cat-pill.Format { color: var(--cat-format); border-color: rgba(144,96,208,0.4);  background: rgba(144,96,208,0.08); }
+.cat-pill.Misc   { color: var(--cat-misc);   border-color: rgba(232,160,32,0.4);  background: rgba(232,160,32,0.07); }
+
+.flag-parts { display: flex; align-items: baseline; gap: 0.22rem; font-size: 0.82rem; }
+.f-short { color: var(--green); font-weight: 500; }
+.f-sep   { color: var(--border2); }
+.f-long  { color: var(--amber); }
+.f-arg   { color: var(--muted); font-size: 0.72em; font-weight: 300; }
+
+.conflict-icon {
+  color: var(--red); font-size: 0.8rem; cursor: default;
+  position: relative; flex-shrink: 0;
+}
+
+/* ─── Count badge ─── */
+.count-cell { text-align: left; }
+.count-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 1.9rem; height: 1.55rem; padding: 0 0.45rem;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 2px; font-size: 0.76rem; font-weight: 500; color: var(--text);
+  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.count-badge.hi  { color: var(--amber-hi); border-color: var(--amber-lo); box-shadow: 0 0 8px rgba(232,160,32,0.12); }
+.count-badge.med { color: var(--amber); }
+
+/* ─── Chips ─── */
+.chips { display: flex; flex-wrap: wrap; gap: 0.26rem; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font-size: 0.67rem; padding: 0.13rem 0.44rem;
+  border-radius: 2px; border: 1px solid transparent;
+  cursor: default; transition: all 0.12s; letter-spacing: 0.01em;
+  white-space: nowrap; position: relative;
+}
+.chip:hover { transform: translateY(-1px); filter: brightness(1.3); }
+
+.chip-warn {
+  display: inline-block; font-size: 0.65rem; line-height: 1;
+  color: var(--red); opacity: 0.9;
+}
+
+/* ─── Tooltip ─── */
+#tooltip {
+  position: fixed; z-index: 9999; pointer-events: none;
+  opacity: 0; transition: opacity 0.1s;
+  max-width: 310px; min-width: 180px;
+}
+#tooltip.visible { opacity: 1; }
+
+.tt-box {
+  background: #0e1208;
+  border: 1px solid; border-radius: 3px; padding: 0.65rem 0.85rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.75), 0 0 16px var(--glow-b);
+}
+.tt-box.warn-tt { background: #130a0a; border-color: var(--red) !important; }
+
+.tt-tool { font-family: 'Barlow Condensed', sans-serif; font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.35rem; padding-bottom: 0.35rem; border-bottom: 1px solid; }
+.tt-desc { font-size: 0.75rem; color: var(--text); line-height: 1.55; }
+.tt-default { margin-top: 0.4rem; font-size: 0.67rem; color: var(--muted); }
+.tt-default b { color: var(--green); font-weight: 500; }
+.tt-warnings { margin-top: 0.4rem; font-size: 0.67rem; color: var(--red); line-height: 1.5; }
+.tt-warnings b { font-weight: 600; display: block; margin-bottom: 0.15rem; }
+
+/* ─── Empty ─── */
+.empty-state { padding: 4rem 2rem; text-align: center; color: var(--muted); font-size: 0.8rem; letter-spacing: 0.05em; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="wordmark">SeqFu <em>/</em> Flags</div>
+    <div class="header-sub">Command flag reference · standard v0.1</div>
+  </div>
+  <div class="header-right">
+    <div id="stats">Drop a JSON file to begin</div>
+  </div>
+</header>
+
+<!-- Standard reference panel (always visible) -->
+<div id="std-panel" class="visible">
+  <div class="std-header" id="std-toggle">
+    <div class="std-toggle-label">⬡ Reserved Flag Standard</div>
+    <div class="std-toggle-icon" id="std-icon">▼</div>
+  </div>
+  <div class="std-body" id="std-body"></div>
+</div>
+
+<div id="drop-zone">
+  <div class="drop-icon">⬡</div>
+  <div class="drop-label">Drop flags.json here</div>
+  <div class="drop-hint">generated by extract_docopt.py · or click to select</div>
+  <input type="file" id="file-input" accept=".json">
+</div>
+
+<div id="controls">
+  <div class="ctrl-row">
+    <input type="text" id="search" placeholder="filter flags, tools, descriptions…">
+    <span class="kbd">/</span>
+    <div class="filter-count" id="filter-count"></div>
+  </div>
+  <div class="ctrl-row">
+    <span class="cat-label">Show:</span>
+    <div class="cat-filters" id="cat-filters"></div>
+    <div class="conflicts-legend" id="conflicts-legend" style="display:none">
+      <span class="warn-icon">⚠</span> chip = short-flag conflict with standard
+    </div>
+  </div>
+</div>
+
+<div id="table-wrap">
+  <table id="flag-table">
+    <colgroup>
+      <col class="c-flag">
+      <col class="c-count">
+      <col class="c-tools">
+    </colgroup>
+    <thead>
+      <tr>
+        <th data-col="flag">Flag <span class="sarr">▲</span></th>
+        <th data-col="count">Count <span class="sarr">▲</span></th>
+        <th data-col="tools">Tools <span class="sarr">▲</span></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty-state" id="empty-state" style="display:none">No flags match the current filter.</div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-box" id="tt-box" style="border-color: var(--amber)">
+    <div class="tt-tool" id="tt-tool"></div>
+    <div class="tt-desc" id="tt-desc"></div>
+    <div class="tt-default" id="tt-default"></div>
+    <div class="tt-warnings" id="tt-warnings" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FLAG STANDARD  (edit here to evolve the spec)
+// ═══════════════════════════════════════════════════════════════════════════
+const FLAG_STANDARD = [
+  // ── Input ───────────────────────────────────────────────────────────────
+  { category:'Input',  long:'--r1',          short:'-1',  arg:'FILE',   note:'Forward or single-end reads' },
+  { category:'Input',  long:'--r2',          short:'-2',  arg:'FILE',   note:'Reverse (R2) reads' },
+  { category:'Input',  long:'--interleaved', short:null,  arg:null,     note:'Input is interleaved paired-end' },
+  // ── Output ──────────────────────────────────────────────────────────────
+  { category:'Output', long:'--output',      short:'-o',  arg:'FILE',   note:'Output file or base name' },
+  { category:'Output', long:'--output-r2',   short:'-O',  arg:'FILE',   note:'Separate R2 output file' },
+  { category:'Output', long:'--compress',    short:'-z',  arg:null,     note:'Gzip-compress output' },
+  { category:'Output', long:'--gzip-level',  short:null,  arg:'INT',    note:'Compression level 1–9' },
+  // ── Format ──────────────────────────────────────────────────────────────
+  { category:'Format', long:'--fasta',       short:null,  arg:null,     note:'Force FASTA output' },
+  { category:'Format', long:'--fastq',       short:null,  arg:null,     note:'Force FASTQ output' },
+  { category:'Format', long:'--basename',    short:'-b',  arg:null,     note:'Basename only in filenames' },
+  { category:'Format', long:'--abs-path',    short:'-a',  arg:null,     note:'Absolute paths in filenames' },
+  { category:'Format', long:'--header',      short:'-H',  arg:null,     note:'Print header row (capital H)' },
+  { category:'Format', long:'--sep',         short:null,  arg:'STRING', note:'Field separator' },
+  { category:'Format', long:'--json',        short:null,  arg:null,     note:'JSON report output' },
+  // ── Misc ────────────────────────────────────────────────────────────────
+  { category:'Misc',   long:'--threads',     short:'-T',  arg:'INT',    note:'Worker threads (capital T, not -t)' },
+  { category:'Misc',   long:'--batch-size',  short:null,  arg:'INT',    note:'Records per thread batch' },
+  { category:'Misc',   long:'--verbose',     short:null,  arg:null,     note:'Verbose output — no short flag' },
+  { category:'Misc',   long:'--debug',       short:null,  arg:null,     note:'Diagnostic output — no short flag' },
+  { category:'Misc',   long:'--help',        short:'-h',  arg:null,     note:'Show help' },
+  { category:'Misc',   long:'--version',     short:null,  arg:null,     note:'Print version — no short flag' },
+];
+
+// Lookup maps
+const STD_BY_LONG  = new Map(FLAG_STANDARD.map(s => [s.long,  s]));
+const STD_BY_SHORT = new Map(FLAG_STANDARD.filter(s => s.short).map(s => [s.short, s]));
+
+const CAT_ORDER = ['Input', 'Output', 'Format', 'Misc'];
+const CAT_VAR   = { Input:'--cat-input', Output:'--cat-output', Format:'--cat-format', Misc:'--cat-misc' };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Render standard reference panel
+// ═══════════════════════════════════════════════════════════════════════════
+function renderStandardPanel() {
+  const body = document.getElementById('std-body');
+  const sections = CAT_ORDER.map(cat => {
+    const flags = FLAG_STANDARD.filter(f => f.category === cat);
+    const color = `var(${CAT_VAR[cat]})`;
+    const rows = flags.map(f => `
+      <div class="std-row">
+        ${f.short
+          ? `<span class="std-short">${f.short}</span>`
+          : `<span class="std-none">—</span>`}
+        <span class="std-long" style="color:${color}">${f.long}</span>
+        ${f.arg ? `<span class="std-arg">${f.arg}</span>` : ''}
+        <span class="std-note">${f.note}</span>
+      </div>`).join('');
+    return `<div>
+      <div class="std-section-title" style="color:${color}">${cat}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `<div class="std-sections">${sections}</div>`;
+}
+
+renderStandardPanel();
+
+document.getElementById('std-toggle').addEventListener('click', () => {
+  const body = document.getElementById('std-body');
+  const icon = document.getElementById('std-icon');
+  const open = body.classList.toggle('open');
+  icon.classList.toggle('open', open);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Tool colour palette
+// ═══════════════════════════════════════════════════════════════════════════
+const PALETTE = [
+  { bg:'rgba(74,170,114,0.12)',  border:'rgba(74,170,114,0.35)',  text:'#4aaa72' },
+  { bg:'rgba(72,136,208,0.12)',  border:'rgba(72,136,208,0.35)',  text:'#4888d0' },
+  { bg:'rgba(192,96,208,0.10)', border:'rgba(192,96,208,0.30)', text:'#c060d0' },
+  { bg:'rgba(208,112,80,0.12)', border:'rgba(208,112,80,0.35)', text:'#d07050' },
+  { bg:'rgba(128,160,96,0.12)', border:'rgba(128,160,96,0.35)', text:'#80a060' },
+  { bg:'rgba(80,160,192,0.10)', border:'rgba(80,160,192,0.30)', text:'#50a0c0' },
+  { bg:'rgba(208,160,64,0.12)', border:'rgba(208,160,64,0.35)', text:'#d0a040' },
+  { bg:'rgba(192,80,112,0.10)', border:'rgba(192,80,112,0.30)', text:'#c05070' },
+  { bg:'rgba(96,128,192,0.12)', border:'rgba(96,128,192,0.35)', text:'#6080c0' },
+  { bg:'rgba(160,112,80,0.12)', border:'rgba(160,112,80,0.35)', text:'#a07050' },
+];
+
+const toolColorCache = new Map();
+function toolColor(name) {
+  if (toolColorCache.has(name)) return toolColorCache.get(name);
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (Math.imul(h, 31) + name.charCodeAt(i)) | 0;
+  const c = PALETTE[Math.abs(h) % PALETTE.length];
+  toolColorCache.set(name, c);
+  return c;
+}
+
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Conflict detection (per raw entry)
+// ═══════════════════════════════════════════════════════════════════════════
+function detectWarnings(entry) {
+  const w = [];
+  const std = entry.long ? STD_BY_LONG.get(entry.long) : null;
+
+  if (std) {
+    // Standard flag: check short is correct
+    if (std.short && entry.short && entry.short !== std.short) {
+      w.push(`uses ${entry.short} but standard requires ${std.short}`);
+    }
+    if (!std.short && entry.short) {
+      w.push(`uses ${entry.short} — standard defines no short for ${std.long}`);
+    }
+  }
+
+  // Check if the short used here is reserved for a different flag
+  if (entry.short && STD_BY_SHORT.has(entry.short)) {
+    const owner = STD_BY_SHORT.get(entry.short);
+    if (owner.long !== entry.long) {
+      w.push(`${entry.short} is reserved for ${owner.long}`);
+    }
+  }
+
+  return w;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Grouping
+// ═══════════════════════════════════════════════════════════════════════════
+function groupFlags(data) {
+  const map = new Map();
+
+  for (const entry of data) {
+    const key = entry.long || entry.short || '?';
+    if (!map.has(key)) {
+      map.set(key, { long: entry.long || null, shorts: new Set(), args: new Set(), tools: [] });
+    }
+    const g = map.get(key);
+    if (entry.short)    g.shorts.add(entry.short);
+    if (entry.argument) g.args.add(entry.argument);
+    const warnings = detectWarnings(entry);
+    g.tools.push({ tool: entry.tool, description: entry.description || '', default: entry.default || null, short: entry.short, warnings });
+  }
+
+  return Array.from(map.values()).map(g => {
+    const std = g.long ? STD_BY_LONG.get(g.long) : null;
+    const hasConflicts = g.tools.some(t => t.warnings.length > 0);
+    const shorts = [...g.shorts].sort();
+    return {
+      long: g.long, shorts, args: [...g.args], tools: g.tools,
+      std, hasConflicts,
+      category: std ? std.category : null,
+      _search: [g.long||'', ...shorts, ...g.tools.map(t=>t.tool), ...g.tools.map(t=>t.description)].join('\n').toLowerCase(),
+    };
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Rendering
+// ═══════════════════════════════════════════════════════════════════════════
+let allGroups  = [];
+let maxCount   = 1;
+let sortCol    = 'count';
+let sortDir    = -1;
+let filterText = '';
+let filterCat  = 'All';
+
+function flagHTML(g) {
+  const shortStr = g.shorts.join(', ');
+  return `<div class="flag-cell">
+    ${g.category ? `<span class="cat-pill ${g.category}">${g.category}</span>` : ''}
+    <div class="flag-parts">
+      ${shortStr ? `<span class="f-short">${esc(shortStr)}</span>` : ''}
+      ${shortStr && g.long ? `<span class="f-sep"> / </span>` : ''}
+      ${g.long ? `<span class="f-long">${esc(g.long)}</span>` : ''}
+      ${g.args.length ? `<span class="f-arg">${esc(g.args.join('|'))}</span>` : ''}
+    </div>
+    ${g.hasConflicts ? `<span class="conflict-icon" title="short-flag conflicts detected">⚠</span>` : ''}
+  </div>`;
+}
+
+function countClass(n) {
+  if (n >= maxCount * 0.6) return 'hi';
+  if (n >= maxCount * 0.3) return 'med';
+  return '';
+}
+
+function chipsHTML(tools) {
+  return tools.map(t => {
+    const c = toolColor(t.tool);
+    const style = `background:${c.bg};border-color:${c.border};color:${c.text}`;
+    const warnAttr = t.warnings.length ? ` data-warnings="${esc(t.warnings.join('\n'))}"` : '';
+    return `<span class="chip" style="${style}"
+      data-tool="${esc(t.tool)}"
+      data-desc="${esc(t.description)}"
+      data-def="${esc(t.default ?? '')}"
+      data-toolcolor="${esc(c.text)}"
+      ${warnAttr}
+    >${esc(t.tool)}${t.warnings.length ? ' <span class="chip-warn">⚠</span>' : ''}</span>`;
+  }).join('');
+}
+
+function rowHTML(g, idx) {
+  const delay = Math.min(idx * 10, 250);
+  const conflictClass = g.hasConflicts ? ' conflict-row' : '';
+  return `<tr class="${conflictClass}" style="animation-delay:${delay}ms">
+    <td>${flagHTML(g)}</td>
+    <td class="count-cell"><span class="count-badge ${countClass(g.tools.length)}">${g.tools.length}</span></td>
+    <td><div class="chips">${chipsHTML(g.tools)}</div></td>
+  </tr>`;
+}
+
+function sortKey(g) {
+  if (sortCol === 'count') return g.tools.length;
+  if (sortCol === 'flag')  return (g.long || g.shorts[0] || '').replace(/^-+/,'').toLowerCase();
+  if (sortCol === 'tools') return g.tools.map(t=>t.tool).sort().join(',').toLowerCase();
+  return '';
+}
+
+function applyFilter(groups) {
+  let out = groups;
+
+  if (filterText) {
+    const q = filterText.toLowerCase();
+    out = out.filter(g => g._search.includes(q));
+  }
+
+  if (filterCat === 'Conflicts')    out = out.filter(g => g.hasConflicts);
+  else if (filterCat === 'NonStd')  out = out.filter(g => !g.std);
+  else if (filterCat !== 'All')     out = out.filter(g => g.category === filterCat);
+
+  return out;
+}
+
+function render() {
+  let groups = applyFilter(allGroups);
+
+  groups = [...groups].sort((a,b) => {
+    const ka = sortKey(a), kb = sortKey(b);
+    if (typeof ka === 'number') return (ka - kb) * sortDir;
+    return ka.localeCompare(kb) * sortDir;
+  });
+
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = groups.map((g,i) => rowHTML(g,i)).join('');
+
+  document.getElementById('empty-state').style.display = groups.length === 0 ? 'block' : 'none';
+
+  const fc = document.getElementById('filter-count');
+  if (filterText || filterCat !== 'All') {
+    fc.innerHTML = `<b>${groups.length}</b> / ${allGroups.length}`;
+  } else {
+    fc.textContent = '';
+  }
+
+  // Sort indicators
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (th.dataset.col === sortCol) th.classList.add(sortDir===1 ? 'sort-asc' : 'sort-desc');
+  });
+
+  bindChips();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Category filter buttons
+// ═══════════════════════════════════════════════════════════════════════════
+function buildCatButtons() {
+  const container = document.getElementById('cat-filters');
+  const cats = [
+    { id:'All',       label:'All' },
+    { id:'Input',     label:'Input',     color:'var(--cat-input)'  },
+    { id:'Output',    label:'Output',    color:'var(--cat-output)' },
+    { id:'Format',    label:'Format',    color:'var(--cat-format)' },
+    { id:'Misc',      label:'Misc',      color:'var(--cat-misc)'   },
+    { id:'Conflicts', label:'⚠ Conflicts', color:'var(--red)'     },
+    { id:'NonStd',    label:'Non-standard', color:'var(--muted)'  },
+  ];
+
+  container.innerHTML = cats.map(c => {
+    const dot = c.color ? `<span class="cat-dot" style="background:${c.color}"></span>` : '';
+    return `<button class="cat-btn${c.id==='All'?' active':''}" data-cat="${c.id}">${dot}${c.label}</button>`;
+  }).join('');
+
+  container.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterCat = btn.dataset.cat;
+      render();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Load data
+// ═══════════════════════════════════════════════════════════════════════════
+function load(data) {
+  if (!Array.isArray(data) || data.length === 0) { alert('Expected a non-empty JSON array.'); return; }
+
+  allGroups = groupFlags(data);
+  maxCount  = Math.max(...allGroups.map(g => g.tools.length), 1);
+
+  const tools     = new Set(data.map(d => d.tool));
+  const conflicts = allGroups.filter(g => g.hasConflicts).length;
+  const stdCount  = allGroups.filter(g => g.std).length;
+
+  document.getElementById('stats').innerHTML =
+    `<b>${allGroups.length}</b> flags &nbsp;·&nbsp; <b>${tools.size}</b> tools` +
+    (conflicts ? ` &nbsp;·&nbsp; <span style="color:var(--red)"><b>${conflicts}</b> conflicts</span>` : '') +
+    ` &nbsp;·&nbsp; <b>${stdCount}</b> standard`;
+
+  document.getElementById('drop-zone').style.display = 'none';
+  document.getElementById('controls').classList.add('visible');
+  document.getElementById('table-wrap').classList.add('visible');
+  document.getElementById('conflicts-legend').style.display = conflicts ? 'flex' : 'none';
+
+  buildCatButtons();
+  render();
+  document.getElementById('search').focus();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Tooltip
+// ═══════════════════════════════════════════════════════════════════════════
+const tooltip  = document.getElementById('tooltip');
+const ttBox    = document.getElementById('tt-box');
+const ttTool   = document.getElementById('tt-tool');
+const ttDesc   = document.getElementById('tt-desc');
+const ttDef    = document.getElementById('tt-default');
+const ttWarn   = document.getElementById('tt-warnings');
+
+function bindChips() {
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('mouseenter', e => {
+      const color   = chip.dataset.toolcolor;
+      const warns   = chip.dataset.warnings;
+      const hasWarn = warns && warns.length > 0;
+
+      ttTool.textContent = chip.dataset.tool;
+      ttTool.style.color = color;
+      ttTool.style.borderBottomColor = hasWarn ? 'var(--red)' : color.replace(')',',.4)').replace('rgb','rgba');
+      ttDesc.textContent = chip.dataset.desc || '—';
+      const def = chip.dataset.def;
+      ttDef.innerHTML = def ? `default: <b>${esc(def)}</b>` : '';
+
+      if (hasWarn) {
+        ttWarn.style.display = 'block';
+        ttWarn.innerHTML = `<b>⚠ standard conflicts:</b>${esc(warns).replace(/\n/g,'<br>')}`;
+        ttBox.classList.add('warn-tt');
+        ttBox.style.borderColor = 'var(--red)';
+      } else {
+        ttWarn.style.display = 'none';
+        ttBox.classList.remove('warn-tt');
+        ttBox.style.borderColor = color;
+      }
+
+      tooltip.classList.add('visible');
+      posTooltip(e);
+    });
+    chip.addEventListener('mousemove', posTooltip);
+    chip.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+  });
+}
+
+function posTooltip(e) {
+  const W=310, H=120;
+  let x = e.clientX+14, y = e.clientY+14;
+  if (x+W > window.innerWidth-8)  x = e.clientX-W-14;
+  if (y+H > window.innerHeight-8) y = e.clientY-H-14;
+  tooltip.style.left = x+'px';
+  tooltip.style.top  = y+'px';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Sort / search / keyboard
+// ═══════════════════════════════════════════════════════════════════════════
+document.querySelectorAll('thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol=col; sortDir = col==='count' ? -1 : 1; }
+    render();
+  });
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  filterText = e.target.value.trim();
+  render();
+});
+
+document.addEventListener('keydown', e => {
+  const s = document.getElementById('search');
+  if (e.key === '/' && document.activeElement !== s) { e.preventDefault(); s.focus(); }
+  if (e.key === 'Escape') { s.value=''; filterText=''; render(); s.blur(); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// File I/O
+// ═══════════════════════════════════════════════════════════════════════════
+function readFile(file) {
+  if (!file || !file.name.endsWith('.json')) { alert('Please drop a .json file.'); return; }
+  const r = new FileReader();
+  r.onload = e => { try { load(JSON.parse(e.target.result)); } catch(err) { alert('JSON parse error: '+err.message); } };
+  r.readAsText(file);
+}
+
+const dz = document.getElementById('drop-zone');
+const fi = document.getElementById('file-input');
+dz.addEventListener('click', () => fi.click());
+fi.addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', ()  => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); readFile(e.dataTransfer.files[0]); });
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => { e.preventDefault(); if (allGroups.length>0) readFile(e.dataTransfer.files[0]); });
+</script>
+</body>
+</html>
