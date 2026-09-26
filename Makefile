@@ -48,7 +48,7 @@ src/deps.txt: seqfu.nimble
 	@if grep -q "Error:" $@.log; then cat $@.log; rm -f $@.log; exit 1; fi
 	mv $@.log $@
 
-src/sfu.nim: ./src/fast*.nim ./src/filter_*.nim ./src/*utils*.nim src/fu_tabcheck.nim src/fu_orf.nim src/msa.nim src/shred.nim src/lib/msa_reader.nim src/deps.txt seqfu.nimble
+src/sfu.nim: ./src/fast*.nim ./src/filter_*.nim ./src/*utils*.nim src/adapters.nim src/known_adapters.nim src/fu_tabcheck.nim src/fu_orf.nim src/msa.nim src/shred.nim src/lib/msa_reader.nim src/deps.txt seqfu.nimble
 	touch $@ 
 
 $(BIN)/byteshift: test/byte/shifter.c
