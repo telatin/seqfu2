@@ -1,0 +1,46 @@
+---
+layout: page
+title: Apps
+section: apps
+summary: Interactive tools that run entirely in your browser. Your files are read locally and never uploaded.
+---
+{%- comment -%}
+  Every *.html file in apps/ (other than this index) is listed automatically:
+  - pages with front matter (layout: app) show their title, summary and
+    `icon` (a site path such as /assets/img/icon-stats.png, or a full URL);
+  - plain HTML files without front matter are copied as static files, and
+    their card title is derived from the file name.
+  Apps without an icon get the default one.
+{%- endcomment -%}
+{%- assign default_icon = "/assets/img/icon-tool.png" -%}
+{%- assign apps = site.pages | where: "layout", "app" | sort: "title" -%}
+<div class="recipe-grid">
+  {%- for a in apps %}
+  {%- assign icon = a.icon | default: default_icon -%}
+  {%- unless icon contains "://" %}{% assign icon = icon | relative_url %}{% endunless %}
+  <a class="card app-card" href="{{ a.url | relative_url }}">
+    <span class="app-card-body">
+      <span class="recipe-card-title">{{ a.title }}</span>
+      <span class="recipe-card-text">{{ a.summary }}</span>
+      {%- if a.tools %}
+      <span class="tool-card-foot">
+        {%- for t in a.tools %}<span class="chip-input">{{ t }}</span>{% endfor -%}
+      </span>
+      {%- endif %}
+    </span>
+    <img class="app-card-icon" src="{{ icon }}" alt="" width="96" height="96" loading="lazy">
+  </a>
+  {%- endfor %}
+  {%- for f in site.static_files %}
+  {%- if f.extname == ".html" and f.path contains "/apps/" %}
+  <a class="card app-card" href="{{ f.path | relative_url }}">
+    <span class="app-card-body">
+      <span class="recipe-card-title">{{ f.basename | replace: "-", " " | replace: "_", " " | capitalize }}</span>
+      <span class="recipe-card-text"><code>apps/{{ f.name }}</code></span>
+    </span>
+    <img class="app-card-icon" src="{{ default_icon | relative_url }}" alt="" width="96" height="96" loading="lazy">
+  </a>
+  {%- endif %}
+  {%- endfor %}
+</div>
+<p class="muted small" style="margin-top:32px">Want to add an app? Drop a self-contained HTML file in <code>apps/</code> and it will appear here. Add front matter with a <code>title</code>, <code>summary</code> and optional <code>icon</code> (for example <code>icon: /assets/img/icon-stats.png</code>) to give it the site header and a proper card.</p>
