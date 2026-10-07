@@ -1,0 +1,8 @@
+{
+	"files": [
+		{ "url": "files/illumina_1.fq.gz", "path": "illumina_1.fq.gz" },
+		{ "url": "files/illumina_2.fq.gz", "path": "illumina_2.fq.gz" },
+		{ "url": "files/interleaved.fq.gz", "path": "interleaved.fq.gz" },
+		{ "url": "files/16S_coli.fa", "path": "16S_coli.fa" }
+	]
+}
