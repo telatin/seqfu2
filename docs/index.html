@@ -39,13 +39,13 @@ redirect_from:
         <div class="terminal-title">Examples</div>
         <div class="terminal-examples">
           <div class="comment"># Summary statistics (N50, lengths…) as a readable table</div>
-          <div><span class="prompt">$ </span><b>seqfu stats</b> -n *.fastq.gz</div>
+          <div><code class="language-bash"><span class="prompt">$ </span><b>seqfu stats</b> -n *.fq.gz</code></div>
           <div class="comment"># Print the first 10 sequences of a file</div>
-          <div><span class="prompt">$ </span><b>seqfu head</b> -n 10 reads.fq.gz</div>
+          <div><code class="language-bash"><span class="prompt">$ </span><b>seqfu head</b> -n 10 interleaved.fq.gz</code></div>
           <div class="comment"># Keep sequences containing an oligo (IUPAC, both strands)</div>
-          <div><span class="prompt">$ </span><b>seqfu grep</b> -o ACGTTGCA contigs.fa</div>
+          <div><code class="language-bash"><span class="prompt">$ </span><b>seqfu grep</b> -o AGTGGCGGACGGGTGA 16S_coli.fa</code></div>
           <div class="comment"># Count reads, checking that paired files match</div>
-          <div><span class="prompt">$ </span><b>seqfu count</b> reads_R1.fq.gz reads_R2.fq.gz</div>
+          <div><code class="language-bash"><span class="prompt">$ </span><b>seqfu count</b> illumina_1.fq.gz illumina_2.fq.gz</code></div>
         </div>
       </div>
     </div>
@@ -99,3 +99,7 @@ redirect_from:
     </div>
   </section>
 </main>
+
+<script src="http://localhost:5173/embed.js"
+        data-cwd="seqfu"
+        data-config="{{ '/sandboxbio.config.json' | relative_url }}"></script>
