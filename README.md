@@ -1,3 +1,10 @@
+<div style="background:#fff8cc; border:1px solid #e6d97a; padding:1em 1.2em; border-radius:8px;">
+  <p style="margin:0;">
+    This is the home of <strong>SeqFu</strong>, where 2.0 is under development.<br>
+    The stable SeqFu 1.x has been moved to <a href="https://github.com/quadram-institute-bioscience/seqfu_v1">seqfu_v1</a>.
+  </p>
+</div>
+
 <a href="https://telatin.github.io/seqfu2" description="SeqFu documentation">
 <img align="right" width="128" height="128" src="docs/img/seqfu-512.png"></a>
 
