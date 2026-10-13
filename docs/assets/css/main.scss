@@ -415,11 +415,13 @@ img { max-width: 100%; height: auto; }
   .btn-install { display: none; }
   .search { flex: 1; width: auto; }
   .nav-toggle {
-    display: grid; gap: 4px; order: 3; background: none; border: 0; padding: 8px; cursor: pointer;
+    display: grid; flex: 0 0 40px; place-content: center; gap: 4px; order: 3;
+    width: 40px; height: 40px; background: none; border: 0; padding: 0; cursor: pointer;
   }
   .nav-toggle span { display: block; width: 20px; height: 2px; background: #fff; }
   .topnav {
     display: none; position: absolute; top: calc(var(--topbar-h) + 3px); left: 0; right: 0;
+    flex: none; min-width: 0; max-height: calc(100dvh - var(--topbar-h) - 3px); overflow-y: auto;
     flex-direction: column; background: #000; border-bottom: 3px solid var(--purple); padding: 8px 0;
   }
   .topnav.open { display: flex; }
