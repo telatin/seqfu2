@@ -18,6 +18,7 @@ redirect_from:
       <p class="hero-lede">SeqFu is a fast, general-purpose toolkit for FASTA and FASTQ files, gzipped or not.
         Core programs run as <code>seqfu &lt;command&gt;</code>; companion tools ship as standalone <code>fu-*</code> utilities.</p>
       <div class="hero-actions">
+        <a class="btn btn-secondary" href="https://quadram-institute-bioscience.github.io/seqfu_v1">Stable version</a>
         <a class="btn btn-primary" href="{{ '/getting-started/' | relative_url }}">Get started</a>
         <a class="btn btn-secondary" href="{{ '/tools/' | relative_url }}">Browse commands</a>
       </div>
@@ -34,6 +35,9 @@ redirect_from:
         <pre class="terminal-cmd" data-tab-panel="{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}><span class="prompt">$ </span>{{ t.command | escape }}</pre>
         {%- endfor %}
       </div>
+
+      <p class="small muted">Bioconda currently installs the stable SeqFu 1.x release, not the development version documented here.
+        See the <a href="https://quadram-institute-bioscience.github.io/seqfu_v1">stable version documentation</a>.</p>
 
       <div class="terminal" id="examples">
         <div class="terminal-title">Examples</div>

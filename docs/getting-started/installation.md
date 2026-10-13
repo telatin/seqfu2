@@ -7,7 +7,12 @@ redirect_from:
   - /install.html
 ---
 
-## Bioconda (recommended)
+## Bioconda (stable 1.x release)
+
+Bioconda currently provides **SeqFu 1.x**, the stable release, not the
+**{{ site.seqfu_version }} development version** documented on this website.
+For the corresponding commands and options, use the
+[stable version documentation](https://quadram-institute-bioscience.github.io/seqfu_v1).
 
 The recommended installation method is via [Bioconda](https://anaconda.org/bioconda/seqfu),
 supported on both **Linux** and **macOS**. It installs the full set of tools: the `seqfu`
@@ -28,7 +33,7 @@ conda activate seqfu
 Ask for a recent version explicitly: 0.x releases are very old and no longer supported.
 ```
 
-## Pre-compiled binaries
+## Pre-compiled binaries (development version)
 
 Pre-compiled binaries are attached to each
 [release](https://github.com/telatin/seqfu2/releases). Starting with v1.29.0, releases include

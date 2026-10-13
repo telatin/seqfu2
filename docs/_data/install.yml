@@ -1,6 +1,6 @@
 # Tabs of the install box on the home page.
 - id: conda
-  label: Bioconda
+  label: Bioconda (stable 1.x)
   command: conda install -c conda-forge -c bioconda "seqfu>=1.30"
 - id: binary
   label: Binary

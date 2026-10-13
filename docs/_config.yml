@@ -9,7 +9,7 @@ baseurl: "/seqfu2"
 repository: telatin/seqfu2
 
 # Shown in the hero and in the install box. Keep in sync with seqfu.nimble.
-seqfu_version: "1.30.0"
+seqfu_version: "2.0.0-alpha"
 
 github_url: "https://github.com/telatin/seqfu2"
 bioconda_url: "https://anaconda.org/bioconda/seqfu"

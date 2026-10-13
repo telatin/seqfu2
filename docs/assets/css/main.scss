@@ -405,6 +405,10 @@ img { max-width: 100%; height: auto; }
   flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--muted); max-width: 1320px; margin: 0 auto;
 }
 .footer nav { display: flex; gap: 18px; flex-wrap: wrap; }
+.footer-warning {
+  flex-basis: 100%; margin: 0; padding: 12px 16px; color: var(--amber-text);
+  background: var(--amber-tint); border-left: 3px solid var(--amber); line-height: 1.55;
+}
 
 // ---------------------------------------------------------------- responsive
 @media (max-width: 1180px) {

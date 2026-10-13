@@ -8,7 +8,9 @@ redirect_from:
 
 ## Install
 
-The recommended way to install SeqFu is from [Bioconda](https://anaconda.org/bioconda/seqfu), on Linux and macOS:
+[Bioconda](https://anaconda.org/bioconda/seqfu) currently installs the **stable SeqFu 1.x release**
+on Linux and macOS, not the development version documented here. For that release, use the
+[stable version documentation](https://quadram-institute-bioscience.github.io/seqfu_v1).
 
 ```bash
 conda install -c conda-forge -c bioconda "seqfu>=1.30"

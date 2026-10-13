@@ -48,38 +48,6 @@ used `klib.nim` and [nimreadfq](https://github.com/andreas-wilm/nimreadfq).
 The name of the program was modeled after "[ScriptFu](https://docs.gimp.org/en/gimp-concepts-script-fu.html)",
 a set of macros built in the image manipulation **GIMP**.
 
-[Apparently](https://twitter.com/StevenSalzberg1/status/1439704488508526599?s=20),
-in the US this might sound offensive.
-
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I love it that these guys got away with creating a tool called &#39;seqfu&#39;, and even put it in the title of their paper (<a href="https://t.co/dCCUStKTEB">https://t.co/dCCUStKTEB</a>). Did the editors/reviewers realize what this word sounds like in English? 😉 h/t <a href="https://twitter.com/telatin?ref_src=twsrc%5Etfw">@telatin</a> <a href="https://t.co/fHvOxsKXKx">https://t.co/fHvOxsKXKx</a></p>&mdash; Steven Salzberg (@StevenSalzberg1) <a href="https://twitter.com/StevenSalzberg1/status/1439704488508526599?ref_src=twsrc%5Etfw">September 19, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-![How to get away]({{site.baseurl}}/img/howtoget.png)
-
-So, after a consultation with Microsoft (and thanks to their previous experience with Minesweeper),
-offer a tool to rename the program to **SeqFlower**.
-
-![SeqFlower]({{site.baseurl}}/img/flowers.png)
-
-The renaming script is called `flower.sh` in the _src_ directory.
-
-## Developer's details
-
-### Perl module
-
-A Perl version of the parser is available both from
-**[MetaCPAN](https://metacpan.org/release/FASTX-Reader)** and from Bioconda:
-
-```
-conda install -c bioconda perl-fastx-reader
-```
-
-### Templates
-
-The repository contains some templates to quickly write
-FASTX parser-based applications (in Nim or in Perl).
-
-:package: [seqfu2/templates](https://github.com/telatin/seqfu2/tree/main/templates)
-
 ## Outreach
 
 * [Slides](https://www.icloud.com/keynote/0cfGObtl14rWj_q4nZ7lFy7fg#seqfu_2)
