@@ -1,17 +1,15 @@
 # Tabs of the install box on the home page.
 - id: conda
   label: Bioconda (stable 1.x)
-  command: |
-    # Install the stable release from Bioconda
-    conda install -c conda-forge -c bioconda "seqfu>=1.30"
+  comment: Install the stable release from Bioconda
+  command: conda install -c conda-forge -c bioconda "seqfu>=1.30"
 - id: binary
   label: Binary
-  command: |
-    # Download and run the install script
-    curl -fsSL https://telatin.github.io/seqfu2/install.sh | sh
+  comment: Download and run the install script
+  command: curl -fsSL https://telatin.github.io/seqfu2/install.sh | sh
 - id: source
   label: Source
-  command: |
-    # Clone the repository and build from source
-    # Requires Nim 2.2 or newer
-    git clone https://github.com/telatin/seqfu2 && cd seqfu2 && make
+  comment:  |
+    Clone the repository and build from source.
+    Requires Nim 2.2 or newer.
+  command: git clone https://github.com/telatin/seqfu2 && cd seqfu2 && make

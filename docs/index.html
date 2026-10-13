@@ -33,7 +33,8 @@ redirect_from:
           {%- endfor %}
         </div>
         {%- for t in site.data.install %}
-        <pre class="terminal-cmd" data-tab-panel="{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}><span class="prompt">$ </span>{{ t.command | escape }}</pre>
+        {%- assign comment_lines = t.comment | default: '' | strip | newline_to_br | split: '<br />' %}
+        <pre class="terminal-cmd" data-tab-panel="{{ t.id }}"{% unless forloop.first %} hidden{% endunless %}>{% for line in comment_lines %}<span class="terminal-comment"># {{ line | strip | escape }}</span>{% endfor %}<span class="prompt">$ </span>{{ t.command | escape }}</pre>
         {%- endfor %}
       </div>
 

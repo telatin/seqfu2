@@ -351,6 +351,7 @@ img { max-width: 100%; height: auto; }
 .terminal-tabs button.active { color: #fff; }
 .terminal-tabs button.active::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: -1px; height: 2px; background: var(--amber); }
 .terminal-cmd { margin: 0; padding: 20px; font-size: 14px; line-height: 1.7; color: var(--term-ink); white-space: pre-wrap; word-break: break-word; }
+.terminal-comment { display: block; color: var(--term-muted); }
 .hero-terminals { display: grid; gap: 16px; min-width: 0; }
 .terminal-title { padding: 12px 20px; border-bottom: 1px solid var(--term-border); font: 600 13px var(--sans); color: #fff; }
 .terminal-examples { padding: 14px 20px 16px; font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--term-ink); overflow-wrap: anywhere; }
