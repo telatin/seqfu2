@@ -1,8 +1,8 @@
 <table>
 <tr>
 <td style="background:#fff8cc; border:1px solid #e6d97a; border-radius:8px; padding:12px;">
-This is the home of <strong>SeqFu</strong>, where 2.0 is under development.  
-The stable SeqFu 1.x has been moved to <a href="https://github.com/quadram-institute-bioscience/seqfu_v1">seqfu_v1</a>.
+This is the home of <strong>SeqFu</strong>, where 2.0 is under development.  <br>
+The stable <strong>SeqFu 1.x</strong> has been moved to <a href="https://github.com/quadram-institute-bioscience/seqfu_v1"><strong>a new home (seqfu_v1)</strong></a>.
 </td>
 </tr>
 </table>
